@@ -500,6 +500,7 @@ export class AutoFill {
         } = { dataRange: args.dataRange, fillRange: args.fillRange, fillType: args.fillType, direction: args.direction,
             selectedRange: selRange };
         this.parent.notify(completeAction, { eventArgs: autoFillArgs, action: 'autofill' });
+        this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
         if (this.parent.showAggregate) {
             this.parent.notify(showAggregate, {});
         }
@@ -571,9 +572,11 @@ export class AutoFill {
 
     public destroy(): void {
         this.removeEventListener();
+        if (this.autoFillElement) { this.autoFillElement.remove(); }
         this.autoFillElement = null;
         this.autoFillElementPosition = null;
         this.autoFillCell = null;
+        if (this.autoFillDropDown) { this.autoFillDropDown.destroy(); }
         this.autoFillDropDown = null;
         this.isVerticalFill = null;
         this.fillOptionIndex = null;

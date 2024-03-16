@@ -19,8 +19,6 @@ export function getRequiredModules(context: Spreadsheet): ModuleDeclaration[] {
 
 // eslint-disable-next-line
 function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): void {
-    modules.push({ member: 'basic', args: [] });
-    modules.push({ member: 'all', args: [] });
     if (context.showRibbon) {
         modules.push({
             member: 'ribbon',
@@ -115,10 +113,6 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
             args: [context]
         });
     }
-    modules.push({
-        member: 'collaborativeEditing',
-        args: [context]
-    });
     modules.push({
         member: 'protectSheet',
         args: [context]

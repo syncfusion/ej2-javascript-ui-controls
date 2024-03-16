@@ -19,7 +19,10 @@ export class RestrictEditing {
     private allowFormat: CheckBox;
     private allowPrint: CheckBox;
     private allowCopy: CheckBox;
-    private addUserDialog: AddUserDialog;
+    /**
+     * @private
+    */
+    public addUserDialog: AddUserDialog;
     public enforceProtectionDialog: EnforceProtectionDialog;
     public stopProtection: HTMLButtonElement;
     public addRemove: boolean = true;
@@ -69,10 +72,12 @@ export class RestrictEditing {
             this.wireEvents();
             this.documentHelper.updateViewerSize();
             this.loadPaneValue();
+            this.addUserCollection();
         } else {
             this.closePane();
             this.documentHelper.updateFocus();
         }
+        this.documentHelper.owner.triggerResize();
     }
     private initPane(localValue: L10n, isRtl?: boolean): void {
         this.restrictPane = createElement('div', { className: 'e-de-restrict-pane'});
@@ -264,13 +269,16 @@ export class RestrictEditing {
                 this.stopReadOnlyOptions.style.display = 'none';
                 break;
         }
+        this.documentHelper.owner.showHideRulers();
+        this.documentHelper.owner.triggerResize();
     }
     /**
      * @returns {void}
      */
     private closePane = (): void => {
         this.restrictPane.style.display = 'none';
-        this.documentHelper.updateViewerSize();
+        this.documentHelper.owner.showHideRulers();
+        this.documentHelper.owner.triggerResize();
     }
     private wireEvents(): void {
         this.addUser.addEventListener('click', this.addUserDialog.show);
@@ -294,7 +302,7 @@ export class RestrictEditing {
     private stopProtectionTriggered(args: any): void {
         if ((isNullOrUndefined(this.documentHelper.saltValue) || this.documentHelper.saltValue === '')
             && (isNullOrUndefined(this.documentHelper.hashValue) || this.documentHelper.hashValue === '')) {
-            this.documentHelper.owner.editor.unProtectDocument();
+            this.documentHelper.owner.editorModule.unProtectDocument();
             return;
         }
         this.unProtectDialog.show();
@@ -340,7 +348,7 @@ export class RestrictEditing {
             default:
                 this.protectionType = 'NoProtection';
                 this.addedUser.uncheckAllItems();
-                this.viewer.owner.editor.removeAllEditRestrictions();
+                this.viewer.owner.editorModule.removeAllEditRestrictions();
                 break;
         }
     }
@@ -367,7 +375,7 @@ export class RestrictEditing {
         }
     }
     private onYesButtonClick = (): void => {
-        this.viewer.owner.editor.removeAllEditRestrictions();
+        this.viewer.owner.editorModule.removeAllEditRestrictions();
         this.documentHelper.dialog.hide();
     }
     private onCancelButtonClick = (args: any): void => {
@@ -379,10 +387,10 @@ export class RestrictEditing {
     };
     private selectHandler(args: any): void {
         if (args.isChecked) {
-            this.viewer.owner.editor.insertEditRangeElement(args.text);
+            this.viewer.owner.editorModule.insertEditRangeElement(args.text);
             args.event.target.classList.add('e-check');
         } else {
-            this.viewer.owner.editor.removeUserRestrictions(args.text);
+            this.viewer.owner.editorModule.removeUserRestrictions(args.text);
         }
     }
     public highlightClicked(args: any): void {

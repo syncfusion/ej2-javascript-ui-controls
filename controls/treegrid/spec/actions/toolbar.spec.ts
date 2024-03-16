@@ -8,12 +8,14 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { select } from '@syncfusion/ej2-base';
 import { ITreeData } from '../../src';
 import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+import { PdfExport } from '../../src/treegrid/actions/pdf-export';
+import { ExcelExport } from '../../src/treegrid/actions/excel-export';
 
 
 /**
  * Grid Toolbar spec 
  */
-TreeGrid.Inject(Toolbar,Edit);
+TreeGrid.Inject(Toolbar,Edit, PdfExport, ExcelExport);
 describe('TreeGrid Toolbar module', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;

@@ -501,6 +501,7 @@ describe('Chart ->', () => {
             helper.getElement('#lineMarker').click();
             setTimeout(() => {
                 helper.invoke('selectRange', ['F1']);
+                helper.invoke('selectChart');
                 helper.switchRibbonTab(1);
                 helper.getElement('#' + helper.id + '_copy').click();
                 setTimeout(() => {

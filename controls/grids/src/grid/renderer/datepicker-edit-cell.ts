@@ -1,10 +1,11 @@
 import { extend, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { IEditCell } from '../base/interface';
-import { DatePicker, DateTimePicker, PopupEventArgs } from '@syncfusion/ej2-calendars';
+import { DatePicker, DateTimePicker, PopupEventArgs, MaskedDateTime } from '@syncfusion/ej2-calendars';
 import { isEditable, getObject, getCustomDateFormat } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
 import { Edit } from '../actions/edit';
+DatePicker.Inject(MaskedDateTime)
 
 /**
  * `DatePickerEditCell` is used to handle datepicker cell type editing.

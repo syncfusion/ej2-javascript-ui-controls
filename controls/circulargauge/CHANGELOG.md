@@ -4,31 +4,7 @@
 
 ## [Unreleased]
 
-## 24.1.43 (2023-12-27)
-
-### CircularGauge
-
-#### Bug Fixes
-
-- `#I532350` - When there are more than ten ranges in the Circular Gauge, the range tooltip content for those ranges is now appropriately displayed.
-
-## 24.1.41 (2023-12-18)
-
-### CircularGauge
-
-#### New Features
-
-- Circular Gauge elements such as the axis line, ranges, pointers, and annotations can now be animated one by one to create a smooth appearance when rendered initially.
-
-## 23.1.38 (2023-09-26)
-
-### CircularGauge
-
-#### New Features
-
-- When the `allowRangePreRender` property is set to **false**, the axis line will be rendered first.
-
-## 23.1.36 (2023-09-15)
+## 25.1.35 (2024-03-15)
 
 ### Circular Gauge
 

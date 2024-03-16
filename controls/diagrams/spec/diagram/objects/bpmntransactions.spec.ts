@@ -192,7 +192,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
-      describe('858761-Default Tooltip is not positioned properly after drag and drop the child of subprocess in diagram.', () => {
+    describe('858761-Default Tooltip is not positioned properly after drag and drop the child of subprocess in diagram.', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
@@ -220,7 +220,7 @@ describe('Diagram Control', () => {
                     } as BpmnActivityModel,
                 },
             };
-            
+
             let start: NodeModel = {
                 id: 'start', shape: { type: 'Bpmn', shape: 'Event' }, width: 100, height: 100,
                 margin: { left: 10, top: 50 }

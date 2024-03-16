@@ -12937,6 +12937,95 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
         });
     });
 
+    describe('keyboard accessibility in toolbar items ', () => {
+        let toolbar: any;
+        beforeEach((): void => {
+            toolbar = undefined;
+            const ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('tab key accessibility in Popup mode', () => {
+            let keyEventArgs: any;
+            const element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Popup',
+                width: '200px',
+                items: [
+                    { prefixIcon: 'e-cut-icon', tooltipText: 'Cut' },
+                    { prefixIcon: 'e-copy-icon', tooltipText: 'Copy' },
+                    { prefixIcon: 'e-paste-icon', tooltipText: 'Paste' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-bold-icon', tooltipText: 'Bold' },
+                    { prefixIcon: 'e-underline-icon', tooltipText: 'Underline' },
+                    { prefixIcon: 'e-italic-icon', tooltipText: 'Italic' },
+                    { prefixIcon: 'e-color-icon', tooltipText: 'Color-Picker' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-alignleft-icon', tooltipText: 'Align-Left' },
+                    { prefixIcon: 'e-alignjustify-icon', tooltipText: 'Align-Justify' },
+                    { prefixIcon: 'e-alignright-icon', tooltipText: 'Align-Right' },
+                    { prefixIcon: 'e-aligncenter-icon', tooltipText: 'Align-Center' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-bullets-icon', tooltipText: 'Bullets' },
+                    { prefixIcon: 'e-numbering-icon', tooltipText: 'Numbering' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-ascending-icon', tooltipText: 'Sort A - Z' },
+                    { prefixIcon: 'e-descending-icon', tooltipText: 'Sort Z - A' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-upload-icon', tooltipText: 'Upload' },
+                    { prefixIcon: 'e-download-icon', tooltipText: 'Download' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-indent-icon', tooltipText: 'Text Indent' },
+                    { prefixIcon: 'e-outdent-icon', tooltipText: 'Text Outdent' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-clear-icon', tooltipText: 'Clear' },
+                    { prefixIcon: 'e-reload-icon', tooltipText: 'Reload' },
+                    { prefixIcon: 'e-export-icon', tooltipText: 'Export' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-undo-icon', tooltipText: 'Undo', text: 'Undo' },
+                    { prefixIcon: 'e-redo-icon', tooltipText: 'Redo', text: 'Redo' }
+                ]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            const ele1: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            expect(ele1.getAttribute('tabindex')).toBe(null);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: toolbar.element
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            const popupElement: HTMLElement = toolbar.element.querySelector('.e-hor-nav');
+            expect(popupElement.getAttribute('tabindex')).toBe('0');
+            const tool: any = toolbar;
+            tool.popObj.show();
+            expect(popupElement.classList.contains('e-nav-active')).toBe(true);
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveDown',
+                target: toolbar.element.querySelectorAll('.e-toolbar-pop .e-toolbar-item')[1],
+            };
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(ele1.getAttribute('tabindex')).toBe('0');
+            tool.popObj.hide();
+            const firstElement: HTMLElement = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            firstElement.focus();
+            expect(document.activeElement).toBe(firstElement);
+        });
+    });
+
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

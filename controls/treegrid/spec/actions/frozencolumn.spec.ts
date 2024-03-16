@@ -150,14 +150,14 @@ describe('Without paging in frozen Rows', () => {
     });
     it('Without Pager Mode - Checking collapse action', (done: Function) => {
         gridObj.collapsed = (args?: RowCollapsedEventArgs) => {
-            const displayAction = [].slice.call(gridObj.element.getElementsByClassName('e-headercontent')[0].getElementsByClassName('e-row'));
-            let rows = 0;
+            const displayAction: any = [].slice.call(gridObj.element.getElementsByClassName('e-headercontent')[0].getElementsByClassName('e-row'));
+            let rows: number = 0;
             const count = displayAction.filter((e: any) => {
-                if (e.style.display == 'none' ) {
+                if (e.style.display === 'none' ) {
                     rows++;
                 }
             });
-            const frozenrows = ((gridObj.element.getElementsByClassName('e-headercontent')[0].getElementsByClassName('e-row').length) - rows);
+            const frozenrows: number = ((gridObj.element.getElementsByClassName('e-headercontent')[0].getElementsByClassName('e-row').length) - rows);
             expect(frozenrows).toBe(6);
             done();
         };
@@ -221,7 +221,7 @@ describe('Remotedata in Frozenrows and column', () => {
   const mockAjax: Function = (d: { data: { [o: string]: Object | Object[] } | Object[], dm?: DataManager }, query: Query | Function, response?: Object):
   MockAjaxReturn => {
       jasmine.Ajax.install();
-      const dataManager = d.dm || new DataManager({
+      const dataManager: DataManager = d.dm || new DataManager({
           url: '/api/Employees'
       });
       const prom: Promise<Object> = dataManager.executeQuery(query);
@@ -326,11 +326,11 @@ describe('Ensure freeze direction after removing freeze in columns', () => {
     });
 
     it('remove columns', (done: Function) => {
-        const column = gridObj.getColumnFieldNames()[1];
-	  gridObj.grid.getColumnByField(column).freeze = 'Right';
-	  gridObj.refreshColumns();
-	  expect(gridObj.grid.getHeaderContent().scrollLeft).toBe(0);
-	  done();
+        const column: string = gridObj.getColumnFieldNames()[1];
+        gridObj.grid.getColumnByField(column).freeze = 'Right';
+        gridObj.refreshColumns();
+        expect(gridObj.grid.getHeaderContent().scrollLeft).toBe(0);
+        done();
     });
     afterAll(() => {
         destroy(gridObj);
@@ -373,22 +373,22 @@ describe('RowEdit in Frozen Rows and columns', () => {
             }
         };
         (<any>gridObj3.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj3.grid.element.id + '_add' } });
-        gridObj3.actionComplete = actionComplete;       
+        gridObj3.actionComplete = actionComplete;
     });
     it('Record double click', () => {
-      gridObj3.actionComplete = (args?: any): void => {
-        if (gridObj3.element.getElementsByClassName("e-headercontent")[0].getElementsByClassName("e-editedrow").length > 0) {
-          expect(<any>(gridObj3.element.getElementsByClassName("e-headercontent")[0].getElementsByClassName("e-editedrow")[0].getAttribute("data-rowindex"))).toBe(2);
-        }
-      };
-      const event: MouseEvent = new MouseEvent("dblclick", {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-      });
-      gridObj3.getCellFromIndex(2, 1).dispatchEvent(event);
-      gridObj3.actionComplete = actionComplete;
-      // gridObj3.freezeModule.destroy();
+        gridObj3.actionComplete = (args?: any): void => {
+            if (gridObj3.element.getElementsByClassName('e-headercontent')[0].getElementsByClassName('e-editedrow').length > 0) {
+                expect(<any>(gridObj3.element.getElementsByClassName('e-headercontent')[0].getElementsByClassName('e-editedrow')[0].getAttribute('data-rowindex'))).toBe(2);
+            }
+        };
+        const event: MouseEvent = new MouseEvent('dblclick', {
+            view: window,
+            bubbles: true,
+            cancelable: true
+        });
+        gridObj3.getCellFromIndex(2, 1).dispatchEvent(event);
+        gridObj3.actionComplete = actionComplete;
+        // gridObj3.freezeModule.destroy();
     });
     afterAll(() => {
         destroy(gridObj3);
@@ -437,10 +437,10 @@ describe('Bug 851412: script error throws on editing and focus out on a record',
                 childMapping: 'subtasks',
                 frozenColumns: 2,
                 toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
-                editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Batch', newRowPosition:'Below'},
+                editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Batch', newRowPosition: 'Below'},
                 treeColumnIndex: 1,
                 columns: [
-                    { field: 'taskID', headerText: 'Task ID',  textAlign: 'Right', width: 100 },
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true,  textAlign: 'Right', width: 100 },
                     { field: 'taskName', headerText: 'Task Name', width: 190 },
                     { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100 },
                     { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 100 },
@@ -453,10 +453,10 @@ describe('Bug 851412: script error throws on editing and focus out on a record',
     });
     it('Frozen with batch edit', (done: Function) => {
         actionComplete = (args?: Object): void => {
-          if (args["requestType"] == "batchsave") {
-            expect(gridObj.getCurrentViewRecords().length === 37).toBe(true);
-            done();
-          }
+            if (args['requestType'] === 'batchsave') {
+                expect(gridObj.getCurrentViewRecords().length === 37).toBe(true);
+                done();
+            }
         };
         gridObj.selectRow(35);
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });

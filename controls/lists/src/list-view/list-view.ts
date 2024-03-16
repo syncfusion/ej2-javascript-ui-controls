@@ -410,14 +410,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public showHeader: boolean;
 
     /**
-     * Specifies whether HTML content should be sanitized or escaped.
-     * When set to `true`, any HTML content will be sanitized to remove potentially harmful elements.
+     * Specifies whether to display or remove the untrusted HTML values in the ListView component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
      * {% codeBlock src='listview/enableHtmlSanitizer/index.md' %}{% endcodeBlock %}
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
 
     /**
@@ -517,10 +517,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public actionFailure: EmitType<MouseEvent>;
 
     /**
-    * Triggers when scrollbar of the ListView component reaches to the top or bottom.
-    *
-    * @event 'object'
-    */
+     * Triggers when scrollbar of the ListView component reaches to the top or bottom.
+     *
+     * @event 'object'
+     */
     @Event()
     public scroll: EmitType<ScrolledEventArgs>;
 
@@ -834,7 +834,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (args.item.classList.contains(classNames.hasChild)) {
             this.isNestedList = true;
         }
-        if (this.showCheckBox && this.isValidLI(args.item)) {
+        if (this.showCheckBox && args.item.classList.contains(classNames.listItem)) {
             let checkboxElement: Element;
             let fieldData: DataSource;
             // eslint-disable-next-line prefer-const
@@ -849,7 +849,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (typeof (this.dataSource as string[])[0] !== 'string' && typeof (this.dataSource as number[])[0] !== 'number') {
                 fieldData = <DataSource>getFieldValues(args.curData, this.listBaseOption.fields);
                 if (this.enablePersistence && !isNullOrUndefined(this.selectedId)) {
-                    const index: number = this.selectedId.findIndex(e => e === fieldData[this.listBaseOption.fields.id].toString());
+                    const index: number = this.selectedId.findIndex(
+                        (e: string) => e === fieldData[this.listBaseOption.fields.id].toString()
+                    );
                     if (index !== -1) {
                         this.checkInternally(args, checkboxElement);
                     }
@@ -1018,7 +1020,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    targetElement: any;
+    targetElement: Element;
     private clickHandler(e: MouseEvent): void {
         if (Array.isArray(this.dataSource) &&  this.dataSource.length === 0){
             return;
@@ -1340,11 +1342,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private unWireEvents(): void {
+        EventHandler.remove(this.element, 'keydown', this.keyActionHandler);
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
         EventHandler.remove(this.element, 'mouseout', this.leaveHandler);
         EventHandler.remove(this.element, 'mouseover', this.hoverHandler);
         EventHandler.remove(this.element, 'mouseout', this.leaveHandler);
+        EventHandler.remove(this.element, 'focusout', this.focusout);
         if (!isNullOrUndefined(this.scroll)) {
             EventHandler.remove(this.element, 'scroll', this.onListScroll);
         }
@@ -1390,7 +1394,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.curUL.querySelector('.' + classNames.focused)) {
                 this.curUL.querySelector('.' + classNames.focused).classList.remove(classNames.focused);
             }
-            const textAreaFocus = li.querySelector('textarea') || li.querySelector('input');
+            const textAreaFocus: HTMLTextAreaElement | HTMLInputElement = li.querySelector('textarea') || li.querySelector('input');
             li.classList.add(classNames.focused);
             if (!isNullOrUndefined(e)){
                 if (e.target === textAreaFocus){
@@ -1430,7 +1434,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             selectedItem =
             {
-                item: li, text: fieldData && <object>fieldData[this.listBaseOption.fields.text] as any,
+                item: li, text: fieldData && fieldData[this.listBaseOption.fields.text] as unknown as string,
                 // eslint-disable-next-line
                 data: data as { [key: string]: Object } as any
             };
@@ -1438,7 +1442,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         const eventArgs: object = {};
         merge(eventArgs, selectedItem);
         if (e) {
-            merge(eventArgs, { isInteracted: true, event: e, cancel: false, index: this.curUL && Array.prototype.indexOf.call(this.curUL.children, li) });
+            merge(
+                eventArgs,
+                {
+                    isInteracted: true,
+                    event: e,
+                    cancel: false,
+                    index: this.curUL && Array.prototype.indexOf.call(this.curUL.children, li)
+                }
+            );
         }
         return eventArgs;
     }
@@ -1889,6 +1901,23 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.setSelectLI(this.getLiFromObjOrElement(item));
             }
 
+        }
+    }
+
+    /**
+     * This method allows for deselecting a list item within the ListView. The item to be deselected can be specified by passing the element or field object.
+     *
+     * @param  {Fields | HTMLElement | Element} item - We can pass an element Object or Fields as an Object with ID and Text fields.
+     */
+    
+    public unselectItem(item?: Fields | HTMLElement | Element): void {
+        if (isNullOrUndefined(item)) {
+          this.removeSelect();
+        } else {
+          const li = this.getLiFromObjOrElement(item);
+          if (!isNullOrUndefined(li)) {
+            this.removeSelect(li);
+          }
         }
     }
 
@@ -2410,7 +2439,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
         if (this.enableVirtualization) {
-            modules.push({ args: [this], member: 'virtualization' });
+            modules.push({ args: [this], member: 'virtualization', name: 'Virtualization' });
         }
 
         return modules;

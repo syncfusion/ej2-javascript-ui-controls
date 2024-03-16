@@ -3,8 +3,6 @@
  */
 export * from './address';
 export * from './worker';
-export * from './basic-module';
-export * from './all-module';
 export * from './module';
 export * from './class';
 export * from './class-model';

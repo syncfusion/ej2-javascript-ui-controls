@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { PdfRenderer } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { AccessibilityTags } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, AjaxRequestSuccessEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, cornersPointsBeforeRotation, Point } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export'; import { ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { PdfRenderer } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { AccessibilityTags } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { PageOrganizer } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs,PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs,PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, cornersPointsBeforeRotation, Point } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -15,7 +15,7 @@ export interface ToolbarSettingsModel {
     /**
      * shows only the defined options in the PdfViewer.
      */
-    toolbarItems?: (CustomToolbarItemModel  | ToolbarItem)[];
+    toolbarItems?: (CustomToolbarItemModel | ToolbarItem)[];
 
     /**
      * Provide option to customize the annotation toolbar of the PDF Viewer.
@@ -960,18 +960,18 @@ export interface CircleSettingsModel {
     offset?: IPoint;
 
     /**
-      * Get or set page number of the annotation.
-      */
+     * Get or set page number of the annotation.
+     */
     pageNumber?: number;
 
     /**
-      * specifies the width of the annotation.
-      */
+     * specifies the width of the annotation.
+     */
     width?: number;
 
     /**
-      * specifies the height of the annotation.
-      */
+     * specifies the height of the annotation.
+     */
     height?: number;
 
     /**
@@ -1107,8 +1107,8 @@ export interface PolygonSettingsModel {
     offset?: IPoint;
 
     /**
-      * Get or set page number of the annotation.
-      */
+     * Get or set page number of the annotation.
+     */
     pageNumber?: number;
 
     /**
@@ -1737,8 +1737,8 @@ export interface RadiusSettingsModel {
     width?: number;
 
     /**
-      * specifies the height of the annotation.
-      */
+     * specifies the height of the annotation.
+     */
     height?: number;
 
     /**
@@ -1832,8 +1832,8 @@ export interface VolumeSettingsModel {
     offset?: IPoint;
 
     /**
-     * Get or set page number of the annotation.
-     */
+    * Get or set page number of the annotation.
+    */
     pageNumber?: number;
 
     /**
@@ -1932,8 +1932,8 @@ export interface InkAnnotationSettingsModel {
     width?: number;
 
     /**
-      * specifies the height of the annotation.
-      */
+     * specifies the height of the annotation.
+     */
     height?: number;
 
     /**
@@ -3328,6 +3328,187 @@ export interface ItemModel {
 }
 
 /**
+ * Interface for a class KeyGesture
+ */
+export interface KeyGestureModel {
+
+    /**
+     * Defines a collection of keys commonly used in Pdf-related operations.
+     * * none - no key
+     * * N0 = The 0 key
+     * * N1 = The 1 key
+     * * N2 = The 2 key
+     * * N3 = The 3 key
+     * * N4 = The 4 key
+     * * N5 = The 5 key
+     * * N6 = The 6 key
+     * * N7 = The 7 key
+     * * N8 = The 8 key
+     * * N9 = The 9 key
+     * * Number0 = The 0 in number pad key
+     * * Number1 = The 1 in number pad key
+     * * Number2 = The 2 in number pad key
+     * * Number3 = The 3 in number pad key
+     * * Number4 = The 4 in number pad key
+     * * Number5 = The 5 in number pad key
+     * * Number6 = The 6 in number pad key
+     * * Number7 = The 7 in number pad key
+     * * Number8 = The 8 in number pad key
+     * * Number9 = The 9 in number pad key
+     * * BackSpace = The BackSpace key
+     * * F1 = The f1 key
+     * * F2 = The f2 key
+     * * F3 = The f3 key
+     * * F4 = The f4 key
+     * * F5 = The f5 key
+     * * F6 = The f6 key
+     * * F7 = The f7 key
+     * * F8 = The f8 key
+     * * F9 = The f9 key
+     * * F10 = The f10 key
+     * * F11 = The f11 key
+     * * F12 = The f12 key
+     * * A = The a key
+     * * B = The b key
+     * * C = The c key
+     * * D = The d key
+     * * E = The e key
+     * * F = The f key
+     * * G = The g key
+     * * H = The h key
+     * * I = The i key
+     * * J = The j key
+     * * K = The k key
+     * * L = The l key
+     * * M = The m key
+     * * N = The n key
+     * * O = The o key
+     * * P = The p key
+     * * Q = The q key
+     * * R = The r key
+     * * S = The s key
+     * * T = The t key
+     * * U = The u key
+     * * V = The v key
+     * * W = The w key
+     * * X = The x key
+     * * Y = The y key
+     * * Z = The z key
+     * * Left = The left key
+     * * Right = The right key
+     * * Top = The top key
+     * * Bottom = The bottom key
+     * * Escape = The Escape key
+     * * Tab = The tab key
+     * * Delete = The delete key
+     * * Enter = The enter key
+     * * The Space key
+     * * The page up key
+     * * The page down key
+     * * The end key
+     * * The home key
+     * * The Minus key
+     * * The Plus key
+     * * The Star key
+     *
+     * @aspDefaultValueIgnore
+     * @aspNumberEnum
+     * @default undefined
+     */
+    pdfKeys?: PdfKeys;
+
+    /**
+     * Specifies a combination of key modifiers, on recognition of which the command will be executed.
+     * * None - no modifiers are pressed
+     * * Control - ctrl key
+     * * Meta - meta key im mac
+     * * Alt - alt key
+     * * Shift - shift key
+     *
+     * @aspDefaultValueIgnore
+     * @aspNumberEnum
+     * @default undefined
+     */
+    modifierKeys?: ModifierKeys;
+
+}
+
+/**
+ * Interface for a class KeyboardCommand
+ */
+export interface KeyboardCommandModel {
+
+    /**
+     * Defines the name of the command.
+     *
+     * @default ''
+     */
+    name?: string;
+
+    /**
+     * Defines a combination of keys and key modifiers, on recognition of which the command will be executed.
+     * 
+     * ```html
+     * <div id='pdfViewer'></div>
+     * ```
+     * ```typescript
+     * let pdfViewer: PdfViewer = new PdfViewer({
+     * ...
+     * commandManager:{
+     * commands:[{
+     * name:'customCopy',
+     * gesture:{
+     * key:Keys.G, keyModifiers:KeyModifiers.Shift | KeyModifiers.Alt
+     * }
+     * }]
+     * },
+     * ...
+     * });
+     * pdfViewer.appendTo('#pdfViewer');
+     * ```
+     * 
+     * @default {}
+     */
+    gesture?: KeyGestureModel;
+
+}
+
+/**
+ * Interface for a class CommandManager
+ */
+export interface CommandManagerModel {
+
+    /**
+     * Defines the multiple command names with the corresponding command objects.
+     * @default [] 
+     */
+    keyboardCommand?: KeyboardCommandModel[];
+
+}
+
+/**
+ * Interface for a class PageOrganizerSettings
+ */
+export interface PageOrganizerSettingsModel {
+
+    /**
+     * Specifies whether the pages can be deleted.
+     */
+    canDelete?: boolean;
+
+    /**
+     * Specifies whether the pages can be inserted.
+     */
+    canInsert?: boolean;
+
+    /**
+     * Specifies whether the pages can be rotated.
+     */
+    canRotate?: boolean;
+
+}
+
+/**
  * Interface for a class PdfViewer
  */
 export interface PdfViewerModel extends ComponentModel{
@@ -3602,7 +3783,33 @@ export interface PdfViewerModel extends ComponentModel{
     enableThumbnail?: boolean;
 
     /**
-     * If it set as true, then the thumbnail view show at initial document loading in the PDF viewer
+     * Enable or disable the page organizer in the PDF Viewer.
+     * 
+     * {% codeBlock src='pdfviewer/enablePageOrganizer/index.md' %}{% endcodeBlock %}
+     *
+     * @default true
+     */
+    enablePageOrganizer?: boolean;    
+
+    /**
+    * Specifies whether the page organizer dialog will be displayed upon the initial document loading in the PDF Viewer.
+    * 
+    * {% codeBlock src='pdfviewer/isPageOrganizerOpen/index.md' %}{% endcodeBlock %}
+    *
+    * @default false
+    */
+    isPageOrganizerOpen?: boolean;
+
+    /**
+     * This property allows for control over various page management functionalities within the PDF Viewer. By setting it to `true`, users will be able to delete, insert and rotate pages. Conversely, setting it to `false` will disable these actions.
+     * 
+     * {% codeBlock src='pdfviewer/pageOrganizerSettings/index.md' %}{% endcodeBlock %}
+     *
+     */
+    pageOrganizerSettings?: PageOrganizerSettingsModel;
+
+    /**
+     * If it set as true, then the thumbnail view show at initial document loading in the PDF Viewer
      * 
      * {% codeBlock src='pdfviewer/isThumbnailViewOpen/index.md' %}{% endcodeBlock %}
      *
@@ -4042,6 +4249,16 @@ export interface PdfViewerModel extends ComponentModel{
     enableAccessibilityTags?: boolean;
 
     /**
+     * Specifies whether to display or remove the untrusted HTML values in the PDF Viewer component.
+     * 
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @private
+     * @default true
+     */
+    enableHtmlSanitizer?: boolean;
+
+    /**
      * Customize desired date and time format
      * 
      * {% codeBlock src='pdfviewer/dateTimeFormat/index.md' %}{% endcodeBlock %}
@@ -4424,6 +4641,36 @@ export interface PdfViewerModel extends ComponentModel{
     contextMenuSettings?: ContextMenuSettingsModel;
 
     /**
+     * Defines the custom context menu items.
+     * 
+     * @private
+    */
+    customContextMenuItems?: MenuItemModel[];
+
+    /**
+     * Defines the custom context menu items.
+     * 
+     * @private
+    */
+    disableDefaultContextMenu?: boolean;
+
+    /**
+     * Defines the custom context menu items.
+     * 
+     * @private
+    */
+    showCustomContextMenuBottom?: boolean;
+
+    /**
+     * Defines a set of custom commands and binds them with a set of desired key gestures.
+     * 
+     * {% codeBlock src='pdfviewer/commandManager/index.md' %}{% endcodeBlock %}
+     * 
+     * @default {}
+     */
+    commandManager?: CommandManagerModel;
+
+    /**
      * Defines the collection of selected items, size and position of the selector
      *
      * @default {}
@@ -4476,6 +4723,13 @@ export interface PdfViewerModel extends ComponentModel{
      * @event ajaxRequestSuccess
      */
     ajaxRequestSuccess?: EmitType<AjaxRequestSuccessEventArgs>;
+
+    /**
+     * Triggers upon completion of page rendering.
+     * 
+     * @event pageRenderComplete 
+     */
+    pageRenderComplete?: EmitType<PageRenderCompleteEventArgs>;
 
     /**
      * Triggers when validation is failed.
@@ -4837,6 +5091,13 @@ export interface PdfViewerModel extends ComponentModel{
     ajaxRequestInitiate?: EmitType<AjaxRequestInitiateEventArgs>;
 
     /**
+     * Triggers upon the initiation of page rendering.
+     *
+     * @event pageRenderInitiate 
+     */
+    pageRenderInitiate?: EmitType<PageRenderInitiateEventArgs>;
+
+    /**
      * Triggers when a comment for the annotation is added to the comment panel.
      *
      * @event commentAdd
@@ -4971,6 +5232,34 @@ export interface PdfViewerModel extends ComponentModel{
      * @blazorProperty 'formFieldDoubleClick'
      */
     formFieldDoubleClick?: EmitType<FormFieldDoubleClickArgs>;
+
+    /**
+     * Fires when a custom context menu option is selected.
+     *
+     * @event customContextMenuSelect
+     */
+    customContextMenuSelect?: EmitType<CustomContextMenuSelectEventArgs>
+
+    /**
+     * Fires before the custom context menu option is opened.
+     *
+     * @event customContextMenuBeforeOpen
+     */
+    customContextMenuBeforeOpen?: EmitType<CustomContextMenuBeforeOpenEventArgs>
+
+    /**
+     * Triggers when the customized keyboard command keys are pressed.
+     *
+     * @event keyboardCustomCommands
+     */
+    keyboardCustomCommands?: EmitType<KeyboardCustomCommandsEventArgs>;
+
+    /**
+     * Triggers when the page organizer save as triggered.
+     *
+     * @event pageOrganizerSaveAs
+     */
+    pageOrganizerSaveAs?: EmitType<PageOrganizerSaveAsEventArgs>;
 
     /**
      * PDF document annotation collection.

@@ -96,6 +96,7 @@ export class DatePicker extends Calendar implements IInput {
     protected iconRight: boolean;
     protected isBlur: boolean = false;
     private isKeyAction: boolean = false;
+    protected clearButton: HTMLElement;
     /**
      * Specifies the width of the DatePicker component.
      *
@@ -1296,7 +1297,8 @@ export class DatePicker extends Calendar implements IInput {
         }
         if ((this.getModuleName() === 'datetimepicker')) {
             if (this.checkDateValue(this.globalize.parseDate(this.inputElement.value, dateOptions))) {
-                date = this.globalize.parseDate(this.inputElement.value.toLocaleUpperCase(), dateOptions);
+                const modifiedValue: string = this.inputElement.value.replace(/(am|pm|Am|aM|pM|Pm)/g, (match) => match.toLocaleUpperCase());
+                date = this.globalize.parseDate(modifiedValue, dateOptions);
             } else {
                 if (this.calendarMode === 'Gregorian') {
                     formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd' };
@@ -1568,8 +1570,8 @@ export class DatePicker extends Calendar implements IInput {
 
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
-        if (this) {
-            modules.push({ args: [this], member: 'islamic' });
+        if (this.calendarMode === 'Islamic') {
+            modules.push({ args: [this], member: 'islamic', name: 'Islamic' });
         }
         if (this.enableMask)
         {
@@ -1834,7 +1836,15 @@ export class DatePicker extends Calendar implements IInput {
      */
     public destroy(): void {
         this.unBindEvents();
+        if (this.showClearButton) {
+            this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
+        }
         super.destroy();
+        Input.destroy({
+            element: this.inputElement,
+            floatLabelType: this.floatLabelType,
+            properties: this.properties
+        }, this.clearButton);
         if (!isNullOrUndefined(this.keyboardModules))
         {
             this.keyboardModules.destroy();

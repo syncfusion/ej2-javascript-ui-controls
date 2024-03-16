@@ -11,6 +11,8 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
 import { FieldList } from '../../src/common/actions/field-list';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
+import { ExcelExport } from '../../src/pivotview/actions/excel-export';
+import { PDFExport } from '../../src/pivotview/actions/pdf-export';
 
 describe('Field List rendering on mobile device', () => {
     beforeAll(() => {
@@ -22,6 +24,16 @@ describe('Field List rendering on mobile device', () => {
         }
     });
     describe('Static rendering', () => {
+        let down: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        let up: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
         let originalTimeout: number;
         let fieldListObj: PivotFieldList;
         let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:100%' });
@@ -198,7 +210,8 @@ describe('Field List rendering on mobile device', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
-            util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+            closest(checkEle[0], 'li').dispatchEvent(down);
+            closest(checkEle[0], 'li').dispatchEvent(up);
             setTimeout(() => {
                 expect(checkEle[0].querySelector('.e-check')).toBeTruthy;
                 done();
@@ -209,7 +222,8 @@ describe('Field List rendering on mobile device', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
-            util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+            closest(checkEle[0], 'li').dispatchEvent(down);
+            closest(checkEle[0], 'li').dispatchEvent(up);
             setTimeout(() => {
                 expect(checkEle[0].querySelector('.e-check')).toBeUndefined;
                 done();
@@ -220,7 +234,8 @@ describe('Field List rendering on mobile device', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
-            util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+            closest(checkEle[0], 'li').dispatchEvent(down);
+            closest(checkEle[0], 'li').dispatchEvent(up);
             expect(checkEle[0].querySelector('.e-check')).toBeTruthy;
             (element.parentElement
                 .querySelector('.e-adaptive-field-list-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
@@ -482,6 +497,16 @@ describe('Field List rendering on mobile device', () => {
     describe('Dynamic rendering', () => {
         let fieldListObj: PivotFieldList;
         let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:100%' });
+        let down: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        let up: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
         afterAll(() => {
             if (fieldListObj) {
                 fieldListObj.destroy();
@@ -651,7 +676,8 @@ describe('Field List rendering on mobile device', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
-            util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+            closest(checkEle[0], 'li').dispatchEvent(down);
+            closest(checkEle[0], 'li').dispatchEvent(up);
             expect(checkEle[0].querySelector('.e-check')).toBeTruthy;
         });
         it('un-check on field node', () => {
@@ -660,7 +686,8 @@ describe('Field List rendering on mobile device', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
-            util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+            closest(checkEle[0], 'li').dispatchEvent(down);
+            closest(checkEle[0], 'li').dispatchEvent(up);
             expect(checkEle[0].querySelector('.e-check')).toBeUndefined;
         });
         it('check add fields to current axis', (done: Function) => {
@@ -670,7 +697,8 @@ describe('Field List rendering on mobile device', () => {
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
             expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-            util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+            closest(checkEle[0], 'li').dispatchEvent(down);
+            closest(checkEle[0], 'li').dispatchEvent(up);
             expect(checkEle[0].querySelector('.e-check')).toBeTruthy;
             (dialogElement.querySelector('.e-adaptive-field-list-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -717,7 +745,7 @@ describe('Field List rendering on mobile device', () => {
                 document.body.appendChild(elem);
             }
             let dataBound: EmitType<Object> = () => { done(); };
-            PivotView.Inject(FieldList, CalculatedField, GroupingBar);
+            PivotView.Inject(FieldList, CalculatedField, GroupingBar, ExcelExport, PDFExport);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
                     dataSource: pivot_dataset as IDataSet[],

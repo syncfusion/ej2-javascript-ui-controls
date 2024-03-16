@@ -308,6 +308,25 @@
       }
     }
 
+    .e-grid {
+      .e-pivot-content-loader {
+        position: absolute;
+        z-index: 10;
+        color: $pivotgrid-primary-color;
+        font-size: 20px;
+        text-align: center;
+        padding: 10%;
+        pointer-events: none;
+        
+        &.e-hide-loader {
+          display: none;
+        }
+      }
+      .e-virtual-pivot-content {
+        visibility: hidden;
+      }
+    }
+
     &.sf-pivotview {
       .e-spinner-pane.e-pivot-outer-spinner {
         z-index: 1 !important;
@@ -316,25 +335,6 @@
       .e-spinner-pane.e-pivot-outer-spinner .e-spinner-inner {
         visibility: hidden !important;
         /* stylelint-enable */
-      }
-  
-      .e-grid {
-        .e-pivot-content-loader {
-          position: absolute;
-          z-index: 10;
-          color: $pivotgrid-primary-color;
-          font-size: 20px;
-          text-align: center;
-          padding: 10%;
-          pointer-events: none;
-          
-          &.e-hide-loader {
-            display: none;
-          }
-        }
-        .e-virtual-pivot-content {
-          visibility: hidden;
-        }
       }
 
       &.e-device .e-pivotcell-container .e-stackedheadertext.e-cellvalue {
@@ -776,7 +776,7 @@
 
     th.e-group-row .e-axis-row {
       display: inline-block;
-      height: 100%;
+      height: auto;
       vertical-align: top;
       width: 100%;
     }
@@ -1590,7 +1590,7 @@
 
     .e-component-disable {
       display: none !important;
-    }
+    }   
 
     .e-pivotchart.e-chart {
       overflow: visible !important;

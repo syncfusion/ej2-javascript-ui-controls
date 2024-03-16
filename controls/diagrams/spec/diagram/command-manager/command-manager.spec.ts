@@ -7,7 +7,7 @@ import { Path} from '../../../src/diagram/objects/node';
 import { HtmlModel, NodeModel } from '../../../src/diagram/objects/node-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
-import { KeyModifiers, Keys } from '../../../src/diagram/enum/enum';
+import { DiagramTools, KeyModifiers, Keys } from '../../../src/diagram/enum/enum';
 import { CommandManager } from '../../../src/diagram/diagram/keyboard-commands';
 import { CommandManagerModel, CommandModel } from '../../../src/diagram/diagram/keyboard-commands-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
@@ -76,8 +76,8 @@ describe('Diagram Control', () => {
 
                             //Defines that the clone command has to be executed on the recognition of Shift+C key press.
                             gesture: {
-                                key: Keys.C,
-                                keyModifiers: KeyModifiers.Shift
+                                key: Keys.Z,
+                                keyModifiers: KeyModifiers.Control
                             }
                         },
                         {
@@ -93,8 +93,14 @@ describe('Diagram Control', () => {
                             name: 'undo',
                             gesture: {
                                 key: Keys.G,
-                                keyModifiers: KeyModifiers.Alt
-                            }
+                                keyModifiers: KeyModifiers.Control
+                            },
+                            canExecute: function () {
+                                return true;
+                            },
+                            execute: function () {
+                                diagram.undo();
+                            },
                         }
 
                     ]
@@ -114,7 +120,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
             expect(diagram.selectedItems.nodes.length > 0).toBe(true);
-            mouseEvents.keyDownEvent(diagramCanvas, 'C', false, true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Z', true, false);
             expect(diagram.nodes.length === 3 && diagram.nodes[2].offsetX === 110 &&
                 diagram.nodes[2].offsetY === 110 && diagram.nodes[0].offsetX === 100).toBe(true);
 
@@ -145,7 +151,7 @@ describe('Diagram Control', () => {
         });
         it('Checking commands - undo', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.keyDownEvent(diagramCanvas, 'G', false, false, true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'G', true, false, false);
             expect(diagram.nodes.length === 4).toBe(true);
             done();
         });
@@ -236,7 +242,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.keyDownEvent(diagramCanvas, 'A', true);
             mouseEvents.keyDownEvent(diagramCanvas, 'Delete');
-            mouseEvents.keyDownEvent(diagramCanvas, 'G', false, false, true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'G', true, false, false);
             mouseEvents.keyDownEvent(diagramCanvas, 'A', true);
             mouseEvents.keyDownEvent(diagramCanvas, 'C', true);
             mouseEvents.keyDownEvent(diagramCanvas, 'V', true);
@@ -543,17 +549,17 @@ describe('Check the bringToFront and sendToBack functionality', () => {
         done();
     });
     it('Checking the after calling the bringToFront function', (done: Function) => {
-        expect((diagram.activeLayer as any).zIndexTable[0]).toBe('node2');
-        expect((diagram.activeLayer as any).zIndexTable[1]).toBe('connector1');
-        expect((diagram.activeLayer as any).zIndexTable[2]).toBe('connector2');
-        expect((diagram.activeLayer as any).zIndexTable[3]).toBe('node1');
-        diagram.select([diagram.nodes[2]]);
+        expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node2');
+        expect((diagram.activeLayer as any).zIndexTable[2]).toBe('connector1');
+        expect((diagram.activeLayer as any).zIndexTable[3]).toBe('connector2');
+        expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node1');
+        diagram.select([diagram.nodes[1]]);
         diagram.sendToBack();
         done();
     });
     it('Checking the after calling the sendToBack function', (done: Function) => {
-        expect((diagram.activeLayer as any).zIndexTable[0]).toBe('node1');
-        expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node2');
+        expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node1');
+        expect((diagram.activeLayer as any).zIndexTable[-1]).toBe('node2');
         expect((diagram.activeLayer as any).zIndexTable[2]).toBe('connector1');
         expect((diagram.activeLayer as any).zIndexTable[3]).toBe('connector2');
         done();
@@ -649,21 +655,21 @@ describe('Check the bringToFront and sendToBack functionality in native node ren
         done();
     });
     it('Checking the after calling the bringToFront function in native node', (done: Function) => {
-        expect((diagram.activeLayer as any).zIndexTable[0]).toBe('node2');
-        expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node3');
-        expect((diagram.activeLayer as any).zIndexTable[2]).toBe('connector1');
-        expect((diagram.activeLayer as any).zIndexTable[3]).toBe('node4');
-        expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node1');
+        expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node2');
+        expect((diagram.activeLayer as any).zIndexTable[2]).toBe('node3');
+        expect((diagram.activeLayer as any).zIndexTable[3]).toBe('connector1');
+        expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node4');
+        expect((diagram.activeLayer as any).zIndexTable[5]).toBe('node1');
         diagram.select([diagram.nodes[2]]);
         diagram.sendToBack();
         done();
     });
     it('Checking the after calling the sendToBack function in native node', (done: Function) => {
-        expect((diagram.activeLayer as any).zIndexTable[0]).toBe('node3');
+        expect((diagram.activeLayer as any).zIndexTable[-1]).toBe('node3');
         expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node2');
-        expect((diagram.activeLayer as any).zIndexTable[2]).toBe('connector1');
-        expect((diagram.activeLayer as any).zIndexTable[3]).toBe('node4');
-        expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node1');
+        expect((diagram.activeLayer as any).zIndexTable[3]).toBe('connector1');
+        expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node4');
+        expect((diagram.activeLayer as any).zIndexTable[5]).toBe('node1');
         done();
     });
 });
@@ -753,21 +759,372 @@ describe('Check the bringToFront and sendToBack functionality in HTML node rende
         done();
     });
     it('Checking the after calling the bringToFront function in HTML Node', (done: Function) => {
-        expect((diagram.activeLayer as any).zIndexTable[0]).toBe('node2');
-        expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node3');
-        expect((diagram.activeLayer as any).zIndexTable[2]).toBe('connector1');
-        expect((diagram.activeLayer as any).zIndexTable[3]).toBe('node4');
-        expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node1');
+        expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node2');
+        expect((diagram.activeLayer as any).zIndexTable[2]).toBe('node3');
+        expect((diagram.activeLayer as any).zIndexTable[3]).toBe('connector1');
+        expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node4');
+        expect((diagram.activeLayer as any).zIndexTable[5]).toBe('node1');
         diagram.select([diagram.nodes[2]]);
         diagram.sendToBack();
         done();
     });
     it('Checking the after calling the sendToBack function in HTML Node', (done: Function) => {
-        expect((diagram.activeLayer as any).zIndexTable[0]).toBe('node3');
+        expect((diagram.activeLayer as any).zIndexTable[-1]).toBe('node3');
         expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node2');
-        expect((diagram.activeLayer as any).zIndexTable[2]).toBe('connector1');
-        expect((diagram.activeLayer as any).zIndexTable[3]).toBe('node4');
-        expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node1');
+        expect((diagram.activeLayer as any).zIndexTable[3]).toBe('connector1');
+        expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node4');
+        expect((diagram.activeLayer as any).zIndexTable[5]).toBe('node1');
         done();
+    });
+});
+describe('Diagram keyboard commands', () => {
+    describe('Testing the Commands', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_command2' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100,
+                offsetY: 100,annotations:[{content:"node1"}]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 250,
+                offsetY: 100,annotations:[{content:"node2"}]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 100, height: 100, offsetX: 700,
+                offsetY: 400, annotations: [{content:"node3"}]
+            };
+            let node4: NodeModel = {
+                    id: 'node4', width: 100, height: 100, offsetX:850,
+                    offsetY: 400, annotations: [{content:"node4"}]
+            };
+            let group: NodeModel = 
+                { id: 'group1', children: ['node3', 'node4'], annotations: [{content:"group1"}] };
+            let connector1: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 760, y: 100 }, targetPoint: { x: 850, y: 200 },annotations:[{content:"connector1"}]
+            };
+            let connector2: ConnectorModel = {
+                id: 'connector2', sourcePoint: { x: 300, y: 300 }, targetPoint: { x: 400, y: 400 },type:"Orthogonal",annotations:[{content:"connector2"}]
+            };
+            diagram = new Diagram({
+                width: '900px', height: '700px', nodes: [node, node2, node3, node4, group], connectors: [connector1, connector2],
+            });
+            diagram.appendTo('#diagram_command2');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking duplicate commands - clone', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'D', true);
+            expect(diagram.nodes.length === 6 && diagram.nodes[5].offsetX === 110 &&
+                diagram.nodes[5].offsetY === 110 && diagram.nodes[0].offsetX === 100).toBe(true);
+
+            done();
+        });
+        it('Checking zoomIn commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.keyDownEvent(diagramCanvas, 'Plus', true);
+            expect(diagram.scrollSettings.currentZoom>1).toBe(true);
+            done();
+        });
+        it('Checking zoomOut commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.keyDownEvent(diagramCanvas, 'Minus', true);
+            expect(diagram.scrollSettings.currentZoom== 1).toBe(true);
+            done();
+        });
+        it('Checking rotate clockwise commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'R', true);
+            expect(diagram.selectedItems.nodes[0].rotateAngle==90).toBe(true);
+            done();
+        });
+        it('Checking rotate anti-clockwise commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'L', true);
+            expect(diagram.selectedItems.nodes[0].rotateAngle==0).toBe(true);
+            done();
+        });
+        it('Checking flip horizontal commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'H', true);
+            expect(diagram.selectedItems.nodes[0].flip=="Horizontal").toBe(true);
+            done();
+        });
+        it('Checking flip vertical commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'J', true);
+            expect(diagram.selectedItems.nodes[0].flip=="Vertical").toBe(true);
+            done();
+        });
+        it('Checking group commands', (done: Function) => {
+            diagram.remove();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0] , diagram.nodes[1]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'G', true);
+            expect(diagram.selectedItems.nodes[0].children.length > 0).toBe(true);
+            done();
+        });
+        it('Checking ungroup commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'U', true, true);
+            diagram.select([diagram.nodes[0] , diagram.nodes[1]]);
+            expect(diagram.selectedItems.nodes[0].children == undefined).toBe(true);
+            done();
+        });
+        it('Checking move to next elements on tab commands', function (done) {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Tab');
+            expect(diagram.selectedItems.nodes[0].zIndex==1).toBe(true);
+            done();
+        });
+        it('Checking move to previous element commands', function (done) {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Tab',false,true);
+            expect(diagram.selectedItems.nodes[0].zIndex==0).toBe(true);
+            done();
+        });
+        it('Checking tab commands-connectors', function (done) {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.connectors[0]]);
+            expect(diagram.selectedItems.connectors.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Tab');
+            expect(diagram.selectedItems.connectors[0].zIndex == 6).toBe(true);
+            done();
+        });
+        it('Checking shift + tab commands-connectors', function (done) {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            expect(diagram.selectedItems.connectors.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Tab', false, true);
+            expect(diagram.selectedItems.connectors[0].zIndex == 5).toBe(true);
+            done();
+        });
+        it('Checking text tool', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.clearSelection();
+            mouseEvents.keyDownEvent(diagramCanvas, '2', true );
+            mouseEvents.mouseMoveEvent(diagramCanvas, 400, 400);
+            expect( diagramCanvas.style.cursor =="crosshair").toBe(true);
+            done();
+        });
+        it('Checking Connector tool', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.clearSelection();
+            mouseEvents.keyDownEvent(diagramCanvas, '3', true );
+            mouseEvents.mouseMoveEvent(diagramCanvas, 400, 400);
+            expect( diagramCanvas.style.cursor =="crosshair").toBe(true);
+            done();
+        });
+        it('Checking freeform tool', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.clearSelection();
+            mouseEvents.keyDownEvent(diagramCanvas, '5', true );
+            mouseEvents.mouseMoveEvent(diagramCanvas, 400, 400);
+            expect( diagramCanvas.style.cursor =="crosshair").toBe(true);
+            done();
+        });
+        it('Checking polyline tool', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.clearSelection();
+            mouseEvents.keyDownEvent(diagramCanvas, '6', true );
+            mouseEvents.mouseMoveEvent(diagramCanvas, 400, 400);
+            expect( diagramCanvas.style.cursor =="crosshair").toBe(true);
+            done();
+        });
+        it('Checking commands - move elements 5 pixel commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.clearSelection();
+            diagram.select([diagram.nodes[0]])
+            expect(diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Up',false, true);
+            expect(diagram.selectedItems.nodes[0].offsetY == 95).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Down',false, true);
+            expect(diagram.selectedItems.nodes[0].offsetY == 100).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Left',false, true);
+            expect(diagram.selectedItems.nodes[0].offsetX == 95).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'Right',false, true);
+            expect(diagram.selectedItems.nodes[0].offsetX == 100).toBe(true);
+            done();
+        });
+        it('Checking bold commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'B', true);
+            expect(diagram.selectedItems.nodes[0].annotations[0].style.bold==true).toBe(true);
+            done();
+        });
+        it('Checking italic commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'I', true);
+            expect(diagram.selectedItems.nodes[0].annotations[0].style.italic==true).toBe(true);
+            done();
+        });
+        it('Checking underline commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'U', true);
+            expect(diagram.selectedItems.nodes[0].annotations[0].style.textDecoration=="Underline").toBe(true);
+            done();
+        });
+        it('Checking text align left', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'L', true, true);
+            expect(diagram.selectedItems.nodes[0].annotations[0].horizontalAlignment=="Right").toBe(true);
+            done();
+        });
+        it('Checking text align center', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'C', true, true);
+            expect(diagram.selectedItems.nodes[0].annotations[0].horizontalAlignment=="Center").toBe(true);
+            done();
+        });
+        it('Checking text align right', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'R', true, true);
+            expect(diagram.selectedItems.nodes[0].annotations[0].horizontalAlignment=="Left").toBe(true);
+            done();
+        });
+        it('Checking text align top', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'E', true, true);
+            expect(diagram.selectedItems.nodes[0].annotations[0].verticalAlignment=="Top").toBe(true);
+            done();
+        });
+        it('Checking text align vertical center', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'M', true, true);
+            expect(diagram.selectedItems.nodes[0].annotations[0].verticalAlignment=="Center").toBe(true);
+            done();
+        });
+        it('Checking text align bottom', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[0]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'V', true, true);
+            expect(diagram.selectedItems.nodes[0].annotations[0].verticalAlignment=="Bottom").toBe(true);
+            done();
+        });
+    });
+});
+describe(' keyboard commands', () => {
+    describe('Testing the order Commands', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let zIndexBeforeCall: number;
+        let zIndexAfterCall : number;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_command2' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 266,
+                offsetY: 141,annotations:[{content:"node1"}]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 240,
+                offsetY: 113,annotations:[{content:"node2"}]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 100, height: 100, offsetX: 202,
+                offsetY: 81, annotations: [{content:"node3"}]
+            };
+            diagram = new Diagram({
+                width: '900px', height: '700px', nodes: [node, node2, node3],
+            });
+            diagram.appendTo('#diagram_command2');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking sendbackward commands', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 266, 141);
+            zIndexBeforeCall = diagram.nodes[0].zIndex;
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'BracketLeft', true);
+            zIndexAfterCall = diagram.nodes[1].zIndex;
+            expect(zIndexBeforeCall === 0 && zIndexAfterCall === -1).toBe(true);
+            done();
+        });
+        it('Checking send to back', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.nodes[2]]);
+            zIndexBeforeCall = diagram.nodes[1].zIndex;
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'B', true, true);
+            zIndexAfterCall = diagram.nodes[2].zIndex;
+            expect(zIndexBeforeCall === -1 && zIndexAfterCall === -2).toBe(true);
+            done();
+        });
+        it('Checking bring forward', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            zIndexBeforeCall = diagram.nodes[1].zIndex;
+            diagram.select([diagram.nodes[2]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'BracketRight', true);
+            zIndexAfterCall = diagram.nodes[2].zIndex;
+            expect(zIndexBeforeCall !== zIndexAfterCall).toBe(true);
+            done();
+        });
+        it('Checking bring to front', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.clearSelection();
+            zIndexBeforeCall = diagram.nodes[0].zIndex;
+            diagram.select([diagram.nodes[1]]);
+            expect(diagram.selectedItems.nodes.length > 0).toBe(true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'F', true, true);
+            zIndexAfterCall = diagram.nodes[1].zIndex;
+            expect(zIndexBeforeCall ===1  && zIndexAfterCall===2).toBe(true);
+            done();
+        });
     });
 });

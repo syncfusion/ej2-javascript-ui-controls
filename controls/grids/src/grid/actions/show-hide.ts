@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { iterateArrayOrObject, isGroupAdaptive, isActionPrevent, addRemoveEventListener } from '../base/util';
 import * as events from '../base/constant';
@@ -177,6 +177,15 @@ export class ShowHide {
             }
             if ( isGroupAdaptive(this.parent)) {
                 this.parent.contentModule.emptyVcRows(); }
+            const addedRow: HTMLElement = this.parent.element.querySelector('.e-addedrow');
+            if (this.parent.editSettings.showAddNewRow && addedRow) {
+                remove(addedRow);
+                if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
+                    this.parent.isAddNewRow = true;
+                }
+                this.parent.addNewRowFocus = true;
+                this.parent.isEdit = false;
+            }
             if (this.parent.allowSelection && this.parent.getSelectedRecords().length &&
                 !this.parent.selectionSettings.persistSelection) {
                 this.parent.clearSelection();
@@ -198,6 +207,14 @@ export class ShowHide {
                 columns: changedStateColumns
             };
             this.parent.trigger(events.actionComplete, params);
+            const startAdd: boolean = !this.parent.element.querySelector('.e-addedrow');
+            if (this.parent.editSettings.showAddNewRow && startAdd) {
+                this.parent.isEdit = false;
+                this.parent.addRecord();
+                if (!(this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
+                    this.parent.notify(events.showAddNewRowFocus, {});
+                }
+            }
             if (this.parent.columnQueryMode !== 'All') {
                 this.parent.refresh();
             }

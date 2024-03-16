@@ -1,0 +1,27 @@
+/*! AppBar component bds theme definitions and variables */
+
+$appbar-bg-color-primary: $primary !default;
+$appbar-color-primary: $primary-text-color !default;
+$appbar-border-color-primary: $primary !default;
+$appbar-font-size: $text-sm !default;
+$appbar-bigger-font-size: $text-base !default;
+$appbar-border: $appbar-border-color-alt1 !default;
+
+/* stylelint-disable */
+.e-appbar {
+  &.e-light {
+    border-bottom: 1px solid $appbar-border !important;
+  }
+  &.e-horizontal-bottom {
+    border-top: 1px solid $appbar-border !important;
+  }
+}
+
+.e-bigger .e-appbar,
+.e-appbar.e-bigger {
+  padding: 16px !important;
+  height: 72px !important;
+  &.e-prominent {
+    height: 132px;
+  }
+}

@@ -15,11 +15,14 @@ import { select } from '@syncfusion/ej2-base';
 
 TreeGrid.Inject(InfiniteScroll, Edit, Toolbar, Filter, Sort);
 
-let virtualData: Object[] = [];
+const virtualData: Object[] = [];
+/**
+ *
+ */
 function dataSource(): void {
     let parent: number = -1;
-    let parentId: number = null;
-    let names: string[] = ['VINET', 'TOMSP', 'HANAR', 'VICTE', 'SUPRD', 'HANAR', 'CHOPS', 'RICSU', 'WELLI', 'HILAA', 'ERNSH', 'CENTC',
+    const parentId: number = null;
+    const names: string[] = ['VINET', 'TOMSP', 'HANAR', 'VICTE', 'SUPRD', 'HANAR', 'CHOPS', 'RICSU', 'WELLI', 'HILAA', 'ERNSH', 'CENTC',
         'OTTIK', 'QUEDE', 'RATTC', 'ERNSH', 'FOLKO', 'BLONP', 'WARTH', 'FRANK', 'GROSR', 'WHITC', 'WARTH', 'SPLIR', 'RATTC', 'QUICK', 'VINET',
         'MAGAA', 'TORTU', 'MORGK', 'BERGS', 'LEHMS', 'BERGS', 'ROMEY', 'ROMEY', 'LILAS', 'LEHMS', 'QUICK', 'QUICK', 'RICAR', 'REGGC', 'BSBEV',
         'COMMI', 'QUEDE', 'TRADH', 'TORTU', 'RATTC', 'VINET', 'LILAS', 'BLONP', 'HUNGO', 'RICAR', 'MAGAA', 'WANDK', 'SUPRD', 'GODOS', 'TORTU',
@@ -31,8 +34,8 @@ function dataSource(): void {
             parent = i;
         }
         if (i % 5 !== 0) {
-            let crew: string = 'Crew';
-            let num: number = isNaN((virtualData.length % parent) - 1) ?  0 : (virtualData.length % parent) - 1;
+            const crew: string = 'Crew';
+            const num: number = isNaN((virtualData.length % parent) - 1) ?  0 : (virtualData.length % parent) - 1;
             virtualData[num][crew].push({
                 'TaskID': i + 1,
                 'FIELD1': names[Math.floor(Math.random() * names.length)],
@@ -63,20 +66,24 @@ function dataSource(): void {
 
 dataSource();
 
+/**
+ * @param keyCode
+ * @param target
+ */
 function getKeyUpObj(keyCode: string | number, target: Element): any {
-    let preventDefault = () => { };
+    const preventDefault = () => { };
     return { target: target, keyCode: keyCode };
 }
 
-let filterColumn: Function = (gridObj: Grid, colName: string, value: string, keyCode?: number) => {
-    let filterElement: any = gridObj.element.querySelector('[id=\'' + colName + '_filterBarcell\']');
+const filterColumn: Function = (gridObj: Grid, colName: string, value: string, keyCode?: number) => {
+    const filterElement: any = gridObj.element.querySelector('[id=\'' + colName + '_filterBarcell\']');
     filterElement.value = value;
     filterElement.focus();
     (gridObj.filterModule as any).keyUpHandler(getKeyUpObj(keyCode ? keyCode : 13, filterElement));
 };
 
-let checkFilterObj: Function = (obj: any, field?: string,
-                                operator?: string, value?: string, predicate?: string, matchCase?: boolean): boolean => {
+const checkFilterObj: Function = (obj: any, field?: string,
+                                  operator?: string, value?: string, predicate?: string, matchCase?: boolean): boolean => {
     let isEqual: boolean = true;
     if (field) {
         isEqual = isEqual && obj.field === field;
@@ -98,10 +105,6 @@ describe('TreeGrid Infinite Scroll', () => {
     describe('Rendering and basic actions', () => {
         let treegrid: TreeGrid;
         let actionComplete: (e?: any) => void;
-        let rows: Element[];
-        let expanded: () => void;
-        let collapsed: () => void;
-        let rowSelected: () => void;
         beforeAll((done: Function) => {
             treegrid = createGrid(
                 {
@@ -139,12 +142,12 @@ describe('TreeGrid Infinite Scroll', () => {
             expect(Object.keys((treegrid.grid.infiniteScrollModule as any).infiniteCurrentViewData).length).toBe(treegrid.grid.infiniteScrollSettings.initialBlocks);
         });
         it('collapse test', () => {
-            let rows: Element[] = treegrid.grid.getRows();
+            const rows: Element[] = treegrid.grid.getRows();
             (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
             expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
         });
         it('expand test', () => {
-            let rows: Element[] = treegrid.grid.getRows();
+            const rows: Element[] = treegrid.grid.getRows();
             (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
             expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
         });
@@ -190,10 +193,6 @@ describe('TreeGrid Infinite Scroll', () => {
         let treegrid: TreeGrid;
         let actionComplete: (e?: any) => void;
         let actionBegin: (e?: any) => void;
-        let rows: Element[];
-        let expanded: () => void;
-        let collapsed: () => void;
-        let rowSelected: () => void;
         beforeAll((done: Function) => {
             treegrid = createGrid(
                 {
@@ -271,11 +270,6 @@ describe('TreeGrid Infinite Scroll', () => {
     describe('Delete Row', () => {
         let treegrid: TreeGrid;
         let actionComplete: (e?: any) => void;
-        let actionBegin: (e?: any) => void;
-        let rows: Element[];
-        let expanded: () => void;
-        let collapsed: () => void;
-        let rowSelected: () => void;
         beforeAll((done: Function) => {
             treegrid = createGrid(
                 {
@@ -335,11 +329,6 @@ describe('TreeGrid Infinite Scroll', () => {
     describe('Add Row using addRecord method', () => {
         let treegrid: TreeGrid;
         let actionComplete: (e?: any) => void;
-        let actionBegin: (e?: any) => void;
-        let rows: Element[];
-        let expanded: () => void;
-        let collapsed: () => void;
-        let rowSelected: () => void;
         beforeAll((done: Function) => {
             treegrid = createGrid(
                 {
@@ -372,9 +361,9 @@ describe('TreeGrid Infinite Scroll', () => {
             actionComplete = (args?: any): void => {
                 expect(treegrid.grid.dataSource[4].level).toBe(2);
                 done();
-            }
+            };
             treegrid.actionComplete = actionComplete;
-            treegrid.addRecord({TaskID:Math.random(),FIELD1: 'test'}, 3, 'Child');
+            treegrid.addRecord({TaskID: Math.random(), FIELD1: 'test'}, 3, 'Child');
         });
         afterAll(() => {
             treegrid['infiniteScrollModule']['destroy']();
@@ -426,7 +415,6 @@ describe('TreeGrid Infinite Scroll', () => {
 
     describe('EJ2-56410 - Infiniscrolling does not work properly when all records are collapsed', () => {
         let treegrid: TreeGrid;
-        let actionComplete: (e?: any) => void;
         beforeAll((done: Function) => {
             treegrid = createGrid(
                 {
@@ -480,7 +468,7 @@ describe('TreeGrid Infinite Scroll', () => {
                         { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
                         { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
                         { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
-                       ]
+                    ]
                 },
                 done
             );

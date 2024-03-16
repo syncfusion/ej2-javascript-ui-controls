@@ -1,4 +1,4 @@
-import { Browser, extend, getComponent, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, extend, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ActivePoint, Dimension, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { CurrentObject, Direction, FlipEventArgs, ImageEditor, PanEventArgs, Point, ResizeEventArgs } from '../index';
 import { ImageDimension, RotateEventArgs, SelectionPoint, StrokeSettings, ZoomEventArgs } from '../index';
@@ -215,16 +215,9 @@ export class Transform {
     private rotateImage(degree: number): void {
         const parent: ImageEditor = this.parent;
         const transitionArgs: RotateEventArgs = {cancel: false, previousDegree: parent.transform.degree,
-            currentDegree: Math.abs(parent.transform.degree + degree) === 360 ? 0 : parent.transform.degree + degree };
-        if (!this.isPreventSelect && isBlazor() && parent.events && parent.events.rotating.hasDelegate === true) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent.dotNetRef.invokeMethodAsync('RotateEventAsync', 'OnRotate', transitionArgs, null) as any).then((args: RotateEventArgs) => {
-                this.rotateEvent(args, degree);
-            });
-        } else {
-            if (!this.isPreventSelect) {parent.trigger('rotating', transitionArgs); }
-            this.rotateEvent(transitionArgs, degree);
-        }
+        currentDegree: Math.abs(parent.transform.degree + degree) === 360 ? 0 : parent.transform.degree + degree };
+        if (!this.isPreventSelect) {parent.trigger('rotating', transitionArgs); }
+        this.rotateEvent(transitionArgs, degree);
     }
 
     private rotateEvent(transitionArgs: RotateEventArgs, degree: number): void {
@@ -282,15 +275,6 @@ export class Transform {
                 this.isPreventSelect = false;
                 parent.setProperties({zoomSettings: { zoomFactor: 1 }}, true);
                 this.prevZoomValue = parent.zoomSettings.zoomFactor;
-            }
-            transitionArgs = { previousDegree: transitionArgs.previousDegree, currentDegree: transitionArgs.currentDegree };
-            if (!this.isPreventSelect && isBlazor() && parent.events && parent.events.rotated.hasDelegate === true) {
-                const rotatedArgs: object = { degree: transitionArgs.currentDegree };
-                parent.dotNetRef.invokeMethodAsync('RotateEventAsync', 'Rotated', null, rotatedArgs);
-            } else if (!this.isPreventSelect) {}
-            if (isBlazor() && parent.events && parent.events.rotating.hasDelegate === true) {
-                parent.notify('draw', { prop: 'resetStraightenDestPoints' });
-                parent.notify('draw', { prop: 'setDestForStraighten' });
             }
         } else {
             parent.notify('draw', { prop: 'setCurrentObj', onPropertyChange: false, value: {obj: parent.prevEventObjPoint}});
@@ -392,15 +376,8 @@ export class Transform {
         const parent: ImageEditor = this.parent;
         const transitionArgs: FlipEventArgs = {direction: direction, cancel: false,
             previousDirection: parent.toPascalCase(parent.transform.currFlipState || direction )};
-        if (!this.isPreventSelect && isBlazor() && parent.events && parent.events.flipping.hasDelegate === true) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent.dotNetRef.invokeMethodAsync('FlipEventAsync', 'OnFlip', transitionArgs, null) as any).then((args: FlipEventArgs) => {
-                this.flipEvent(args, direction);
-            });
-        } else {
-            if (!this.isPreventSelect) {parent.trigger('flipping', transitionArgs); }
-            this.flipEvent(transitionArgs, direction);
-        }
+        if (!this.isPreventSelect) {parent.trigger('flipping', transitionArgs); }
+        this.flipEvent(transitionArgs, direction);
     }
 
     private flipEvent(transitionArgs: FlipEventArgs, direction: Direction): void {
@@ -539,11 +516,6 @@ export class Transform {
             parent.setProperties({zoomSettings: { zoomFactor: 1 }}, true);
             this.prevZoomValue = parent.zoomSettings.zoomFactor;
         }
-        transitionArgs = { previousDirection: transitionArgs.previousDirection, direction: transitionArgs.direction };
-        if (!this.isPreventSelect && isBlazor() && parent.events && parent.events.flipped.hasDelegate === true) {
-            const flipped: object = { direction: transitionArgs.direction };
-            parent.dotNetRef.invokeMethodAsync('FlipEventAsync', 'Flipped', null, flipped);
-        } else {}
     }
 
     private updateFlipState(direction: string): void {
@@ -623,9 +595,7 @@ export class Transform {
             if (isNullOrUndefined(isResize) && (parent.zoomSettings.zoomFactor >= parent.zoomSettings.maxZoomFactor && zoomFactor > 0 ||
                 (parent.zoomSettings.zoomFactor > parent.zoomSettings.minZoomFactor && zoomFactor < 0 && this.disableZoomOutBtn(true)) ||
                 (parent.zoomSettings.zoomFactor <= parent.zoomSettings.minZoomFactor && zoomFactor < 0))) {
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'zoom-up-handler', onPropertyChange: false});
-                }
+                parent.notify('toolbar', { prop: 'zoom-up-handler', onPropertyChange: false});
                 return;
             }
             parent.notify('draw', { prop: 'setImageEdited', onPropertyChange: false });
@@ -673,29 +643,8 @@ export class Transform {
             const previousZoomFactor: number = parent.zoomSettings.zoomFactor - (zoomFactor * 10);
             const zoomEventArgs: ZoomEventArgs = {zoomPoint: zoomPoint, cancel: false, previousZoomFactor: previousZoomFactor,
                 currentZoomFactor: parent.zoomSettings.zoomFactor, zoomTrigger: obj['zoomType']};
-            if (!parent.isCropToolbar && isBlazor() && parent.isZoomBtnClick && parent.events && parent.events.zooming.hasDelegate === true) {
-                (zoomEventArgs as any).zoomTrigger = parseInt(this.getZoomTriggerType(zoomEventArgs.zoomTrigger));
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (parent.dotNetRef.invokeMethodAsync('ZoomEventAsync', 'OnZoom', zoomEventArgs, null) as any).then((args: ZoomEventArgs) => {
-                    this.zoomEvent(args, zoomFactor, isPreventApply);
-                });
-            } else {
-                if (!parent.isCropToolbar && parent.isZoomBtnClick) {parent.trigger('zooming', zoomEventArgs); }
-                this.zoomEvent(zoomEventArgs, zoomFactor, isPreventApply);
-            }
-        }
-    }
-
-    private getZoomTriggerType(type: string): string {
-        switch(type) {
-            case 'MouseWheel':
-                return '1';
-            case 'Pinch':
-                return '2';
-            case 'Commands':
-                return '4';
-            default:
-                return '8';
+            if (!parent.isCropToolbar && parent.isZoomBtnClick) {parent.trigger('zooming', zoomEventArgs); }
+            this.zoomEvent(zoomEventArgs, zoomFactor, isPreventApply);
         }
     }
 
@@ -703,12 +652,7 @@ export class Transform {
         const parent: ImageEditor = this.parent;
         const { zoomFactor, minZoomFactor } = parent.zoomSettings;
         if (zoomEventArgs.cancel) { parent.isZoomBtnClick=false; return; }
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        } else if (((parent as any).currentToolbar !== 'resize-toolbar' && (parent as any).currentToolbar !== 'crop-toolbar') && parent.element.querySelector('.e-contextual-toolbar-wrapper') && !parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.contains('e-hidden') ) {
-            parent.updateToolbar(parent.element, 'closeContextualToolbar');
-        }
+        parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
         parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
             value: {x: null, y: null, isMouseDown: true}});
         parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
@@ -798,22 +742,13 @@ export class Transform {
         }
         parent.isUndoRedo = false;
         let zoomOut: HTMLElement;
-        if (!isBlazor()) {
-            zoomOut = document.querySelector('#' + parent.element.id + '_zoomOut');
-            if (zoomOut && zoomFactor <= minZoomFactor) {
-                zoomOut.classList.add('e-disabled');
-                zoomOut.parentElement.classList.add('e-overlay');
-            } else if (zoomOut) {
-                zoomOut.classList.remove('e-disabled');
-                zoomOut.parentElement.classList.remove('e-overlay');
-            }
-        } else {
-            zoomOut = parent.element.querySelector('#zoomout');
-            if (zoomOut && zoomFactor <= minZoomFactor) {
-                zoomOut.classList.add('e-overlay');
-            } else if (zoomOut) {
-                zoomOut.classList.remove('e-overlay');
-            }
+        zoomOut = document.querySelector('#' + parent.element.id + '_zoomOut');
+        if (zoomOut && zoomFactor <= minZoomFactor) {
+            zoomOut.classList.add('e-disabled');
+            zoomOut.parentElement.classList.add('e-overlay');
+        } else if (zoomOut) {
+            zoomOut.classList.remove('e-disabled');
+            zoomOut.parentElement.classList.remove('e-overlay');
         }
         this.autoEnablePan();
         if (this.tempActiveObj) {
@@ -831,24 +766,13 @@ export class Transform {
             parent.objColl.pop();
             parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate', obj: parent.activeObj, isCropRatio: null,
                 points: null, isPreventDrag: true, saveContext: null, isPreventSelection: null} });
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-                parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
-            }
+            parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
+            parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
         }
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'enable-disable-btns', onPropertyChange: false});
-        } else {
-            parent.updateToolbar(parent.element, 'enableDisableToolbarBtn');
-        }
+        parent.notify('toolbar', { prop: 'enable-disable-btns', onPropertyChange: false});
         parent.notify('selection', { prop: 'setZoomType', onPropertyChange: false, value: {zoomType: 'Toolbar' }});
         zoomEventArgs = { zoomPoint: zoomEventArgs.zoomPoint, previousZoomFactor: zoomEventArgs.previousZoomFactor, currentZoomFactor: zoomEventArgs.currentZoomFactor, zoomTrigger: zoomEventArgs.zoomTrigger};
-        if (isBlazor() && !parent.isCropToolbar && parent.isZoomBtnClick && parent.events && parent.events.zoomed.hasDelegate === true) {
-            (zoomEventArgs as any).zoomTrigger = typeof zoomEventArgs.zoomTrigger !== 'number' ? parseInt(this.getZoomTriggerType(zoomEventArgs.zoomTrigger)): zoomEventArgs.zoomTrigger;
-            const zoomedArgs: object = { zoomPoint: zoomEventArgs.zoomPoint, zoomFactor: zoomEventArgs.currentZoomFactor, zoomTrigger: zoomEventArgs.zoomTrigger };
-            parent.dotNetRef.invokeMethodAsync('ZoomEventAsync', 'Zoomed', null, zoomedArgs);
-            parent.isZoomBtnClick = false;
-        } else if (!parent.isCropToolbar && parent.isZoomBtnClick) {
+        if (!parent.isCropToolbar && parent.isZoomBtnClick) {
             parent.isZoomBtnClick = false;
         }
     }
@@ -860,11 +784,7 @@ export class Transform {
         if (!isNullOrUndefined(isZoomOut)) {
             parent.transform.zoomFactor -= 0.1;
         }
-        if (isBlazor()) {
-            zoomOut = parent.element.querySelector('#zoomout');
-        } else {
-            zoomOut = parent.element.querySelector('#' + parent.element.id + '_zoomOut');
-        }
+        zoomOut = parent.element.querySelector('#' + parent.element.id + '_zoomOut');
         const destPoints: Object = {destLeft: parent.img.destLeft, destTop: parent.img.destTop,
             destWidth: parent.img.destWidth, destHeight: parent.img.destHeight };
         if (parent.activeObj.shape) {
@@ -876,20 +796,12 @@ export class Transform {
                         actPoint.startY || parent.img.destLeft + parent.img.destWidth <
                         actPoint.endX || parent.img.destTop + parent.img.destHeight < actPoint.endY
                         || zoomFactor === minZoomFactor) {
-                        if (!isBlazor()) {
-                            zoomOut.classList.add('e-disabled');
-                            zoomOut.parentElement.classList.add('e-overlay');
-                        } else {
-                            zoomOut.classList.add('e-overlay');
-                        }
+                        zoomOut.classList.add('e-disabled');
+                        zoomOut.parentElement.classList.add('e-overlay');
                         isDisabled = true;
                     } else {
-                        if (!isBlazor()) {
-                            zoomOut.classList.remove('e-disabled');
-                            zoomOut.parentElement.classList.remove('e-overlay');
-                        } else {
-                            zoomOut.classList.remove('e-overlay');
-                        }
+                        zoomOut.classList.remove('e-disabled');
+                        zoomOut.parentElement.classList.remove('e-overlay');
                         isDisabled = false;
                     }
                 } else {
@@ -899,20 +811,12 @@ export class Transform {
                     parent.notify('draw', { prop: 'isLinesIntersect', onPropertyChange: false, value: {obj: obj }});
                     if (obj['isIntersect'] ||
                         zoomFactor === minZoomFactor) {
-                        if (!isBlazor()) {
-                            zoomOut.classList.add('e-disabled');
-                            zoomOut.parentElement.classList.add('e-overlay');
-                        } else {
-                            zoomOut.classList.add('e-overlay');
-                        }
+                        zoomOut.classList.add('e-disabled');
+                        zoomOut.parentElement.classList.add('e-overlay');
                         isDisabled = true;
                     } else {
-                        if (!isBlazor()) {
-                            zoomOut.classList.remove('e-disabled');
-                            zoomOut.parentElement.classList.remove('e-overlay');
-                        } else {
-                            zoomOut.classList.remove('e-overlay');
-                        }
+                        zoomOut.classList.remove('e-disabled');
+                        zoomOut.parentElement.classList.remove('e-overlay');
                         isDisabled = false;
                     }
                 }
@@ -1122,16 +1026,7 @@ export class Transform {
         const obj: Object = {panDown: null };
         parent.notify('selection', { prop: 'getPanDown', onPropertyChange: false, value: {obj: obj }});
         const panEventArgs: PanEventArgs = {startPoint: obj['panDown'], endPoint: this.panMove, cancel: false};
-        if (isBlazor() && isNullOrUndefined(parent.eventType) && parent.events && parent.events.onPanStart.hasDelegate === true) {
-            parent.eventType = 'pan';
-            parent.panEventArgs = panEventArgs;
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent.dotNetRef.invokeMethodAsync('PanEventAsync', 'OnPanStart', panEventArgs) as any).then((args: PanEventArgs) => {
-                this.panEvent(args, xDiff, yDiff);
-            });
-        } else {
-            parent.trigger('panning', panEventArgs); this.panEvent(panEventArgs, xDiff, yDiff);
-        }
+        parent.trigger('panning', panEventArgs); this.panEvent(panEventArgs, xDiff, yDiff);
     }
 
     private panEvent(panEventArgs: PanEventArgs, xDiff?: number, yDiff?: number): void {
@@ -1518,37 +1413,23 @@ export class Transform {
             }
             const frameObj: Object = {bool: null };
             parent.notify('toolbar', { prop: 'getFrameToolbar', onPropertyChange: false, value: {obj: frameObj }});
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            if (frameObj['bool'] || (isBlazor() && (parent as any).currentToolbar === 'frame-toolbar')) {isFrameToolbar = true; }
             if (!straightenObj['bool'] && ((ctToolbar && !ctToolbar.parentElement.classList.contains('e-hide')) ||
                 (hdWrapper && !hdWrapper.parentElement.classList.contains('e-hide')))) {
                 ctWrapper.classList.add('e-hide');
                 if (!isCropSelection) {parent.okBtn(); }
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-                    parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-                } else {
-                    parent.updateToolbar(parent.element, 'imageLoaded');
-                }
+                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
+                parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
             }
             parent.notify('selection', { prop: 'getFreehandDrawEditing', onPropertyChange: false, value: {obj: freehandObj }});
             if (freehandObj['bool']) {
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-                } else {
-                    parent.updateToolbar(parent.element, 'destroyQuickAccessToolbar');
-                }
+                parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
             }
             if (parent.activeObj.shape !== undefined) {
                 isActiveObj = true;
                 if (parent.textArea.style.display === 'block' || parent.textArea.style.display === 'inline-block') {
                     parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
                         value: {x: null, y: null, isMouseDown: null}});
-                    if (isBlazor()) {
-                        parent.updateToolbar(parent.element, 'destroyQuickAccessToolbar');
-                    } else {
-                        parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-                    }
+                    parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
                 } else {
                     parent.notify('shape', { prop: 'updImgRatioForActObj', onPropertyChange: false});
                     parent.objColl.push(parent.activeObj);
@@ -1566,6 +1447,11 @@ export class Transform {
             toolbarHeight = parent.element.querySelector('#' + parent.element.id + '_toolbarArea').clientHeight;
         } else if (parent.element.querySelector('#' + parent.element.id + '_toolbar')) {
             toolbarHeight = parent.element.querySelector('#' + parent.element.id + '_toolbar').clientHeight;
+            if (toolbarHeight === 0 && parent.toolbar && parent.toolbar.length > 0 && parent.toolbar.indexOf('Open') === -1) {
+                const obj: Object = {toolbarHeight: 0 };
+                parent.notify('toolbar', { prop: 'getToolbarHeight', value: {obj: obj }});
+                toolbarHeight = obj['toolbarHeight'];
+            }
         }
         if (Browser.isDevice && straightenObj['bool']) {
             cxtTbarHeight = parent.element.querySelector('#' + parent.element.id + '_contextualToolbarArea').clientHeight;
@@ -1601,10 +1487,8 @@ export class Transform {
             if (canvasWrapper) {
                 canvasWrapper.style.width = parent.element.offsetWidth - 2 + 'px';
                 canvasWrapper.style.height = parent.element.offsetHeight + 'px';
-                const obj: Object = {toolbarHeight: !isBlazor() ? 0 : parent.toolbarHeight };
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'getToolbarHeight', value: {obj: obj }});
-                }
+                const obj: Object = {toolbarHeight: 0 };
+                parent.notify('toolbar', { prop: 'getToolbarHeight', value: {obj: obj }});
                 if (Browser.isDevice) {
                     canvasWrapper.style.height = (parseFloat(canvasWrapper.style.height) - (2 * obj['toolbarHeight']) - cxtTbarHeight) - 4 + 'px';
                 } else {
@@ -1653,15 +1537,13 @@ export class Transform {
             }
             hideSpinner(parent.element); parent.element.style.opacity = '1';
             const obj1: Object = {defToolbarItems : null };
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'getDefToolbarItems', value: {obj: obj1 }});
-                if (obj1['defToolbarItems'] && obj1['defToolbarItems'].length > 0 && document.getElementById(parent.element.id + '_toolbar')) {
-                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                    const toolbar: any = getComponent(parent.element.id + '_toolbar', 'toolbar') as Toolbar;
-                    toolbar.refreshOverflow();
-                    if (ctWrapper && !straightenObj['bool']) {
-                        ctWrapper.classList.add('e-hide');
-                    }
+            parent.notify('toolbar', { prop: 'getDefToolbarItems', value: {obj: obj1 }});
+            if (obj1['defToolbarItems'] && obj1['defToolbarItems'].length > 0 && document.getElementById(parent.element.id + '_toolbar')) {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                const toolbar: any = getComponent(parent.element.id + '_toolbar', 'toolbar') as Toolbar;
+                toolbar.refreshOverflow();
+                if (ctWrapper && !straightenObj['bool']) {
+                    ctWrapper.classList.add('e-hide');
                 }
             }
             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
@@ -1686,37 +1568,21 @@ export class Transform {
                     if (parent.activeObj.shape === 'rectangle' || parent.activeObj.shape === 'ellipse' || parent.activeObj.shape === 'text' ||
                         parent.activeObj.shape === 'line' || parent.activeObj.shape === 'arrow' || parent.activeObj.shape === 'path' ||
                         parent.activeObj.shape === 'image') {
-                        if (!isBlazor()) {
-                            parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
-                        } else {
-                            parent.updateToolbar(parent.element, 'quickAccessToolbar', parent.activeObj.shape);
-                        }
+                        parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
                     }
                 }
             }
             if (freehandObj['bool']) {
-                if (isBlazor()) {
-                    parent.updateToolbar(parent.element, 'quickAccessToolbar', 'pen');
-                } else {
-                    parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: true} });
-                }
+                parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: true} });
             }
             if (isFrameToolbar) {
-                if (isBlazor()) {
-                    parent.updateToolbar(parent.element, 'frame');
-                } else {
-                    parent.notify('toolbar', { prop: 'callFrameToolbar', onPropertyChange: false});
-                }
+                parent.notify('toolbar', { prop: 'callFrameToolbar', onPropertyChange: false});
             } else if (parent.isResize) {
                 parent.aspectWidth = Math.ceil(parent.img.destWidth); parent.aspectHeight = Math.ceil(parent.img.destHeight);
-                if (isBlazor()) {
-                    parent.updateToolbar(parent.element, 'resize');
-                } else {
-                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
-                        isApplyBtn: false, isCropping: false }});
-                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
-                        isApplyBtn: false, isCropping: false }});
-                }
+                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
+                    isApplyBtn: false, isCropping: false }});
+                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
+                    isApplyBtn: false, isCropping: false }});
             }
             if ((parent.transform.degree !== 0 || parent.transform.currFlipState !== '') && parent.transform.defaultZoomFactor > 0) {
                 const totalPannedPoint: Point = extend({}, parent.panPoint.totalPannedPoint, null, true) as Point;
@@ -1738,19 +1604,14 @@ export class Transform {
                 }
             } else if (parent.transform.degree !== 0 && parent.transform.cropZoomFactor > 0) {
                 parent.transform.zoomFactor = 0; parent.transform.cropZoomFactor = null;
-                if (isBlazor()) {
-                    parent.updateToolbar(parent.element, 'enableDisableToolbarBtn');
-                } else {
-                    parent.notify('toolbar', { prop: 'enable-disable-btns', onPropertyChange: false});
-                }
+                parent.notify('toolbar', { prop: 'enable-disable-btns', onPropertyChange: false});
             }
         }
     }
 
     private calcMaxDimension(width: number, height: number, obj?: Object, isImgShape?: boolean): Dimension {
         const object: Object = {toolbarHeight: 0 }; const parent: ImageEditor = this.parent;
-        if (!isBlazor()) {parent.notify('toolbar', { prop: 'getToolbarHeight', value: {obj: object }}); }
-        else {object['toolbarHeight'] = parent.toolbarHeight; }
+        parent.notify('toolbar', { prop: 'getToolbarHeight', value: {obj: object }});
         let canvasMaxWidth: number = isImgShape ? parent.element.clientWidth / 3 :
             parent.element.clientWidth;
         let canvasMaxHeight: number = isImgShape ? (parent.element.clientHeight - object['toolbarHeight']) / 3 :
@@ -2038,29 +1899,17 @@ export class Transform {
                 parent.notify('toolbar', { prop: 'init-main-toolbar', value: {isApplyBtn: false, isDevice: true, isOkBtn: true, isResize: true}});
             }
         }
+        const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
+        const aspectHeight: string = aspectRatioHeight.value === '' ? aspectRatioHeight.placeholder : aspectRatioHeight.value;
         const resizeEventArgs: ResizeEventArgs = {cancel: false, previousWidth: Math.ceil(parent.img.destWidth),
             previousHeight: Math.ceil(parent.img.destHeight), width: Math.ceil(width), height: height && height !== 0 ? Math.ceil(height) :
-                (parent.aspectHeight ? parent.aspectHeight : Math.ceil(parent.img.destHeight)),
+                (isAspectRatio ? Math.ceil(parseFloat(aspectHeight)) : Math.ceil(parent.img.destHeight)),
             isAspectRatio: isAspectRatio ? isAspectRatio : false };
-        if (!isBlazor()) {
-            parent.trigger('resizing', resizeEventArgs);
-            if (!resizeEventArgs.cancel) {
-                this.resizeEventHandler(resizeEventArgs);
-            } else if (parent.aspectHeight && parent.aspectWidth) {
-                parent.aspectHeight = resizeEventArgs.previousHeight; parent.aspectWidth = resizeEventArgs.previousWidth;
-            }
-        } else if (isBlazor() && parent.events && parent.events.imageResizing.hasDelegate === true && !parent.isResizeOkBtn) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent.dotNetRef.invokeMethodAsync('OnImageResizingAsync', 'ImageResizing', resizeEventArgs, null) as any).then((args: ResizeEventArgs) => {
-                this.resizeEventCancel = args.cancel;
-                if (!args.cancel) { 
-                    this.resizeEventHandler(args);
-                } else if (parent.aspectHeight && parent.aspectWidth) {
-                    parent.aspectHeight = resizeEventArgs.previousHeight; parent.aspectWidth = resizeEventArgs.previousWidth;
-                }
-            });
-        } else if (!this.resizeEventCancel){
+        parent.trigger('resizing', resizeEventArgs);
+        if (!resizeEventArgs.cancel) {
             this.resizeEventHandler(resizeEventArgs);
+        } else if (parent.aspectHeight && parent.aspectWidth) {
+            parent.aspectHeight = resizeEventArgs.previousHeight; parent.aspectWidth = resizeEventArgs.previousWidth;
         }
     }
 
@@ -2080,12 +1929,7 @@ export class Transform {
                 const originalWidth: number = parent.img.destWidth;
                 const originalHeight: number = parent.img.destHeight;
                 let aspectRatioWidthValue: number;
-                if (!isBlazor()) {
-                    aspectRatioWidthValue = parseFloat(aspectRatioWidth.value === '' ? aspectRatioWidth.placeholder :
-                    aspectRatioWidth.value);
-                } else {
-                    aspectRatioWidthValue = parseFloat(widthElem.value === '' ? widthElem.placeholder : widthElem.value);
-                }
+                aspectRatioWidthValue = parseFloat(aspectRatioWidth.value === '' ? aspectRatioWidth.placeholder : aspectRatioWidth.value);
                 if (aspectRatioHeight) {
                     let value: number = aspectRatioWidthValue / (originalWidth / originalHeight);
                     const height: number = value % 1 >= 0.5 || value % 1 <= -0.5 ? Math.round(value) : (value < 0) ? Math.ceil(value) : Math.floor(value);
@@ -2130,25 +1974,16 @@ export class Transform {
                 parent.notify('undo-redo', { prop: 'setPreventUR', value: { bool: false } });
                 parent.resizeSrc = { startX: parent.img.srcLeft, startY: parent.img.srcTop, width: parent.img.srcWidth,
                     height: parent.img.srcHeight };
-                if (isBlazor()) {
-                    parent.updateToolbar(parent.element, 'resize');
-                } else {
-                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
-                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                    parent.notify('transform', { prop: 'setPreventDownScale', value: { bool: false } });
-                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
-                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                }
+                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
+                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                parent.notify('transform', { prop: 'setPreventDownScale', value: { bool: false } });
+                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
+                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
             } else {
                 parent.notify('transform', { prop: 'resizeCrop', value: { width: args.width, height: args.height } });
             }
         }
         this.resizedImgAngle = parent.transform.degree;
-        args = { previousHeight: args.previousHeight, previousWidth: args.previousWidth, width: args.width, height: args.height, isAspectRatio: args.isAspectRatio };
-        if (isBlazor() && parent.isResizeOkBtn && parent.events && parent.events.imageResized.hasDelegate === true) {
-            const resizeArgs: object = { width: args.width, height: args.height, isAspectRatio: args.isAspectRatio };
-            parent.dotNetRef.invokeMethodAsync('OnImageResizingAsync', 'ImageResized', null, resizeArgs);
-        } else {}
     }
 
     private straightenImage(degree: number): void {
@@ -2157,12 +1992,7 @@ export class Transform {
             parent.notify('draw', { prop: 'select', onPropertyChange: false,
                 value: { type: 'custom', startX: null, startY: null, width: null, height: null } });
         }
-        if (isBlazor()) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent as any).performCropClick();
-        } else {
-            parent.notify('toolbar', { prop: 'performCropTransformClick', value: {shape: null }});
-        }
+        parent.notify('toolbar', { prop: 'performCropTransformClick', value: {shape: null }});
         parent.setStraighten(degree, true);
         parent.okBtn();
     }

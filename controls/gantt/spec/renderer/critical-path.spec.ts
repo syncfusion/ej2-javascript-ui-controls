@@ -1513,6 +1513,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
                 work: 'work',
                 child: 'subtasks'
             },
+            taskType: 'FixedWork',
             resourceFields: {
                 id: 'resourceId',
                 name: 'resourceName',
@@ -1599,6 +1600,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
                 work: 'work',
                 child: 'subtasks'
             },
+            taskType: 'FixedWork',
             resourceFields: {
                 id: 'resourceId',
                 name: 'resourceName',
@@ -2136,7 +2138,6 @@ describe('Critical path is not working properly issue', () => {
         });
         it('check index', () => {
             ganttObj.actionComplete = (args) => {
-                debugger
                 if(args.requestType = 'delete') {
                     ganttObj.flatData[1].index = 1;
                 }

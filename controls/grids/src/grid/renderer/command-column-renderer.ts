@@ -6,7 +6,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { IGrid, ICellRenderer, CommandModel } from '../base/interface';
 import { CommandButtonType } from '../base/enum';
 import { CellRenderer } from './cell-renderer';
-import { addStickyColumnPosition, appendChildren } from '../base/util';
+import { addStickyColumnPosition, appendChildren, parentsUntil } from '../base/util';
 import { destroy, commandColumnDestroy  } from '../base/constant';
 
 /**
@@ -33,7 +33,9 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
 
     private destroyButtons(args: { type: string }): void {
         for (let i: number = 0; i < this.childRefs.length; i++) {
-            if (this.childRefs[parseInt(i.toString(), 10)] && !this.childRefs[parseInt(i.toString(), 10)].isDestroyed) {
+            if (this.childRefs[parseInt(i.toString(), 10)] && !this.childRefs[parseInt(i.toString(), 10)].isDestroyed
+                && !(this.parent.editSettings.showAddNewRow && this.parent.enableVirtualization
+                && parentsUntil(this.childRefs[parseInt(i.toString(), 10)].element, 'e-addedrow'))) {
                 this.childRefs[parseInt(i.toString(), 10)].destroy();
                 if (this.childRefs[parseInt(i.toString(), 10)].element) {
                     this.childRefs[parseInt(i.toString(), 10)].element.innerHTML = '';
@@ -45,7 +47,8 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
             let elem: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-unboundcell');
             if (elem.length) {
                 for (let i: number = 0; i < elem.length; i++) {
-                    if (elem[parseInt(i.toString(), 10)]) {
+                    if (elem[parseInt(i.toString(), 10)] && !(this.parent.editSettings.showAddNewRow && this.parent.enableVirtualization
+                        && parentsUntil(elem[parseInt(i.toString(), 10)], 'e-addedrow'))) {
                         if (elem[parseInt(i.toString(), 10)].querySelector('.e-unboundcelldiv')) {
                             elem[parseInt(i.toString(), 10)].querySelector('.e-unboundcelldiv').innerHTML = '';
                         }
@@ -88,7 +91,8 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
             }
         }
         this.setAttributes(<HTMLElement>node, cell, attributes);
-        if ((!this.parent.enableVirtualization && this.parent.isEdit) || isVirtualEdit) {
+        if ((!this.parent.enableVirtualization && (this.parent.isEdit && (!this.parent.editSettings.showAddNewRow ||
+            (this.parent.editSettings.showAddNewRow && (!this.parent.element.querySelector('.e-editedrow')))))) || isVirtualEdit) {
             addClass([].slice.call(node.getElementsByClassName('e-edit-delete')), 'e-hide');
             removeClass([].slice.call(node.getElementsByClassName('e-save-cancel')), 'e-hide');
         } else {

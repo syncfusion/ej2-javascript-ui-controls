@@ -1,0 +1,30 @@
+export enum _InflaterState {
+    readingHeader,
+    readingBFinal,
+    readingBType,
+    readingNlCodes,
+    readingNdCodes,
+    readingCodes,
+    readingClCodes,
+    readingTcBefore,
+    readingTcAfter,
+    decodeTop,
+    iLength,
+    fLength,
+    dCode,
+    unCompressedAligning,
+    unCompressedByte1,
+    unCompressedByte2,
+    unCompressedByte3,
+    unCompressedByte4,
+    decodeUnCompressedBytes,
+    srFooter,
+    rFooter,
+    vFooter,
+    done
+}
+export enum _BlockType {
+    unCompressedType,
+    staticType,
+    dynamicType
+}

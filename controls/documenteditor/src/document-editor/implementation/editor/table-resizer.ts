@@ -32,8 +32,8 @@ export class TableResizer {
     }
 
     public updateResizingHistory(touchPoint: Point): void {
-        if (this.owner.editorHistory) {
-            this.owner.editorHistory.updateResizingHistory(touchPoint, this);
+        if (this.owner.editorHistoryModule) {
+            this.owner.editorHistoryModule.updateResizingHistory(touchPoint, this);
         }
         this.documentHelper.isRowOrCellResizing = false;
         this.resizerPosition = -1;
@@ -43,7 +43,7 @@ export class TableResizer {
         this.startingPoint.x = point.x;
         this.startingPoint.y = point.y;
         //Initialize resizing history.
-        this.owner.editorHistory.initResizingHistory(point, this);
+        this.owner.editorHistoryModule.initResizingHistory(point, this);
     }
 
     //Table Resizing implementation starts
@@ -225,7 +225,7 @@ export class TableResizer {
         if (isNullOrUndefined(table) || dragValue === 0 || this.resizerPosition === -1) {
             return;
         }
-        const selection: Selection = this.owner.selection;
+        const selection: Selection = this.owner.selectionModule;
         if (table.isInsideTable) {
             this.owner.isLayoutEnabled = false; //Layouting is disabled to skip the child table layouting.
         }
@@ -245,7 +245,7 @@ export class TableResizer {
         this.startingPoint.y += HelperMethods.convertPointToPixel(dragValue);
         this.owner.documentHelper.layout.reLayoutTable(table);
         this.owner.editorModule.isSkipOperationsBuild = true;
-        this.owner.editorModule.reLayout(this.owner.selection);
+        this.owner.editorModule.reLayout(this.owner.selectionModule);
         this.owner.editorModule.isSkipOperationsBuild = false;
         if (row) {
             this.getRowReSizerPosition(undefined, this.startingPoint);
@@ -352,8 +352,8 @@ export class TableResizer {
             return;
         }
         let selectionFlag: boolean = true;
-        const selection: Selection = this.owner.selection;
-        this.owner.editor.setOffsetValue(selection);
+        const selection: Selection = this.owner.selectionModule;
+        this.owner.editorModule.setOffsetValue(selection);
         table = table.combineWidget(this.viewer) as TableWidget;
         this.owner.isLayoutEnabled = false;
         // table.PreserveGrid = true;
@@ -668,9 +668,9 @@ export class TableResizer {
         } else {
             this.documentHelper.layout.reLayoutTable(table);
         }
-        this.owner.editor.getOffsetValue(this.documentHelper.selection);
+        this.owner.editorModule.getOffsetValue(this.documentHelper.selection);
         this.owner.editorModule.isSkipOperationsBuild = true;
-        this.owner.editorModule.reLayout(this.owner.selection);
+        this.owner.editorModule.reLayout(this.owner.selectionModule);
         this.owner.editorModule.isSkipOperationsBuild = false;
         if (dragValue) {
             this.startingPoint.x += HelperMethods.convertPointToPixel(dragValue);
@@ -826,7 +826,7 @@ export class TableResizer {
         return width;
     }
     private isColumnSelected(table: TableWidget, columnIndex: number): boolean {
-        const selection: Selection = this.owner.selection;
+        const selection: Selection = this.owner.selectionModule;
         const selectedCells: TableCellWidget[] = selection.getSelectedCells();
         const leftColumnCells: TableCellWidget[] = this.getColumnCells(table, columnIndex, true);
         const rightColumnCells: TableCellWidget[] = this.getColumnCells(table, columnIndex, false);

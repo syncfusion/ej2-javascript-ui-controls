@@ -652,11 +652,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     @Property('')
     public cssClass: string;
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to display or remove the untrusted HTML values in the Slider component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
      * Triggers when the Slider is successfully created.

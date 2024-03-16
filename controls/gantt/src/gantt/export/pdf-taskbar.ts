@@ -3,7 +3,7 @@ import {
     RectangleF, SizeF, PdfFont, PdfStandardFont, PdfFontStyle, PdfFontFamily, PdfStringFormat, PdfVerticalAlignment,
     PdfTextAlignment, PdfWordWrapType,PdfDashStyle,PdfPath,PdfBitmap,PdfBrushes,PdfLinearGradientBrush
 } from '@syncfusion/ej2-pdf-export';
-import { TimelineDetails, TaskLabel, IIndicator } from './../base/interface';
+import { TimelineDetails, TaskLabel, IIndicator,Image, ILabel, ITemplateDetails } from './../base/interface';
 import { Gantt } from '../base/gantt';
 import { pixelToPoint,pointToPixel } from '../base/utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -105,6 +105,16 @@ export class PdfGanttTaskbarCollection {
     public autoWidth?:number;
     public autoLeft?:number;
     public indicators: IIndicator[];
+    public labelSettings: ILabel;
+    public taskbarTemplate : ITemplateDetails;
+    public rightLabelBoundsTemplates: number;
+    public previousWidthofLeftValue: number;
+    public previousWidthofLeftImage: number;
+    public totalLeftWidth: number;
+    public previousWidthofRightValue: number;
+    public previousWidthofRightImage: number;
+    public remainString : string;
+    public stringLeft : number;
     /**
      * @private
      */
@@ -175,18 +185,61 @@ export class PdfGanttTaskbarCollection {
         this.drawLeftLabel(page, startPoint, detail, cumulativeWidth);
         //Draw Taskbar
         let font: PdfFont = new PdfStandardFont(this.fontFamily, 9, PdfFontStyle.Regular);
+        const fontColor: PdfPen = null;
+        const fontBrush: PdfBrush = new PdfSolidBrush(this.progressFontColor);
+        let customizedFont : PdfFont;
+        let customizedFontBrush : PdfBrush;
+        let customizedFontColor : PdfPen;
+        if(!isNullOrUndefined(taskbar.taskbarTemplate.value)){
+            if(taskbar.taskbarTemplate.fontStyle.fontFamily && taskbar.taskbarTemplate.fontStyle.fontSize){
+                customizedFont = new PdfStandardFont(taskbar.taskbarTemplate.fontStyle.fontFamily,taskbar.taskbarTemplate.fontStyle.fontSize,taskbar.taskbarTemplate.fontStyle.fontStyle);
+            }else{
+                customizedFont = font;
+            }
+            if(taskbar.taskbarTemplate.fontStyle.fontColor){
+                customizedFontBrush = new PdfSolidBrush(taskbar.taskbarTemplate.fontStyle.fontColor);
+            }
+            else{
+                customizedFontBrush = fontBrush;
+            }
+            if(taskbar.taskbarTemplate.fontStyle.fontBrush){
+                customizedFontColor =  new PdfPen(taskbar.taskbarTemplate.fontStyle.fontBrush);
+            }
+            else{
+                customizedFontColor = fontColor;
+            }
+        }
         if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) && 
             this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
             font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
         }
-        const fontColor: PdfPen = null;
-        const fontBrush: PdfBrush = new PdfSolidBrush(this.progressFontColor);
+        let taskLabelFont : PdfFont;
+        let taskLabelFontBrush : PdfBrush;
+        if(taskbar.labelSettings.taskLabel.fontStyle.fontSize){
+            const taskFont : PdfFont = new PdfStandardFont(taskbar.labelSettings.taskLabel.fontStyle.fontFamily,taskbar.labelSettings.taskLabel.fontStyle.fontSize,taskbar.labelSettings.taskLabel.fontStyle.fontStyle);
+            taskLabelFont = taskFont;
+        }
+        else{
+            taskLabelFont = font;
+        }
+        if(taskbar.labelSettings.taskLabel.fontStyle.fontColor){
+            taskLabelFontBrush =  new PdfSolidBrush(taskbar.labelSettings.taskLabel.fontStyle.fontColor) ;
+        }
+        else{
+            taskLabelFontBrush = fontBrush;
+        }
         const progressFormat: PdfStringFormat = new PdfStringFormat();
         progressFormat.lineAlignment = PdfVerticalAlignment.Middle;
         progressFormat.alignment = PdfTextAlignment.Right;
         let isLabelString: boolean = false;
         let updatedWidth: number;
-        if (!isNullOrUndefined(this.taskLabel) && (/^[a-zA-Z]/.test(this.taskLabel))) {
+        if (!isNullOrUndefined(this.taskLabel) && !(/^[a-zA-Z0-9]/.test(this.taskLabel))) {
+            if (this.taskLabel === '0' || this.taskLabel === '0%') {
+                updatedWidth = this.width;
+                progressFormat.alignment = PdfTextAlignment.Left;
+            }
+        }
+        if ((!isNullOrUndefined(this.taskLabel) && (/^[a-zA-Z]/.test(this.taskLabel))) || (!isNullOrUndefined(taskbar.taskbarTemplate.value)) ){
             isLabelString = true;
             progressFormat.alignment = PdfTextAlignment.Left;
         }
@@ -211,6 +264,7 @@ export class PdfGanttTaskbarCollection {
         }
         const baselinePen: PdfPen = new PdfPen(taskbar.baselineBorderColor);
         const baselineBrush: PdfBrush = new PdfSolidBrush(taskbar.baselineColor);
+        const template : ITemplateDetails = taskbar.taskbarTemplate;
         let renderedBaseline: boolean = false;
         if (!taskbar.isMilestone) {
             const taskbarPen: PdfPen = new PdfPen(taskbar.taskBorderColor);
@@ -229,7 +283,7 @@ export class PdfGanttTaskbarCollection {
             const progressPen: PdfPen = new PdfPen(taskbar.progressColor);
             const progressBrush: PdfBrush = new PdfSolidBrush(taskbar.progressColor);
             const adjustHeightforTaskbar: number = pixelToPoint((this.parent.rowHeight - this.height) / 2.0);
-            var adjustHeightforBaseline: number = pixelToPoint((this.parent.rowHeight - this.height) / 4.5);
+            const adjustHeightforBaseline: number = pixelToPoint((this.parent.rowHeight - this.height) / 4.5);
             const adjustHeight = this.parent.renderBaseline ? adjustHeightforBaseline : adjustHeightforTaskbar;
             pageIndex = page.section.indexOf(page);
             const startDate: Date = isNullOrUndefined(this.unscheduleStarteDate) ? this.startDate : this.unscheduleStarteDate;
@@ -241,28 +295,7 @@ export class PdfGanttTaskbarCollection {
                     this.taskStartPoint = { ...startPoint };
                     this.isStartPoint = true;
                 }
-                if (!isNullOrUndefined(taskbar.indicators) && taskbar.indicators.length > 0) {
-                    taskbar.indicators.map((items: IIndicator, index: number) => {
-                        const currendate = this.parent.dateValidationModule.getDateFromFormat(items.date, true)
-                        if (detail.startDate <= currendate && currendate <= detail.endDate) {
-                            var leftValue = this.parent.chartRowsModule.getIndicatorleft(items.date);
-                            if (!isNullOrUndefined(items.base64)) {
-                                const image: PdfBitmap = new PdfBitmap(items.base64);
-                                if (this.isAutoFit()) {
-                                    taskGraphics.drawImage(image, startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 10, startPoint.y + adjustHeight, imageSize, imageSize)
-                                    taskGraphics.drawString(items.name, new PdfStandardFont(PdfFontFamily.Helvetica, 10), null, PdfBrushes.Black, startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 10 + imageSize, startPoint.y + adjustHeight, null);
-
-                                }
-                                else {
-                                    taskGraphics.drawImage(image, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 10, startPoint.y + adjustHeight, imageSize, imageSize)
-
-                                    taskGraphics.drawString(items.name, new PdfStandardFont(PdfFontFamily.Helvetica, 10), null, PdfBrushes.Black, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 10 + imageSize, startPoint.y + adjustHeight, null);
-                                }
-                            }
-                        }
-                    })
-                }
-                if (!this.isScheduledTask && this.unscheduledTaskBy === 'duration'){
+                if (!this.isScheduledTask && this.unscheduledTaskBy === 'duration') {
                     let brush1: PdfLinearGradientBrush;
                     let brush2: PdfLinearGradientBrush;
                     if (this.isAutoFit()) {
@@ -281,6 +314,17 @@ export class PdfGanttTaskbarCollection {
                         );
                         //Draw rectangle to fill linear gradient color
                         taskGraphics.drawRectangle(brush2, startPoint.x + (this.left - cumulativeWidth) + 0.5 + (taskbar.width) / 2, startPoint.y + adjustHeight, (taskbar.width) / 2, pixelToPoint(taskbar.height));
+                        if (template.value || template.image) {
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                taskGraphics.drawImage(image, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                            }
+                            const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5 + imageWidth, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(this.height), progressFormat);
+                            }
+                        }
+
                     }
                     else {
                         brush1 = new PdfLinearGradientBrush(
@@ -298,8 +342,19 @@ export class PdfGanttTaskbarCollection {
                         );
                         //Draw rectangle to fill linear gradient color
                         taskGraphics.drawRectangle(brush2, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5 + pixelToPoint(taskbar.width) / 2, startPoint.y + adjustHeight, pixelToPoint(taskbar.width) / 2, pixelToPoint(taskbar.height));
+                        if (template.value || template.image) {
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                taskGraphics.drawImage(image, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                            }
+                            const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5 + imageWidth, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(this.height), progressFormat);
+                            }
+                        }
                     }
                 }
+
                 else if (!this.isScheduledTask && this.unscheduledTaskBy === "endDate"){
                     this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
                 }
@@ -326,9 +381,29 @@ export class PdfGanttTaskbarCollection {
                         taskbar.segment.map((data: any) => {
                             if(this.isAutoFit()) {
                                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + (this.left + data.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (data.width), pixelToPoint(taskbar.height));
+                                if (template.value || template.image) {
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                        const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                        taskGraphics.drawImage(image, startPoint.x + (this.left + data.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                                    }
+                                    const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                        taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + (this.left + data.left - cumulativeWidth) + 0.5 + imageWidth, startPoint.y + adjustHeight, pixelToPoint(data.width), pixelToPoint(taskbar.height), progressFormat);
+                                    }
+                                }
                             }
                             else {
                                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left + data.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(data.width), pixelToPoint(taskbar.height));
+                                if (template.value || template.image) {
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                        const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                        taskGraphics.drawImage(image, startPoint.x + pixelToPoint(this.left + data.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                                    }
+                                    const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                        taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + pixelToPoint(this.left + data.left - cumulativeWidth) + 0.5 + imageWidth, startPoint.y + adjustHeight, pixelToPoint(data.width), pixelToPoint(taskbar.height), progressFormat);
+                                    }
+                                }
                             }
                         })
                     }
@@ -381,34 +456,68 @@ export class PdfGanttTaskbarCollection {
                         taskGraphics.drawRectangle(null,  manualChildProgressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(this.height));
                        }
                     }
-                        else{
-                            if(this.isAutoFit()) {
+                    else {
+                         if (this.isAutoFit()) {
+                            if (isNullOrUndefined(template.value) && isNullOrUndefined(template.image)) {
                                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (taskbar.width), pixelToPoint(taskbar.height));
+                            }
+                            else{
+                                taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (taskbar.width), pixelToPoint(taskbar.height));
+                                if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                    const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                    taskGraphics.drawImage(image, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + (taskbar.height - taskbar.taskbarTemplate.image[0].height ) / 2.0, (taskbar.taskbarTemplate.image[0].width) / 2.0, (taskbar.taskbarTemplate.image[0].height) / 2.0);
+                                }
+                                if (taskbar.taskbarTemplate.value) {
+                                    if (isLabelString) {
+                                        updatedWidth = this.width;
+                                    }
+                                    const imageWidth : number = !isNullOrUndefined(taskbar.taskbarTemplate.image)? taskbar.taskbarTemplate.image[0].width / 2.0 : 0;
+                                    taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + (this.left - cumulativeWidth) + imageWidth, startPoint.y + adjustHeight, (updatedWidth), pixelToPoint(this.height), progressFormat);
+
+                                }
+                            }
+                        }
+                        else {
+                            if (isNullOrUndefined(template.value) && isNullOrUndefined(template.image)) {
+                                taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
                             }
                             else {
                                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
-                            }
-                        }
-                        if (this.isScheduledTask && taskbar.isAutoSchedule  && !taskbar.isSpliterTask) {       
-                            if(this.isAutoFit()) {
-                                taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (taskbar.progressWidth), pixelToPoint(taskbar.height));
-                            }
-                            else {
-                                taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
-                            }                 
-                        if (!isNullOrUndefined(this.parent.labelSettings.taskLabel) && !isNullOrUndefined(this.taskLabel)) {
-                            updatedWidth = this.progressWidth;
-                            if (isLabelString) {
-                                updatedWidth = this.width;
-                            }
-                            if(this.isAutoFit()) {
-                                taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + (this.left - cumulativeWidth), startPoint.y + adjustHeight, (updatedWidth), pixelToPoint(this.height), progressFormat);
-                            }
-                            else {
-                                taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight, pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                    const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                    taskGraphics.drawImage(image, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 1, startPoint.y + adjustHeight + 1 + pixelToPoint((taskbar.height - taskbar.taskbarTemplate.image[0].height) / 2.0), pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height))
+                                }
+                                const imageWidth : number = !isNullOrUndefined(taskbar.taskbarTemplate.image)? taskbar.taskbarTemplate.image[0].width : 0;
+                                if(!isNullOrUndefined(taskbar.taskbarTemplate.value)){
+                                    taskGraphics.drawString(taskbar.taskbarTemplate.value,customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + imageWidth, startPoint.y + adjustHeight, pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                }              
                             }
                         }
                     }
+                    if (this.isScheduledTask && taskbar.isAutoSchedule && !taskbar.isSpliterTask) {
+                            if (isNullOrUndefined(template.image) && isNullOrUndefined(template.value)){
+                                if (this.isAutoFit()) {
+                                    taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (taskbar.progressWidth), pixelToPoint(taskbar.height));
+                                }
+                                else {
+                                    taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
+                                }
+                                if (!isNullOrUndefined(this.parent.labelSettings.taskLabel) && !isNullOrUndefined(this.taskLabel)) {
+                                    if (this.taskLabel !== '0' && this.taskLabel !== '0%') {
+                                        updatedWidth = this.progressWidth;
+                                    }
+                                    if (isLabelString) {
+                                        updatedWidth = this.width;
+                                    }
+                                    if (this.isAutoFit()) {
+                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.left - cumulativeWidth), startPoint.y + adjustHeight, (updatedWidth), pixelToPoint(this.height), progressFormat);
+                                    }
+                                    else {
+                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight, pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                    }
+                                }
+                            }
+                        }
                     else if(taskbar.isSpliterTask){
                         taskbar.segment.map((data: any) => { 
                             if(this.isAutoFit()) {
@@ -431,29 +540,9 @@ export class PdfGanttTaskbarCollection {
                     this.taskStartPoint = { ...startPoint };
                     this.isStartPoint = true;
                 }
-                if (!isNullOrUndefined(taskbar.indicators) && taskbar.indicators.length > 0) {
-                    taskbar.indicators.map((items: IIndicator, index: number) => {
-                        const currendate = this.parent.dateValidationModule.getDateFromFormat(items.date, true)
-                   if( detail.startDate<= currendate && currendate<=detail.endDate){
-                    var leftValue= this.parent.chartRowsModule.getIndicatorleft(items.date)
-                    if (!isNullOrUndefined(items.base64)) {
-                        const image: PdfBitmap = new PdfBitmap(items.base64);
-                    if(this.isAutoFit()) {
-                        taskGraphics.drawImage(image,startPoint.x + (leftValue - cumulativeWidth) + 0.5 +10,startPoint.y + adjustHeight,imageSize,imageSize)
-                        taskGraphics.drawString(items.name, new PdfStandardFont(PdfFontFamily.Helvetica, 10),null,PdfBrushes.Black,startPoint.x + (leftValue - cumulativeWidth) + 0.5 +10 +imageSize,startPoint.y + adjustHeight , null);
-                    }
-                    else {
-                        taskGraphics.drawImage(image,startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 +10,startPoint.y + adjustHeight,imageSize,imageSize)
-                        taskGraphics.drawString(items.name, new PdfStandardFont(PdfFontFamily.Helvetica, 10),null,PdfBrushes.Black,startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 +10 +imageSize,startPoint.y + adjustHeight , null);
-                    }
-                }
-                   } })
-                }
                 let renderWidth: number = 0;
                 let splitRenderwidth : number = 0;
-                if (!isLabelString) {
-                    this.width = this.width - (detail.totalWidth - (this.left - cumulativeWidth));
-                }
+                this.width = this.width - (detail.totalWidth - (this.left - cumulativeWidth));
                 renderWidth = (detail.totalWidth - (this.left - cumulativeWidth));
                 splitRenderwidth = renderWidth;
                 if (!this.isScheduledTask && this.unscheduledTaskBy === 'duration'){
@@ -474,6 +563,16 @@ export class PdfGanttTaskbarCollection {
                             new PdfColor(taskbar.unscheduledTaskBarColor)
                         );
                         taskGraphics.drawRectangle(brush2, startPoint.x + (this.left - cumulativeWidth) + 0.5 + (renderWidth) / 2, startPoint.y + adjustHeight, (renderWidth) / 2, pixelToPoint(taskbar.height));
+                        if (template.value || template.image) {
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                taskGraphics.drawImage(image, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight,  pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                            }
+                            const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5 + imageWidth, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(this.height), progressFormat);
+                            }
+                        }
                     }
                     else {
                         brush1 = new PdfLinearGradientBrush(
@@ -490,6 +589,16 @@ export class PdfGanttTaskbarCollection {
                             new PdfColor(taskbar.unscheduledTaskBarColor)
                         );
                         taskGraphics.drawRectangle(brush2, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5 + pixelToPoint(renderWidth) / 2, startPoint.y + adjustHeight, pixelToPoint(renderWidth) / 2, pixelToPoint(taskbar.height));
+                        if (template.value || template.image) {
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                taskGraphics.drawImage(image, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                            }
+                            const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5 + imageWidth, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(this.height), progressFormat);
+                            }
+                        }
                     }
                 } else if (!this.isScheduledTask && this.unscheduledTaskBy !== 'duration') {
                     this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
@@ -570,9 +679,29 @@ export class PdfGanttTaskbarCollection {
                         taskbar.segment.map((data:any ,index : number)=>{
                             if (this.isAutoFit()) {
                                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5 + (data.left), startPoint.y + adjustHeight, (data.width), pixelToPoint(taskbar.height));
+                                if (template.value || template.image) {
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                        const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                        taskGraphics.drawImage(image, startPoint.x + (this.left - cumulativeWidth) + 0.5 + (data.left), startPoint.y + adjustHeight, (taskbar.taskbarTemplate.image[0].width), (taskbar.taskbarTemplate.image[0].height));
+                                    }
+                                    const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                        taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush,startPoint.x + (this.left - cumulativeWidth) + 0.5 + (data.left) + imageWidth, startPoint.y + adjustHeight, (data.width), (taskbar.height), progressFormat);
+                                    }
+                                }
                             }
                             else {
                                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5 + pixelToPoint(data.left), startPoint.y + adjustHeight, pixelToPoint(data.width), pixelToPoint(taskbar.height));
+                                if (template.value || template.image) {
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                        const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                        taskGraphics.drawImage(image, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5 + pixelToPoint(data.left), startPoint.y + adjustHeight, pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                                    }
+                                    const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                        taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush,startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5 + pixelToPoint(data.left) + imageWidth, startPoint.y + adjustHeight, pixelToPoint(data.width), pixelToPoint(taskbar.height), progressFormat);
+                                    }
+                                }
                             }
                             pervwidth = data.left + data.width
                           if( renderWidth >= pervwidth){
@@ -580,32 +709,65 @@ export class PdfGanttTaskbarCollection {
                             this.segmentCollection[index].left = 0;
                           }
                           else {                      
-                              if (renderWidth >= (pervwidth - data.width)) {
-                                  this.segmentCollection[index].left = 0;                                
-                              }
-                              else{
-                                  this.segmentCollection[index].left = ( (splitRenderwidth-data.left));                                 
-                              }                        
-                              if (renderWidth >= (pervwidth)) {
-                                this.segmentCollection[index].width = 0 ;                              
-                              }
-                              else{ 
-                                if(valueChangeBlocker){
-                                this.segmentCollection[index].width = pervwidth-renderWidth;
-                                valueChangeBlocker = false;
+                                if (renderWidth >= (pervwidth - data.width)) {
+                                    this.segmentCollection[index].left = 0;
+                                }
+                                else {
+                                    this.segmentCollection[index].left = ((splitRenderwidth - data.left));
+                                }
+                                if (renderWidth >= (pervwidth)) {
+                                    this.segmentCollection[index].width = 0;
+                                }
+                                else {
+                                    if (valueChangeBlocker) {
+                                        this.segmentCollection[index].width = pervwidth - renderWidth;
+                                        valueChangeBlocker = false;
+                                    }
+                                }
                             }
-                              }                          
-                        }
                             splitRenderwidth = splitRenderwidth + data.width + data.left;
                         })
                     }
                    
                      else {
                         if (this.isAutoFit()) {
-                            taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (renderWidth), pixelToPoint(taskbar.height));
+                            if (isNullOrUndefined(template.value) && isNullOrUndefined(template.image)){
+                                taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (renderWidth), pixelToPoint(taskbar.height));
+                            }
+                            else{
+                                taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (renderWidth), pixelToPoint(taskbar.height));
+                                if(!isNullOrUndefined(taskbar.taskbarTemplate.image)){
+                                    const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                    taskGraphics.drawImage(image, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight  + pixelToPoint((taskbar.height - taskbar.taskbarTemplate.image[0].height) / 0.5), (taskbar.taskbarTemplate.image[0].width/2.0), (taskbar.taskbarTemplate.image[0].height/2.0))
+                                }
+                                if(!isNullOrUndefined(taskbar.taskbarTemplate.value)){
+                                    const imageWidth : number = !isNullOrUndefined(taskbar.taskbarTemplate.image)? taskbar.taskbarTemplate.image[0].width : 0;
+                                    taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + (this.left - cumulativeWidth) + imageWidth, (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                }
+                            }
                         }
                         else {
-                            taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(renderWidth), pixelToPoint(taskbar.height));
+                            if (isNullOrUndefined(template.value) && isNullOrUndefined(template.image)){
+                                taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(renderWidth), pixelToPoint(taskbar.height));
+                            }
+                            else {
+                                taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(renderWidth), pixelToPoint(taskbar.height));
+                                if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                    const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                    taskGraphics.drawImage(image, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 1, startPoint.y + adjustHeight + 1 + pixelToPoint((taskbar.height - taskbar.taskbarTemplate.image[0].height) / 2.0), pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height))
+                                }
+                                if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                    const imageWidth : number = !isNullOrUndefined(taskbar.taskbarTemplate.image)? taskbar.taskbarTemplate.image[0].width : 0;
+                                    this.stringLeft = pixelToPoint(this.left);
+                                    const result: PdfStringLayoutResult = this.getWidth(taskbar.taskbarTemplate.value, detail.endPoint - this.stringLeft, 15);
+                                    taskGraphics.drawString(result.lines[0].text, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + imageWidth, (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                    if (!isNullOrUndefined(result.remainder)) {
+                                        this.remainString = result.remainder;
+                                        this.stringLeft = detail.endPoint;
+                                        // this.rightTaskLabel.isLeftCalculated = true;
+                                    }
+                                }
+                            }
                         }
                         if (taskbar.isAutoSchedule && !taskbar.isSpliterTask) {
                             let progressBoundsWidth: number = 0;
@@ -614,19 +776,38 @@ export class PdfGanttTaskbarCollection {
                             } else {
                                 progressBoundsWidth = renderWidth;
                             }
-                            if (this.isAutoFit()) {
-                                taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (progressBoundsWidth), pixelToPoint(taskbar.height));
-                            }
-                            else {
-                                taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
+                            if (isNullOrUndefined(template.image) && isNullOrUndefined(template.value)) {
+                                if (this.isAutoFit()) {
+                                    taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (progressBoundsWidth), pixelToPoint(taskbar.height));
+                                }
+                                else {
+                                    taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
+                                }
                             }
                             this.progressWidth -= progressBoundsWidth;
                             if (this.parent.labelSettings.taskLabel && !isNullOrUndefined(this.taskLabel)) {
                                 updatedWidth = progressBoundsWidth;
                                 if (isLabelString) {
-                                    updatedWidth = this.width;
+                                    updatedWidth = renderWidth;
                                 }
-                                taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                this.stringLeft = this.left;
+                                if(isNullOrUndefined(taskbar.taskbarTemplate.value)){
+                                    const result: PdfStringLayoutResult = this.getWidth(this.taskLabel.toString(), detail.endPoint - this.stringLeft, 15);
+                                    taskGraphics.drawString(result.lines[0].text, taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                    if (!isNullOrUndefined(result.remainder)) {
+                                        this.remainString = result.remainder;
+                                        this.stringLeft = detail.endPoint;
+                                        // this.rightTaskLabel.isLeftCalculated = true;
+                                    } 
+                                }
+                                else{
+                                    if (this.isAutoFit()) {
+                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.left - cumulativeWidth), (startPoint.y + adjustHeight), (updatedWidth), pixelToPoint(this.height), progressFormat);
+                                    }
+                                    else {
+                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                    }
+                                }
                             }
                         }
                     }
@@ -637,11 +818,13 @@ export class PdfGanttTaskbarCollection {
                         } else {
                             progressBoundsWidth = renderWidth;
                         }
-                        if (this.isAutoFit()) {
-                            taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (progressBoundsWidth), pixelToPoint(taskbar.height));
-                        }
-                        else {
-                            taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
+                        if (isNullOrUndefined(template.image) && isNullOrUndefined(template.value)){
+                            if (this.isAutoFit()) {
+                                taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + (this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, (progressBoundsWidth), pixelToPoint(taskbar.height));
+                            }
+                            else {
+                                taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
+                            }
                         }
                         this.progressWidth -= progressBoundsWidth;
                         if (this.parent.labelSettings.taskLabel && !isNullOrUndefined(this.taskLabel)) {
@@ -650,10 +833,10 @@ export class PdfGanttTaskbarCollection {
                                 updatedWidth = this.width;
                             }
                             if (this.isAutoFit()) {
-                                taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + (this.left - cumulativeWidth), (startPoint.y + adjustHeight), (updatedWidth), pixelToPoint(this.height), progressFormat);
+                                taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.left - cumulativeWidth), (startPoint.y + adjustHeight), (updatedWidth), pixelToPoint(this.height), progressFormat);
                             }
                             else {
-                                taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                             }
                         }
                     }
@@ -689,25 +872,6 @@ export class PdfGanttTaskbarCollection {
                     this.taskStartPoint = { ...startPoint };
                     this.isStartPoint = true;
                 }
-                if (!isNullOrUndefined(taskbar.indicators) && taskbar.indicators.length > 0) {
-                    taskbar.indicators.map((items: IIndicator, index: number) => {
-                        const currendate = this.parent.dateValidationModule.getDateFromFormat(items.date, true)
-                        if (detail.startDate <= currendate && currendate <= detail.endDate) {
-                            const leftValue: number = this.parent.chartRowsModule.getIndicatorleft(items.date);
-                            if (!isNullOrUndefined(items.base64)) {
-                                const image: PdfBitmap = new PdfBitmap(items.base64);
-                                if (this.isAutoFit()) {
-                                    taskGraphics.drawImage(image, startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 10, startPoint.y + adjustHeight, imageSize, imageSize)
-                                    taskGraphics.drawString(items.name, new PdfStandardFont(PdfFontFamily.Helvetica, 10), null, PdfBrushes.Black, startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 10 + imageSize, startPoint.y + adjustHeight, null);
-                                }
-                                else {
-                                    taskGraphics.drawImage(image, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 10, startPoint.y + adjustHeight, imageSize, imageSize)
-                                    taskGraphics.drawString(items.name, new PdfStandardFont(PdfFontFamily.Helvetica, 10), null, PdfBrushes.Black, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 10 + imageSize, startPoint.y + adjustHeight, null);
-                                }
-                            }
-                        }
-                    })
-                }
                 if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
                     if (this.isAutoFit()) {
                         taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
@@ -735,6 +899,16 @@ export class PdfGanttTaskbarCollection {
                             new PdfColor(taskbar.unscheduledTaskBarColor)
                         );
                         taskGraphics.drawRectangle(brush2, startPoint.x + (taskbar.left + 0.5) + (taskbar.width) / 2, startPoint.y + adjustHeight, (taskbar.width) / 2, pixelToPoint(taskbar.height));
+                        if (template.value || template.image) {
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                taskGraphics.drawImage(image, startPoint.x + (taskbar.left + 0.5), startPoint.y + adjustHeight, (taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                            }
+                            const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush,startPoint.x + (taskbar.left + 0.5) + imageWidth, startPoint.y + adjustHeight, (taskbar.width), pixelToPoint(this.height), progressFormat);
+                            }
+                        }
                     }
                     else {
                         brush1 = new PdfLinearGradientBrush(
@@ -752,6 +926,16 @@ export class PdfGanttTaskbarCollection {
                             new PdfColor(taskbar.unscheduledTaskBarColor)
                         );
                         taskGraphics.drawRectangle(brush2, startPoint.x + pixelToPoint(taskbar.left + 0.5) + pixelToPoint(taskbar.width) / 2, startPoint.y + adjustHeight, pixelToPoint(taskbar.width) / 2, pixelToPoint(taskbar.height));
+                        if (template.value || template.image) {
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                taskGraphics.drawImage(image, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                            }
+                            const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush,startPoint.x + pixelToPoint(taskbar.left + 0.5) + imageWidth, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(this.height), progressFormat);
+                            }
+                        }
                     }
                 }
                 else if (!taskbar.isAutoSchedule && taskbar.isParentTask) {
@@ -812,9 +996,29 @@ export class PdfGanttTaskbarCollection {
                         if (data.width !== 0) {
                             if (this.isAutoFit()) {
                                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + (taskbar.left + 0.5 + data.left), startPoint.y + adjustHeight, (data.width), pixelToPoint(taskbar.height));
+                                if (template.value || template.image) {
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                        const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                        taskGraphics.drawImage(image,startPoint.x + (taskbar.left + 0.5 + data.left), startPoint.y + adjustHeight, pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                                    }
+                                    const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                        taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush,startPoint.x + (taskbar.left + 0.5 + data.left) + imageWidth, startPoint.y + adjustHeight, pixelToPoint(data.width), pixelToPoint(taskbar.height), progressFormat);
+                                    }
+                                }
                             }
                             else {
                                 taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5 + data.left), startPoint.y + adjustHeight, pixelToPoint(data.width), pixelToPoint(taskbar.height));
+                                if (template.value || template.image) {
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                        const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                        taskGraphics.drawImage(image, startPoint.x + pixelToPoint(taskbar.left + 0.5 + data.left), startPoint.y + adjustHeight,  pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                                    }
+                                    const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                                    if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                        taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush,startPoint.x + pixelToPoint(taskbar.left + 0.5 + data.left) + imageWidth, startPoint.y + adjustHeight, pixelToPoint(data.width), pixelToPoint(taskbar.height), progressFormat);
+                                    }
+                                }
                             }
                         }
                     })
@@ -822,28 +1026,59 @@ export class PdfGanttTaskbarCollection {
                 else {
                     if (this.isAutoFit()) {
                         taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + (taskbar.left + 0.5), startPoint.y + adjustHeight, (taskbar.width), pixelToPoint(taskbar.height));
+                        if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                            if (!isNullOrUndefined(this.remainString)) {
+                                const result: PdfStringLayoutResult = this.getWidth(this.remainString, detail.endPoint - this.stringLeft, 15);
+                                taskGraphics.drawString(result.lines[0].text , customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + (this.left), (startPoint.y + adjustHeight), (updatedWidth), (this.height), progressFormat);
+                            }
+                        }
                     }
                     else {
                         taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
+                        if(!isNullOrUndefined(this.remainString)){
+                            var result = this.getWidth(this.remainString, taskbar.width - taskbar.left, 15);
+                            taskGraphics.drawString(result.lines[0].text, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + pixelToPoint(taskbar.left), (startPoint.y + adjustHeight), result.actualSize.width, pixelToPoint(this.height), progressFormat);
+                        } 
                     }
                 }
                 if (this.isScheduledTask && taskbar.isAutoSchedule && !taskbar.isSpliterTask) {
-                    if (this.isAutoFit()) {
-                        taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + (taskbar.left + 0.5), startPoint.y + adjustHeight, (taskbar.progressWidth), pixelToPoint(taskbar.height));
-                    }
-                    else {
-                        taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
+                    if (isNullOrUndefined(template.image) && isNullOrUndefined(template.value)){
+                        if (this.isAutoFit()) {
+                            taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + (taskbar.left + 0.5), startPoint.y + adjustHeight, (taskbar.progressWidth), pixelToPoint(taskbar.height));
+                        }
+                        else {
+                            taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.progressWidth), pixelToPoint(taskbar.height));
+                        }
                     }
                     if (!isNullOrUndefined(this.taskLabel)) {
                         updatedWidth = this.progressWidth;
                         if (isLabelString) {
                             updatedWidth = this.width;
                         }
-                        if (this.isAutoFit()) {
-                            taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + (this.left), (startPoint.y + adjustHeight), (updatedWidth), pixelToPoint(this.height), progressFormat);
+                        if (isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                            if (this.isAutoFit()) {
+                                taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.left), (startPoint.y + adjustHeight), (updatedWidth), pixelToPoint(this.height), progressFormat);
+                            }
+                            else {
+                                if (isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                    if (!isNullOrUndefined(this.remainString)) {
+                                        const result: PdfStringLayoutResult = this.getWidth(this.remainString, detail.endPoint - this.stringLeft, 15);
+                                        taskGraphics.drawString(result.lines[0].text, font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                    }
+                                }
+                            }
                         }
-                        else {
-                            taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                        if (!isNullOrUndefined(this.taskLabel)) {
+                            updatedWidth = this.progressWidth;
+                            if (isLabelString) {
+                                updatedWidth = this.width;
+                            }
+                            if (this.isAutoFit()) {
+                                taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + (this.left), (startPoint.y + adjustHeight), (updatedWidth), pixelToPoint(this.height), progressFormat);
+                            }
+                            else {
+                                taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                            }
                         }
                     }
                 }
@@ -866,25 +1101,6 @@ export class PdfGanttTaskbarCollection {
                 if (!this.isStartPoint) {
                     this.taskStartPoint = { ...startPoint };
                     this.isStartPoint = true;
-                }
-                if (!isNullOrUndefined(taskbar.indicators) && taskbar.indicators.length > 0) {
-                    taskbar.indicators.map((items: IIndicator, index: number) => {
-                        const currendate = this.parent.dateValidationModule.getDateFromFormat(items.date, true)
-                        if (detail.startDate <= currendate && currendate <= detail.endDate) {
-                            const leftValue: number = this.parent.chartRowsModule.getIndicatorleft(items.date);
-                            if (!isNullOrUndefined(items.base64)) {
-                                const image: PdfBitmap = new PdfBitmap(items.base64);
-                                if (this.isAutoFit()) {
-                                    taskGraphics.drawImage(image, startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 10, startPoint.y + adjustHeight, imageSize, imageSize)
-                                    taskGraphics.drawString(items.name, new PdfStandardFont(PdfFontFamily.Helvetica, 10), null, PdfBrushes.Black, startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 10 + imageSize, startPoint.y + adjustHeight, null);
-                                }
-                                else {
-                                    taskGraphics.drawImage(image, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 10, startPoint.y + adjustHeight, imageSize, imageSize)
-                                    taskGraphics.drawString(items.name, new PdfStandardFont(PdfFontFamily.Helvetica, 10), null, PdfBrushes.Black, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 10 + imageSize, startPoint.y + adjustHeight, null);
-                                }
-                            }
-                        }
-                    })
                 }
                 if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
                     if (this.isAutoFit()) {
@@ -931,6 +1147,16 @@ export class PdfGanttTaskbarCollection {
                             new PdfColor(taskbar.unscheduledTaskBarColor)
                         );
                         taskGraphics.drawRectangle(brush2, startPoint.x + pixelToPoint(taskbar.left) + 0.5 + pixelToPoint(detail.totalWidth) / 2, startPoint.y + adjustHeight, pixelToPoint(detail.totalWidth) / 2, pixelToPoint(taskbar.height));
+                        if (template.value || template.image) {
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                                const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                                taskGraphics.drawImage(image, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height));
+                            }
+                            const imageWidth: number = !isNullOrUndefined(taskbar.taskbarTemplate.image) ? taskbar.taskbarTemplate.image[0].width : 0;
+                            if (!isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                                taskGraphics.drawString(taskbar.taskbarTemplate.value, customizedFont, customizedFontColor, customizedFontBrush,startPoint.x + pixelToPoint(taskbar.left + 0.5) + imageWidth, startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(this.height), progressFormat);
+                            }
+                        }
                     }
                 }
                 else if (!this.isScheduledTask && this.unscheduledTaskBy === "endDate") {
@@ -964,6 +1190,12 @@ export class PdfGanttTaskbarCollection {
                     }
                     else {
                         taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(detail.totalWidth), pixelToPoint(taskbar.height));
+                        if(!isNullOrUndefined(taskbar.taskbarTemplate.value)){
+                            if (!isNullOrUndefined(this.remainString)) {
+                                const result: PdfStringLayoutResult = this.getWidth(this.remainString, detail.endPoint - this.stringLeft, 15);
+                                taskGraphics.drawString(result.lines[0].text, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, (startPoint.y + adjustHeight), pixelToPoint(detail.totalWidth), pixelToPoint(this.height), progressFormat);
+                            }
+                        }
                     }
                 }
                 if (this.isScheduledTask) {
@@ -973,11 +1205,13 @@ export class PdfGanttTaskbarCollection {
                     } else {
                         progressBoundsWidth = detail.totalWidth;
                     }
-                    if (this.isAutoFit()) {
-                        taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + (taskbar.left) + 0.5, startPoint.y + adjustHeight, (progressBoundsWidth), pixelToPoint(taskbar.height));
-                    }
-                    else {
-                        taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
+                    if (isNullOrUndefined(template.image) && isNullOrUndefined(template.value)){
+                        if (this.isAutoFit()) {
+                            taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + (taskbar.left) + 0.5, startPoint.y + adjustHeight, (progressBoundsWidth), pixelToPoint(taskbar.height));
+                        }
+                        else {
+                            taskGraphics.drawRectangle(progressPen, progressBrush, startPoint.x + pixelToPoint(taskbar.left) + 0.5, startPoint.y + adjustHeight, pixelToPoint(progressBoundsWidth), pixelToPoint(taskbar.height));
+                        }
                     }
                     this.progressWidth -= progressBoundsWidth;
                     if (!isNullOrUndefined(this.taskLabel)) {
@@ -986,10 +1220,10 @@ export class PdfGanttTaskbarCollection {
                             updatedWidth = this.width;
                         }
                         if (this.isAutoFit()) {
-                            taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + (this.left), (startPoint.y + adjustHeight), (updatedWidth), pixelToPoint(this.height), progressFormat);
+                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.left), (startPoint.y + adjustHeight), (updatedWidth), pixelToPoint(this.height), progressFormat);
                         }
                         else {
-                            taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                         }
                     }
                 }
@@ -1129,14 +1363,43 @@ export class PdfGanttTaskbarCollection {
                     }
                     this.isCompletedAutotask = false;
                     this.autoWidth -= detail.totalWidth;
-                }
-
-
+                }     
             }
+            if(!isNullOrUndefined(taskbar.indicators) && taskbar.indicators.length > 0){
+                    
+                taskbar.indicators.map((items: IIndicator, index: number) => {
+                    const currendate = this.parent.dateValidationModule.getDateFromFormat(items.date, true)
+                    if (detail.startDate <= currendate && currendate <= detail.endDate) {
+                        const leftValue: number = this.parent.chartRowsModule.getIndicatorleft(items.date);
+                        if (!isNullOrUndefined(items.base64)) {
+                            const image: PdfBitmap = new PdfBitmap(items.base64);
+                            if (this.isAutoFit()) {
+                                taskGraphics.drawImage(image, startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 10, startPoint.y + adjustHeight, imageSize, imageSize)
+                                taskGraphics.drawString(items.name, font, null, PdfBrushes.Black, startPoint.x + (leftValue - cumulativeWidth) + 0.5 + 15 + imageSize, startPoint.y + adjustHeight, null);
+                            }
+                            else {
+                                taskGraphics.drawImage(image, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 10, startPoint.y + adjustHeight, imageSize, imageSize)
+                                taskGraphics.drawString(items.name, font, null, PdfBrushes.Black, startPoint.x + pixelToPoint(leftValue - cumulativeWidth) + 0.5 + 15 + imageSize, startPoint.y + adjustHeight, null);
+                            }
+                        }
+                    }
+                })
+                  
+            
+        }
         } else {
-            this.drawMilestone(page, startPoint, detail, cumulativeWidth);
+            this.drawMilestone(page, startPoint, detail, cumulativeWidth, taskbar);
             if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
-                this.drawMilestone(page, startPoint, detail, cumulativeWidth);
+                this.drawMilestone(page, startPoint, detail, cumulativeWidth,taskbar);
+            }
+        }
+        if (this.baselineEndDate >= detail.startDate && !renderedBaseline && detail.startIndex != 1 && this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+            const adjustHeight: number = pixelToPoint((this.parent.rowHeight - this.height) / 4.5);
+            if (this.isAutoFit()) {
+                taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
+            }
+            else {
+                taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
             }
         }
         if (this.baselineEndDate >= detail.startDate && !renderedBaseline && detail.startIndex != 1 && this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
@@ -1160,66 +1423,245 @@ export class PdfGanttTaskbarCollection {
      * @returns {void}
      * Draw task right side label
      */
-    private drawRightLabel(page: PdfPage, startPoint: PointF, detail: TimelineDetails, cumulativeWidth: number): void {
+    private drawRightLabel(page: PdfPage, startPoint: PointF,
+        detail: TimelineDetails, cumulativeWidth: number): void {
         let left: number;
         const graphics: PdfGraphics = page.graphics;
-        if (this.rightTaskLabel.isLeftCalculated) {
-            left = this.rightTaskLabel.left;
-        } else {
+        if (!isNullOrUndefined(this.rightTaskLabel.value)) {
+            if (this.rightTaskLabel.isLeftCalculated) {
+                left = this.rightTaskLabel.left;
+            } else {
+                if (this.isAutoFit()) {
+                    left = (this.rightTaskLabel.left);
+                }
+                else {
+                    left = pixelToPoint(this.rightTaskLabel.left);
+                }
+            }
+            let actualLeft: number;
             if (this.isAutoFit()) {
-                left = (this.rightTaskLabel.left);
+                actualLeft = left - (cumulativeWidth) + startPoint.x;
             }
             else {
-                left = pixelToPoint(this.rightTaskLabel.left);
+                actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
             }
-        }
-        let actualLeft: number;
-        if (this.isAutoFit()) {
-            actualLeft = left - (cumulativeWidth) + startPoint.x;
+            if (detail.startPoint <= left && left < detail.endPoint &&
+                !isNullOrUndefined(this.rightTaskLabel.value) && !this.rightTaskLabel.isCompleted) {
+                const result: PdfStringLayoutResult = this.getWidth(this.rightTaskLabel.value, detail.endPoint - left, 15);
+                let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+                if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
+                    this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+                    font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
+                }
+                const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
+                const point: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
+                const size: SizeF = new SizeF(result.actualSize.width, result.actualSize.height);
+                const labelBounds: RectangleF = new RectangleF(point, size);
+                const labelFormat: PdfStringFormat = new PdfStringFormat();
+                labelFormat.alignment = PdfTextAlignment.Right;
+                labelFormat.lineAlignment = PdfVerticalAlignment.Middle;
+                if (result.actualSize.width > 0) {
+                    const fontColor: PdfPen = null;
+                    const fontBrush: PdfBrush = new PdfSolidBrush(this.labelColor);
+                    /* eslint-disable-next-line */
+                    graphics.drawString(result.lines[0].text, font, fontColor, fontBrush, labelBounds.x, labelBounds.y, result.actualSize.width, result.actualSize.height, labelFormat);
+                    if (result.remainder !== null) {
+                        this.rightTaskLabel.value = result.remainder;
+                        this.rightTaskLabel.left = detail.endPoint;
+                        this.rightTaskLabel.isLeftCalculated = true;
+                    } else {
+                        this.rightTaskLabel.isCompleted = true;
+                    }
+                } else {
+                    this.rightTaskLabel.left = detail.endPoint;
+                }
+            }
         }
         else {
-            actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
-        }
-        if (detail.startPoint <= left && left < detail.endPoint &&
-            !isNullOrUndefined(this.rightTaskLabel.value) && !this.rightTaskLabel.isCompleted) {
-            const result: PdfStringLayoutResult = this.getWidth(this.rightTaskLabel.value, detail.endPoint - left, 15);
-            let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
-            if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
-                this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
-                font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
-            }
-            const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
-            const point: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
-            const size: SizeF = new SizeF(result.actualSize.width, result.actualSize.height);
-            const labelBounds: RectangleF = new RectangleF(point, size);
-            const labelFormat: PdfStringFormat = new PdfStringFormat();
-            labelFormat.alignment = PdfTextAlignment.Right;
-            labelFormat.lineAlignment = PdfVerticalAlignment.Middle;
-            if (result.actualSize.width > 0) {
-                const fontColor: PdfPen = null;
-                const fontBrush: PdfBrush = new PdfSolidBrush(this.labelColor);
-                /* eslint-disable-next-line */
-                graphics.drawString(result.lines[0].text, font, fontColor, fontBrush, labelBounds.x, labelBounds.y, result.actualSize.width, result.actualSize.height, labelFormat);
-                if (result.remainder !== null) {
-                    this.rightTaskLabel.value = result.remainder;
-                    this.rightTaskLabel.left = detail.endPoint;
-                    this.rightTaskLabel.isLeftCalculated = true;
-                } else {
-                    this.rightTaskLabel.isCompleted = true;
+            if (!isNullOrUndefined(this.labelSettings.rightLabel.image)) {
+                this.previousWidthofRightImage = 0;
+                this.previousWidthofRightValue = 0;
+                for (let i: number = 0; i < this.labelSettings.rightLabel.image.length; i++) {
+                    this.drawRigthlabelImage(page, startPoint, detail, cumulativeWidth,
+                        this.labelSettings.rightLabel.image[i as number], this.previousWidthofRightImage);
+                    if (this.labelSettings.rightLabel.value) {
+                        const value: string[] = this.labelSettings.rightLabel.value.split(',');
+                        if (value) {
+                            this.rightTaskLabel.isCompleted = false;
+                            this.drawRightLabelValue(page, startPoint, detail, cumulativeWidth, value[i as number]);
+                        }
+                    }
                 }
+            }
+            else if (this.labelSettings.rightLabel.value) {
+                this.drawRightLabelValue(page, startPoint, detail, cumulativeWidth, this.labelSettings.rightLabel.value);
+            }
+        }
+    }
+    private drawRigthlabelImage(page: PdfPage, startPoint: PointF, detail: TimelineDetails,
+        cumulativeWidth: number, rightImage: Image, widthofRightImage: number): void {
+        let left: number;
+        const graphics: PdfGraphics = page.graphics;
+        let labelBounds: RectangleF;
+        if (!isNullOrUndefined(this.labelSettings.rightLabel) && !isNullOrUndefined(this.labelSettings.rightLabel.image)) {
+            if (this.labelSettings.isLeftCalculated) {
+                left = this.rightTaskLabel.left;
             } else {
-                this.rightTaskLabel.left = detail.endPoint;
+                if (this.isAutoFit()) {
+                    if (this.labelSettings.rightLabel.image.length > 1) {
+                        left = this.rightTaskLabel.left + + this.previousWidthofRightValue;
+                        this.previousWidthofRightImage = rightImage.width;
+                    } else {
+                        left = (this.rightTaskLabel.left);
+                    }
+                }
+                else {
+                    let value: string[];
+                    if (!isNullOrUndefined(this.labelSettings.rightLabel.value)) {
+                        value = this.labelSettings.rightLabel.value.split(',');
+                    }
+                    if (this.labelSettings.rightLabel.image.length > 1 && value.length > 1) {
+                        left = pixelToPoint(this.rightTaskLabel.left) + this.previousWidthofRightValue;
+                        this.previousWidthofRightImage = rightImage.width;
+                    }
+                    else if (this.labelSettings.rightLabel.image.length > 1) {
+                        left = pixelToPoint(this.rightTaskLabel.left) + this.previousWidthofRightImage;
+                        this.previousWidthofRightImage = rightImage.width;
+                    }
+                    else {
+                        left = pixelToPoint(this.rightTaskLabel.left);
+                    }
+                }
+            }
+            let actualLeft: number;
+            if (this.isAutoFit()) {
+                actualLeft = left - (cumulativeWidth) + startPoint.x;
+            }
+            else {
+                actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
+            }
+            if (detail.startPoint <= left && left < detail.endPoint &&
+                !isNullOrUndefined(this.labelSettings.rightLabel) && !this.rightTaskLabel.isCompleted) {
+                const result: SizeF = new SizeF(rightImage.width, rightImage.height);
+                const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.height) / 2;
+                const point: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
+                const size: SizeF = new SizeF(result.width, result.height);
+                labelBounds = new RectangleF(point, size);
+                const image: PdfBitmap = new PdfBitmap(rightImage.base64);
+                if (result.width > 0) {
+                    /* eslint-disable-next-line */
+                    graphics.drawImage(image, labelBounds.x, labelBounds.y, result.width, result.height);
+                    if (this.labelSettings.rightLabel.value !== null) {
+                        this.rightTaskLabel.isLeftCalculated = true;
+                    } else {
+                        if (isNullOrUndefined(this.labelSettings.rightLabel.value)) {
+                            this.rightTaskLabel.isCompleted = true;
+                        }
+
+                    }
+                } else {
+                    this.rightTaskLabel.left = detail.endPoint;
+                }
+            }
+        }
+    }
+    private drawRightLabelValue(page: PdfPage, startPoint: PointF, detail: TimelineDetails, cumulativeWidth: number,
+        rightString: string): void {
+        let left: number;
+        const graphics: PdfGraphics = page.graphics;
+        if (!isNullOrUndefined(this.labelSettings.rightLabel.value)) {
+            if (this.labelSettings.isLeftCalculated) {
+                left = this.rightTaskLabel.left;
+            } else {
+                if (this.isAutoFit()) {
+                    if (this.labelSettings.rightLabel.image) {
+                        if (this.labelSettings.rightLabel.image.length > 1) {
+                            left = this.rightTaskLabel.left + this.previousWidthofRightImage + this.previousWidthofRightValue;
+                            if (!isNullOrUndefined(rightString)) {
+                                const result: PdfStringLayoutResult = this.getWidthofrightLabel(rightString, detail.endPoint - left, 15);
+                                this.previousWidthofRightValue += result.actualSize.width + this.previousWidthofRightImage;
+                            }
+                        }
+                        else {
+                            left = this.rightTaskLabel.left + this.labelSettings.rightLabel.image[0].width;
+                        }
+                    }
+                    else {
+                        left = (this.rightTaskLabel.left);
+                    }
+
+                }
+                else {
+                    if (this.labelSettings.rightLabel.image) {
+                        if (this.labelSettings.rightLabel.image.length > 1) {
+                            left = pixelToPoint(this.rightTaskLabel.left) + this.previousWidthofRightImage + this.previousWidthofRightValue;
+                            if (!isNullOrUndefined(rightString)) {
+                                const result: PdfStringLayoutResult = this.getWidthofrightLabel(rightString, detail.endPoint - left, 15);
+                                this.previousWidthofRightValue += result.actualSize.width + this.previousWidthofRightImage;
+                            }
+                        }
+                        else {
+                            left = pixelToPoint(this.rightTaskLabel.left) + this.labelSettings.rightLabel.image[0].width;
+
+                        }
+                    }
+                    else {
+                        left = pixelToPoint(this.rightTaskLabel.left);
+                    }
+                }
+            }
+            let actualLeft: number;
+            if (this.isAutoFit()) {
+                actualLeft = left - (cumulativeWidth) + startPoint.x;
+            }
+            else {
+                actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
+            }
+            if (detail.startPoint <= left && left < detail.endPoint &&
+                !isNullOrUndefined(rightString) && !this.rightTaskLabel.isCompleted) {
+                const result: PdfStringLayoutResult = this.getWidthofrightLabel(rightString, detail.endPoint - left, 15);
+                let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+                if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
+                    this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+                    font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
+                }
+                const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
+                const point: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
+                const size: SizeF = new SizeF(result.actualSize.width, result.actualSize.height);
+                const labelBound: RectangleF = new RectangleF(point, size);
+                const labelFormat: PdfStringFormat = new PdfStringFormat();
+                labelFormat.alignment = PdfTextAlignment.Right;
+                labelFormat.lineAlignment = PdfVerticalAlignment.Middle;
+                if (result.actualSize.width > 0) {
+                    const fontColor: PdfPen = null;
+                    const fontBrush: PdfBrush = new PdfSolidBrush(this.labelColor);
+                    const newFont : PdfFont = (this.labelSettings.rightLabel.fontStyle.fontSize) ? new PdfStandardFont(this.labelSettings.rightLabel.fontStyle.fontFamily,this.labelSettings.rightLabel.fontStyle.fontSize,this.labelSettings.rightLabel.fontStyle.fontStyle) : font;
+                    const newFontBrush : PdfBrush = this.labelSettings.rightLabel.fontStyle.fontColor ?  new PdfSolidBrush(this.labelSettings.rightLabel.fontStyle.fontColor) : fontBrush;
+                    /* eslint-disable-next-line */
+                    graphics.drawString(rightString, newFont, fontColor, newFontBrush, labelBound.x, labelBound.y, result.actualSize.width, result.actualSize.height, labelFormat);
+                    if (!isNullOrUndefined(result.remainder) && result.remainder !== null) {
+                        this.rightTaskLabel.value = result.remainder;
+                        this.rightTaskLabel.left = detail.endPoint;
+                        this.rightTaskLabel.isLeftCalculated = true;
+                    } else {
+                        if (isNullOrUndefined(this.labelSettings.rightLabel.value)) {
+                            this.rightTaskLabel.isCompleted = true;
+                        }
+                    }
+                } else {
+                    this.rightTaskLabel.left = detail.endPoint;
+                }
             }
         }
     }
     /**
-     * @param {PdfPage} page .
-     * @param {PointF} startPoint .
-     * @param {TimelineDetails} detail .
-     * @param {number} cumulativeWidth .
-     * @returns {void}
-     * Draw task left task label
-     */
+    * @param {PdfPage} page .
+    * @param {PointF} startPoint .
+    * @param {TimelineDetails} detail .
+    * @param {number} cumulativeWidth .
+    * @returns {void}
+    * Draw task left task label
+    */
     private drawLeftLabel(page: PdfPage, startPoint: PointF, detail: TimelineDetails, cumulativeWidth: number): void {
         const graphics: PdfGraphics = page.graphics;
         let left: number;
@@ -1251,7 +1693,7 @@ export class PdfGanttTaskbarCollection {
                 && !this.leftTaskLabel.isCompleted) {
                 const result: PdfStringLayoutResult = this.getWidth(this.leftTaskLabel.value, detail.endPoint - left, 15);
                 let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
-                if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) && 
+                if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
                     this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
                     font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
                 }
@@ -1278,9 +1720,250 @@ export class PdfGanttTaskbarCollection {
                 }
             }
         }
+        else {
+            if (!isNullOrUndefined(this.labelSettings.leftLabel) && !isNullOrUndefined(this.labelSettings.leftLabel.image)) {
+                this.previousWidthofLeftImage = 0;
+                this.previousWidthofLeftValue = 0;
+                this.totalLeftWidth = 0;
+                for (let i: number = 0; i < this.labelSettings.leftLabel.image.length; i++) {
+                    let value: string[];
+                    let result: PdfStringLayoutResult;
+                    if (!isNullOrUndefined(this.labelSettings.leftLabel.value)) {
+                        value = this.labelSettings.leftLabel.value.split(',');
+                        result = this.getWidth(value[i as number], Number.MAX_VALUE, 15);
+                    }
+                    const totalstringWidth: number = !isNullOrUndefined(result) ? result.actualSize.width : 0;
+                    this.totalLeftWidth += this.labelSettings.leftLabel.image[i as number].width + totalstringWidth;
+                }
+                for (let i: number = 0; i < this.labelSettings.leftLabel.image.length; i++) {
+                    this.drawLeftLabelImage(page, startPoint, detail, cumulativeWidth, this.labelSettings.leftLabel.image[i as number]);
+                    if (this.labelSettings.leftLabel.value) {
+                        const value: string[] = this.labelSettings.leftLabel.value.split(',');
+                        if (value) {
+                            this.drawLeftLabelValue(page, startPoint, detail, cumulativeWidth, value[i as number]);
+                        }
+                    }
+                }
+
+            }
+            else if (!isNullOrUndefined(this.labelSettings.leftLabel) && !isNullOrUndefined(this.labelSettings.leftLabel.value)) {
+                this.drawLeftLabelValue(page, startPoint, detail, cumulativeWidth, this.labelSettings.leftLabel.value);
+            }
+        }
+    }
+    private drawLeftLabelImage(page: PdfPage, startPoint: PointF, detail: TimelineDetails, cumulativeWidth: number,
+        leftLabelImage: Image): void {
+        const graphics: PdfGraphics = page.graphics;
+        let left: number;
+        let labelLeft: number = 0;
+        labelLeft = this.left;
+        if (!isNullOrUndefined(this.labelSettings.leftLabel) && !isNullOrUndefined(this.labelSettings.leftLabel.image)) {
+            if (!this.leftTaskLabel.isLeftCalculated) {
+                const result: SizeF = new SizeF(leftLabelImage.width, leftLabelImage.height);
+                const reduceLeft: number = this.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
+                const value: string[] = this.labelSettings.leftLabel.value.split(',');
+                if (this.isAutoFit()) {
+                    if (this.labelSettings.leftLabel.image.length > 0 && value.length > 0) {
+                        left = labelLeft - this.totalLeftWidth - result.width;
+                        this.previousWidthofLeftImage += result.width;
+                    } else {
+                        left = (labelLeft - reduceLeft) - result.width;
+                    }
+
+                }
+                else {
+                    if (this.labelSettings.leftLabel.image.length > 0 && value.length > 0) {
+                        left = pixelToPoint(labelLeft) - this.totalLeftWidth - result.width;
+                        this.previousWidthofLeftImage += result.width;
+                    }
+                    else {
+                        left = pixelToPoint(labelLeft - reduceLeft) - result.width;
+                    }
+                }
+                this.leftTaskLabel.left = left;
+                this.leftTaskLabel.isLeftCalculated = true;
+            } else {
+                if (this.labelSettings.leftLabel.image.length > 1) {
+                    left = this.leftTaskLabel.left + this.previousWidthofLeftValue;
+                }
+                else {
+                    left = this.leftTaskLabel.left;
+                }
+
+            }
+            let actualLeft: number;
+            if (this.isAutoFit()) {
+                actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
+            }
+            else {
+                actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
+            }
+            if (detail.startPoint <= left && left < detail.endPoint && !isNullOrUndefined(leftLabelImage)
+                && !this.leftTaskLabel.isCompleted) {
+                const result: SizeF = new SizeF(leftLabelImage.width, leftLabelImage.height);
+                const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.height) / 2;
+                const rightLabelpoint: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
+                const rightLabelSize: SizeF = new SizeF(result.width, result.height);
+                const rightLabelBounds: RectangleF = new RectangleF(rightLabelpoint, rightLabelSize);
+                const image: PdfBitmap = new PdfBitmap(leftLabelImage.base64);
+                if (result.width > 0) {
+                    /* eslint-disable-next-line */
+                    graphics.drawImage(image, rightLabelBounds.x, rightLabelBounds.y, result.width, result.height);
+                    this.totalLeftWidth = this.totalLeftWidth - result.width;
+                } else {
+                    this.leftTaskLabel.left = detail.endPoint;
+                }
+            }
+        }
+    }
+    private drawLeftLabelValue(page: PdfPage, startPoint: PointF, detail: TimelineDetails,
+        cumulativeWidth: number, leftLabelValue: string): void {
+        const graphics: PdfGraphics = page.graphics;
+        let left: number;
+        if (!isNullOrUndefined(leftLabelValue)) {
+            let labelLeft: number = 0;
+            labelLeft = this.left;
+            if (!this.leftTaskLabel.isLeftCalculated) {
+                const result: PdfStringLayoutResult = this.getWidthofLeftLabel(leftLabelValue, Number.MAX_VALUE, 15);
+                const reduceLeft: number = this.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
+                const value: string[] = this.labelSettings.leftLabel.value.split(',');
+                if (this.isAutoFit()) {
+                    const isLeftImageExist: boolean = !isNullOrUndefined(this.labelSettings.leftLabel.image) ? true : false;
+                    const imageLength: number = isLeftImageExist ? this.labelSettings.leftLabel.image.length : 0;
+                    if (value.length === 1 && isLeftImageExist && imageLength === 1) {
+                        left = this.leftTaskLabel.left + this.previousWidthofLeftImage;
+                        this.labelSettings.left = left;
+                        const result: PdfStringLayoutResult = this.getWidthofLeftLabel(leftLabelValue, Number.MAX_VALUE, 15);
+                        this.previousWidthofLeftValue += this.previousWidthofLeftImage + result.actualSize.width;
+                    }
+                    else if (value.length > 1 && isLeftImageExist && imageLength > 1) {
+                        const totalWidth: number = (this.previousWidthofLeftValue !== 0) ? this.previousWidthofLeftValue
+                            + this.previousWidthofLeftImage : this.previousWidthofLeftImage;
+                        left = this.leftTaskLabel.left + totalWidth;
+                        this.labelSettings.left = left;
+                        const result: PdfStringLayoutResult = this.getWidthofLeftLabel(leftLabelValue, Number.MAX_VALUE, 15);
+                        this.previousWidthofLeftValue += this.previousWidthofLeftImage + result.actualSize.width;
+                    }
+                    else {
+                        left = (labelLeft - reduceLeft) - result.actualSize.width;
+                    }
+                }
+                else {
+                    left = pixelToPoint(labelLeft - reduceLeft) - result.actualSize.width;
+                }
+                this.leftTaskLabel.left = left;
+                this.leftTaskLabel.isLeftCalculated = true;
+            } else {
+                const value: string[] = this.labelSettings.leftLabel.value.split(',');
+                if (value.length === 1) {
+                    left = this.leftTaskLabel.left + this.previousWidthofLeftImage;
+                    this.labelSettings.left = left;
+                    const result: PdfStringLayoutResult = this.getWidthofLeftLabel(leftLabelValue, Number.MAX_VALUE, 15);
+                    this.previousWidthofLeftValue += this.previousWidthofLeftImage + result.actualSize.width;
+                }
+                else if (value.length > 1) {
+                    const totalWidth: number = (this.previousWidthofLeftValue !== 0) ? this.previousWidthofLeftValue + this.previousWidthofLeftImage
+                        : this.previousWidthofLeftImage;
+                    left = this.leftTaskLabel.left + totalWidth;
+                    this.labelSettings.left = left;
+                    const result: PdfStringLayoutResult = this.getWidthofLeftLabel(leftLabelValue, Number.MAX_VALUE, 15);
+                    this.previousWidthofLeftValue += this.previousWidthofLeftImage + result.actualSize.width;
+                }
+                else {
+                    left = this.leftTaskLabel.left;
+                }
+            }
+            let actualLeft: number;
+            if (this.isAutoFit()) {
+                actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
+            }
+            else {
+                actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
+            }
+            if (detail.startPoint <= left && left < detail.endPoint && !isNullOrUndefined(leftLabelValue)
+                && !this.leftTaskLabel.isCompleted) {
+                const result: PdfStringLayoutResult = this.getWidthofLeftLabel(leftLabelValue, detail.endPoint - left, 15);
+                let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+                if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
+                    this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+                    font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
+                }
+                const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
+                const rightLabelpoint: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
+                const rightLabelSize: SizeF = new SizeF(result.actualSize.width, result.actualSize.height);
+                const rightLabelBounds: RectangleF = new RectangleF(rightLabelpoint, rightLabelSize);
+                const rightLabelFormat: PdfStringFormat = new PdfStringFormat();
+                rightLabelFormat.alignment = PdfTextAlignment.Right;
+                rightLabelFormat.lineAlignment = PdfVerticalAlignment.Middle;
+                if (result.actualSize.width > 0) {
+                    const fontColor: PdfPen = null;
+                    const fontBrush: PdfBrush = new PdfSolidBrush(this.labelColor);
+                    /* eslint-disable-next-line */
+                    const newFont : PdfFont = (this.labelSettings.leftLabel.fontStyle.fontSize) ? new PdfStandardFont(this.labelSettings.leftLabel.fontStyle.fontFamily,this.labelSettings.leftLabel.fontStyle.fontSize,this.labelSettings.leftLabel.fontStyle.fontStyle) : font;
+                    const newFontBrush : PdfBrush = this.labelSettings.leftLabel.fontStyle.fontColor ?  new PdfSolidBrush(this.labelSettings.leftLabel.fontStyle.fontColor) : fontBrush;
+                    graphics.drawString(leftLabelValue, newFont, fontColor, newFontBrush, rightLabelBounds.x,
+                        rightLabelBounds.y, result.actualSize.width, result.actualSize.height, rightLabelFormat);
+                    const value: string[] = this.labelSettings.leftLabel.value.split(',');
+                    if ((!isNullOrUndefined(result.remainder)) && result.remainder !== null) {
+                        this.leftTaskLabel.value = result.remainder;
+                        this.leftTaskLabel.left = detail.endPoint;
+                    }
+                    else if (!isNullOrUndefined(this.labelSettings.leftLabel.image) &&
+                        this.labelSettings.leftLabel.image.length === 1 && value.length === 1) {
+                        this.leftTaskLabel.isCompleted = true;
+                    }
+                } else {
+                    this.leftTaskLabel.left = detail.endPoint;
+                }
+            }
+        }
     }
     private getWidth(value: string, width: number, height: number): PdfStringLayoutResult {
         let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
+        if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) && 
+            this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+            font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
+        }
+        const layouter: PdfStringLayouter = new PdfStringLayouter();
+        const progressFormat: PdfStringFormat = new PdfStringFormat();
+        progressFormat.alignment = PdfTextAlignment.Left;
+        progressFormat.wordWrap = PdfWordWrapType.Character;
+        progressFormat.lineAlignment = PdfVerticalAlignment.Middle;
+        /* eslint-disable-next-line */
+        const result: PdfStringLayoutResult = layouter.layout(value, font, progressFormat, new SizeF(width, height), false, new SizeF(width, height));
+        return result;
+    }
+    private getWidthofLeftLabel(value: string, width: number, height: number): PdfStringLayoutResult {
+        let newFont: PdfFont = new PdfStandardFont(this.labelSettings.leftLabel.fontStyle.fontFamily, this.labelSettings.leftLabel.fontStyle.fontSize);
+        let font : PdfFont;
+        if (this.labelSettings.leftLabel.fontStyle.fontSize) {
+            font = newFont;
+        }
+        else {
+            font = new PdfStandardFont(this.fontFamily, 9);
+        }
+        if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) && 
+            this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
+            font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
+        }
+        const layouter: PdfStringLayouter = new PdfStringLayouter();
+        const progressFormat: PdfStringFormat = new PdfStringFormat();
+        progressFormat.alignment = PdfTextAlignment.Left;
+        progressFormat.wordWrap = PdfWordWrapType.Character;
+        progressFormat.lineAlignment = PdfVerticalAlignment.Middle;
+        /* eslint-disable-next-line */
+        const result: PdfStringLayoutResult = layouter.layout(value, font, progressFormat, new SizeF(width, height), false, new SizeF(width, height));
+        return result;
+    }
+    private getWidthofrightLabel(value: string, width: number, height: number): PdfStringLayoutResult {
+        let newFont: PdfFont = new PdfStandardFont(this.labelSettings.rightLabel.fontStyle.fontFamily, this.labelSettings.rightLabel.fontStyle.fontSize);
+        let font : PdfFont;
+        if (this.labelSettings.rightLabel.fontStyle.fontSize) {
+            font = newFont;
+        }
+        else {
+            font = new PdfStandardFont(this.fontFamily, 9);
+        }
         if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) && 
             this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
             font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
@@ -1320,7 +2003,7 @@ export class PdfGanttTaskbarCollection {
      * @returns {void}
      * Draw milestone task
      */
-    private drawMilestone(page: PdfPage, startPoint: PointF, detail: TimelineDetails, cumulativeWidth: number): void {
+    private drawMilestone(page: PdfPage, startPoint: PointF, detail: TimelineDetails, cumulativeWidth: number,taskbar : PdfGanttTaskbarCollection): void {
         if (detail.startDate <= this.startDate && this.startDate <= detail.endDate) {
             const taskGraphics: PdfGraphics = page.graphics;
             const pageIndex: number = page.section.indexOf(page);
@@ -1347,6 +2030,22 @@ export class PdfGanttTaskbarCollection {
             }
             taskGraphics.drawRectangle(milestonePen, milestoneBrush, 0, 0, pixelToPoint(height), pixelToPoint(height));
             taskGraphics.restore(); //restoring graphics state
+            if (this.isAutoFit()) {
+                if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                    const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                    const x: number = startPoint.x + (this.left - cumulativeWidth) - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2 + ((this.parent.chartRowsModule.taskBarHeight * 0.7) - taskbar.taskbarTemplate.image[0].height) / 1.0;
+                    const width : number = taskbar.taskbarTemplate.image[0].width / 2.0;
+                    const height : number = taskbar.taskbarTemplate.image[0].height /2.0;
+                    taskGraphics.drawImage(image, x, startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2 + (((this.parent.chartRowsModule.taskBarHeight * 0.7) - taskbar.taskbarTemplate.image[0].height) / 0.5), width , height)
+                }
+            }
+            else{
+                if (!isNullOrUndefined(taskbar.taskbarTemplate.image)) {
+                    const image: PdfBitmap = new PdfBitmap(taskbar.taskbarTemplate.image[0].base64);
+                    const x : number = startPoint.x + pixelToPoint(this.left - cumulativeWidth) - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2 +  pixelToPoint((this.parent.chartRowsModule.taskBarHeight * 0.7) - taskbar.taskbarTemplate.image[0].height) / 1.0;
+                    taskGraphics.drawImage(image, x , startPoint.y + adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2 + pixelToPoint(((this.parent.chartRowsModule.taskBarHeight * 0.7)- taskbar.taskbarTemplate.image[0].height) / 0.5), pixelToPoint(taskbar.taskbarTemplate.image[0].width), pixelToPoint(taskbar.taskbarTemplate.image[0].height - 2))
+                }
+            }       
             this.endPage = this.startPage = pageIndex;
         }
     }

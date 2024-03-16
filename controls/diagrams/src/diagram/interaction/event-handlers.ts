@@ -1334,6 +1334,17 @@ export class DiagramEventHandler {
     private keyArgs: IKeyEventArgs = {};
     /** @private */
     public keyDown(evt: KeyboardEvent): void {
+        if((evt as any).fromMouseEvents){
+            if( evt.ctrlKey){
+                this.keyArgs.keyModifiers = 1;
+            }
+            if( evt.shiftKey){
+                this.keyArgs.keyModifiers = 4;
+            }
+            if( evt.shiftKey && evt.ctrlKey){
+                (this.keyArgs as any).keyModifiers =5
+            }
+         }
         if (!(this.diagram.diagramActions & DiagramAction.TextEdit) &&
             !(this.checkEditBoxAsTarget(evt)) || (evt.key === 'Escape' || evt.keyCode === 27)) {
             let i: string; const inAction: string = 'inAction';
@@ -1349,13 +1360,15 @@ export class DiagramEventHandler {
                 for (const i of Object.keys(commands)) {
                     command = this.diagram.commands[`${i}`];
                     if (command && (command.gesture.keyModifiers || command.gesture.key)) {
-                        if ((keycode === command.gesture.key || (key === Keys[command.gesture.key])
+                        //Added the split method to split the Number string from the enum while clicking the number keys
+                        if ((keycode === command.gesture.key || ( Keys[command.gesture.key] && key === Keys[command.gesture.key] || key === Keys[command.gesture.key].split("Number")[1]) 
                             || this.isDeleteKey(key, i))
                             && (((!command.gesture.keyModifiers) && (!evt.altKey) && (!evt.shiftKey) && (!ctrlKey)) ||
                                 (command.gesture.keyModifiers && (ctrlKey || evt.altKey || evt.shiftKey) &&
                                     (this.altKeyPressed(command.gesture.keyModifiers) && evt.altKey) ||
                                     (this.shiftKeyPressed(command.gesture.keyModifiers) && evt.shiftKey) ||
-                                    (this.ctrlKeyPressed(command.gesture.keyModifiers) && ctrlKey)))) {
+                                    //added the comparision condition of keyargs to execute the condition onclicking the Ctrl + Shift key
+                                    (this.ctrlKeyPressed(command.gesture.keyModifiers) && ctrlKey) && (this.keyArgs.keyModifiers === command.gesture.keyModifiers)))) {
                             const canExecute: Function = getFunction(command.canExecute);
                             if (isBlazor() || (canExecute &&
                                 canExecute({
@@ -1940,8 +1953,7 @@ export class DiagramEventHandler {
                 this.diagram.currentDrawingObject = undefined;
             }
             if (getObjectFromCollection(this.diagram.nodes, node.id) ||
-                getObjectFromCollection(this.diagram.connectors, node.id) ||
-                (this.diagram.bpmnModule && this.diagram.bpmnModule.textAnnotationConnectors.indexOf(node as Connector) > -1)) {
+                getObjectFromCollection(this.diagram.connectors, node.id)) {
                 return false;
             }
             return true;
@@ -2236,10 +2248,7 @@ export class DiagramEventHandler {
 
                             (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
                             if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                                if (obj.shape.type !== 'Bpmn' ||
-                                    (obj.shape.type === 'Bpmn' && (obj.shape as BpmnShapeModel).shape !== 'TextAnnotation')) {
                                     (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
-                                }
                             }
                             (obj as Node).rotateAngle = helperObject.rotateAngle;
                         }
@@ -2675,7 +2684,7 @@ class ObjectFinder {
                     (actualTarget.shape as BpmnShapeModel).shape === 'TextAnnotation') {
                     actualTarget = null;
                 }
-                if (actualTarget.parentId &&
+                if (actualTarget && actualTarget.parentId &&
                     diagram.nameTable[actualTarget.parentId].shape.type === 'UmlClassifier') {
                     actualTarget = diagram.nameTable[actualTarget.parentId];
                 }

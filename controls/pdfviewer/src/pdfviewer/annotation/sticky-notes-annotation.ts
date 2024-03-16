@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { StickyNotesSettings } from './../pdfviewer';
 import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction, IPoint } from '../index';
-import { createElement, Browser, Internationalization, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, Browser, Internationalization, isBlazor, isNullOrUndefined, SanitizeHtmlHelper} from '@syncfusion/ej2-base';
 import { Accordion, BeforeOpenCloseMenuEventArgs, ContextMenu as Context, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
@@ -236,7 +236,8 @@ export class StickyNotesAnnotation {
     public getSettings(annotation: any): any {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
         if (annotation.AnnotationSelectorSettings) {
-            selector = annotation.AnnotationSelectorSettings;
+            // eslint-disable-next-line max-len
+            selector = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
         } else if (this.pdfViewer.stickyNotesSettings.annotationSelectorSettings) {
             selector = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings;
         }
@@ -1096,7 +1097,10 @@ export class StickyNotesAnnotation {
         // eslint-disable-next-line
         this.getButtonState(commentObj, newCommentDiv);
         if (args.valueEle) {
-            if (args.value != null && args.value !== "") {
+            if(this.pdfViewer.enableHtmlSanitizer && args.value){
+                args.value = SanitizeHtmlHelper.sanitize(args.value);
+            }
+            if (args.value != null && args.value !== '' && args.value !== ' '){
                 // eslint-disable-next-line max-len
                 if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
                     this.modifyTextProperty(args.value, args.prevValue, args.valueEle.parentNode.parentNode.parentNode.parentNode.id);
@@ -1142,6 +1146,9 @@ export class StickyNotesAnnotation {
         // eslint-disable-next-line
         let lastElement: any;
         let commentValue: string;
+        if(this.pdfViewer.enableHtmlSanitizer && args.value){
+            args.value = SanitizeHtmlHelper.sanitize(args.value);
+        }
         if (comment.name && args.value !== '') {
             commentsContainer = args.valueEle.parentElement.parentElement.parentElement;
             lastElement = args.valueEle.parentElement.parentElement;
@@ -1485,6 +1492,8 @@ export class StickyNotesAnnotation {
         } else {
             annotationAuthor = author;
         }
+        // eslint-disable-next-line
+        annotationAuthor = annotationAuthor.replace(/(\r\n|\n|\r)/gm,"");
         commentTypeSpan.style.padding = 8 + 'px';
         commentTypeSpan.style.cssFloat = 'left';
         commentTitleContainer.appendChild(commentTypeSpan);
@@ -1519,6 +1528,12 @@ export class StickyNotesAnnotation {
             this.createCommentContextMenu();
         }
         this.isCreateContextMenu = true;
+        if (commentsTitle.parentElement && commentsTitle.parentElement.clientWidth != 0) {
+            commentsTitle.style.maxWidth = (commentsTitle.parentElement.clientWidth - moreOptionsButton.clientWidth) + "px";
+        }
+        else {
+            commentsTitle.style.maxWidth = '237px';
+        }
         commentTitleContainer.addEventListener('dblclick', this.openTextEditor.bind(this));
         moreOptionsButton.addEventListener('mouseup', this.moreOptionsClick.bind(this));
         return annotationType;
@@ -1530,6 +1545,7 @@ export class StickyNotesAnnotation {
         const replyTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitleConatiner_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-reply-title-container' });
         // eslint-disable-next-line max-len
         const replyTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitle_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-reply-title' });
+        annotationAuthor = annotationAuthor.replace(/(\r\n|\n|\r)/gm,"");
         if (!modifiedDate) {
             replyTitle.textContent = annotationAuthor + ' - ' + this.setModifiedDate();
         } else {
@@ -1549,6 +1565,13 @@ export class StickyNotesAnnotation {
         moreButtonSpan.style.opacity = '0.87';
         replyTitleContainer.appendChild(moreButton);
         commentsDivElement.appendChild(replyTitleContainer);
+        const parentCommentDiv: NodeListOf<Element> = document.querySelectorAll('[class="e-pv-comment-title"]');
+        const moreactionIcon: NodeListOf<Element> = document.querySelectorAll('[class="e-pv-more-options-button e-btn"]');
+        if (parentCommentDiv[0] && moreactionIcon[0] && parentCommentDiv[0].parentElement && parentCommentDiv[0].parentElement.clientWidth != 0) {
+            replyTitle.style.maxWidth = (parentCommentDiv[0].parentElement.clientWidth - (moreactionIcon[0] as HTMLElement).clientWidth) + "px";
+        } else {
+            replyTitle.style.maxWidth = '237px';
+        }
         replyTitleContainer.addEventListener('dblclick', this.openTextEditor.bind(this));
         moreButton.addEventListener('mouseup', this.moreOptionsClick.bind(this));
     }
@@ -1906,7 +1929,7 @@ export class StickyNotesAnnotation {
     private commentsDivClickEvent(event: any): void {
         // eslint-disable-next-line
         let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.id);
-        let isLocked : boolean = (annotation.annotationSettings.isLock || annotation.isLock);
+        let isLocked: boolean = !isNullOrUndefined(annotation) ? (annotation.annotationSettings.isLock || annotation.isLock) : false;
         if (!isLocked) {
             let isCommentsSelect: boolean = false;
             if (event.clientX === 0 && event.clientY === 0) {

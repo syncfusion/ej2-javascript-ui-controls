@@ -564,6 +564,7 @@ export interface UIStateArgs {
     isBlock?: boolean;
     isCustomMonth?: boolean;
     isPreventTimezone?: boolean;
+    isPreventEventRefresh?: boolean;
 }
 
 /**

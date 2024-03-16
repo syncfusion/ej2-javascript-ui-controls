@@ -102,6 +102,9 @@ export class Marker {
         }
         markerEle.setAttribute('role', 'img');
         markerEle.setAttribute('aria-label', 'x: ' + (location.x) + ', ' + 'y: ' + (location.y));
+        if ((smithchart.element.id + '_Series0_Points0_Marker0') === (options.id)) {
+            markerEle.setAttribute('tabindex', '0');
+        }
         return markerEle;
     }
 }

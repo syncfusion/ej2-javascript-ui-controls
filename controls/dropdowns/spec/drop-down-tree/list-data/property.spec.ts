@@ -576,7 +576,8 @@ describe('DropDown Tree control List datasource', () => {
             expect(ddtreeObj.value.length).toBe(2)
         });
         it('for allowMultiSelection', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, allowMultiSelection: true, mode: 'Default', treeSettings: { loadOnDemand: true } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            allowMultiSelection: true, mode: 'Default', treeSettings: { loadOnDemand: true }, destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -643,7 +644,8 @@ describe('DropDown Tree control List datasource', () => {
          * mode
          */
         it('for Delimiter mode with allowMultiSelection', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, treeSettings: { loadOnDemand: true }, allowMultiSelection: true, mode: 'Delimiter' }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            treeSettings: { loadOnDemand: true }, allowMultiSelection: true, mode: 'Delimiter', destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -687,7 +689,8 @@ describe('DropDown Tree control List datasource', () => {
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
         });
         it('for Box mode with allowMultiSelection', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, treeSettings: { loadOnDemand: true }, allowMultiSelection: true, mode: 'Box' }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            treeSettings: { loadOnDemand: true }, allowMultiSelection: true, mode: 'Box', destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -800,7 +803,8 @@ describe('DropDown Tree control List datasource', () => {
         });
 
         it('for showCheckBox with Default mode', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, showCheckBox: true }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            showCheckBox: true, destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -866,7 +870,8 @@ describe('DropDown Tree control List datasource', () => {
          * mode
          */
         it('for Delimiter mode with showCheckBox', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, showCheckBox: true, mode: 'Delimiter' }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            showCheckBox: true, mode: 'Delimiter', destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -913,7 +918,8 @@ describe('DropDown Tree control List datasource', () => {
         });
 
         it('for Box mode with showCheckBox', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, showCheckBox: true, mode: 'Box' }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            showCheckBox: true, mode: 'Box', destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -986,7 +992,7 @@ describe('DropDown Tree control List datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[0].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });

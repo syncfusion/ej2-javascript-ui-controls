@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-lists",
-	"version": "24.1.41",
+	"version": "18.23.1",
 	"description": "The listview control allows you to select an item or multiple items from a list-like interface and represents the data in interactive hierarchical structure across different layouts or views.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -14,6 +14,7 @@
 		"@syncfusion/ej2-popups": "*"
 	},
 	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.1",
 		"@types/chai": "^3.4.28",
 		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",

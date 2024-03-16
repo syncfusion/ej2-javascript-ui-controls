@@ -264,7 +264,9 @@ export class AxisRenderer extends Animations {
             style.fontStyle = style.fontStyle || this.gauge.themeStyle.labelStyle;
             style.fontWeight = style.fontWeight || this.gauge.themeStyle.labelWeight;
             options = new TextOption(this.gauge.element.id + '_Axis_' + axisIndex + '_Label_' + i, pointX, pointY, anchor, axis.visibleLabels[i as number].text, null, baseline);
-            textElement(options, style, labelColor, null, labelElement);
+            const axisLabelsElement : Element = textElement(options, style, labelColor, null, labelElement);
+            axisLabelsElement.setAttribute('aria-label', axis.visibleLabels[i as number].text);
+            axisLabelsElement.setAttribute('role', 'region');
         }
         if (this.gauge.allowLoadingAnimation) {
             (labelElement as HTMLElement).classList.add(this.gauge.element.id + 'animation');
@@ -353,7 +355,7 @@ export class AxisRenderer extends Animations {
             (pointerElement as HTMLElement).style.visibility = 'hidden';
         }
         parentElement.appendChild(pointerElement);
-        if ((((pointer.animationDuration > 0 || animationMode === 'Enable') && (!this.gauge.allowLoadingAnimation || this.gauge.isPropertyChange)) && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] !== pointer.currentValue) && !this.gauge.gaugeResized) {
+        if ((((pointer.animationDuration > 0 || animationMode === 'Enable') && (!this.gauge.allowLoadingAnimation || this.gauge.isPropertyChange)) && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] !== pointer.currentValue) && !this.gauge.isPointerAnimationInProgress) {
             pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum : pointer.startValue;
             pointer.animationComplete = false;
             this.performMarkerAnimation(pointerElement, axis, pointer);
@@ -418,7 +420,7 @@ export class AxisRenderer extends Animations {
         if (this.gauge.allowLoadingAnimation) {
             (pointerElement as HTMLElement).style.visibility = 'hidden';
         }
-        if (((pointer.animationDuration > 0 || this.gauge.allowLoadingAnimation || animationMode === 'Enable') && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] !== pointer.currentValue) && !this.gauge.gaugeResized) {
+        if (((pointer.animationDuration > 0 || this.gauge.allowLoadingAnimation || animationMode === 'Enable') && (!this.gauge.isPropertyChange || pointer['isPointerAnimation']) && pointer['startValue'] !== pointer.currentValue) && !this.gauge.isPointerAnimationInProgress) {
             pointer.startValue = !this.gauge.isPropertyChange ? axis.minimum : pointer.startValue;
             if (this.gauge.container.type === 'Thermometer' && pointer.startValue === 0 && this.gauge.container.width > 0) {
                 clipRectElement = this.gauge.renderer.drawClipPath(
@@ -440,18 +442,21 @@ export class AxisRenderer extends Animations {
      * @private
      */
     public pointerAnimation(axis: Axis, axisIndex: number): void {
-        for (let i: number = 0; i < axis.pointers.length; i++) {
-            const pointer: Pointer = <Pointer>axis.pointers[i as number];
-            if (pointer.type === 'Bar') {
-                const barPointerGroup: Element | null = getElement(this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i);
-                if (barPointerGroup && pointer.isPointerAnimation) {
+        if ((!this.gauge.isPointerAnimationInProgress && this.gauge.allowLoadingAnimation)) {
+            this.gauge.isPointerAnimationInProgress = true;
+            for (let i: number = 0; i < axis.pointers.length; i++) {
+                const pointer: Pointer = <Pointer>axis.pointers[i as number];
+                if (pointer.type === 'Bar') {
+                    const barPointerGroup: Element | null = getElement(this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i);
+                    if (barPointerGroup) {
                     this.performBarAnimation(barPointerGroup, axis, pointer);
-                }
-            } else {
-                const markerPointerGroup: Element | null = getElement(this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i);
-                if (markerPointerGroup) {
+                    }
+                } else {
+                    const markerPointerGroup: Element | null = getElement(this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i);
+                    if (markerPointerGroup) {
                     this.performMarkerAnimation(markerPointerGroup, axis, pointer);
-                }
+                    }
+                }                
             }
         }
     }

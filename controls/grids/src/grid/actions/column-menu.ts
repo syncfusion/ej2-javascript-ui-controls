@@ -326,7 +326,7 @@ export class ColumnMenu implements IAction {
         if (!isNullOrUndefined(args.parentItem) &&
             this.getKeyFromId(args.parentItem.id) === 'ColumnChooser' &&
             colChooser && this.isChooserItem(colChooser)) {
-            args.cancel = true;
+            args.cancel = args.event && (args.event as KeyboardEventArgs).code === 'Escape' ? false : true;
         } else if (args.event && (closest(args.event.target as Element, '.' + this.POP)
             || (args.event.currentTarget && (args.event.currentTarget as Document).activeElement &&
                 parentsUntil((args.event.currentTarget as Document).activeElement as Element, 'e-filter-popup'))
@@ -473,7 +473,12 @@ export class ColumnMenu implements IAction {
                 this.getFilter(args.element, args.element.id, true);
             }
         }
-        this.parent.notify(events.restoreFocus, {});
+        if (!isNullOrUndefined(args.parentItem) && this.getKeyFromId(args.parentItem.id) === 'ColumnChooser'
+            && this.columnMenu.element.querySelector('.e-selected')) {
+            (this.columnMenu.element.querySelector('.e-selected') as HTMLElement).focus();
+        } else {
+            this.parent.notify(events.restoreFocus, {});
+        }
     }
 
     private getDefaultItems(): string[] {

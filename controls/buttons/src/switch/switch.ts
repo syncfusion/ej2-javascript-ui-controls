@@ -135,10 +135,10 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     }
     private changeState(state?: boolean): void {
         let ariaState: string;
-        let rippleSpan: Element;
-        const wrapper: Element = this.getWrapper();
-        const bar: Element = wrapper.querySelector('.e-switch-inner');
-        const handle: Element = wrapper.querySelector('.e-switch-handle');
+        let rippleSpan: Element | null = null;
+        const wrapper: Element = this.getWrapper() as Element;
+        const bar: Element = wrapper.querySelector('.e-switch-inner') as Element;
+        const handle: Element = wrapper.querySelector('.e-switch-handle') as Element;
         if (isRippleEnabled) {
             rippleSpan = wrapper.getElementsByClassName(RIPPLE)[0];
         }
@@ -182,7 +182,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         if (!this.disabled) {
             this.unWireEvents();
         }
-        destroy(this, this.getWrapper(), this.tagName);
+        destroy(this, this.getWrapper() as Element, this.tagName);
         if (this.refreshing) {
             ['e-control', 'e-switch', 'e-lib'].forEach((key: string) => {
                 this.element.classList.add(key);
@@ -194,7 +194,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         this.isFocused = true;
     }
     private focusOutHandler(): void {
-        this.getWrapper().classList.remove('e-focus');
+        (this.getWrapper() as Element).classList.remove('e-focus');
     }
     /**
      * Gets the module name.
@@ -214,10 +214,15 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     public getPersistData(): string {
         return this.addOnPersist(['checked']);
     }
-    private getWrapper(): Element {
-        return this.element.parentElement;
+    private getWrapper(): Element | null{
+        if (this.element.parentElement) {
+            return this.element.parentElement;
+        } else {
+            return null;
+        }
     }
     private initialize(): void {
+        this.element.setAttribute('role', 'switch');
         if (isNullOrUndefined(this.initialSwitchCheckedValue)) {
             this.initialSwitchCheckedValue = this.checked;
         }
@@ -238,12 +243,12 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
     }
     private initWrapper(): void {
-        let wrapper: Element = this.element.parentElement;
+        let wrapper: Element = this.element.parentElement as Element;
         if (!wrapper.classList.contains(WRAPPER)) {
             wrapper = this.createElement('div', {
                 className: WRAPPER
             });
-            this.element.parentNode.insertBefore(wrapper, this.element);
+            (this.element.parentNode as Element).insertBefore(wrapper, this.element);
         }
         const switchInner: Element = this.createElement('span', { className: 'e-switch-inner' });
         const onLabel: Element = this.createElement('span', { className: 'e-switch-on' });
@@ -277,7 +282,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
      * @returns {void}
      */
     public onPropertyChanged(newProp: SwitchModel, oldProp: SwitchModel): void {
-        const wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper() as Element;
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'checked':
@@ -299,14 +304,14 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
                 }
                 break;
             case 'value':
-                this.element.setAttribute('value', newProp.value);
+                this.element.setAttribute('value', newProp.value as string);
                 break;
             case 'name':
-                this.element.setAttribute('name', newProp.name);
+                this.element.setAttribute('name', newProp.name as string);
                 break;
             case 'onLabel':
             case 'offLabel':
-                this.setLabel(newProp.onLabel, newProp.offLabel);
+                this.setLabel(newProp.onLabel as string, newProp.offLabel as string);
                 break;
             case 'enableRtl':
                 if (newProp.enableRtl) {
@@ -356,8 +361,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         this.renderComplete();
         this.updateHtmlAttribute();
     }
+    
     private rippleHandler(e: MouseEvent): void {
-        const rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
+        const rippleSpan: Element = (this.getWrapper() as Element).getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
         if (e.type === 'mousedown' && (e.currentTarget as Element).classList.contains('e-switch-wrapper') && e.which === 1) {
             this.isDrag = true;
@@ -366,7 +372,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     }
 
     private mouseLeaveHandler(e: MouseEvent): void {
-        const rippleSpan: Element = this.element.parentElement.getElementsByClassName(RIPPLE)[0];
+        const rippleSpan: Element = (this.element.parentElement as Element).getElementsByClassName(RIPPLE)[0];
         if (rippleSpan) {
             const rippleElem: NodeListOf<Element> = rippleSpan.querySelectorAll('.e-ripple-element');
             for (let i: number = rippleElem.length - 1; i > 0; i--) {
@@ -376,7 +382,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
     }
     private rippleTouchHandler(eventType: string): void {
-        const rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
+        const rippleSpan: Element = (this.getWrapper() as Element).getElementsByClassName(RIPPLE)[0];
         if (rippleSpan) {
             const event: MouseEvent = document.createEvent('MouseEvents');
             event.initEvent(eventType, false, true);
@@ -384,24 +390,24 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
     }
     private setDisabled(): void {
-        const wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper() as Element;
         this.element.disabled = true;
         wrapper.classList.add(DISABLED);
         wrapper.setAttribute('aria-disabled', 'true');
     }
     private setLabel(onText: string, offText: string): void {
-        const wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper() as Element;
         if (onText) {
-            wrapper.querySelector('.e-switch-on').textContent = onText;
+            (wrapper.querySelector('.e-switch-on') as Element).textContent = onText;
         }
         if (offText) {
-            wrapper.querySelector('.e-switch-off').textContent = offText;
+            (wrapper.querySelector('.e-switch-off') as Element).textContent = offText;
         }
     }
     private updateHtmlAttribute(): void {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
-                const wrapper: Element = this.getWrapper();
+                const wrapper: Element = this.getWrapper() as Element;
                 if (ATTRIBUTES.indexOf(key) > -1) {
                     if (key === 'class') {
                         addClass([wrapper], this.htmlAttributes[`${key}`].split(' '));
@@ -425,7 +431,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     }
     private switchFocusHandler(): void {
         if (this.isFocused) {
-            this.getWrapper().classList.add('e-focus');
+            (this.getWrapper() as Element).classList.add('e-focus');
         }
     }
     private switchMouseUp(e: MouseEventArgs): void {
@@ -477,7 +483,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         this.clickHandler();
     }
     private wireEvents(): void {
-        const wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper() as Element;
         this.delegateMouseUpHandler = this.switchMouseUp.bind(this);
         this.delegateKeyUpHandler = this.switchFocusHandler.bind(this);
         EventHandler.add(wrapper, 'click', this.clickHandler, this);
@@ -493,7 +499,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
     }
     private unWireEvents(): void {
-        const wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper() as Element;
         EventHandler.remove(wrapper, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);

@@ -185,9 +185,9 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         if (!e.target) { return; }
         this.trigger('drag', { event: e.event, element: this.element, target: e.target });
         let newInst: Sortable = this.getSortableInstance(e.target); let target: HTMLElement = this.getSortableElement(e.target, newInst);
-        if ((this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && (this.curTarget !== target ||
+        if ((this.isValidTarget(target, newInst) || (e.target && typeof e.target.className === 'string' && e.target.className.indexOf('e-list-group-item') > -1)) && (this.curTarget !== target ||
             !isNullOrUndefined(newInst.placeHolder)) && (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
-            if (e.target.className.indexOf('e-list-group-item') > -1) {
+            if (e.target.classList.contains('e-list-group-item')) {
                 target = e.target;
             }
             this.curTarget = target;
@@ -370,7 +370,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
                 target: e.target, droppedElement: this.target, helper: e.helper, cancel: false
             };
             this.trigger('beforeDrop', beforeDropArgs, (observedArgs: DropEventArgs) => {
-                if ((dropInst.element === e.target || e.target.className.indexOf('e-list-nrt') > -1 || e.target.className.indexOf('e-list-nr-template') > -1
+                if ((dropInst.element === e.target || (typeof e.target.className === 'string' && e.target.className.indexOf('e-list-nrt') > -1) || (typeof e.target.className === 'string' && e.target.className.indexOf('e-list-nr-template') > -1)
                     || e.target.closest('.e-list-nr-template')) && !observedArgs.cancel) {
                     this.updateItemClass(dropInst);
                     dropInst.element.appendChild(this.target);

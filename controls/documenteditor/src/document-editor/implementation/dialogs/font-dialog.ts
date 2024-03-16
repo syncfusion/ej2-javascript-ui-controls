@@ -173,9 +173,11 @@ export class FontDialog {
 
         effectsProperties.appendChild(fontEffectSubDiv3);
         this.target.appendChild(effectsProperties);
+        const {columns , createPopupOnClick , cssClass , disabled , enablePersistence , inline , mode , modeSwitcher , noColor , presetColors , showButtons } = this.documentHelper.owner.documentEditorSettings.colorPickerSettings;
         this.colorPicker = new ColorPicker({
-            change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.documentHelper.owner.locale, enableOpacity: false
+            change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.documentHelper.owner.locale, enableOpacity: false, mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , cssClass : cssClass , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors
         });
+      
         this.colorPicker.appendTo(fontColorElement);
         this.strikethroughBox = new CheckBox({
             change: this.singleStrikeUpdate,
@@ -183,6 +185,7 @@ export class FontDialog {
             label: locale.getConstant('Strikethrough'),
             enableRtl: isRtl
         });
+        this.documentHelper.colorPicker = this.colorPicker;
         this.strikethroughBox.appendTo(strikeThroughElement);
         this.doublestrikethrough = new CheckBox({
             change: this.doubleStrikeUpdate,
@@ -320,7 +323,7 @@ export class FontDialog {
         if (this.characterFormat) {
             characterFormat = this.characterFormat;
         } else {
-            characterFormat = this.documentHelper.owner.selection.characterFormat;
+            characterFormat = this.documentHelper.owner.selectionModule.characterFormat;
         }
         this.fontNameList.value = characterFormat.fontFamily;
         this.fontNameList.dataBind();

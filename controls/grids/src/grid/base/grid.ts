@@ -78,7 +78,7 @@ import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-nav
 import { ColumnMenu } from '../actions/column-menu';
 import { CheckState } from './enum';
 import { Aggregate } from '../actions/aggregate';
-import { ILogger } from '../actions/logger';
+import { ILogger, Logger } from '../actions/logger';
 import { IModelGenerator } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { ColumnDeselectEventArgs, ColumnSelectEventArgs, ColumnSelectingEventArgs } from './interface';
@@ -850,6 +850,14 @@ export class EditSettings extends ChildProperty<EditSettings> {
      */
     @Property(false)
     public allowNextRowEdit: boolean;
+
+    /**
+     * If `showAddNewRow` is set to true, it indicates whether to display the add new form by default in the grid.
+     *
+     * @default false
+     */
+    @Property(false)
+    public showAddNewRow: boolean;
 }
 
 /**
@@ -929,6 +937,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private contentMaskTable: Element;
     private footerContentMaskTable: Element;
     private maskRowContentScroll: boolean;
+    private autoFitColumnsResize: boolean = false;
     /** @hidden */
     public invokedFromMedia: boolean;
     /** @hidden */
@@ -937,6 +946,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private dataToBeUpdated: BatchChanges;
     private componentRefresh: Function = Component.prototype.refresh;
     private isChangeDataSourceCall = false;
+    private mergedColumns: boolean = false;
     /** @hidden */
     public recordsCount: number;
     /** @hidden */
@@ -1020,7 +1030,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public lazyLoadRender: IRenderer;
     /** @hidden */
+    public isSpan: boolean = false;
+    /** @hidden */
     public islazyloadRequest: boolean = false;
+    /** @hidden */
+    public isAddNewRow: boolean = false;
+     /** @hidden */
+     public addNewRowFocus: boolean = true;
     public isSelectedRowIndexUpdating: boolean;
     private defaultLocale: Object;
     private keyConfigs: { [key: string]: string };
@@ -1195,8 +1211,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public aggregateModule: Aggregate;
 
     private loggerModule: ILogger;
-    // enable/disable logger for MVC & Core
-    private enableLogger: boolean = true;
+    private enableLogger: boolean = false;
     /** @hidden */
     public focusModule: FocusStrategy;
 
@@ -2659,96 +2674,113 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.allowFiltering) {
             modules.push({
                 member: 'filter',
-                args: [this, this.filterSettings, this.serviceLocator]
+                args: [this, this.filterSettings, this.serviceLocator],
+                name: 'Filter'
             });
         }
         if (this.allowExcelExport) {
             modules.push({
                 member: 'ExcelExport',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'ExcelExport'
             });
         }
         if (this.allowPdfExport) {
             modules.push({
                 member: 'PdfExport',
-                args: [this]
+                args: [this],
+                name: 'PdfExport'
             });
         }
         if (this.allowSorting) {
             modules.push({
                 member: 'sort',
-                args: [this, this.sortSettings, this.sortedColumns, this.serviceLocator]
+                args: [this, this.sortSettings, this.sortedColumns, this.serviceLocator],
+                name: 'Sort'
             });
         }
         if (this.allowPaging) {
             modules.push({
                 member: 'pager',
-                args: [this, this.pageSettings]
+                args: [this, this.pageSettings],
+                name: 'Page'
             });
         }
         if (this.allowSelection) {
             modules.push({
                 member: 'selection',
-                args: [this, this.selectionSettings, this.serviceLocator]
+                args: [this, this.selectionSettings, this.serviceLocator],
+                name: 'Selection'
             });
         }
-        modules.push({
-            member: 'resize',
-            args: [this]
-        });
+        if (this.resizeCheck()) {
+            modules.push({
+                member: 'resize',
+                args: [this],
+                name: 'Resize'
+            });
+        }
 
         if (this.allowReordering) {
             modules.push({
                 member: 'reorder',
-                args: [this]
+                args: [this],
+                name: 'Reorder'
             });
         }
         if (this.allowRowDragAndDrop) {
             modules.push({
                 member: 'rowDragAndDrop',
-                args: [this]
+                args: [this],
+                name: 'RowDD'
             });
         }
         if (this.allowGrouping) {
             modules.push({
                 member: 'group',
-                args: [this, this.groupSettings, this.sortedColumns, this.serviceLocator]
+                args: [this, this.groupSettings, this.sortedColumns, this.serviceLocator],
+                name: 'Group'
             });
         }
         if (this.aggregates.length) {
-            modules.push({ member: 'aggregate', args: [this, this.serviceLocator] });
+            modules.push({ member: 'aggregate', args: [this, this.serviceLocator], name: 'Aggregate' });
         }
         if (this.isDetail()) {
             modules.push({
                 member: 'detailRow',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'DetailRow'
             });
         }
         if (this.toolbar || this.toolbarTemplate) {
             modules.push({
                 member: 'toolbar',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'Toolbar'
             });
         }
         if (this.enableVirtualization || this.enableColumnVirtualization) {
             modules.push({
                 member: 'virtualscroll',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'VirtualScroll'
             });
         }
         if (this.getFrozenColumns() || this.frozenRows || this.frozenRightCount || this.frozenLeftCount) {
-            modules.push({ member: 'freeze', args: [this, this.serviceLocator] });
+            modules.push({ member: 'freeze', args: [this, this.serviceLocator], name: 'Freeze' });
         }
         if (this.isCommandColumn(<Column[]>this.columns)) {
             modules.push({
                 member: 'commandColumn',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'CommandColumn'
             });
         }
         if (this.editSettings.allowAdding || this.editSettings.allowDeleting || this.editSettings.allowEditing) {
             modules.push({
                 member: 'edit',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'Edit'
             });
         }
         this.extendRequiredModules(modules);
@@ -2759,43 +2791,60 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.enableInfiniteScrolling) {
             modules.push({
                 member: 'infiniteScroll',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'InfiniteScroll'
             });
         }
 
         if (this.groupSettings.enableLazyLoading) {
             modules.push({
                 member: 'lazyLoadGroup',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'LazyLoadGroup'
             });
         }
 
         if (this.contextMenuItems) {
             modules.push({
                 member: 'contextMenu',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'ContextMenu'
             });
         }
 
         if (this.showColumnMenu) {
             modules.push({
                 member: 'columnMenu',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'ColumnMenu'
             });
         }
 
         if (this.showColumnChooser) {
             modules.push({
                 member: 'columnChooser',
-                args: [this, this.serviceLocator]
+                args: [this, this.serviceLocator],
+                name: 'ColumnChooser'
             });
         }
         if (this.isForeignKeyEnabled(this.columns as Column[])) {
-            modules.push({ member: 'foreignKey', args: [this, this.serviceLocator] });
+            modules.push({ member: 'foreignKey', args: [this, this.serviceLocator], name: 'ForeignKey' });
         }
         if (this.enableLogger) {
-            modules.push({ member: 'logger', args: [this] });
+            modules.push({ member: 'logger', args: [this], name: 'Logger' });
         }
+    }
+
+    private resizeCheck(): boolean {
+        const autoFitColumns: boolean = this.getColumns().filter((c: Column) => c.autoFit === true).length ? true : false;
+        if (!isNullOrUndefined(this.columnModel) && this.columnModel.length && !(this.columnModel[0] instanceof Column)) {
+            this.columnModel = [];
+        }
+        const columnMenu: boolean = this.showColumnMenu && (!this.columnMenuItems || (this.columnMenuItems as ColumnMenuItem[])
+            .filter((c: ColumnMenuItem) => c === 'AutoFit' || c === 'AutoFitAll').length) ? true : false;
+        const contextMenu: boolean = this.contextMenuItems && (this.contextMenuItems as ContextMenuItem[])
+            .filter((c: ContextMenuItem) => c === 'AutoFit' || c === 'AutoFitAll').length ? true : false;
+        return this.allowResizing || this.autoFitColumnsResize || autoFitColumns || columnMenu || contextMenu;
     }
 
     /**
@@ -3051,6 +3100,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.getMediaColumns();
         setColumnIndex(this.columns as Column[]);
+        if (this.isFrozenGrid() && !this.mergedColumns) {
+            this.setInitialFrozenColumnIndex(this.columns as Column[]);
+        }
         this.checkLockColumns(this.columns as Column[]);
         this.getColumns();
         this.processModel();
@@ -3068,6 +3120,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (this.refreshing) {
             this.trigger('created');
+        }
+    }
+
+    private setInitialFrozenColumnIndex(columns: Column[]): void {
+        for (let i: number = 0; i < columns.length; i++) {
+            const column: Column = columns[parseInt(i.toString(), 10)];
+            column[`${literals.initialFrozenColumnIndex}`] = column.index;
+            if (column.columns) {
+                this.setInitialFrozenColumnIndex(column.columns as Column[]);
+            }
         }
     }
 
@@ -3684,6 +3746,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.element.classList.add('e-afenabled');
         } else {
             this.element.classList.remove('e-afenabled');
+            this.notify(events.destroyAutoFillElements, {});
         }
     }
 
@@ -3758,7 +3821,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.updateStackedFilter();
                 this.notify(events.uiUpdate, { module: 'filter', enable: this.allowFiltering });
                 requireRefresh = true;
-                if (this.filterSettings.type !== 'FilterBar') {
+                if (this.filterSettings.type !== 'FilterBar' || (this.editSettings.showAddNewRow && this.filterSettings.type === 'FilterBar')) {
                     this.refreshHeader();
                 } else {
                     if (this.height === '100%') {
@@ -3855,9 +3918,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             case 'enableColumnVirtualization':
             case 'currencyCode':
             case 'locale':
-                this.log('frozen_rows_columns');
+                if (this.isFrozenGrid()) {
+                    this.log('frozen_rows_columns');
+                }
                 freezeRefresh = true;
                 requireGridRefresh = true;
+                this.addNewRowFocus = true;
                 break;
             case 'query':
                 if (!this.getDataModule().isQueryInvokedFromData) {
@@ -3993,6 +4059,19 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.getDataModule().setState({});
                 pending.resolver(this.dataSource);
             } else {
+                if ((!isNullOrUndefined(this.dataSource) && (<DataResult>this.dataSource).result
+                 && (<DataResult>this.dataSource).count && this.groupSettings.columns.length)) {
+                    let gResult: Object = (<DataResult>this.dataSource).result;
+                    const names: string[] = this.groupSettings.columns;
+                    if (names.length && !((gResult as Object[]).length && gResult[0].field)) {
+                        for (let i: number = 0; i < names.length; i++) {
+                            gResult = DataUtil.group(<Object[]>gResult, names[parseInt(i.toString(), 10)]);
+                        }
+                    }
+                    this.dataSource = {
+                        result: gResult, count: (<DataResult>this.dataSource).count
+                    };
+                }
                 this.getDataModule().setState({ isDataChanged: false });
                 this.notify(events.dataSourceModified, {});
                 if (!requireGridRefresh) {
@@ -4527,10 +4606,20 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (isNullOrUndefined(this.getContentTable().querySelector( literals.tbody))) { return []; }
         const tbody: Element = this.getContentTable().querySelector(literals.tbody);
         let rows: HTMLElement[] = [].slice.call(tbody.children);
+        if (this.editSettings.showAddNewRow) {
+            if (rows[0].classList.contains('e-addedrow')) {
+                rows.shift();
+            } else if (rows[rows.length - 1].classList.contains('e-addedrow')) {
+                rows.pop();
+            }
+        }
         if (this.frozenRows) {
             const hdrTbody: Element = this.getHeaderTable().querySelector( literals.tbody);
             const freezeRows: HTMLElement[] = [].slice.call(hdrTbody.children);
             rows = this.addMovableRows(freezeRows, rows);
+            if (this.editSettings.showAddNewRow && freezeRows[0].classList.contains('e-addedrow')) {
+                freezeRows.shift();
+            }
         }
         const dataRows: Element[] = this.generateDataRows(rows, includeAdd);
         return dataRows;
@@ -6575,8 +6664,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Changes the column width to automatically fit its content to ensure that the width shows the content without wrapping/hiding.
      * > * This method ignores the hidden columns.
      * > * Uses the `autoFitColumns` method in the `dataBound` event to resize at initial rendering.
+     * > * By specifying the start row index and end row index, providing the range within which the maximum width for that column should be considered when applying `autoFitColumns`.
+     * > * The width of header rows is always calculated. If the width of a header row exceeds the specified range, its width will be allocated to the specific content rows.
      *
      * @param  {string |string[]} fieldNames - Defines the column names.
+     * @param  {number} startRowIndex - Specifies the start index of the content row.
+     * @param  {number} endRowIndex - Specifies the end index of content row.
      * @returns {void}
      *
      *
@@ -6588,16 +6681,29 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *     columns: [
      *         { field: 'OrderID', headerText: 'Order ID', width:100 },
      *         { field: 'EmployeeID', headerText: 'Employee ID' }],
-     *     dataBound: () => gridObj.autoFitColumns('EmployeeID')
+     *     dataBound: () => gridObj.autoFitColumns('EmployeeID');
      * });
      * gridObj.appendTo('#Grid');
      * </script>
      * ```
      *
      */
-    public autoFitColumns(fieldNames?: string | string[]): void {
+    public autoFitColumns(fieldNames?: string | string[], startRowIndex?: number, endRowIndex?: number): void {
+        const injectedModules: Function[] = this.getInjectedModules();
+        const resize: Function = injectedModules.find(function (item: Function) { 
+            if (typeof item === 'function' && !isNullOrUndefined(item.prototype)) {
+                return item.prototype.getModuleName() === 'resize';
+            } else {
+                return item.name === 'Resize';
+            }
+        });
+        if (!this.resizeModule && resize) {
+            this.autoFitColumnsResize = true;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this as any).injectModules();
+        }
         if (this.resizeModule) {
-            this.resizeModule.autoFitColumns(fieldNames);
+            this.resizeModule.autoFitColumns(fieldNames, startRowIndex, endRowIndex);
         }
     }
 
@@ -6648,7 +6754,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
             if ((percentageWidth && tableWidth < 100)
                 || (!percentageWidth && tableWidth < contentTable.parentElement.clientWidth)) {
-                addClass([headerTable, contentTable], ['e-tableborder']);
+                if (!isNullOrUndefined(contentTable.querySelector('.e-emptyrow'))) {
+                    addClass([headerTable], ['e-tableborder']);
+                    removeClass([contentTable], ['e-tableborder']);
+                }
+                else {
+                    addClass([headerTable, contentTable], ['e-tableborder']);
+                }
             }
             const tableWidthUnitFormat: string = tableWidth.toString() + unit;
             headerTable.style.setProperty('width', tableWidthUnitFormat);
@@ -6808,6 +6920,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.allowRowDragAndDrop && this.rowDropSettings.targetID && Browser.info.name === 'mozilla') {
             this.element.classList.add('e-disableuserselect');
         }
+        if (this.editSettings.showAddNewRow && (this.enableVirtualization || this.enableInfiniteScrolling)) {
+            this.editSettings.newRowPosition = 'Top';
+        }
         classList(this.element, ['e-responsive', 'e-default'], []);
         const rendererFactory: RendererFactory = this.serviceLocator.getService<RendererFactory>('rendererFactory');
         this.headerModule = rendererFactory.getRenderer(RenderType.Header);
@@ -6963,6 +7078,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if ((width > element.getBoundingClientRect().width && !element.classList.contains('e-editedbatchcell')) ||
             (this.enableAdaptiveUI && this.rowRenderingMode === 'Vertical' &&
                 width > (element.getBoundingClientRect().width * 0.55) - (this.height !== 'auto' ? 16 : 0))) {
+            // 0.55 - defines the width of adaptive content cell, 16 - defines the scrollbar width
             return true;
         }
         return false;
@@ -6977,9 +7093,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const tagName: string = (e.target as Element).tagName;
             const elemNames: string[] = ['A', 'BUTTON', 'INPUT'];
             if (element && e.type !== 'mouseout' && !(Browser.isDevice && elemNames.indexOf(tagName) !== -1)) {
-                if (element.getAttribute('data-tooltip-id')) {
-                    return;
-                }
                 if (this.getTooltipStatus(element)) {
                     const col: Column = this.getColumns()[parseInt(element.getAttribute(literals.dataColIndex), 10)] as Column;
                     const domSetter: string = col.disableHtmlEncode ? 'innerText' : 'innerHTML';
@@ -7083,7 +7196,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 eventName: 'keydown'
             });
         EventHandler.add(this.getContent().firstElementChild, 'scroll', this.scrollHandler, this);
-        EventHandler.add(this.element, 'mousemove', this.mouseMoveHandler, this);
+        EventHandler.add(this.element, 'mouseover', this.mouseMoveHandler, this);
         EventHandler.add(this.element, 'mouseout', this.mouseMoveHandler, this);
         EventHandler.add(this.getContent(), 'touchstart', this.tapEvent, this);
         EventHandler.add(document.body, 'keydown', this.keyDownHandler, this);
@@ -7101,7 +7214,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         EventHandler.remove(this.element, 'dblclick', this.dblClickHandler);
         EventHandler.remove(this.getContent().firstElementChild, 'scroll', this.scrollHandler);
-        EventHandler.remove(this.element, 'mousemove', this.mouseMoveHandler);
+        EventHandler.remove(this.element, 'mouseover', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
@@ -7190,7 +7303,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private checkEdit(e: MouseEvent): boolean {
         const tr: Element = parentsUntil(e.target as Element, literals.row);
         const isEdit: boolean = this.editSettings.mode !== 'Batch' &&
-            this.isEdit && tr && (tr.classList.contains(literals.editedRow) || tr.classList.contains(literals.addedRow));
+            this.isEdit && tr && (tr.classList.contains(literals.editedRow) || (tr.classList.contains(literals.addedRow)) &&
+            !this.editSettings.showAddNewRow);
         return !parentsUntil(e.target as Element, 'e-unboundcelldiv') && (isEdit || (parentsUntil(e.target as Element, literals.rowCell) &&
             parentsUntil(e.target as Element, literals.rowCell).classList.contains('e-editedbatchcell')));
     }
@@ -7231,16 +7345,19 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             (!isNullOrUndefined(ariaOwns) &&
                 (ariaOwns)) !== (e.target as Element).getAttribute('aria-owns')))
             && !this.keyPress && this.isEdit && !Browser.isDevice) {
-            if (this.editSettings.mode === 'Batch' && !((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
-                parentsUntil(relatedTarget, 'e-input-group') && parentsUntil(relatedTarget, 'e-grid'))
-                && (parentsUntil(relatedTarget, 'e-uploader') || !(relatedTarget
-                && isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))))) {
+            if (this.editSettings.mode === 'Batch' && !(((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
+                parentsUntil(relatedTarget, 'e-multi-select-list-wrapper')) && parentsUntil(relatedTarget, 'e-input-group'))
+                && (parentsUntil(relatedTarget, 'e-uploader') || !(relatedTarget &&
+                isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))))) {
                 this.editModule.saveCell();
                 this.notify(events.editNextValCell, {});
             }
             if (this.editSettings.mode === 'Normal') {
                 this.editModule.editFormValidate();
             }
+        }
+        if (this.editSettings.showAddNewRow) {
+            this.editModule.isShowAddedRowValidate = false;
         }
         this.keyPress = false;
     }
@@ -7271,8 +7388,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             for (const key of keys) {
                 if ((typeof this[`${key}`] === 'object') && !isNullOrUndefined(this[`${key}`])) {
                     if (Array.isArray(this[`${key}`]) && key === 'columns') {
+                        this.setFrozenCount();
                         setColumnIndex(<Column[]>this[`${key}`]);
                         this.mergeColumns(<Column[]>dataObj[`${key}`], <Column[]>this[`${key}`]);
+                        this.mergedColumns = true;
                         this[`${key}`] = dataObj[`${key}`];
                     } else {
                         extend(this[`${key}`], dataObj[`${key}`]);
@@ -7287,9 +7406,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private mergeColumns(storedColumn: Column[], columns: Column[]): void {
         const storedColumns: Column[] = (<Column[]>storedColumn);
+        const isFrozenGrid: boolean = this.isFrozenGrid();
         for (let i: number = 0; i < storedColumns.length; i++) {
-            const localCol: Column = columns.filter((tCol: Column) => tCol.index === storedColumns[parseInt(i.toString(), 10)].index)[0];
+            let localCol: Column = columns.filter((tCol: Column) => isFrozenGrid ?
+                tCol.index === storedColumns[parseInt(i.toString(), 10)][`${literals.initialFrozenColumnIndex}`] :
+                tCol.index === storedColumns[parseInt(i.toString(), 10)].index)[0];
             if (!isNullOrUndefined(localCol)) {
+                if (isFrozenGrid) {
+                    localCol = <Column>extend({}, localCol, {}, true);
+                    localCol.freeze = storedColumns[parseInt(i.toString(), 10)].freeze;
+                }
                 if (localCol.columns && localCol.columns.length) {
                     this.mergeColumns(<Column[]>storedColumns[parseInt(i.toString(), 10)].columns, <Column[]>localCol.columns);
                     storedColumns[parseInt(i.toString(), 10)] = <Column>extend(
@@ -7376,8 +7502,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private keyActionHandler(e: KeyArg): void {
         if (this.isChildGrid(e) ||
-            (this.isEdit && e.action !== 'escape' && e.action !== 'enter' && e.action !== 'shiftEnter'
-                && e.action !== 'tab' && e.action !== 'shiftTab')) {
+            ((this.isEdit && (!this.editSettings.showAddNewRow || (this.editSettings.showAddNewRow && 
+                this.element.querySelector(literals.editedRow)))) && e.action !== 'escape' && e.action !== 'enter'
+                && e.action !== 'shiftEnter' && e.action !== 'tab' && e.action !== 'shiftTab')) {
             return;
         } else {
             this.keyPress = true;
@@ -7778,6 +7905,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public log(type: string | string[], args?: Object): void {
+        const injectedModules: Function[] = this.getInjectedModules();
+        const logger: Function = injectedModules.find((item: Function) => item.name === 'Logger');
+        if (!logger) {
+            Grid.Inject(Logger);
+            this.enableLogger = true;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this as any).injectModules();
+        }
         // eslint-disable-next-line
         this.loggerModule ? this.loggerModule.log(type, args) : (() => 0)();
     }

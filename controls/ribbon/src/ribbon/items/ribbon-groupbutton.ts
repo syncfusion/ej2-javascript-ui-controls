@@ -61,6 +61,9 @@ export class RibbonGroupButton {
                 if (groupBtnSettings.items[parseInt(i.toString(), 10)].htmlAttributes) {
                     setCustomAttributes(groupButtonEle, groupBtnSettings.items[parseInt(i.toString(), 10)].htmlAttributes);
                 }
+                if (groupBtnSettings.items[parseInt(i.toString(), 10)].content) {
+                    groupButtonEle.classList.add(constants.RIBBON_GROUP_BUTTON_CONTENT);
+                }
                 const buttonEle: HTMLElement = itemElement.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + i);
                 if (groupBtnSettings.selection === RibbonGroupButtonSelection.Single) {
                     btnContainerEle.classList.add(constants.RIBBON_SINGLE_BUTTON_SELECTION);

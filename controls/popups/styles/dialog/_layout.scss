@@ -252,6 +252,10 @@
     cursor: move;
   }
 
+  .e-dialog.e-device.e-draggable.e-popup-open {
+    touch-action: none;
+  }
+
   .e-dialog {
     max-height: 98%;
     max-width: 100%;

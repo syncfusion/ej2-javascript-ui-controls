@@ -2,12 +2,13 @@ import { getValue } from '@syncfusion/ej2-base';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { Grid } from '../../../src/grid/base/grid';
 import { fdata, employeeSelectData, fCustomerData, data, customerData, employeeData } from '../base/datasource.spec';
-import { DataManager, Predicate, Query, Deferred } from '@syncfusion/ej2-data';
+import { DataManager, Predicate, Query, Deferred, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import { Column } from '../../../src/grid/models/column';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
 import { Page } from '../../../src/grid/actions/page';
 import { Edit } from '../../../src/grid/actions/edit';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
+import { Search } from '../../../src/grid/actions/search';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { Group } from '../../../src/grid/actions/group';
@@ -28,7 +29,7 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 /**
  * Foreign key column feature test cases
  */
-Grid.Inject(Page, Edit, Filter, ForeignKey, ExcelExport, Aggregate, Group, Sort, PdfExport, Toolbar, VirtualScroll);
+Grid.Inject(Page, Edit, Filter, ForeignKey, ExcelExport, Aggregate, Group, Sort, PdfExport, Toolbar, VirtualScroll, Search);
 export function getClickObj(target: Element, ctrlKey?: boolean, shiftKey?: boolean): any {
     let preventDefault = () => { };
     return {
@@ -627,6 +628,46 @@ describe('EJ2-53020 - When editing the row throws script error if virtualization
         gridObj.actionComplete = actionComplete;
         gridObj.selectRow(0, true);
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    });
+
+    afterAll((done) => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-867015 - Coverage for foreign key file =>', () => {
+    let gridObj: Grid;
+    let remoteData: DataManager = new DataManager({
+        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+        adaptor: new ODataV4Adaptor
+    });
+    let actionComplete: (e?: any) => void;
+    beforeAll((done: Function) => {
+        let options: Object = {
+            dataSource: fdata,
+            editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+            toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Search'],
+            searchSettings: { fields: ['ShipCity'], operator: 'contains', key: 'Reims', ignoreCase: true },
+            enableVirtualization: true,
+            enableColumnVirtualization: true,
+            pageSettings: { pageSize: 50 },
+            columns: [
+                { field: 'OrderID', width: 120 },
+                { field: 'ShipCity', width: 120 },
+                { field: 'CustomerID', width: 100, foreignKeyValue: 'ShipName',  foreignKeyField: 'CustomerID', dataSource: remoteData }
+            ],
+            actionComplete: actionComplete
+        };
+        gridObj = createGrid(options, done);
+    });
+
+    it('Genarate Column Query', () => {
+        (gridObj as any).foreignKeyModule.genarateColumnQuery(gridObj.getColumns()[2]);
+    });
+
+    it('Destroying the event', () => {
+        (gridObj as any).foreignKeyModule.destroyEvent();
     });
 
     afterAll((done) => {

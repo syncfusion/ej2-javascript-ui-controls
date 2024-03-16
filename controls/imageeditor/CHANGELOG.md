@@ -2,65 +2,25 @@
 
 ## [Unreleased]
 
-## 24.2.5 (2024-02-13)
+## 25.1.35 (2024-03-15)
 
 ### Image Editor
 
 #### Bug Fixes
 
-- The issue with "Shape Settings not updated properly for annotations" has been resolved.
-
-- `#I550096` - The issue with "The Image Editor rendered over a dialog, reloads the page while selecting the browse here content of the image editor" has been resolved.
-
-## 24.2.4 (2024-02-06)
+- The issue with "Resizing event argument value not proper while resizing " has been resolved.
 
 ### Image Editor
 
 #### Bug Fixes
 
-- The issue with "Undo redo not proper with annotations and frame" has been resolved.
-
-- The issue with "Toolbar updating event argument values are not updated properly" has been resolved.
-
-- The issue with "Text area is unable to deselect while placing an external text area with Image Editor" has been resolved.
-
-- The issue with "Slider mouse up event not proper" has been resolved.
-
-## 24.1.46 (2024-01-17)
+- `#I555243` - The issue with "Text area not applied while using GetImageData method" has been resolved.
 
 ### Image Editor
 
 #### Bug Fixes
 
-- The issue with "Zoom events not triggered while using Zoom method" has been resolved.
-
-- The issue with "Ratio Selection dimension not proper" has been resolved.
-
-- The issue with "Get Shape Settings method returns duplicate shape id" has been resolved.
-
-## 24.1.45 (2024-01-09)
-
-### Image Editor
-
-#### Bug Fixes
-
-- The issue with "Image alignment while cancelling contextual toolbar" has been resolved.
-
-## 24.1.44 (2024-01-03)
-
-### Image Editor
-
-#### Bug Fixes
-
-- The issue with "Image alignment issue in rotated state" has been resolved.
-
-## 24.1.43 (2023-12-27)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I531361` - The issue with "Zoom toolbar button not shown in ImageEditor while using ZoomSettings property in MVC platform" has been resolved.
+- Issue with "Toolbar not refreshing while using select public method" has been resolved.
 
 ## 24.1.41 (2023-12-18)
 

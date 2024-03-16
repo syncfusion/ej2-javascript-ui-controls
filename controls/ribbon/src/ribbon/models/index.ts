@@ -16,7 +16,15 @@ export * from './ribbon-backstage-item';
 export * from './ribbon-tooltip';
 export * from './ribbon-group-button-settings';
 export * from './ribbon-group-button-item';
+export * from './ribbon-contextual-tab-settings';
+export * from './ribbon-gallery-group';
+export * from './ribbon-gallery-item';
+export * from './ribbon-gallery-settings';
 
+export * from './ribbon-gallery-settings-model';
+export * from './ribbon-gallery-item-model';
+export * from './ribbon-gallery-group-model';
+export * from './ribbon-contextual-tab-settings-model';
 export * from './ribbon-group-button-item-model';
 export * from './ribbon-group-button-settings-model';
 export * from './ribbon-tooltip-model';

@@ -95,6 +95,7 @@ export class MouseEvents {
 
     public keyDownEvent(element: HTMLElement | Document, key: string, controlKey?: boolean, shiftKey?: boolean, altKey?: boolean): void {
         let keyDown: KeyboardEvent = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: key, ctrlKey: controlKey, shiftKey: shiftKey, altKey: altKey });
+        (keyDown as any).fromMouseEvents = true;
         element.dispatchEvent(keyDown);
     }
 

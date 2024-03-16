@@ -21,6 +21,18 @@ export let data1: any = {
     "details": null,
     "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
 };
+export let dataForSanitization: any = {
+    "files": [
+        { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\" },
+        { "name": "'><img src='x' onerror=alert(\"XSSFromSFTP\")>'txt", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
+        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+};
 export let filterData: any = {
     "files": [
         { "name": "Documents", "size": 0, "dateModified": "10/16/2018 7:43:17 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
@@ -274,6 +286,21 @@ export let data12: any = {
         { "name": "test1", "size": 0, "dateModified": "11/15/2018 11:42:40 AM", "dateCreated": "11/15/2018 11:42:03 AM", "hasChild": true, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\test1" },
         { "name": "test2", "size": 0, "dateModified": "11/15/2018 11:42:07 AM", "dateCreated": "11/15/2018 11:42:07 AM", "hasChild": false, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\test2" },
         { "name": "test3", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/15/2018 11:42:21 AM", "hasChild": false, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\test3" }
+    ],
+    "error": null,
+    "details": null
+};
+
+export let sortComparerData: any = {
+    "cwd": { "name": "Food", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\" },
+    "files": [
+        { "name": "Nuggets.png", "size": 100139, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\Nuggets.png" },
+        { "name": "Sugar cookie.png", "size": 93929, "dateModified": "11/8/2018 4:07:01 PM", "dateCreated": "11/8/2018 4:07:01 PM", "hasChild": false, "isFile": true, "type": "png", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\Sugar cookie.png" },
+        { "name": "1. A", "size": 0, "dateModified": "11/15/2018 11:06:12 AM", "dateCreated": "11/15/2018 11:06:12 AM", "hasChild": false, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\1. A" },
+        { "name": "2. react", "size": 0, "dateModified": "11/15/2018 11:42:40 AM", "dateCreated": "11/15/2018 11:42:03 AM", "hasChild": true, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\2. react" },
+        { "name": "10. angular", "size": 0, "dateModified": "11/15/2018 11:42:07 AM", "dateCreated": "11/15/2018 11:42:07 AM", "hasChild": false, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\10. angular" },
+        { "name": "20. vue", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/15/2018 11:42:21 AM", "hasChild": false, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\20. vue" },
+        { "name": "Downloads", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/15/2018 11:42:21 AM", "hasChild": false, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\Food\\Downloads" }
     ],
     "error": null,
     "details": null

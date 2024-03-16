@@ -693,6 +693,7 @@ describe('PivotView spec', () => {
                     },
                     toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
                     'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
             });
@@ -1081,6 +1082,7 @@ describe('PivotView spec', () => {
                     },
                     toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
                     'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
             });
@@ -1441,7 +1443,8 @@ describe('PivotView spec', () => {
                     removeReport: util.removeReport.bind(this),
                     renameReport: util.renameReport.bind(this),
                     newReport: util.newReport.bind(this),
-                    toolbarRender: util.beforeToolbarRender.bind(this)
+                    toolbarRender: util.beforeToolbarRender.bind(this),
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
             });
@@ -1877,6 +1880,7 @@ describe('PivotView spec', () => {
                     },
                     toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
                     'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
             });
@@ -2211,5 +2215,55 @@ describe('PivotView spec', () => {
         let memory: any = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+    describe('Date-Filtering', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(GroupingBar, DrillThrough, Grouping, Toolbar, PDFExport, ExcelExport, ConditionalFormatting, NumberFormatting);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    sortSettings: [{ name: 'company', order: 'Descending' }],
+                    formatSettings: [{ name: 'balance', format: 'C' }, { name: 'price', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy', type: 'date' }],
+                    drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
+                    filterSettings: [
+                        { name: 'eyeColor', type: 'Exclude', items: ['blue'] },
+                        { name: 'name', type: 'Exclude', items: ['Knight Wooten'] }
+                    ],
+                    rows: [{ name: 'date', caption: 'date' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'price', type: 'CalculatedField' }, { name: 'quantity' }],
+                    filters: [{ name: 'name' }]
+                },
+                showGroupingBar: true,
+                height: 500,
+                width: 1000,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('Filter testing1', (done: Function) => {
+            setTimeout(() => {
+            (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
+            expect(document.querySelectorAll('.e-text-content')[1].textContent).toBe('20/01/1970');
+            (document.querySelectorAll('.e-member-sort')[0] as HTMLElement).click();
+            expect(document.querySelectorAll('.e-text-content')[1].textContent).toBe('16/02/2000');
+            (document.querySelectorAll('.e-cancel-btn')[0] as HTMLElement).click();
+            done();
+            }, 400);
+        });
     });
 });

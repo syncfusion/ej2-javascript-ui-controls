@@ -5,7 +5,7 @@ import {
     // eslint-disable-next-line
     PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection, IReviewCollection, AllowedInteraction
 } from '../..';
-import { isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isBlazor, isNullOrUndefined, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
@@ -247,7 +247,7 @@ export class FreeTextAnnotation {
         this.borderColor = this.pdfViewer.freeTextSettings.borderColor ? this.pdfViewer.freeTextSettings.borderColor : '#ffffff00';
         this.fillColor = this.pdfViewer.freeTextSettings.fillColor ? this.pdfViewer.freeTextSettings.fillColor : '#fff';
         this.borderStyle = this.pdfViewer.freeTextSettings.borderStyle ? this.pdfViewer.freeTextSettings.borderStyle : 'solid';
-        this.borderWidth = this.pdfViewer.freeTextSettings.borderWidth ? this.pdfViewer.freeTextSettings.borderWidth : 1;
+        this.borderWidth = !isNullOrUndefined(this.pdfViewer.freeTextSettings.borderWidth) ? this.pdfViewer.freeTextSettings.borderWidth : 1;
         this.fontSize = this.pdfViewer.freeTextSettings.fontSize ? this.pdfViewer.freeTextSettings.fontSize : 16;
         this.opacity = this.pdfViewer.freeTextSettings.opacity ? this.pdfViewer.freeTextSettings.opacity : 1;
         this.fontColor = this.pdfViewer.freeTextSettings.fontColor ? this.pdfViewer.freeTextSettings.fontColor : '#000';
@@ -520,7 +520,8 @@ export class FreeTextAnnotation {
     public getSettings(annotation: any): any {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
         if (annotation.AnnotationSelectorSettings) {
-            selector = annotation.AnnotationSelectorSettings;
+            // eslint-disable-next-line max-len
+            selector = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
         } else if (this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
             selector = this.pdfViewer.freeTextSettings.annotationSelectorSettings;
         }
@@ -806,6 +807,9 @@ export class FreeTextAnnotation {
         if (!this.pdfViewerBase.isFreeTextContextMenu) {
             this.pdfViewer.fireBeforeAddFreeTextAnnotation(this.inputBoxElement.value);
             // eslint-disable-next-line
+            if(this.pdfViewer.enableHtmlSanitizer && this.inputBoxElement){
+                this.inputBoxElement.value = SanitizeHtmlHelper.sanitize(this.inputBoxElement.value);
+            }
             let pageIndex: number = this.inputBoxElement.id && this.inputBoxElement.id.split("_freeText_")[1] && this.inputBoxElement.id.split("_freeText_")[1].split("_")[0] ? parseFloat(this.inputBoxElement.id.split("_freeText_")[1].split("_")[0]) : this.pdfViewerBase.currentPageNumber - 1;
             const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
             let width: number = parseFloat(this.inputBoxElement.style.width);
@@ -1495,7 +1499,7 @@ export class FreeTextAnnotation {
             AnnotationSelectorSettings: annotationObject.annotationSelectorSettings ? annotationObject.annotationSelectorSettings : annotationSelectorSettings,
             AnnotationSettings: annotationSettings,
             Author: annotationObject.author ? annotationObject.author : 'Guest',
-            Border: { HorizontalRadius: 0, VerticalRadius: 0, Width: annotationObject.borderWidth ? annotationObject.borderWidth : 1 },
+            Border: { HorizontalRadius: 0, VerticalRadius: 0, Width:!isNullOrUndefined(annotationObject.borderWidth) ? annotationObject.borderWidth : 1 },
             BorderColor: { IsEmpty: true, B: 255, Blue: 1, C: 0, G: 255 },
             Bounds: { X: offset.x, Y: offset.y, Width: annotationObject.width, Height: annotationObject.height, Left: offset.x, Top: offset.y, Right: offset.x + annotationObject.width, Bottom: offset.y + annotationObject.height },
             CalloutLines: null,
@@ -1535,7 +1539,7 @@ export class FreeTextAnnotation {
             Text: annotationObject.defaultText ? annotationObject.defaultText : 'Type Here',
             TextAlign: annotationObject.textAlignment ? annotationObject.textAlignment : 'Left',
             TextMarkupColor: null,
-            Thickness: annotationObject.borderWidth ? annotationObject.borderWidth : 1,
+            Thickness: !isNullOrUndefined(annotationObject.borderWidth) ? annotationObject.borderWidth : 1,
             isAddAnnotationProgramatically: true
         };
 

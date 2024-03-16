@@ -217,7 +217,7 @@ describe('DropDownTree control', () => {
         });
 
         it('dropdown treeview mouse hover and mouse leave testing', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -253,7 +253,7 @@ describe('DropDownTree control', () => {
             expect((ddtreeObj as any).popupObj.element.style.zIndex === '1333').toBe(true);
         });
         it('when crosses view port', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }}, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, destroyPopupOnHide: false}, '#ddtree');
             ddtreeObj.showPopup();
             scrollBy({top: 500, behavior: 'smooth'});
             (ddtreeObj as any).popupObj.trigger('targetExitViewport');
@@ -586,7 +586,7 @@ describe('Destroy Method', () => {
             height: '300px',   width: '400px' });
             dialog.appendTo('#dialog');
             // Render drop-down-tree inside dialog
-            ddTreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } }, '#default');
+            ddTreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, destroyPopupOnHide: false }, '#default');
             expect(document.getElementById('dialog').querySelector("#dlgContent").children[0].classList.contains('e-ddt')).toBe(true);
             ddTreeObj.showPopup();
             // open drop-down-tree  popup
@@ -643,7 +643,7 @@ describe('Dropdown Tree With Id starts with number', () => {
         document.body.innerHTML = '';
     });
     it('mouse hover and mouse leave testing', () => {
-        ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } });
+        ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, destroyPopupOnHide: false });
         ddtreeObj.appendTo( '#11ddtree');
         let ele = ddtreeObj.element;
         var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
@@ -729,5 +729,43 @@ describe('Tab focus testing', () => {
         input_a.dispatchEvent(new KeyboardEvent('keypress',  {'key':'tab'}));
         expect(ddtreeObj.inputWrapper.classList.contains('e-input-focus')).toBe(false);
         expect(ddtreeObj1.inputWrapper.classList.contains('e-input-focus')).toBe(true);
+    });
+
+    it('ensure expand nodes', () => {
+        ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" } }, '#ddtree');
+        ddtreeObj.appendTo('#ddtree');
+        ddtreeObj.showPopup();
+        expect(document.querySelectorAll('.e-ddt.e-popup').length).toBe(1);
+        expect(ddtreeObj.treeObj.expandedNodes.includes("1")).toBe(true);
+        ddtreeObj.hidePopup();
+        expect(document.querySelectorAll('.e-ddt.e-popup').length).toBe(0);
+    });
+    
+    it('ensure selected nodes', () => {
+        ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child", selected:"isSelected" }, showCheckBox: true }, '#ddtree');
+        ddtreeObj.appendTo('#ddtree');
+        ddtreeObj.showPopup();
+        expect(document.querySelectorAll('.e-ddt.e-popup').length).toBe(1);
+        expect(ddtreeObj.treeObj.selectedNodes.includes("2")).toBe(true);
+        ddtreeObj.hidePopup();
+        expect(document.querySelectorAll('.e-ddt.e-popup').length).toBe(0);
+    });
+
+    it('ensure Box mode', () => {
+        ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" },
+        showCheckBox: true, mode:'Box', value:["2", "9"] }, '#ddtree');
+        ddtreeObj.appendTo('#ddtree');
+        ddtreeObj.showPopup();
+        expect(document.querySelectorAll('.e-chipcontent')[0].textContent).toBe("New South Wales");
+        ddtreeObj.hidePopup();
+    });
+
+    it('ensure delimiter mode', () => {
+        ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" },
+        showCheckBox: true, mode: 'Delimiter', value:["2", "9"] }, '#ddtree');
+        ddtreeObj.appendTo('#ddtree');
+        ddtreeObj.showPopup();
+        expect((ddtreeObj as any).inputEle.value).toBe("New South Wales, Ceará");
+        ddtreeObj.hidePopup();
     });
 });

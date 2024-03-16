@@ -1,4 +1,4 @@
-import { EventHandler, extend, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CurrentObject, ImageEditor, Point, SelectionPoint, CropSelectionSettings, ShapeChangeEventArgs, ShapeSettings, ShapeType, StrokeSettings, TextSettings, ArrowheadType, ActivePoint } from '../index';
 
 export class Shape {
@@ -39,28 +39,28 @@ export class Shape {
         case 'drawEllipse':
             this.drawEllipse(args.value['x'], args.value['y'], args.value['radiusX'], args.value['radiusY'],
                              args.value['strokeWidth'], args.value['strokeColor'], args.value['fillColor'],
-                             args.value['degree']);
+                             args.value['degree'], args.value['isSelected']);
             break;
         case 'drawLine':
             this.drawLine(args.value['startX'], args.value['startY'], args.value['endX'], args.value['endY'],
-                          args.value['strokeWidth'], args.value['strokeColor']);
+                          args.value['strokeWidth'], args.value['strokeColor'], args.value['isSelected']);
             break;
         case 'drawArrow':
             this.drawArrow(args.value['startX'], args.value['startY'], args.value['endX'], args.value['endY'],
                            args.value['strokeWidth'], args.value['strokeColor'], args.value['arrowStart'],
-                           args.value['arrowEnd']);
+                           args.value['arrowEnd'], args.value['isSelected']);
             break;
         case 'drawPath':
-            this.drawPath(args.value['pointColl'], args.value['strokeWidth'], args.value['strokeColor']);
+            this.drawPath(args.value['pointColl'], args.value['strokeWidth'], args.value['strokeColor'], args.value['isSelected']);
             break;
         case 'drawRectangle':
             this.drawRectangle(args.value['x'], args.value['y'], args.value['width'], args.value['height'],
                                args.value['strokeWidth'], args.value['strokeColor'], args.value['fillColor'],
-                               args.value['degree']);
+                               args.value['degree'], args.value['isSelected']);
             break;
         case 'drawText':
             this.drawText(args.value['x'], args.value['y'], args.value['text'], args.value['fontFamily'],
-                          args.value['fontSize'], args.value['bold'], args.value['italic'], args.value['color']);
+                          args.value['fontSize'], args.value['bold'], args.value['italic'], args.value['color'], args.value['isSelected']);
             break;
         case 'redrawActObj':
             this.redrawActObj(args.value['x'], args.value['y'], args.value['isMouseDown']);
@@ -235,7 +235,8 @@ export class Shape {
             break;
         case 'drawImage':
             this.drawImage(args.value['x'], args.value['y'], args.value['width'], args.value['height'],
-                           args.value['src'], args.value['degree'], args.value['isAspectRatio'], args.value['opacity']);
+                           args.value['src'], args.value['degree'], args.value['isAspectRatio'], args.value['opacity'],
+                           args.value['isSelected']);
             break;
         case 'reset':
             this.reset();
@@ -298,27 +299,28 @@ export class Shape {
     }
 
     private drawEllipse(x?: number, y?: number, radiusX?: number, radiusY?: number, strokeWidth?: number, strokeColor?: string,
-                        fillColor?: string, degree?: number): void {
+                        fillColor?: string, degree?: number, isSelected?: boolean): void {
         this.initializeShape('ellipse');
         const start: Point = x && y ? {x: x, y: y} : null;
-        this.drawShape('ellipse', strokeWidth, strokeColor, fillColor, start, radiusX, radiusY, null, null, null, degree);
+        this.drawShape('ellipse', strokeWidth, strokeColor, fillColor, start, radiusX, radiusY,
+                       null, null, null, degree, null, isSelected);
     }
 
     private drawLine(startX?: number, startY?: number, endX?: number, endY?: number, strokeWidth?: number,
-        strokeColor?: string): void {
+                     strokeColor?: string, isSelected?: boolean): void {
         this.initializeShape('line');
         const start: Point = startX && startY ? {x: startX, y: startY} : null;
         const width: number = endX - startX; const height: number = endY - startY;
-        this.drawShape('line', strokeWidth, strokeColor, null, start, width, height);
+        this.drawShape('line', strokeWidth, strokeColor, null, start, width, height, null, null, null, null, null, isSelected);
     }
 
-    private drawPath(pointColl: Point[], strokeWidth?: number, strokeColor?: string): void {
+    private drawPath(pointColl: Point[], strokeWidth?: number, strokeColor?: string, isSelected?: boolean): void {
         const parent: ImageEditor = this.parent;
         this.initializeShape('path');
         if (pointColl) {
-            this.drawShape('path', strokeWidth, strokeColor, null, null, null, null, pointColl);
+            this.drawShape('path', strokeWidth, strokeColor, null, null, null, null, pointColl, null, null, null, null, isSelected);
         } else {
-            this.drawShape('line', strokeWidth, strokeColor);
+            this.drawShape('line', strokeWidth, strokeColor, null, null, null, null, null, null, null, null, null, isSelected);
             const obj: SelectionPoint = extend({}, parent.objColl[parent.objColl.length - 1], null, true) as SelectionPoint;
             obj.shape = 'path'; obj.lineDraw = null;
             obj.pointColl = [{x: obj.activePoint.startX, y: obj.activePoint.startY},
@@ -328,24 +330,24 @@ export class Shape {
     }
 
     private drawArrow(startX?: number, startY?: number, endX?: number, endY?: number, strokeWidth?: number,
-                      strokeColor?: string, arrowStart?: ArrowheadType, arrowEnd?: ArrowheadType): void {
+                      strokeColor?: string, arrowStart?: ArrowheadType, arrowEnd?: ArrowheadType, isSelected?: boolean): void {
         this.initializeShape('arrow');
         const start: Point = startX && startY ? {x: startX, y: startY} : null;
         const width: number = endX - startX; const height: number = endY - startY;
-        this.drawShape('arrow', strokeWidth, strokeColor, null, start, width, height, null, arrowStart, arrowEnd);
+        this.drawShape('arrow', strokeWidth, strokeColor, null, start, width, height, null, arrowStart, arrowEnd, null, null, isSelected);
     }
 
     private drawRectangle(x?: number, y?: number, width?: number, height?: number, strokeWidth?: number, strokeColor?: string,
-                          fillColor?: string, degree?: number): void {
+                          fillColor?: string, degree?: number, isSelected?: boolean): void {
         this.initializeShape('rectangle');
         const start: Point = x && y ? {x: x, y: y} : null;
         this.drawShape('rectangle', strokeWidth, strokeColor, fillColor, start, width, height, null,
-                       null, null, degree);
+                       null, null, degree, null, isSelected);
     }
 
     private drawText(x?: number, y?: number, text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
-                     color?: string): void {
-        this.drawShapeText(text, fontFamily, fontSize, bold, italic, color, x, y);
+                     color?: string, isSelected?: boolean): void {
+        this.drawShapeText(text, fontFamily, fontSize, bold, italic, color, x, y, isSelected);
     }
 
     private initializeShape(type: string): void {
@@ -388,7 +390,7 @@ export class Shape {
 
     private drawShape(type: string, strokeWidth?: number, strokeColor?: string, fillColor?: string, start?: Point, width?: number,
                       height?: number, pointColl?: Point[], arrowStart?: ArrowheadType, arrowEnd?: ArrowheadType, degree?: number,
-                      opacity?: number): void {
+                      opacity?: number, isSelected?: boolean): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
             parent.notify('draw', { prop: 'setImageEdited', onPropertyChange: false });
@@ -402,11 +404,9 @@ export class Shape {
                 parent.activeObj.pointColl = [];
                 parent.upperCanvas.style.cursor = parent.cursor = 'crosshair';
                 parent.notify('selection', { prop: 'setCurrentDrawingShape', onPropertyChange: false, value: {value: 'path' }});
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
-                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                    parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-                }
+                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
+                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
             } else {
                 if (type !== 'freehanddraw' && type !== '') {
                     parent.activeObj.shape = type;
@@ -455,48 +455,24 @@ export class Shape {
                     const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
                     const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
                         currentShapeSettings: shapeSettings};
-                    if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
-                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                        (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape', shapeChangingArgs, null) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
-                            this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings);
-                            this.setDimension(width, height);
-                            parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate'}});
-                            if (degree) {
-                                parent.activeObj.rotatedAngle = degree * (Math.PI / 180);
-                                parent.notify('selection', {prop: 'updPtCollForShpRot', onPropertyChange: false, value: {obj: parent.activeObj }});
-                            }
-                            parent.updateToolbar(parent.element, 'quickAccessToolbar', 'shape');
-                            parent.notify('selection', { prop: 'isShapeInserted', onPropertyChange: false, value: {bool: true} });
-                            parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: objColl}});
-                            if (parent.isPublicMethod) {
-                                parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
-                            }
-                            parent.isPublicMethod = false;
-                        });
-                    } else {
-                        parent.trigger('shapeChanging', shapeChangingArgs);
-                        this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings);
-                        this.setDimension(width, height);
-                        parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate'}});
-                        if (degree) {
-                            parent.activeObj.rotatedAngle = degree * (Math.PI / 180);
-                            parent.notify('selection', {prop: 'updPtCollForShpRot', onPropertyChange: false, value: {obj: parent.activeObj }});
-                        }
-                        if (!isBlazor()) {
-                            parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
-                        } else {
-                            parent.updateToolbar(parent.element, 'quickAccessToolbar', 'shape');
-                        }
-                        parent.notify('selection', { prop: 'isShapeInserted', onPropertyChange: false, value: {bool: true} });
-                        parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: objColl}});
-                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
-                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                        parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-                        if (parent.isPublicMethod) {
-                            parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
-                        }
-                        parent.isPublicMethod = false;
+                    parent.trigger('shapeChanging', shapeChangingArgs);
+                    this.updateShapeChangeEventArgs(shapeChangingArgs.currentShapeSettings);
+                    this.setDimension(width, height);
+                    parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'duplicate'}});
+                    if (degree) {
+                        parent.activeObj.rotatedAngle = degree * (Math.PI / 180);
+                        parent.notify('selection', {prop: 'updPtCollForShpRot', onPropertyChange: false, value: {obj: parent.activeObj }});
                     }
+                    parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
+                    parent.notify('selection', { prop: 'isShapeInserted', onPropertyChange: false, value: {bool: true} });
+                    parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: objColl}});
+                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
+                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
+                    if (parent.isPublicMethod && !isSelected) {
+                        parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
+                    }
+                    parent.isPublicMethod = false;
                 }
             }
         }
@@ -542,7 +518,7 @@ export class Shape {
     }
 
     private drawShapeText(text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
-                          strokeColor?: string, x?: number, y?: number): void {
+                          strokeColor?: string, x?: number, y?: number, isSelected?: boolean): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
             if (parent.currObjType.shape === 'freehanddraw') {
@@ -583,24 +559,13 @@ export class Shape {
             parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
             const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
             const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
-                currentShapeSettings: shapeSettings};
-            if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape', shapeChangingArgs, null) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
-                    this.drawShapeTextEvent(shapeChangingArgs);
-                    if (parent.isPublicMethod) {
-                        parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
-                    }
-                    parent.isPublicMethod = false;
-                });
-            } else {
-                parent.trigger('shapeChanging', shapeChangingArgs);
-                this.drawShapeTextEvent(shapeChangingArgs);
-                if (parent.isPublicMethod) {
-                    parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
-                }
-                parent.isPublicMethod = false;
+            currentShapeSettings: shapeSettings};
+            parent.trigger('shapeChanging', shapeChangingArgs);
+            this.drawShapeTextEvent(shapeChangingArgs);
+            if (parent.isPublicMethod && !isSelected) {
+                parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
             }
+            parent.isPublicMethod = false;
         }
     }
 
@@ -617,15 +582,10 @@ export class Shape {
         parent.notify('selection', { prop: 'redrawShape', onPropertyChange: false,
             value: {obj: parent.objColl[parent.objColl.length - 1]}});
         if (isSelect) {
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
-                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-                parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
-            } else {
-                parent.updateToolbar(parent.element, parent.activeObj.shape);
-                parent.updateToolbar(parent.element, 'quickAccessToolbar', parent.activeObj.shape);
-            }
+            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
+                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+            parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
+            parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
         } else {
             parent.okBtn();
         }
@@ -646,20 +606,11 @@ export class Shape {
                 previousCropObj: prevCropObj, previousText: null, currentText: null, previousFilter: null, isCircleCrop: null}});
         parent.notify('selection', { prop: 'redrawShape', onPropertyChange: false,
             value: {obj: parent.objColl[parent.objColl.length - 1]}});
-        if (isBlazor()) {
-            parent.updateToolbar(parent.element, 'quickAccessToolbar', 'text');
-        }  else {
-            parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
-        }
+        parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
         parent.notify('selection', { prop: 'isShapeInserted', onPropertyChange: false, value: {bool: true} });
-        if (isBlazor()) {
-            parent.updateToolbar(parent.element, 'text');
-            parent.getFontSizes();
-        } else {
-            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
-                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-            parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-        }
+        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
+            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+        parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
     }
 
     private initializeTextShape(text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
@@ -681,9 +632,9 @@ export class Shape {
     }
 
     private drawImage(x: number, y: number, width: number, height: number, src: string | ImageData, degree: number,
-                      isAspectRatio: boolean, opacity?: number): void {
+                      isAspectRatio: boolean, opacity?: number, isSelected?: boolean): void {
         this.initializeShape('image');
-        this.onLoadImgShape(x, y, width, height, src, null, degree, isAspectRatio, opacity);
+        this.onLoadImgShape(x, y, width, height, src, null, degree, isAspectRatio, opacity, isSelected);
     }
 
     private redrawActObj(x?: number, y?: number, isMouseDown?: boolean): void {
@@ -796,14 +747,10 @@ export class Shape {
             if (isNullOrUndefined(shapeSettings.degree)) { shapeSettings.degree = 0; }
             switch (parent.activeObj.shape) {
             case 'ellipse':
-                if (isBlazor()) {
-                    parent.activeObj.activePoint.width = shapeSettings.radius;
-                } else {
-                    parent.activeObj.activePoint.width = shapeSettings.radiusX * 2;
-                    parent.activeObj.activePoint.height = shapeSettings.radiusY * 2;
-                    parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width;
-                    parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
-                }
+                parent.activeObj.activePoint.width = shapeSettings.radiusX * 2;
+                parent.activeObj.activePoint.height = shapeSettings.radiusY * 2;
+                parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width;
+                parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
                 if (shapeSettings.degree) {
                     parent.activeObj.rotatedAngle = shapeSettings.degree * (Math.PI / 180);
                 }
@@ -811,15 +758,13 @@ export class Shape {
             case 'line':
             case 'arrow':
                 parent.activeObj.activePoint.width = shapeSettings.length;
-                if (!isBlazor()) {
-                    parent.activeObj.activePoint.endX = shapeSettings.endX;
-                    parent.activeObj.activePoint.endY = shapeSettings.endY;
-                    parent.activeObj.activePoint.width = parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width;
-                    parent.activeObj.activePoint.height = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
-                    if (parent.activeObj.shape === 'arrow') {
-                        parent.activeObj.start = this.getArrowType(shapeSettings.arrowHead);
-                        parent.activeObj.end = this.getArrowType(shapeSettings.arrowTail);
-                    }
+                parent.activeObj.activePoint.endX = shapeSettings.endX;
+                parent.activeObj.activePoint.endY = shapeSettings.endY;
+                parent.activeObj.activePoint.width = parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width;
+                parent.activeObj.activePoint.height = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
+                if (parent.activeObj.shape === 'arrow') {
+                    parent.activeObj.start = this.getArrowType(shapeSettings.arrowHead);
+                    parent.activeObj.end = this.getArrowType(shapeSettings.arrowTail);
                 }
                 break;
             case 'text':
@@ -843,6 +788,8 @@ export class Shape {
                 break;
             }
             if (parent.activeObj.shape === 'text' && parent.activeObj.textSettings) {
+                parent.activeObj.textSettings.bold = false; parent.activeObj.textSettings.italic = false;
+                parent.activeObj.textSettings.underline = false;
                 for (let i: number = 0; i < shapeSettings.fontStyle.length; i++) {
                     switch (shapeSettings.fontStyle[i as number]) {
                     case 'bold':
@@ -1515,11 +1462,7 @@ export class Shape {
         const parent: ImageEditor = this.parent;
         const degree: number = this.getRotDegOfShape(parent.activeObj);
         this.transformTextArea();
-        if (isBlazor()) {
-            parent.updateToolbar(parent.element, 'destroyQuickAccessToolbar');
-        } else {
-            parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-        }
+        parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
         const dupElem: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_duplicate');
         const removeElem: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_remove');
         const editTextElem: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_editText');
@@ -1787,11 +1730,7 @@ export class Shape {
                 if (parent.objColl[parent.objColl.length - 1]) {
                     parent.selectShape(parent.objColl[parent.objColl.length - 1].currIndex);
                 }
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
-                } else {
-                    parent.updateToolbar(parent.element, 'quickAccessToolbar', parent.activeObj.shape);
-                }
+                parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
                 const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
                 parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
                 const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
@@ -1831,15 +1770,11 @@ export class Shape {
             parent.notify('selection', { prop: 'setTouchEndPoint', onPropertyChange: false,
                 value: {x: e.touches[0].clientX, y: e.touches[0].clientY}});
         }
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'setPreventZoomBtn', onPropertyChange: false, value: {isPrevent: true }});
-            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
-                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-            parent.notify('toolbar', { prop: 'setPreventZoomBtn', onPropertyChange: false, value: {isPrevent: false }});
-            parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-        } else {
-            parent.updateToolbar(parent.element, 'enableDisableToolbarBtn', 'textAreaClicked');
-        }
+        parent.notify('toolbar', { prop: 'setPreventZoomBtn', onPropertyChange: false, value: {isPrevent: true }});
+        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
+            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+        parent.notify('toolbar', { prop: 'setPreventZoomBtn', onPropertyChange: false, value: {isPrevent: false }});
+        parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
         if (!isNullOrUndefined(x) && !isNullOrUndefined(y)) {
             const bbox: DOMRect = parent.lowerCanvas.getBoundingClientRect() as DOMRect;
             x -= bbox.left; y -= bbox.top; let flip: string = '';
@@ -1987,13 +1922,11 @@ export class Shape {
         // eslint-disable-next-line @typescript-eslint/tslint/config, @typescript-eslint/no-explicit-any
         const URL = window.URL; const url = URL.createObjectURL((e.target as any).files[0]);
         this.onLoadImgShape(null, null, null, null, url.toString(), true);
-        if (!isBlazor()) {
-            (document.getElementById(this.parent.element.id + '_fileUpload') as HTMLInputElement).value = '';
-        }
+        (document.getElementById(this.parent.element.id + '_fileUpload') as HTMLInputElement).value = '';
     }
 
     private onLoadImgShape(x: number, y: number, width: number, height: number, url: string | ImageData,
-                           isSelect?: boolean, degree?: number, isAspectRatio?: boolean, opacity?: number): void {
+                           isSelect?: boolean, degree?: number, isAspectRatio?: boolean, opacity?: number, isSelected?: boolean): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: Shape = this; const parent: ImageEditor = this.parent;
         if (typeof(url) === 'string') {this.shapeImg.src = url; }
@@ -2008,12 +1941,12 @@ export class Shape {
         this.initShapeProps();
         this.shapeImg.onload = () => {
             proxy.upperContext.drawImage(proxy.shapeImg, 0, 0, proxy.shapeImg.width, proxy.shapeImg.height);
-            proxy.updateImgCanvas(isSelect, x, y, width, height, degree, isAspectRatio, opacity);
+            proxy.updateImgCanvas(isSelect, x, y, width, height, degree, isAspectRatio, opacity, isSelected);
         };
     }
 
     private updateImgCanvas(isSelect: boolean, x: number, y: number, width: number, height: number, degree: number,
-                            isAspectRatio: boolean, opacity: number): void {
+                            isAspectRatio: boolean, opacity: number, isSelected?: boolean): void {
         const parent: ImageEditor = this.parent;
         parent.activeObj.imageElement = this.shapeImg;
         parent.activeObj.imageCanvas = parent.createElement('canvas');
@@ -2058,23 +1991,12 @@ export class Shape {
         const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
         const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
             currentShapeSettings: shapeSettings};
-        if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape', shapeChangingArgs, null) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
-                this.drawShapeImageEvent(shapeChangingArgs, isSelect);
-                if (parent.isPublicMethod) {
-                    parent.notify('undo-redo', {prop: 'updateUndoRedo', onPropertyChange: false});
-                }
-                parent.isPublicMethod = false;
-            });
-        } else {
-            parent.trigger('shapeChanging', shapeChangingArgs);
-            this.drawShapeImageEvent(shapeChangingArgs, isSelect);
-            if (parent.isPublicMethod) {
-                parent.notify('undo-redo', {prop: 'updateUndoRedo', onPropertyChange: false});
-            }
-            parent.isPublicMethod = false;
+        parent.trigger('shapeChanging', shapeChangingArgs);
+        this.drawShapeImageEvent(shapeChangingArgs, isSelect);
+        if (parent.isPublicMethod && !isSelected) {
+            parent.notify('undo-redo', {prop: 'updateUndoRedo', onPropertyChange: false});
         }
+        parent.isPublicMethod = false;
     }
 
     private updateObj(dimObj: Object, x: number, y: number): void {
@@ -2329,7 +2251,7 @@ export class Shape {
         }
         const shapeChangedArgs: ShapeChangeEventArgs = {action: 'font-style', currentShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings};
         shapeChangedArgs.currentShapeSettings.fontStyle = [item];
-        parent.triggerShapeChanged(shapeChangedArgs);
+        parent.trigger('shapeChange', shapeChangedArgs);
     }
 
     private updateFontStyle(item: string, objColl: SelectionPoint[], fontWeight: string, fontStyle: string): void {
@@ -2523,8 +2445,7 @@ export class Shape {
                         parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
                             value: {context: this.lowerContext, isSave: null, isFlip: null}});
                     }
-                    if (!isBlazor()) {parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false}); }
-                    else {parent.updateToolbar(parent.element, 'destroyQuickAccessToolbar'); }
+                    parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
                     if (isNullOrUndefined(isMouseDown)) {
                         parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
                         parent.notify('draw', { prop: 'setPrevActObj', onPropertyChange: false, value: { prevActObj: null }});
@@ -2673,13 +2594,6 @@ export class Shape {
             shapeDetails.height = obj.activePoint.height;
             shapeDetails.opacity = obj.opacity;
             break;
-        case 'image':
-            shapeDetails.imageData = obj.imageCanvas.toDataURL();
-            shapeDetails.degree = obj.rotatedAngle * (180 / Math.PI);
-            shapeDetails.width = obj.activePoint.width;
-            shapeDetails.height = obj.activePoint.height;
-            shapeDetails.opacity = obj.opacity;
-            break;
         }
         return shapeDetails;
     }
@@ -2698,7 +2612,11 @@ export class Shape {
     private getShapeSetting(id: string, obj: Object): void {
         const parent: ImageEditor = this.parent; let shapeDetails: ShapeSettings;
         if (!parent.disabled && parent.isImageLoaded) {
-            this.applyActObj();
+            if (parent.textArea.style.display !== 'none') {
+                parent.okBtn();
+            } else {
+                this.applyActObj(true);
+            }
             if (id.split('_')[0] === 'shape') {
                 let obj: SelectionPoint;
                 for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
@@ -2718,7 +2636,11 @@ export class Shape {
     private getShapeSettings(obj: Object): void {
         const parent: ImageEditor = this.parent; const shapeDetailsColl: ShapeSettings[] = [];
         if (!parent.disabled && parent.isImageLoaded) {
-            this.applyActObj();
+            if (parent.textArea.style.display !== 'none') {
+                parent.okBtn();
+            } else {
+                this.applyActObj(true);
+            }
             for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
                 const shapeDetails: ShapeSettings = this.getObjDetails(parent.objColl[i as number]);
                 shapeDetailsColl.push(shapeDetails);
@@ -2842,27 +2764,18 @@ export class Shape {
                     this.lowerContext.filter = object['canvasFilter'];
                     parent.notify('selection', { prop: 'redrawShape', onPropertyChange: false,
                         value: {obj: parent.activeObj}});
-                    if (!isBlazor()) {
-                        if (parent.activeObj.shape === 'text') {
-                            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
-                                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                        } else if (parent.activeObj.shape === 'pen') {
-                            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
-                                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                        } else {
-                            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
-                                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                        }
-                        parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-                        parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
+                    if (parent.activeObj.shape === 'text') {
+                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    } else if (parent.activeObj.shape === 'pen') {
+                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
                     } else {
-                        parent.updateToolbar(parent.element, parent.activeObj.shape);
-                        if (parent.activeObj.shape === 'path') {
-                            parent.updateToolbar(parent.element, 'path', 'pathQuickAccessToolbar');
-                        } else {
-                            parent.updateToolbar(parent.element, 'quickAccessToolbar', parent.activeObj.shape);
-                        }
+                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
                     }
+                    parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
+                    parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
                 }
             } else if (id.split('_')[0] === 'pen') {
                 const object: Object = {bool: false };
@@ -2873,13 +2786,8 @@ export class Shape {
                 if (obj['isIndex']) {
                     isSelected = true;
                     parent.notify('freehand-draw', { prop: 'selectFhd', value: { id: id} });
-                    if (isBlazor()) {
-                        parent.updateToolbar(parent.element, 'pen');
-                        parent.updateToolbar(parent.element, 'quickAccessToolbar', 'pen');
-                    } else {
-                        parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: true} });
-                        parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-                    }
+                    parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: true} });
+                    parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
                 } else {
                     isSelected = false;
                 }
@@ -2891,27 +2799,27 @@ export class Shape {
     private deleteShape(id: string): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
-            this.applyActObj();
-            if (id.split('_')[0] === 'shape') {
-                for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
-                    if (parent.objColl[i as number].currIndex === id) {
-                        parent.objColl.splice(i, 1);
-                        break;
+            if (parent.activeObj.currIndex && parent.activeObj.currIndex === id) {
+                parent.notify('selection', { prop: 'deleteItem', onPropertyChange: false});
+            } else {
+                this.applyActObj();
+                if (id.split('_')[0] === 'shape') {
+                    for (let i: number = 0, len: number = parent.objColl.length; i < len; i++) {
+                        if (parent.objColl[i as number].currIndex === id) {
+                            parent.objColl.splice(i, 1);
+                            break;
+                        }
                     }
+                } else if (id.split('_')[0] === 'pen') {
+                    parent.notify('freehand-draw', {prop: 'handle-freehand-draw', value: {id: id}});
                 }
-            } else if (id.split('_')[0] === 'pen') {
-                parent.notify('freehand-draw', {prop: 'handle-freehand-draw', value: {id: id}});
             }
             const object: Object = {canvasFilter: null };
             parent.notify('toolbar', { prop: 'getCanvasFilter', onPropertyChange: false, value: {obj: object }});
             this.lowerContext.filter = object['canvasFilter'];
             this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
             parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-            } else {
-                parent.updateToolbar(parent.element, 'imageLoaded');
-            }
+            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
         }
     }
 

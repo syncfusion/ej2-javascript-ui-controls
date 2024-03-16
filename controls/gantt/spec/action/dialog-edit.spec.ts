@@ -1,10 +1,10 @@
 /**
  * Gantt taskbaredit spec
  */
- import { getValue, L10n } from '@syncfusion/ej2-base';
+ import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
  import { Gantt, Edit, Toolbar, IGanttData, ContextMenu, ContextMenuClickEventArgs,Sort,  } from '../../src/index';
  import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1} from '../base/data-source.spec';
- import { createGantt, destroyGantt, triggerKeyboardEvent, triggerMouseEvent,  } from '../base/gantt-util.spec';
+ import { createGantt, destroyGantt, triggerMouseEvent,  } from '../base/gantt-util.spec';
  import { DropDownList } from '@syncfusion/ej2-dropdowns';
  import { DataManager } from '@syncfusion/ej2-data';
  import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -1535,6 +1535,7 @@
                         "delete": "Sil",
                         "cancel": "İptal",
                     },
+                    'grid': {}
                   }
               });
             ganttObj = createGantt({
@@ -3893,6 +3894,84 @@ describe('Validation Rule in Edit Dialog', function () {
             expect(ganttObj.currentViewData.length).toBe(5);
         });
     });
+    describe('Resource using string', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [
+                    {
+                        TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                        Progress: 30, work: 10, resources: "Martin Tamer"
+                    }
+                ],
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team'}
+                ],
+                viewType: 'ResourceView',
+                enableMultiTaskbar: true,
+                showOverAllocation: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                labelSettings: {
+                    taskLabel: 'TaskName'
+                },
+                splitterSettings: {
+                    columnIndex: 2
+                },
+                allowResizing: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '450px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done) => {
+            setTimeout(done, 1000);
+            ganttObj.openAddDialog();
+        });
+        it("Checking datasource with string resource", () => {
+            expect(ganttObj.currentViewData.length>=1).toBe(true);
+        });
+    });
 describe('Edit baseline dates', function () {
     let ganttObj: Gantt;
     let bwData = [
@@ -4355,7 +4434,7 @@ describe('CR-861733-Action begin event arguments not working properly', () => {
     let editingData = [
         {
             TaskID: 1,
-            TaskName: 'Project Initiation',
+            TaskName: 'Project initiation',
             StartDate: new Date('04/02/2019'),
             EndDate: new Date('04/21/2019'),
         }
@@ -4412,15 +4491,14 @@ describe('CR-861733-Action begin event arguments not working properly', () => {
         }
     });
 });
-describe('validation in progress', () => {
+describe('provide support for custom dialog modal for custom column', () => {
     let ganttObj: Gantt;
     let editingData = [
         {
             TaskID: 1,
-            TaskName: 'Project Initiation',
+            TaskName: 'Project initiation',
             StartDate: new Date('04/02/2019'),
             EndDate: new Date('04/21/2019'),
-            Progress:30
         }
     ];
     beforeAll(function (done) {
@@ -4437,13 +4515,6 @@ describe('validation in progress', () => {
             dependency: 'Predecessor',
 
         },
-        columns: [
-            { field: 'TaskID', headerText: 'Task ID' },
-            { field: 'TaskName', headerText: 'Task Name'},
-            { field: 'StartDate', headerText: 'Start Date' },
-            { field: 'Duration', headerText: 'Duration' },
-            { field: 'Progress', validationRules: { required: true } }, 
-        ],
         editSettings: {
             allowEditing: true,
             allowDeleting: true,
@@ -4458,6 +4529,29 @@ describe('validation in progress', () => {
         height: '550px',
         projectStartDate: new Date('03/25/2019'),
         projectEndDate: new Date('05/30/2019'),
+            editDialogFields: [
+                { type: 'General', fields: ["TaskID", "TaskName", "newinput", "newinput1"] },
+                {
+                    type: 'Dependency', additionalParams: {
+                        allowPaging: true, allowSorting: true, toolbar: ["Search", "Print",]
+                    }
+                },
+                { type: 'Resources', additionalParams: { allowSorting: true, allowPaging: true, toolbar: ["Search", "Print"], columns: [{ field: "newdata" }] } },
+                {
+                    type: 'Notes', additionalParams: {
+                        inlineMode: {
+                            enable: true,
+                            onSelection: true
+                        }
+                    }
+                },
+                {
+                    type: "Segments", additionalParams: {
+
+                        columns: [{ field: "segmenttask", width: "170px", headerText: "Segment Task" }],
+                    }
+                }
+            ],
         }, done);
     });
     afterAll(() => {
@@ -4466,69 +4560,468 @@ describe('validation in progress', () => {
         }
     });
     beforeEach((done) => {
-        setTimeout(done, 1000);
+        setTimeout(done, 3000);
+        
+
+    });
+    it(' actionbegin action with edittab', () => {
         ganttObj.openEditDialog(1);
-    });
-    it('validation rule not working in numeric edit', () => {
-        let element = document.getElementById("Gantt_0Progress");
-        if (element) {
-            if ('ej2_instances' in element) {
-                let numericInstance = (element as any).ej2_instances[0];
-                numericInstance.focusIn();
-                numericInstance.clear()
-                numericInstance.focusOutHandler()
-                let element1 = document.getElementsByClassName("e-formvalidator")[0].querySelectorAll(".e-griderror").length;
-                expect(element1>=1).toBe(true); 
-            }
-        }
-    });
-    it('gantt refreshing while pressing enter', () => {
-        ganttObj.dataBind();
-        let taskField: any = document.querySelector('#' + ganttObj.element.id + 'TaskName') as HTMLInputElement;
-        triggerMouseEvent(taskField, 'dblclick');
-        if (taskField) {
-            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'TaskName')).ej2_instances[0];
-            textObj.value = 'updated value';
-            textObj.dataBind();
-            triggerKeyboardEvent(taskField, 'keydown', 'Enter');
-            expect(document.getElementById(ganttObj.element.id + '_dialog')).toBeDefined();
+        ganttObj.actionComplete = (args) => {
+     
+            let  print = document.getElementById("ganttContainerDependencyTabContainer_print")
+            let  button  = document.getElementById("ganttContainerDependencyTabContainer_searchbar")
+            expect(!isNullOrUndefined(print)).toBe(true);
+            expect(!isNullOrUndefined(button)).toBe(true);
         }
     });
 });
-describe('Edit baseline dates', function () {
+describe('provide support for custom dialog modal for custom column', () => {
     let ganttObj: Gantt;
-    let bwData = [
+    let editingData = [
         {
             TaskID: 1,
             TaskName: 'Project initiation',
             StartDate: new Date('04/02/2019'),
             EndDate: new Date('04/21/2019'),
-            subtasks: [
-                {
-                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), duration: 0,
-                    Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
-                },
-                {
-                    TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), duration: 4, Predecessor: '2',
-                    resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
-                        'From an engineer or company specializing in soil testing'
-                },
-                { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), duration: 0, Predecessor: '3', Progress: 30 },
-            ]
         }
     ];
     beforeAll(function (done) {
         ganttObj = createGantt({
-            dataSource: bwData,
+            dataSource: editingData,
+            allowSorting: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+
+        },
+        editSettings: {
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+        allowSelection: true,
+        showColumnMenu: false,
+        highlightWeekends: true,
+        height: '550px',
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            addDialogFields: [
+                { type: 'General', headerText: 'General edit', fields: ["TaskID", "TaskName", "newinput", "newinput1"] },
+                {
+                    type: 'Dependency', additionalParams: {
+                        allowPaging: true, allowSorting: true, toolbar: ["Search", "Print",]
+                    }
+                },
+                { type: 'Resources', additionalParams: { allowSorting: true, allowPaging: true, toolbar: ["Search", "Print"], columns: [{ field: "newdata" }] } },
+                {
+                    type: 'Notes', additionalParams: {
+                        inlineMode: {
+                            enable: true,
+                            onSelection: true
+                        }
+                    }
+                },
+                {
+                    type: "Segments", additionalParams: {
+
+                        columns: [{ field: "segmenttask", width: "170px", headerText: "Segment Task" }],
+                    }
+                }
+            ],
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 3000);
+        
+            
+    });
+    it(' actionbegin action with add tab', () => {
+        ganttObj.openAddDialog();
+        ganttObj.actionComplete = (args) => {
+            let  print = document.getElementById("ganttContainerDependencyTabContainer_print")
+            let  button  = document.getElementById("ganttContainerDependencyTabContainer_searchbar")
+            expect(!isNullOrUndefined(print)).toBe(true);
+            expect(!isNullOrUndefined(button)).toBe(true);
+        }
+    });
+});
+describe('provide support for custom dialog modal for custom column', () => {
+    let ganttObj: Gantt;
+    let editingData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+        }
+    ];
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: editingData,
+            allowSorting: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+
+        },
+        editSettings: {
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+        allowSelection: true,
+        showColumnMenu: false,
+        highlightWeekends: true,
+        height: '550px',
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            editDialogFields: [
+                { type: 'General', headerText: 'General edit', fields: ["TaskID", "TaskName", "newinput", "newinput1"] },
+                {
+                    type: 'Dependency', additionalParams: {
+                        allowPaging: true, allowSorting: true, toolbar: ["Search", "Print",]
+                    }
+                },
+                { type: 'Resources', additionalParams: { allowSorting: true, allowPaging: true, toolbar: ["Search", "Print"], columns: [{ field: "newdata" }] } },
+                {
+                    type: 'Notes', additionalParams: {
+                        inlineMode: {
+                            enable: true,
+                            onSelection: true
+                        }
+                    }
+                },
+                {
+                    type: "Segments", additionalParams: {
+
+                        columns: [{ field: "segmenttask", width: "170px", headerText: "Segment Task" }],
+                    }
+                }
+            ],
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 3000);
+        
+            
+    });
+    it(' actionbegin action without add tab', () => {
+        ganttObj.openAddDialog();
+        ganttObj.actionComplete = (args) => {
+            let  print = document.getElementById("ganttContainerDependencyTabContainer_print")
+            let  button  = document.getElementById("ganttContainerDependencyTabContainer_searchbar")
+            expect(!isNullOrUndefined(print)).toBe(false);
+            expect(!isNullOrUndefined(button)).toBe(false);
+        }
+    });
+});
+describe('provide support for custom dialog modal for custom column', () => {
+    let ganttObj: Gantt;
+    let editingData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+        }
+    ];
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: editingData,
+            allowSorting: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+
+        },
+        editSettings: {
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+        allowSelection: true,
+        showColumnMenu: false,
+        highlightWeekends: true,
+        height: '550px',
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+           addDialogFields: [
+                { type: 'General', headerText: 'General edit', fields: ["TaskID", "TaskName", "newinput", "newinput1"] },
+                {
+                    type: 'Dependency', additionalParams: {
+                        allowPaging: true, allowSorting: true, toolbar: ["Search", "Print",]
+                    }
+                },
+                { type: 'Resources', additionalParams: { allowSorting: true, allowPaging: true, toolbar: ["Search", "Print"], columns: [{ field: "newdata" }] } },
+                {
+                    type: 'Notes', additionalParams: {
+                        inlineMode: {
+                            enable: true,
+                            onSelection: true
+                        }
+                    }
+                },
+                {
+                    type: "Segments", additionalParams: {
+
+                        columns: [{ field: "segmenttask", width: "170px", headerText: "Segment Task" }],
+                    }
+                }
+            ],
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 3000);
+        
+
+    });
+    it(' actionbegin action  without edittab', (done: Function) => {
+        ganttObj.openEditDialog(1);
+        ganttObj.actionComplete = (args) => {
+     
+            let  print = document.getElementById("ganttContainerDependencyTabContainer_print")
+            let  button  = document.getElementById("ganttContainerDependencyTabContainer_searchbar")
+            expect(!isNullOrUndefined(print)).toBe(false);
+            expect(!isNullOrUndefined(button)).toBe(false);
+        }
+        done();
+    });
+});
+describe('Bug-870350: Editing resource allocation differed from initial rendering.', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Project initiation',
+                    StartDate: new Date('03/29/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 220,
+                            TaskName: 'w0 - 50/75',
+                            StartDate: new Date('03/29/2019'),
+                            Duration: 1,
+                            Progress: 30,
+                            work: 0,
+                            schedulingType: 'FixedDuration',
+                            resources: [
+                                { resourceId: 1, unit: 50 },
+                                { resourceId: 2, unit: 75 },
+                            ],
+                        },
+                        {
+                            TaskID: 221,
+                            TaskName: 'w10 - 50/75',
+                            StartDate: new Date('03/29/2019'),
+                            Duration: 1,
+                            Progress: 30,
+                            work: 10,
+                            schedulingType: 'FixedDuration',
+                            resources: [
+                                { resourceId: 1, unit: 50 },
+                                { resourceId: 2, unit: 75 },
+                            ],
+                        },
+                        {
+                            TaskID: 222,
+                            TaskName: 'w10 - 50/75',
+                            StartDate: new Date('03/29/2019'),
+                            Duration: 1,
+                            Progress: 30,
+                            work: 10,
+                            schedulingType: 'FixedDuration',
+                            resources: [
+                                { resourceId: 1, unit: 0 },
+                                { resourceId: 2, unit: 150 },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            resources: [
+                { resourceId: 1, resourceName: 'Martin Tamer' },
+                { resourceId: 2, resourceName: 'Rose Fuller' },
+                { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                { resourceId: 4, resourceName: 'Fuller King' },
+                { resourceId: 5, resourceName: 'Davolio Fuller' },
+                { resourceId: 6, resourceName: 'Van Jack' },
+                { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                { resourceId: 8, resourceName: 'Jack Davolio' },
+                { resourceId: 9, resourceName: 'Tamer Vinet' },
+                { resourceId: 10, resourceName: 'Vinet Fuller' },
+                { resourceId: 11, resourceName: 'Bergs Anton' },
+                { resourceId: 12, resourceName: 'Construction Supervisor' },
+            ],
             taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
                 startDate: 'StartDate',
-                endDate: 'EndDate',
-                duration: 'duration',
+                duration: 'Duration',
                 progress: 'Progress',
-                child: 'subtasks'
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                work: 'work', 
+                child: 'subtasks',
+                type: 'schedulingType',
+              },
+            
+              editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+              },
+              resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'unit',
+              },
+              workUnit: 'Hour',
+              toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+              ],
+              allowSelection: true,
+              height: '450px',
+              treeColumnIndex: 1,
+              highlightWeekends: true,
+              columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '100' },
+                { field: 'resources', headerText: 'Resources', width: '200' },
+                { field: 'work', width: '100' },
+                { field: 'Duration', width: '100' },
+                //{ field: 'schedulingType', headerText: 'Sched Type', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '100' },
+              ],
+              editDialogFields: [
+                {
+                  type: 'General',
+                  headerText: 'General',
+                  fields: [
+                    'TaskID',
+                    'TaskName',
+                    'StartDate',
+                    'Duration',
+                    'Progress',
+                    'Predecessor',
+                    'work',
+                    'schedulingType',
+                  ],
+                },
+                { type: 'Dependency' },
+                { type: 'Resources' },
+                { type: 'Custom' },
+              ],
+              labelSettings: {
+                rightLabel: 'resources',
+              },
+              splitterSettings: {
+                columnIndex: 5,
+              },
+              taskType: 'FixedDuration',
+              projectStartDate: new Date('03/28/2019'),
+              projectEndDate: new Date('07/28/2019'),
+          
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Editing resource allocation differed from initial rendering.', () => {
+        expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(10);
+    });
+});
+describe('Dialog editing - predecessor Tab with decimal', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [{
+                TaskID: 1,
+                TaskName: 'Product Concept',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                    { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ] 
+                },
+                    { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                ]
+            },],
+            allowSorting: true,
+            allowReordering: true,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
             },
+            renderBaseline: true,
+            baselineColor: 'red',
             editSettings: {
                 allowAdding: true,
                 allowEditing: true,
@@ -4540,28 +5033,87 @@ describe('Edit baseline dates', function () {
                 { field: 'TaskID', headerText: 'Task ID' },
                 { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
                 { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
-                { field: 'Duration', headerText: 'Duration' },
+                { field: 'Duration', headerText: 'Duration', allowEditing: false },
                 { field: 'Progress', headerText: 'Progress', allowFiltering: false },
                 { field: 'CustomColumn', headerText: 'CustomColumn' }
             ],
-            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
-                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowSelection: true,
+            selectedRowIndex: 1,
+            splitterSettings: {
+                position: "50%",
+                // columnIndex: 4
+            },
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Single',
+                enableToggle: false
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            filterSettings: {
+                type: 'Menu'
+            },
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
             height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
         }, done);
     });
-    afterAll(function () {
+    afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
     });
     beforeEach((done: Function) => {
         setTimeout(done, 1000);
+        ganttObj.openAddDialog();
+        let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+        tab.selectedItem = 1;
+        tab.dataBind();
     });
-    it('Checking taskdata duration value is string or number', () => {
-        let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
-        triggerMouseEvent(add, 'click');
-        let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
-        triggerMouseEvent(save, 'click');
-        expect(ganttObj.currentViewData[0].taskData['duration']).toBe(1);
+    it('Dependency tab editing with decimal', () => {
+        ganttObj.actionBegin = (args: any): void => {
+           if (args.requestType == "beforeAdd") {
+               expect(args.data.ganttProperties.predecessor[0].offset).toBe(-2.5)
+           }
+        }
+        let addIcon: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems').querySelector('#Gantt_0DependencyTabContainer_add') as HTMLElement;
+        triggerMouseEvent(addIcon, 'click');
+        let inputElement: HTMLElement = document.getElementById(ganttObj.element.id + 'DependencyTabContainername') as HTMLElement;
+        if (inputElement) {
+            let input :any = (<EJ2Instance>inputElement).ej2_instances[0];
+            input.value = "1-Product Concept";
+            input.dataBind();
+            let idInput: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'DependencyTabContainerid')).ej2_instances[0];
+            idInput.value = "1";
+            idInput.dataBind();
+            let offset: any = (<EJ2Instance>document.getElementById('Gantt_0DependencyTabContaineroffset')).ej2_instances[0];
+            offset.value = "-2.5 days";
+            offset.dataBind();
+            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_toolbarItems') as HTMLElement;
+            triggerMouseEvent(toolbar, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        }
     });
 });

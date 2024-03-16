@@ -9,7 +9,7 @@ import { SmartLabelMode, IntersectAction } from '../../index';
 import { BorderModel, ColorMappingSettingsModel, FontModel, CommonTitleSettingsModel, NavigationLineSettingsModel, PolygonSettingsModel, ZoomToolbarTooltipSettingsModel } from './base-model';
 import { MarkerSettingsModel, MarkerClusterSettingsModel, ShapeSettingsModel, BubbleSettingsModel, ArrowModel } from './base-model';
 import { DataLabelSettingsModel, TooltipSettingsModel, SubTitleSettingsModel, SelectionSettingsModel, PolygonSettingModel } from './base-model';
-import { HighlightSettingsModel, ToggleLegendSettingsModel, ConnectorLineSettingsModel} from './base-model';
+import { HighlightSettingsModel, ToggleLegendSettingsModel, ConnectorLineSettingsModel, PolygonTooltipSettingsModel} from './base-model';
 import { InitialShapeSelectionSettingsModel, InitialMarkerSelectionSettingsModel, ZoomToolbarSettingsModel, ZoomToolbarButtonSettingsModel } from './base-model';
 import { Theme } from './theme';
 import { Point, GeoLocation, Coordinate } from '../utils/helper';
@@ -488,6 +488,37 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public valuePath: string;
 }
 /**
+ * Specifies the properties such as visibility, fill, border and text style to customize the tooltip.
+ */
+export class PolygonTooltipSettings extends ChildProperty<PolygonTooltipSettings> {
+    /**
+     * Shows or hides the tooltip of the polygon shapes. When this property is set as false, the tooltip for all the polygon shapes in a layer will not be visible.
+     *
+     * @default false
+     */
+    @Property(false)
+    public visible: boolean;
+    /**
+     * Gets or sets the fill color for the tooltip of the polygon shape.
+     *
+     * @default ''
+     */
+    @Property('')
+    public fill: string;
+
+    /**
+     * Gets or sets the attributes such as width, color and opacity of the border of the tooltip element of the polygon shape.
+     */
+    @Complex<BorderModel>({ color: 'transparent', width: 1 }, Border)
+    public border: BorderModel;
+
+    /**
+     * Gets or sets the font properties of the text content of the tooltip element of the polygon shape.
+     */
+    @Complex<FontModel>({ fontFamily: null, size: null, fontWeight : null }, Font)
+    public textStyle: FontModel;
+}
+/**
  * Gets or sets the options to customize the margin of the maps.
  */
 export class Margin extends ChildProperty<Margin> {
@@ -921,6 +952,21 @@ export class PolygonSetting extends ChildProperty<PolygonSettings> {
      */
     @Property([])
     public points: Coordinate[];
+        /**
+     * Specifies the tooltip text to be displayed for the polygon shape. If it is not set, the tooltip will not be displayed.
+     *
+     * @default ''
+     */
+    @Property('')
+    public tooltipText: string;
+        /**
+     * Specifies any HTML content as a tooltip on the polygon shape. If it is not set, the tooltip will not be displayed.
+     *
+     * @default ''
+     * @aspType string
+     */
+    @Property('')
+    public tooltipTemplate: string | Function;
 }
 
 /**
@@ -943,6 +989,11 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
      */
     @Complex<HighlightSettingsModel>({}, HighlightSettings)
     public highlightSettings: HighlightSettingsModel;
+    /**
+     * Specifies the properties such as visibility, fill, border and text style to customize the tooltip. 
+     */
+    @Complex<PolygonTooltipSettingsModel>({}, PolygonTooltipSettings)
+    public tooltipSettings: PolygonTooltipSettingsModel;
 }
 /**
  * Gets or sets the options to customize the navigation lines in maps which is used to connect different locations.

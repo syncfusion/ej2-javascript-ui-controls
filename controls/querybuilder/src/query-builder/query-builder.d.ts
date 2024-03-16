@@ -1,7 +1,7 @@
 /**
  * Query Builder Source
  */
-import { Component, INotifyPropertyChanged } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { ChildProperty } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RuleModel, ValueModel } from './query-builder-model';
 import { RadioButtonModel } from '@syncfusion/ej2-buttons';
@@ -152,6 +152,12 @@ export declare class Rule extends ChildProperty<Rule> {
      * @default false
      */
     not: boolean;
+    /**
+     * Specifies whether rule is locked or not.
+     *
+     * @default false
+     */
+    isLocked: boolean;
 }
 /**
  * Defines the property for value.
@@ -192,6 +198,30 @@ export declare class Value extends ChildProperty<Value> {
  * Defines the ruleDelete, groupInsert, and groupDelete options of Query Builder.
  */
 export declare class ShowButtons extends ChildProperty<ShowButtons> {
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    cloneRule: boolean;
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    cloneGroup: boolean;
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    lockRule: boolean;
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    lockGroup: boolean;
     /**
      * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
      *
@@ -303,6 +333,14 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private isGetNestedData;
     private isCustomOprCols;
     private dummyDropdownTreeDs;
+    private groupCounter;
+    private lockItems;
+    private groupIndex;
+    private ruleIndex;
+    private isLastGroup;
+    private cloneGrpBtnClick;
+    private isMiddleGroup;
+    private cloneRuleBtnClick;
     /**
      * Triggers when the component is created.
      *
@@ -478,6 +516,36 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     readonly: boolean;
     /**
+     * Specifies a boolean value whether enable / disable the new rule adding while adding new groups.
+     *
+     * @remarks
+     * If this property is true, the empty rule is inserted while inserting new group.
+     * If set to false, the group is inserted without any rule.
+     *
+     * @default true
+     */
+    addRuleToNewGroups: boolean;
+    /**
+     * Specifies a boolean value whether enable / disable the auto selection with the first value for the field.
+     *
+     * @remarks
+     * If this property is true, the field dropdown list will render with the first value of the dropdown list.
+     * If set to false, the dropdown list render with placeholder.
+     *
+     * @default false
+     */
+    autoSelectField: boolean;
+    /**
+     * Specifies a boolean value whether enable / disable the auto selection with the first value for the operator.
+     *
+     * @remarks
+     * If this property is true, the operator dropdown list will render with the first value of the dropdown list.
+     * If set to false, the dropdown list render with placeholder.
+     *
+     * @default true
+     */
+    autoSelectOperator: boolean;
+    /**
      * Specifies the separator string for column.
      *
      * @default ''
@@ -500,6 +568,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     reset(): void;
     private getWrapper;
     protected getModuleName(): string;
+    requiredModules(): ModuleDeclaration[];
     private GetRootColumnName;
     private initialize;
     private updateSubFieldsFromColumns;
@@ -742,7 +811,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * Sets the rules from the sql query.
      *
      * @param {string} sqlString - 'sql String' to be passed to set the rule.
-     * @param {boolean} sqlLocale -  Set `true` if Localization for Sql query.
+     * @param {boolean} sqlLocale - Optional. Set `true` if Localization for Sql query.
      * @returns {void}
      */
     setRulesFromSql(sqlString: string, sqlLocale?: boolean): void;
@@ -759,10 +828,85 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      *
      * @param {RuleModel} rule - 'rule' to be passed to get the sql.
      * @param {boolean} allowEscape - Set `true` if it exclude the escape character.
-     *  @param {boolean} sqlLocale - Set `true` if Localization for Sql query.
-     * @returns {object} - Sql query from rules.
+     * @param {boolean} sqlLocale - Set `true` if Localization for Sql query.
+     * @returns {string} - Sql query from rules.
      */
     getSqlFromRules(rule?: RuleModel, allowEscape?: boolean, sqlLocale?: boolean): string;
+    /**
+     * Gets the parameter SQL query from rules.
+     *
+     * @param {RuleModel} rule – Specify the rule to be passed to get the parameter sql string.
+     * @returns {ParameterizedSql} – Parameterized SQL query from rules.
+     */
+    getParameterizedSql(rule?: RuleModel): ParameterizedSql;
+    /**
+     * Sets the rules from the parameter sql query.
+     *
+     * @param { ParameterizedSql} sqlQuery – Specifies the parameter SQL to be passed to set the rule and load it to the query builder.
+     * @returns {void}
+     */
+    setParameterizedSql(sqlQuery: ParameterizedSql): void;
+    /**
+     * Gets the named parameter SQL query from rules.
+     *
+     * @param {RuleModel} rule – Specify the rule to be passed to get the named parameter SQL string.
+     * @returns {ParameterizedNamedSql} – Parameterized Named SQL query from rules.
+     */
+    getParameterizedNamedSql(rule?: RuleModel): ParameterizedNamedSql;
+    /**
+     * Sets the rules from the named parameter SQL query.
+     *
+     * @param { ParameterizedNamedSql } sqlQuery – Specifies the named parameter SQL to be passed to set the rule and load it to the query builder.
+     * @returns {void}
+     */
+    setParameterizedNamedSql(sqlQuery: ParameterizedNamedSql): void;
+    /**
+     * Set the rules from Mongo query.
+     *
+     * @param {string} mongoQuery - 'sql String' to be passed to get the rule.
+     * @param {boolean} mongoLocale - Set `true` if Localization for Mongo query.
+     * @returns {void}
+     */
+    setMongoQuery(mongoQuery: string, mongoLocale?: boolean): void;
+    /**
+     * Gets the Mongo query from rules.
+     *
+     * @param {RuleModel} rule - 'rule' to be passed to get the sql.
+     * @returns {object} - Sql query from rules.
+     */
+    getMongoQuery(rule?: RuleModel): string;
+    /**
+     * Clones the rule based on the rule ID to the specific group.
+     *
+     * @param {string} ruleID - Specifies the ruleID that needs to be cloned.
+     * @param {string} groupID - Specifies the groupID in which the rule to be cloned.
+     * @param {number} index - Specifies the index to insert the cloned rule inside the group.
+     * @returns {void}
+     */
+    cloneRule(ruleID: string, groupID: string, index: number): void;
+    /**
+     * Clones the group based on the group ID to the specific group.
+     *
+     * @param {string} groupID - Specifies the groupID that needs to be cloned.
+     * @param {string} parentGroupID - Specifies the parentGroupID in which the group to be cloned.
+     * @param {number} index - Specifies the index to insert the cloned group inside the parent group.
+     * @returns {void}
+     */
+    cloneGroup(groupID: string, parentGroupID: string, index: number): void;
+    /**
+     * Locks the rule based on the rule ID.
+     *
+     * @param {string} ruleID - Specifies the ruleID that needs to be locked.
+     * @returns {void}
+     */
+    lockRule(ruleID: string): void;
+    /**
+     * Locks the group based on the group ID
+     *
+     * @param {string} groupID - Specifies the groupID that needs to be locked.
+     * @returns {void}
+     */
+    lockGroup(groupID: string): void;
     private sqlParser;
     private parseSqlStrings;
     private checkLiteral;
@@ -772,6 +916,19 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getLabelFromColumn;
     private getLabelFromField;
     private processParser;
+    /**
+     * Clone the Group
+     *
+     * @param {Element | string} target - 'target' to be passed to clone the group.
+     * @returns {void}
+     */
+    private groupClone;
+    private ruleClone;
+    private ruleLock;
+    private groupLock;
+    private updateLockItems;
+    private disableHeaderControls;
+    private disableRuleControls;
 }
 export interface Level {
     [key: string]: number[];
@@ -864,4 +1021,32 @@ export interface ActionEventArgs extends BaseEventArgs {
     notCondition?: boolean;
     renderTemplate?: boolean;
     groupID?: string;
+}
+/**
+ * Interface to define the parameter SQL query.
+ *
+ */
+export interface ParameterizedSql {
+    /**
+     * Specifies the SQL `WHERE` clause with `?` placeholders for each value.
+     */
+    sql: string;
+    /**
+     * Specifies the parameter values in the same order their respective placeholders appear in the `sql` string.
+     */
+    params: object[];
+}
+/**
+ * Interface to define the parameterized named SQL query.
+ *
+ */
+export interface ParameterizedNamedSql {
+    /**
+     * Specifies the SQL `WHERE` clause with bind variable placeholders for each value.
+     */
+    sql: string;
+    /**
+     * Specifies the bind variable names from the `sql` string to the associated values.
+     */
+    params: Record<string, object>;
 }

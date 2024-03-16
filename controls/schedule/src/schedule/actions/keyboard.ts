@@ -553,6 +553,13 @@ export class KeyboardInteraction {
             }
         }
     }
+    private isCalendarTarget(e: KeyboardEventArgs): boolean {
+        const keyTarget: Element = e.currentTarget as Element || e.target as Element;
+        if (keyTarget && !isNullOrUndefined(keyTarget.querySelector('.e-header-popup.e-popup-open'))) {
+            return true;
+        }
+        return false;
+    }
     private cancelUpDownAction(isTimelineYear: boolean): boolean {
         const isVerticalYear: boolean = isTimelineYear && this.parent.activeViewOptions.orientation === 'Vertical';
         const isGroup: boolean = this.parent.activeViewOptions.group.resources.length > 0;
@@ -566,7 +573,7 @@ export class KeyboardInteraction {
     }
     private processUp(e: KeyboardEventArgs, isMultiple: boolean): void {
         const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
-        if (isMultiple && this.cancelUpDownAction(isTimelineYear)) {
+        if (isMultiple && this.cancelUpDownAction(isTimelineYear) || (this.isCalendarTarget(e))) {
             return;
         }
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
@@ -610,7 +617,7 @@ export class KeyboardInteraction {
     }
     private processDown(e: KeyboardEventArgs, isMultiple: boolean): void {
         const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
-        if (isMultiple && this.cancelUpDownAction(isTimelineYear)) {
+        if (isMultiple && this.cancelUpDownAction(isTimelineYear) || (this.isCalendarTarget(e))) {
             return;
         }
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;
@@ -716,7 +723,7 @@ export class KeyboardInteraction {
     }
     private processRight(e: KeyboardEventArgs, isMultiple: boolean): void {
         const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
-        if (this.isCancelLeftRightAction(e, isMultiple, isTimelineYear)) {
+        if (this.isCancelLeftRightAction(e, isMultiple, isTimelineYear) || (this.isCalendarTarget(e))) {
             return;
         }
         const selectedCells: Element[] = this.parent.getSelectedCells();
@@ -782,7 +789,7 @@ export class KeyboardInteraction {
     }
     private processLeft(e: KeyboardEventArgs, isMultiple: boolean): void {
         const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
-        if (this.isCancelLeftRightAction(e, isMultiple, isTimelineYear)) {
+        if (this.isCancelLeftRightAction(e, isMultiple, isTimelineYear) || (this.isCalendarTarget(e))) {
             return;
         }
         let target: HTMLTableCellElement = (e.target) as HTMLTableCellElement;

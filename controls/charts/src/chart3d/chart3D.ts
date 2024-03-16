@@ -3,15 +3,14 @@ import { L10n, isNullOrUndefined, Touch } from '@syncfusion/ej2-base';
 import { Event, EmitType } from '@syncfusion/ej2-base';
 import { Chart3DModel } from './chart3D-model';
 import { Rect, Size, SvgRenderer, TextOption, measureText, removeElement } from '@syncfusion/ej2-svg-base';
-import { ImageOption, RectOption, appendChildElement, createSvg, getElement, getTextAnchor, getTitle, redrawElement, textElement, titlePositionX, showTooltip, appendClipElement, getAnimationFunction, withInBounds  } from '../common/utils/helper';
+import { ImageOption, RectOption, appendChildElement, createSvg, getElement, getTextAnchor, getTitle, redrawElement, textElement, titlePositionX, showTooltip, appendClipElement, getAnimationFunction, withInBounds, Point3D  } from '../common/utils/helper';
 import { beforeResize, load, pointClick, pointMove, resized } from '../common/model/constants';
-import { Chart3DBoderElements, Chart3DLoadedEventArgs, Chart3DThemeStyle, Chart3DBeforeResizeEventArgs, Chart3DLegendClickEventArgs, Chart3DLegendRenderEventArgs, Chart3DPointRenderEventArgs, Chart3DResizeEventArgs, Chart3DTooltipRenderEventArgs } from './model/chart3d-Interface';
+import { Chart3DBoderElements, Chart3DLoadedEventArgs, Chart3DThemeStyle, Chart3DBeforeResizeEventArgs, Chart3DLegendClickEventArgs, Chart3DLegendRenderEventArgs, Chart3DPointRenderEventArgs, Chart3DResizeEventArgs, Chart3DTooltipRenderEventArgs, TitleSettings } from './model/chart3d-Interface';
 import { Chart3DSeriesRenderEventArgs, Chart3DAxisLabelRenderEventArgs, Chart3DExportEventArgs, Chart3DMouseEventArgs, Chart3DPointEventArgs, Chart3DPrintEventArgs, Chart3DSelectionCompleteEventArgs, Chart3DTextRenderEventArgs, Chart3DPolygon } from './model/chart3d-Interface';
 import { CartesianAxisLayoutPanel } from './axis/cartesian-panel';
 import { get3DSeriesColor, get3DThemeColor } from './model/theme';
-import { Border, Indexes, Margin, titleSettings } from '../common/model/base';
+import { Border, Indexes, Margin } from '../common/model/base';
 import { BorderModel, IndexesModel, MarginModel } from '../common/model/base-model';
-import { titleSettingsModel } from '../common/model/base-model';
 import { Alignment, HighlightMode, SelectionPattern, ExportType, ChartTheme } from '../common/utils/enum';
 import { Vector3D, Matrix3D, Graphics3D, BinaryTreeBuilder, Polygon3D, ChartTransform3D, Svg3DRenderer, Chart3DRender } from './utils/chart3dRender';
 import { AxisRenderer, WallRenderer } from './utils/renderer';
@@ -32,6 +31,7 @@ import { IAfterExportEventArgs } from '../common/model/interface';
 import { Chart3DSelectionMode } from './utils/enum';
 import { Chart3DTooltipSettingsModel } from './user-interaction/tooltip-model';
 import { Chart3DLegendSettingsModel } from './legend/legend-model';
+import { TitleSettingsModel } from './model/chart3d-Interface-model';
 
 /**
  * The Chart3D class represents a 3D chart component that extends the Component class
@@ -200,6 +200,13 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Property('USD')
     private currencyCode: string;
+    /**
+     * Enables or disables the export feature in the 3D chart.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableExport: boolean;
     /**
      * Triggered before the chart is loaded.
      *
@@ -377,13 +384,13 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Options for customizing the title of the Chart.
      */
-    @Complex<titleSettingsModel>({ fontFamily: null, size: '16px', fontStyle: 'Normal', fontWeight: '600', color: null }, titleSettings)
-    public titleStyle: titleSettingsModel;
+    @Complex<TitleSettingsModel>({ fontFamily: null, size: '16px', fontStyle: 'Normal', fontWeight: '600', color: null }, TitleSettings)
+    public titleStyle: TitleSettingsModel;
     /**
      * Options for customizing the Subtitle of the Chart.
      */
-    @Complex<titleSettingsModel>({ fontFamily: null, size: '14px', fontStyle: 'Normal', fontWeight: '400', color: null }, titleSettings)
-    public subTitleStyle: titleSettingsModel;
+    @Complex<TitleSettingsModel>({ fontFamily: null, size: '14px', fontStyle: 'Normal', fontWeight: '400', color: null }, TitleSettings)
+    public subTitleStyle: TitleSettingsModel;
     /**
      * The chart legend configuration options.
      */
@@ -725,6 +732,8 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     public chart3DRender: Chart3DRender;
     /** @private */
     public rotateActivate: boolean = false;
+    /** @private */
+    public previousID: string;
     /** @private */
     public isRemove: boolean = false;
     /** @private */
@@ -1498,7 +1507,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         const fillColor: string = backGroundImage ? 'transparent' : (this.background || this.themeStyle.background);
         const rect: RectOption = new RectOption(
             this.element.id + '-chart-border', fillColor, this.border, 1,
-            new Rect(width * 0.5 + x, width * 0.5 + y, this.availableSize.width - width, this.availableSize.height - width));
+            new Rect(width * 0.5 + x, width * 0.5 + y, this.availableSize.width - width, this.availableSize.height - width), 0, 0, '', this.border.dashArray);
 
         this.htmlObject = redrawElement(this.redraw, this.element.id + '-chart-border', rect, this.renderer) as HTMLElement
             || this.renderer.drawRectangle(rect) as HTMLElement;
@@ -1565,10 +1574,12 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                 args: [this]
             });
         }
-        modules.push({
-            member: 'Export3D',
-            args: [this]
-        });
+        if (this.enableExport) {
+            modules.push({
+                member: 'Export3D',
+                args: [this]
+            });
+        }
         if (this.selectionMode !== 'None') {
             modules.push({
                 member: 'Selection3D',
@@ -2135,7 +2146,6 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                     grpElement.remove();
                 }
                 else {
-                    document.querySelectorAll("[id*=\"region-series-" + "\"]").forEach(function (element) { return element.remove(); });
                     document.querySelectorAll("[id*=\"axis-label-" + "\"]").forEach(function (axisElement) { return axisElement.remove(); });
                     this.delayRedraw = true;
                 }
@@ -2350,9 +2360,14 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                     this.currentPointIndex += e.code === 'ArrowUp' ? 1 : -1;
                 }
                 if (targetId.indexOf('-point-') > -1) {
-                    this.currentPointIndex = this.getActualIndex(this.currentPointIndex, this.visibleSeries[this.currentSeriesIndex].points.length? this.currentSeries.points.length : 1);
-                    currentPoint = getElement(this.element.id + '-svg-0-region-series-' + this.currentSeriesIndex + '-point-' +
-                        this.currentPointIndex);
+                    this.currentPointIndex = this.getActualIndex(this.currentPointIndex, this.visibleSeries[this.currentSeriesIndex].points.length ? this.currentSeries.points.length : 1);
+                    const pointElements: NodeListOf<Element> = document.querySelectorAll('[id*="svg-0-region-series-' + this.currentSeriesIndex + '-point-' +
+                        this.currentPointIndex + '"]');
+                    for (let i = 0; i < pointElements.length; i++) {
+                        if (pointElements[i as number].id.split('-point-')[1].split('-')[0] === this.currentPointIndex.toString()) {
+                            currentPoint = pointElements[i as number];
+                        }
+                    }
                 }
                 targetId = this.focusChild(currentPoint as HTMLElement);
                 actionKey = this.tooltip.enable || this.highlightMode !== 'None' ? 'ArrowMove' : '';
@@ -2498,7 +2513,13 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                         this.highlight3DModule.completeSelection(document.getElementById(targetId), 'mousemove');
                     }
                     if (this.tooltip3DModule) {
-                        this.tooltip3DModule.tooltip(e);
+                        const data = { series: this.visibleSeries[targetId.split('-series-')[1].split('-point-')[0]], point: this.visibleSeries[targetId.split('-series-')[1].split('-point-')[0]].points[targetId.split('-point-')[1].split('-')[0]] }
+                        const svgElement: HTMLElement = document.getElementById(this.element.id + '_tooltip_svg');
+                        const isFirst: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
+                        const tooltipDiv: HTMLDivElement = this.tooltip3DModule.getTooltipElement(isFirst);
+                        if (this.tooltip3DModule.pushData((data as Point3D), !isFirst, tooltipDiv, true)) {
+                        this.tooltip3DModule.triggerTooltipRender(data, !isFirst, this.tooltip3DModule.getTooltipText(data), this.tooltip3DModule.findHeader(data));
+                        }
                     }
                 }
                 if (this.highlight3DModule && this.highlightMode !== 'None') {

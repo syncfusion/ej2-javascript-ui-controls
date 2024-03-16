@@ -1523,6 +1523,15 @@ describe('ColorPicker', () => {
             expect(ele.children[0].classList.contains('e-palette')).toBeTruthy();
             expect(ele.children[0].children[0].getAttribute('role')).toBe('row');
         });
+        it('Device mode with createPopupOnClick property Popup open/close Testing', () => {
+            let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidUserAgent;
+            colorPicker = new ColorPicker({ value: '#7B1FA2', createPopupOnClick: true }, '#color-picker');
+            colorPicker.splitBtn.element.nextElementSibling.click();
+            expect(colorPicker.container.parentElement.classList.contains('e-popup-open')).toBeTruthy();
+        });
+
     });
 
     it('memory leak', () => {

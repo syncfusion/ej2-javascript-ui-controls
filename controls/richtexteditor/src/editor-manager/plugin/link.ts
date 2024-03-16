@@ -200,7 +200,7 @@ export class LinkCommand {
         for (let i: number = 0, j: number = 0, k: number = 0; i <= finalinlineNodes.length; i++) {
             if (i === 0) {
                 finalinlineNodes[i as number].parentNode.insertBefore(anchorNodes[j as number], finalinlineNodes[i as number].nextSibling);
-                if (this.parent.domNode.blockNodes().length === 1) {
+                if (this.parent.domNode.blockNodes().length === 1 && anchorNodes.length === 1) {
                     this.parent.nodeSelection.setSelectionNode(this.parent.currentDocument, anchorNodes[j as number]);
                 }
                 removeNodes[k as number] = finalinlineNodes[i as number];

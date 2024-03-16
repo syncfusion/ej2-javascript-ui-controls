@@ -28,6 +28,7 @@ export interface IBulletStyle {
     firstRangeColor: string;
     secondRangeColor: string;
     thirdRangeColor: string;
+    tabColor: string;
     rangeStrokes: Object[];
     titleFont: FontModel;
     subTitleFont: FontModel;

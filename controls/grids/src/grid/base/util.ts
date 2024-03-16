@@ -5,7 +5,7 @@ import { setStyleAttribute, addClass, attributes, remove, createElement, DateFor
 import { isObject, IKeyValue, select, selectAll } from '@syncfusion/ej2-base';
 import {
     IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow, PdfExportProperties,
-    ExcelExportProperties, DataStateChangeEventArgs
+    ExcelExportProperties, DataStateChangeEventArgs, RowDropEventArgs
 } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@syncfusion/ej2-data';
@@ -1342,12 +1342,14 @@ export function resetColspanGroupCaption(gObj: IGrid, idx: number): number {
     }
     colspan += (gObj.groupSettings.columns.length - idx);
     width += (30 * (gObj.groupSettings.columns.length - idx));
+    const gridWidth: number = (gObj.width === 'auto' ? gObj.element.offsetWidth : parseInt(gObj.width.toString(), 10)) -
+        getScrollWidth(gObj);
     for (let i: number = 0; i < cols.length; i++) {
         if (cols[parseInt(i.toString(), 10)].visible) {
             width += parseInt(cols[parseInt(i.toString(), 10)].width.toString(), 10);
             colspan++;
         }
-        if (width > (parseInt(gObj.width.toString(), 10) - getScrollWidth(gObj))) {
+        if (width > gridWidth) {
             colspan--;
             break;
         }
@@ -1547,6 +1549,94 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
 }
 
 /**
+ * @param {IGrid} gObj - Defines the IGrid
+ * @returns {void}
+ * @hidden
+ */
+export function resetCachedRowIndex(gObj: IGrid): void {
+    const rowObjects: Row<Column>[] = gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache ?
+        gObj.getRowsObject() : gObj.vRows;
+    const rowElements: Element[] = gObj.getRows();
+    for (let i: number = 0, startIndex: number = 0, k: number = 0; i < rowObjects.length; i++) {
+        const rowObject: Row<Column> = rowObjects[parseInt(i.toString(), 10)];
+        if (rowObject.isDataRow) {
+            rowObject.index = startIndex;
+            rowObject.isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
+            const rowElement: HTMLTableRowElement | Element = gObj.getRowElementByUID(rowObject.uid);
+            if (!isNullOrUndefined(rowElement)) {
+                rowElements[parseInt(k.toString(), 10)] = rowElement;
+                rowElement.setAttribute(literals.dataRowIndex, startIndex.toString());
+                rowElement.setAttribute(literals.ariaRowIndex, (startIndex + 1).toString());
+                if (rowObject.isAltRow) {
+                    rowElement.classList.add('e-altrow');
+                } else {
+                    rowElement.classList.remove('e-altrow');
+                }
+                for (let j: number = 0; j < (rowElement as HTMLTableRowElement).cells.length; j++) {
+                    (rowElement as HTMLTableRowElement).cells[parseInt(j.toString(), 10)].setAttribute('index', startIndex.toString());
+                }
+                k++;
+            }
+            startIndex++;
+        }
+    }
+    if (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache) {
+        gObj.infiniteScrollModule.resetInfiniteCache(rowObjects);
+    }
+}
+
+/**
+ * @param {IGrid} gObj - Defines the IGrid
+ * @param {RowDropEventArgs} args - Defines the row drop event argument
+ * @param {HTMLTableRowElement[]} tr - Row elements
+ * @param {Row<Column>} dropRObj - dropped row object
+ * @returns {void}
+ * @hidden
+ */
+export function groupReorderRowObject(gObj: IGrid, args: RowDropEventArgs, tr: HTMLTableRowElement[], dropRObj?: Row<Column>): void {
+    const rowObjects: Row<Column>[] = gObj.enableVirtualization ? gObj.vRows : gObj.getRowsObject();
+    const orderChangeRowObjects: Row<Column>[] = [];
+    const dropRowObject: Row<Column> = dropRObj ? dropRObj :
+        gObj.getRowObjectFromUID(args.target.closest('tr').getAttribute('data-uid'));
+    let rowObjectDropIndex: number;
+    for (let i: number = 0; i < args.rows.length; i++) {
+        const orderChangeRowObject: Row<Column> =
+            gObj.getRowObjectFromUID(args.rows[parseInt(i.toString(), 10)].getAttribute('data-uid'));
+        if (dropRowObject === orderChangeRowObject) {
+            rowObjectDropIndex = rowObjects.indexOf(dropRowObject);
+        }
+        orderChangeRowObjects.push(rowObjects.splice(rowObjects.indexOf(orderChangeRowObject), 1)[0]);
+    }
+    if (isNullOrUndefined(rowObjectDropIndex)) {
+        rowObjectDropIndex = rowObjects.indexOf(dropRowObject);
+        if (args.fromIndex > args.dropIndex) {
+            rowObjects.splice(rowObjectDropIndex, 0, ...orderChangeRowObjects);
+        }
+        else {
+            rowObjects.splice(rowObjectDropIndex + 1, 0, ...orderChangeRowObjects);
+        }
+    }
+    else {
+        rowObjects.splice(rowObjectDropIndex, 0, ...orderChangeRowObjects);
+    }
+    if (!gObj.enableVirtualization && !gObj.infiniteScrollSettings.enableCache) {
+        const record: object = {};
+        const currentViewData: Object[] = gObj.getCurrentViewRecords();
+        for (let i: number = 0, len: number = tr.length; i < len; i++) {
+            const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex), 10);
+            record[parseInt(i.toString(), 10)] = currentViewData[parseInt(index.toString(), 10)];
+        }
+        const rows: Element[] = gObj.getRows();
+        for (let i: number = 0, len: number = tr.length; i < len; i++) {
+            rows[parseInt(i.toString(), 10)] = tr[parseInt(i.toString(), 10)];
+            currentViewData[parseInt(i.toString(), 10)] = record[parseInt(i.toString(), 10)];
+        }
+    }
+    if (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache) {
+        gObj.infiniteScrollModule.resetInfiniteCache(rowObjects);
+    }
+}
+/**
  * @param {IGrid} gObj - Defines the grid object
  * @param {Object} changes - Defines the changes
  * @param {string} type - Defines the type
@@ -1571,7 +1661,7 @@ export function compareChanges(gObj: IGrid, changes: Object, type: string, keyFi
  */
 export function setRowElements(gObj: IGrid): void {
     (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
-        [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow)'));
+        [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow):not(.e-cloneproperties .e-row)'));
 }
 
 /**
@@ -1667,6 +1757,7 @@ export function addFixedColumnBorder(row: Element): void {
             if ((cells[parseInt(j.toString(), 10)] as Element).classList.contains('e-fixedfreeze') && (!(cells[j - 1]) ||
                 (cells[j - 1] && !(cells[j - 1] as Element).classList.contains('e-fixedfreeze')))) {
                 (cells[parseInt(j.toString(), 10)] as Element).classList.add('e-freezeleftborder');
+
             }
             if ((cells[parseInt(j.toString(), 10)] as Element).classList.contains('e-fixedfreeze') && (!(cells[j + 1]) ||
                 (cells[j + 1] && !(cells[j + 1] as Element).classList.contains('e-fixedfreeze')))) {
@@ -1699,6 +1790,60 @@ export function applyStickyLeftRightPosition(node: HTMLElement, width: number, i
             (node as HTMLElement).style.right = width + 'px';
         }
     }
+}
+
+/**
+ * @param {IGrid} gObj - Defines the grid
+ * @param {Column} column - Defines the column
+ * @param {Element} node - Defines the Element
+ * @param {number} colSpan - Defines the colSpan value
+ * @returns {void}
+ * @hidden
+ */
+export function resetColandRowSpanStickyPosition(gObj: IGrid, column: Column, node: Element, colSpan: number): void {
+    const columns: Column[] = gObj.getColumns();
+    const index: number = column.index;
+    if (column.freeze === 'Left' && (<{ border?: string }>column).border !== 'Left') {
+        let idx: number = index + (colSpan - 1);
+        while (columns[parseInt(idx.toString(), 10)].visible === false) {
+            idx++;
+        }
+        if ((<{ border?: string }>columns[parseInt(idx.toString(), 10)]).border === 'Left') {
+            node.classList.add('e-freezeleftborder');
+        }
+    } else if (column.freeze === 'Right' || column.freeze === 'Fixed') {
+        let width: number = 0;
+        for (let j: number = index + 1; j < index + colSpan; j++) {
+            if (j === columns.length) { break; }
+            if (columns[parseInt(j.toString(), 10)].visible) {
+                width += parseInt(columns[parseInt(j.toString(), 10)].width.toString(), 10);
+            } else {
+                colSpan++;
+            }
+        }
+        if (gObj.enableRtl) {
+            (node as HTMLElement).style.left = parseInt((node as HTMLElement).style.left, 10) - width + 'px';
+        } else {
+            (node as HTMLElement).style.right = parseInt((node as HTMLElement).style.right, 10) - width + 'px';
+        }
+    }
+}
+
+/**
+ * @param {IGrid} gObj - Defines the grid
+ * @param {number} rowIndex - Defines the row index
+ * @param {number} colIndex - Defines the colum index
+ * @returns {void}
+ * @hidden
+ */
+export function getCellFromRow(gObj: IGrid, rowIndex: number, colIndex: number): Element {
+    let row: HTMLTableRowElement = <HTMLTableRowElement>(gObj.getRowByIndex(rowIndex));
+    for (let i: number = 0; i < row.cells.length; i++) {
+        if (row.cells[parseInt(i.toString(), 10)].getAttribute('data-colindex') === colIndex.toString()) {
+            return row.cells[parseInt(i.toString(), 10)];
+        }
+    }
+    return null;
 }
 
 /**
@@ -1946,7 +2091,8 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
     for (let i: number = 0; i < trs.length; i++) {
         let td: HTMLTableCellElement = tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)];
         if (parent && !parent.isFrozenGrid() && !parent.isRowDragable()) {
-            td = (!isNullOrUndefined(td) && (parseInt(td.getAttribute('data-colindex'), 10) === idx))
+            td = (!isNullOrUndefined(td) && (parseInt(td.getAttribute('data-colindex'), 10) === idx ||
+                (parentsUntil(td, 'e-addedrow') && td.parentElement.childNodes[parseInt(idx.toString(), 10)] === td)))
                 ? td : tr[parseInt(i.toString(), 10)].querySelector(`td[data-colindex="${idx}"]`);
             if (isNullOrUndefined(td)) {
                 continue;
@@ -1961,7 +2107,7 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
             if (tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)].classList.contains('e-hide')) {
                 removeClass([tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)]], ['e-hide']);
             }
-            if (isContent && parent.isRowDragable()) {
+            if ((isContent && parent.isRowDragable()) || (parent && parent.isDetail())) {
                 const index: number = idx + 1;
                 rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(index.toString(), 10)].visible = displayVal === '' ? true : false;
             } else {

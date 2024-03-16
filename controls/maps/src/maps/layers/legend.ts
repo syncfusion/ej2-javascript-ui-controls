@@ -459,7 +459,9 @@ export class Legend {
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
                 textFont.fontFamily = !isNullOrUndefined(textFont.fontFamily) ? textFont.fontFamily : this.maps.themeStyle.fontFamily;
                 textFont.size = map.themeStyle.legendFontSize || textFont.size;
-                renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
+                const element : Element = renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
+                element.setAttribute('aria-label', item['text']);
+                element.setAttribute('role', 'region');
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
                 this.legendToggle();
             }
@@ -538,7 +540,9 @@ export class Legend {
                     legendText = trimmedText;
                 }
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                renderTextElement(textOptions, legendTextStyle, legendTextStyle.color, legendElement);
+                const element : Element = renderTextElement(textOptions, legendTextStyle, legendTextStyle.color, legendElement);
+                element.setAttribute('aria-label', legendText);
+                element.setAttribute('role', 'region');
                 this.legendGroup.appendChild(legendElement);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (i === ((<any[]>this.totalPages[page as number]['Collection']).length - 1)) {
@@ -620,6 +624,8 @@ export class Legend {
                         };
                         const pagingTextElement: HTMLElement = <HTMLElement>render.createText(pageTextOptions, pagingText);
                         pagingTextElement.style.cssText = 'user-select: none;';
+                        pagingTextElement.setAttribute('aria-label', pagingText);
+                        pagingTextElement.setAttribute('role', 'region');
                         pagingGroup.appendChild(pagingTextElement);
                         this.legendGroup.appendChild(pagingGroup);
                     }
@@ -1364,7 +1370,9 @@ export class Legend {
                 (this.legendItemRect.x) + (this.legendItemRect.width / 2),
                 this.legendItemRect.y - (textSize.height / 2) - spacing / 2,
                 'middle', trimTitle, '');
-            renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
+            const element : Element = renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
+            element.setAttribute('aria-label', legendTitle);
+            element.setAttribute('role', 'region');
         }
     }
 

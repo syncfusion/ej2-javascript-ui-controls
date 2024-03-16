@@ -65,6 +65,7 @@ export class Formats {
         }
         return currentParent
     }
+
     private onKeyDown(e: IHtmlSubCommands): void {
         if (e.event.which === 13) {
             let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
@@ -107,17 +108,17 @@ export class Formats {
                 const lastBeforeBr: Node = range.startContainer.childNodes[range.endOffset - 1];
                 let startParent: Node = range.startContainer;
                 if (!isNOU(lastEmpty) && !isNOU(lastBeforeBr) && isNOU(lastEmpty.nextSibling) &&
-                lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
+                    lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
                     this.paraFocus(range.startContainer as Element, e.enterAction);
                 } else if ((startParent.textContent.charCodeAt(0) === 8203 &&
-                startParent.textContent.length === 1) || startParent.textContent.length === 0 ) {
+                    startParent.textContent.length === 1) || startParent.textContent.length === 0) {
                     //Double enter with any parent tag for the node
                     while (startParent.parentElement.nodeName !== 'PRE' &&
-                    (startParent.textContent.length === 1 || startParent.textContent.length === 0)) {
+                        (startParent.textContent.length === 1 || startParent.textContent.length === 0)) {
                         startParent = startParent.parentElement;
                     }
                     if (!isNOU(startParent.previousSibling) && startParent.previousSibling.nodeName === 'BR' &&
-                    isNOU(startParent.nextSibling)) {
+                        isNOU(startParent.nextSibling)) {
                         this.paraFocus(startParent.parentElement);
                     } else {
                         this.isNotEndCursor(preElem, range);
@@ -170,10 +171,10 @@ export class Formats {
     private isNotEndCursor(preElem: Element, range: Range): void {
         const nodeCutter: NodeCutter = new NodeCutter();
         const isEnd: boolean = range.startOffset === preElem.lastChild.textContent.length &&
-        preElem.lastChild.textContent === range.startContainer.textContent;
+            preElem.lastChild.textContent === range.startContainer.textContent;
         //Cursor at start point
         if (preElem.textContent.indexOf(range.startContainer.textContent) === 0 &&
-        ((range.startOffset === 0 && range.endOffset === 0) || range.startContainer.nodeName === 'PRE')) {
+            ((range.startOffset === 0 && range.endOffset === 0) || range.startContainer.nodeName === 'PRE')) {
             this.insertMarker(preElem, range);
             const brTag: HTMLElement = createElement('br');
             preElem.childNodes[range.endOffset].parentElement.insertBefore(brTag, preElem.childNodes[range.endOffset]);
@@ -207,7 +208,7 @@ export class Formats {
                     this.focusSelectionParent(markerElem, mrkParentElem);
                 }
             } else {
-                const brElm : HTMLElement = createElement('br');
+                const brElm: HTMLElement = createElement('br');
                 this.parent.domNode.insertAfter(brElm, markerElem);
                 this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, markerElem, 0);
                 detach(markerElem);
@@ -243,7 +244,7 @@ export class Formats {
         }
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.parent.domNode.setMarker(save);
-        let formatsNodes: Node[] = this.parent.domNode.blockNodes();
+        let formatsNodes: Node[] = this.parent.domNode.blockNodes(true);
         if (e.enterAction === 'BR') {
             this.setSelectionBRConfig();
             const allSelectedNode: Node[] = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument);
@@ -273,7 +274,7 @@ export class Formats {
                     }
                     let tempElem: HTMLElement;
                     if (this.parent.domNode.isBlockNode(previousNode.parentElement) &&
-                    previousNode.parentElement === this.parent.editableElement) {
+                        previousNode.parentElement === this.parent.editableElement) {
                         tempElem = createElement('div');
                         previousNode.parentElement.insertBefore(tempElem, previousNode);
                         tempElem.appendChild(previousNode);
@@ -282,7 +283,7 @@ export class Formats {
                     }
                     let preNode: Node = tempElem.previousSibling;
                     while (!isNOU(preNode) && preNode.nodeName !== 'BR' &&
-                    !this.parent.domNode.isBlockNode(preNode as Element)) {
+                        !this.parent.domNode.isBlockNode(preNode as Element)) {
                         tempElem.firstChild.parentElement.insertBefore(preNode, tempElem.firstChild);
                         preNode = tempElem.previousSibling;
                     }
@@ -291,7 +292,7 @@ export class Formats {
                     }
                     let postNode: Node = tempElem.nextSibling;
                     while (!isNOU(postNode) && postNode.nodeName !== 'BR' &&
-                    !this.parent.domNode.isBlockNode(postNode as Element)) {
+                        !this.parent.domNode.isBlockNode(postNode as Element)) {
                         tempElem.appendChild(postNode);
                         postNode = tempElem.nextSibling;
                     }
@@ -316,15 +317,15 @@ export class Formats {
             }
             if ((e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
                 (e.subCommand.toLowerCase() !== 'pre' && e.subCommand.toLowerCase() !== 'blockquote' ||
-                (!isNOU(e.exeValue) && e.exeValue.name === 'dropDownSelect'))) ||
+                    (!isNOU(e.exeValue) && e.exeValue.name === 'dropDownSelect'))) ||
                 isNOU(parentNode.parentNode) ||
                 (parentNode.tagName === 'TABLE' && e.subCommand.toLowerCase() === 'pre')) {
                 continue;
             }
             this.cleanFormats(parentNode, e.subCommand);
-            const replaceNode: string = (e.subCommand.toLowerCase() === 'pre' &&  parentNode.tagName.toLowerCase() === 'pre') ?
+            const replaceNode: string = (e.subCommand.toLowerCase() === 'pre' && parentNode.tagName.toLowerCase() === 'pre') ?
                 'p' : e.subCommand;
-             const isToggleBlockquoteList: boolean = e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
+            const isToggleBlockquoteList: boolean = e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
                 e.subCommand.toLowerCase() === 'blockquote' && this.parent.domNode.isList((parentNode as HTMLElement).firstElementChild);
 
             const isToggleBlockquote: boolean = e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase()
@@ -376,7 +377,7 @@ export class Formats {
     private setSelectionBRConfig(): void {
         const startElem: Element = this.parent.editableElement.querySelector('.' + markerClassName.startSelection);
         const endElem: Element = this.parent.editableElement.querySelector('.' + markerClassName.endSelection);
-        if (isNOU(endElem)){
+        if (isNOU(endElem)) {
             this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, startElem, 0);
         } else {
             this.parent.nodeSelection.setSelectionText(

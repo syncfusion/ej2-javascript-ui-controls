@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';import { DialogFieldType } from '../base/enum';
+import { Property, ChildProperty } from '@syncfusion/ej2-base';import { DialogFieldType } from '../base/enum';import { TreeGridModel } from '@syncfusion/ej2-treegrid';import { GridModel } from '@syncfusion/ej2-grids';import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
 
 /**
  * Interface for a class EditDialogFieldSettings
@@ -30,5 +30,12 @@ export interface EditDialogFieldSettingsModel {
      * @default null
      */
     fields?: string[];
+
+    /**
+     * Defines the properties of Grid or RTE or TreeGrid controls in Gantt edit dialog. 
+     *
+     * @default null
+     */
+    additionalParams?: TreeGridModel | GridModel | RichTextEditorModel;
 
 }

@@ -1,6 +1,6 @@
-import { Browser, EventHandler, extend, getComponent, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, EventHandler, extend, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ActivePoint, Dimension, NumericTextBox } from '@syncfusion/ej2-inputs';
-import { ArrowheadType, BeforeSaveEventArgs, CropSelectionSettings, CurrentObject, ImageEditor, ImageEditorClickEventArgs, Point, SelectionChangeEventArgs, SelectionPoint, ShapeChangeEventArgs, ShapeSettings, ShapeType, StrokeSettings, TextSettings, ZoomTrigger } from '../index';
+import { ArrowheadType, BeforeSaveEventArgs, CurrentObject, ImageEditor, ImageEditorClickEventArgs, Point, SelectionChangeEventArgs, SelectionPoint, ShapeChangeEventArgs, ShapeSettings, ShapeType, StrokeSettings, TextSettings, ZoomTrigger } from '../index';
 export class Selection {
     private parent: ImageEditor;
     private lowerContext: CanvasRenderingContext2D;
@@ -93,7 +93,7 @@ export class Selection {
             this.setActivePoint(args.value['startX'], args.value['startY']);
             break;
         case 'clearSelection':
-            this.clearSelection();
+            this.clearSelection(args.value['resetCrop']);
             break;
         case 'calcShapeRatio':
             this.calcShapeRatio(args.value['x'], args.value['y'], args.value['imgWidth'], args.value['imgHeight']);
@@ -1034,14 +1034,7 @@ export class Selection {
             if (splitWords !== undefined && splitWords[0] === 'crop') {
                 this.isCropSelection = true;
             }
-            if (!this.isCropSelection && parent.eventType !== 'resize' && isBlazor() && parent.events && parent.events.onShapeResizeStart.hasDelegate === true) {
-                shapeResizingArgs.action = this.currentDrawingShape !== '' ? 'drawing' : 'resize-start';
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShapeResizeStart', shapeResizingArgs, null) as any).then((shapeResizingArgs: ShapeChangeEventArgs) => {
-                    parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
-                        value: {shapeSettings: shapeResizingArgs.currentShapeSettings}});
-                });
-            } else if (!this.isCropSelection) {
+            if (!this.isCropSelection) {
                 if (this.currentDrawingShape !== '') {shapeResizingArgs.action = 'drawing'; }
                 parent.trigger('shapeChanging', shapeResizingArgs);
                 parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
@@ -1059,46 +1052,18 @@ export class Selection {
                         width: shapeResizingArgs.currentShapeSettings.width,
                         height: shapeResizingArgs.currentShapeSettings.height}};
                 this.selectionResizingArgs = selectionResizingArgs;
-                if (isBlazor() && isNullOrUndefined(parent.eventType) && parent.events &&
-                    parent.events.onSelectionResizeStart.hasDelegate === true) {
-                    selectionResizingArgs.action = 'resize-start';
-                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                    (parent.dotNetRef.invokeMethodAsync('SelectionEventAsync', 'OnSelectionResizeStart', selectionResizingArgs) as any).then((selectionResizingArgs: SelectionChangeEventArgs) => {
-                        parent.notify('shape', { prop: 'updSelChangeEventArgs', onPropertyChange: false,
-                            value: {selectionSettings: selectionResizingArgs.currentSelectionSettings}});
-                    });
-                } else {
-                    parent.trigger('selectionChanging', selectionResizingArgs);
-                    parent.notify('shape', { prop: 'updSelChangeEventArgs', onPropertyChange: false,
-                        value: {selectionSettings: selectionResizingArgs.currentSelectionSettings}});
-                }
+                parent.trigger('selectionChanging', selectionResizingArgs);
+                parent.notify('shape', { prop: 'updSelChangeEventArgs', onPropertyChange: false,
+                    value: {selectionSettings: selectionResizingArgs.currentSelectionSettings}});
             }
         } else if (type === 'mouse-down' || type === 'mouse-up') {
-            if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape',  shapeResizingArgs, null) as any).then((shapeResizingArgs: ShapeChangeEventArgs) => {
-                    parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
-                        value: {shapeSettings: shapeResizingArgs.currentShapeSettings}});
-                });
-            } else {
-                parent.trigger('shapeChanging', shapeResizingArgs);
-                parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
-                    value: {shapeSettings: shapeResizingArgs.currentShapeSettings}});
-            }
+            parent.trigger('shapeChanging', shapeResizingArgs);
+            parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
+                value: {shapeSettings: shapeResizingArgs.currentShapeSettings}});
         } else {
-            if (isBlazor() && isNullOrUndefined(parent.eventType) && parent.events &&
-                parent.events.onShapeDragStart.hasDelegate === true) {
-                shapeMovingArgs.action = 'drag-start';
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShapeDragStart', shapeMovingArgs, null) as any).then((shapeMovingArgs: ShapeChangeEventArgs) => {
-                    parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
-                        value: {shapeSettings: shapeMovingArgs.currentShapeSettings}});
-                });
-            } else {
-                parent.trigger('shapeChanging', shapeMovingArgs);
-                parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
-                    value: {shapeSettings: shapeMovingArgs.currentShapeSettings}});
-            }
+            parent.trigger('shapeChanging', shapeMovingArgs);
+            parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
+                value: {shapeSettings: shapeMovingArgs.currentShapeSettings}});
         }
         parent.eventType = type;
     }
@@ -2510,15 +2475,8 @@ export class Selection {
             this.dragCanvas = parent.togglePan = true;
         }
         const imageEditorClickEventArgs: ImageEditorClickEventArgs = {point: this.setXYPoints(e)};
-        if (isBlazor() && parent.events && parent.events.clicked.hasDelegate === true) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent.dotNetRef.invokeMethodAsync('ClickEventAsync', 'click', imageEditorClickEventArgs) as any).then((imageEditorClickEventArgs: ImageEditorClickEventArgs) => {
-                this.clickEvent(imageEditorClickEventArgs, e);
-            });
-        } else {
-            parent.trigger('click', imageEditorClickEventArgs);
-            this.clickEvent(imageEditorClickEventArgs, e);
-        }
+        parent.trigger('click', imageEditorClickEventArgs);
+        this.clickEvent(imageEditorClickEventArgs, e);
     }
 
     private getImagePoints(x: number, y: number): Point {
@@ -2620,12 +2578,8 @@ export class Selection {
             }
         }
         if (!isShape && !parent.togglePen && !this.isCropSelection) {
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-                parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
-            } else if (parent.isImageLoaded) {
-                parent.updateToolbar(parent.element, 'imageLoaded', 'okBtnClick');
-            }
+            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
+            parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
         }
         if (this.dragCanvas && this.isPan && (parent.cursor === 'grab' || this.isTouch)
             && !isShape && !isFreehandDraw && !parent.togglePen) {
@@ -2641,9 +2595,7 @@ export class Selection {
             if (this.isFhdEditing) {
                 parent.notify('freehand-draw', {prop: 'applyFhd', onPropertyChange: false});
                 this.isFhdCustomized = false;
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-                }
+                parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
             }
             const shape: string = parent.activeObj.shape;
             const shapeColl: string[] = ['rectangle', 'ellipse', 'line', 'arrow', 'path', 'text', 'image'];
@@ -2651,12 +2603,8 @@ export class Selection {
                 parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
                     value: {x: null, y: null, isMouseDown: null}});
                 parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
-                if (!isBlazor()) {
-                    parent.notify('toolbar', {prop: 'setCurrentToolbar', value: {type: 'main' }});
-                    parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-                } else {
-                    parent.updateToolbar(parent.element, 'imageLoaded');
-                }
+                parent.notify('toolbar', {prop: 'setCurrentToolbar', value: {type: 'main' }});
+                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
             }
             this.canvasMouseDownHandler(e);
         }
@@ -2704,12 +2652,7 @@ export class Selection {
                     parent.notify('freehand-draw', {prop: 'selectFhd', value: {type: 'ok' }});
                     parent.notify('freehand-draw', { prop: 'hoverFhd', onPropertyChange: false,
                         value: { strokeColor: null, strokeWidth: null } });
-                    if (!isBlazor()) {
-                        parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: true} });
-                    } else {
-                        parent.updateToolbar(parent.element, 'pen');
-                        parent.updateToolbar(parent.element, 'quickAccessToolbar', 'pen');
-                    }
+                    parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: true} });
                 } else if (indexObj['freehandSelectedIndex']) {
                     parent.okBtn();
                     const strokeColor: string = parent.pointColl[indexObj['freehandSelectedIndex']].strokeColor;
@@ -2727,12 +2670,17 @@ export class Selection {
                     if (qbArea) {
                         qbArea.style.display = 'none';
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const point: any = parent.pointColl[indexObj['freehandSelectedIndex']];
+                    const shapeSettings: ShapeSettings = {id: 'pen_' + (indexObj['freehandSelectedIndex'] + 1), type: ShapeType.FreehandDraw,
+                        startX: point.points[0].x, startY: point.points[0].y, strokeColor: point.strokeColor,
+                        strokeWidth: point.strokeWidth, points: point.points, opacity: point.opacity };
+                    const shapeChangedArgs: ShapeChangeEventArgs = {action: 'apply', currentShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings};
+                    parent.trigger('shapeChange', shapeChangedArgs);
                 }
-                if (!isBlazor()) {
-                    const isPenDraw: boolean = parent.togglePen;
-                    parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
-                    if (isPenDraw) {parent.freehandDraw(true); }
-                }
+                const isPenDraw: boolean = parent.togglePen;
+                parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
+                if (isPenDraw) {parent.freehandDraw(true); }
                 this.isFhdEditing = false;
                 if (isLineArrow) {
                     this.setCursor(x, y);
@@ -2939,50 +2887,6 @@ export class Selection {
             if (splitWords !== undefined && splitWords[0] === 'crop') {
                 isCropSelection = true;
             }
-            if (isBlazor() && parent.eventType) {
-                if (parent.eventType === 'pan') {
-                    if (parent.events && parent.events.onPanEnd.hasDelegate === true) {
-                        parent.dotNetRef.invokeMethodAsync('PanEventAsync', 'OnPanEnd', parent.panEventArgs);
-                    }
-                }
-                else if (parent.eventType === 'resize') {
-                    if (!this.isCropSelection && parent.events && parent.events.onShapeResizeEnd.hasDelegate === true) {
-                        this.shapeResizingArgs.currentShapeSettings = this.updatePrevShapeSettings();
-                        this.shapeResizingArgs.action = this.currentDrawingShape !== '' ? 'drawing' : 'resize-end';
-                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                        (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShapeResizeEnd', this.shapeResizingArgs, null) as any).then((shapeResizingArgs: ShapeChangeEventArgs) => {
-                            parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
-                                value: {shapeSettings: shapeResizingArgs.currentShapeSettings}});
-                        });
-                    } else if (this.shapeResizingArgs && this.selectionResizingArgs && parent.events &&
-                        parent.events.onSelectionResizeEnd.hasDelegate === true) {
-                        const currentSelectionSettings: CropSelectionSettings = {type: parent.activeObj.shape,
-                            startX: this.shapeResizingArgs.currentShapeSettings.startX,
-                            startY: this.shapeResizingArgs.currentShapeSettings.startY,
-                            width: this.shapeResizingArgs.currentShapeSettings.width,
-                            height: this.shapeResizingArgs.currentShapeSettings.height};
-                        this.selectionResizingArgs.currentSelectionSettings = currentSelectionSettings;
-                        this.selectionResizingArgs.action = 'resize-end';
-                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                        (parent.dotNetRef.invokeMethodAsync('SelectionEventAsync', 'OnSelectionResizeEnd', this.selectionResizingArgs) as any).then((selectionResizingArgs: SelectionChangeEventArgs) => {
-                            parent.notify('shape', { prop: 'updateSelectionChangeEventArgs', onPropertyChange: false,
-                                value: {selectionSettings: selectionResizingArgs.currentSelectionSettings}});
-                        });
-                    }
-                } else {
-                    if (this.shapeMovingArgs && parent.events && parent.events.onShapeDragEnd.hasDelegate === true) {
-                        this.shapeMovingArgs.currentShapeSettings = this.updatePrevShapeSettings();
-                        this.shapeMovingArgs.action = 'drag-end';
-                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                        (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShapeDragEnd', this.shapeMovingArgs, null) as any).then((shapeMovingArgs: ShapeChangeEventArgs) => {
-                            parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
-                                value: {shapeSettings: shapeMovingArgs.currentShapeSettings}});
-                        });
-                    }
-                }
-                this.shapeResizingArgs = null; this.shapeMovingArgs = null;
-                parent.panEventArgs = null; parent.eventType = null;
-            }
             if (this.currentDrawingShape === 'path') {
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 const elem: any = e.srcElement;
@@ -3051,7 +2955,7 @@ export class Selection {
                     if (!this.isFhdEditing) {
                         this.applyCurrActObj(x, y);
                         parent.currObjType.isResize = false;
-                        if (!isBlazor()) {parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false}); }
+                        parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
                     }
                 }
                 if (parent.activeObj) {
@@ -3064,32 +2968,23 @@ export class Selection {
                         isCropSelection = true;
                     }
                     const shape: string = parent.activeObj.shape;
-                    if (!isBlazor()) {
-                        const shapeColl: string[] = ['rectangle', 'ellipse', 'line', 'arrow', 'path'];
-                        if (shapeColl.indexOf(shape) > -1) {
-                            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
+                    const shapeColl: string[] = ['rectangle', 'ellipse', 'line', 'arrow', 'path'];
+                    if (shapeColl.indexOf(shape) > -1) {
+                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    } else if (shape === 'text') {
+                        if (parent.textArea.style.display === 'none') {
+                            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
                                 isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                        } else if (shape === 'text') {
-                            if (parent.textArea.style.display === 'none') {
-                                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
-                                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                            }
-                        } else if (this.isFhdEditing) {
-                            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
-                                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                        } else if (!isCropSelection) {
-                            const eventargs: object = { type: 'main', isApplyBtn: null, isCropping: false, isZooming: null };
-                            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs});
                         }
-                        parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-                    } else {
-                        const shapeColl: string[] = ['rectangle', 'ellipse', 'line', 'arrow', 'path', 'image'];
-                        if (shapeColl.indexOf(shape) > -1) {
-                            parent.updateToolbar(parent.element, parent.activeObj.shape);
-                        } else if (parent.activeObj.shape === 'text' && parent.textArea.style.display === 'none') {
-                            parent.updateToolbar(parent.element, 'text');
-                        }
+                    } else if (this.isFhdEditing) {
+                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
+                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    } else if (!isCropSelection) {
+                        const eventargs: object = { type: 'main', isApplyBtn: null, isCropping: false, isZooming: null };
+                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs});
                     }
+                    parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
                 }
             }
             if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
@@ -3099,22 +2994,14 @@ export class Selection {
             if (parent.activeObj.shape && !isCropSelection && e.currentTarget === parent.upperCanvas &&
                 parent.textArea.style.display === 'none') {
                 if (parent.activeObj.shape === 'text') {
-                    if (!isBlazor()) {
-                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
-                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                    }
+                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
+                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
                 } else {
-                    if (!isBlazor()) {
-                        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
-                            isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                    }
+                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
+                        isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
                 }
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-                    parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
-                } else {
-                    parent.updateToolbar(parent.element, 'quickAccessToolbar', parent.activeObj.shape);
-                }
+                parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
+                parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
             }
             if (parent.togglePen && e.currentTarget === parent.upperCanvas) {
                 parent.notify('freehand-draw', { prop: 'freehandUpHandler', onPropertyChange: false,
@@ -3521,15 +3408,8 @@ export class Selection {
         const beforeSave: BeforeSaveEventArgs = {fileName: obj['fileName'], fileType: obj['fileType'], cancel: false};
         switch (e.key) {
         case (e.ctrlKey && 's'):
-            if (isBlazor() && parent.events && parent.events.saving.hasDelegate === true) {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (parent.dotNetRef.invokeMethodAsync('BeforeSaveEventAsync', 'BeforeSave', beforeSave) as any).then((args: BeforeSaveEventArgs) => {
-                    this.beforeSaveEvent(args, e);
-                });
-            } else {
-                parent.trigger('beforeSave', beforeSave);
-                this.beforeSaveEvent(beforeSave, e);
-            }
+            parent.trigger('beforeSave', beforeSave);
+            this.beforeSaveEvent(beforeSave, e);
             break;
         case (e.ctrlKey && 'z'):
             if (parent.allowUndoRedo) {
@@ -3609,36 +3489,21 @@ export class Selection {
                     parent.notify('transform', {prop: 'resize', value: {width: point.x, height: point.y, isAspectRatio: false }});
                 }
             }
-            if (isBlazor()) {
-                const aspectRatioHeight: HTMLInputElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-height-input .e-textbox');
-                const aspectRatioWidth: HTMLInputElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-width-input .e-textbox');
-                if ((blrAspRatElem && blrAspRatElem.classList.contains('e-hidden'))) {
-                    if (aspectRatioHeight && aspectRatioHeight.value === "") {
-                        aspectRatioHeight.value = aspectRatioHeight.placeholder;
-                        (aspectRatioHeight as HTMLInputElement).value = aspectRatioHeight.placeholder;
-                    }
-                    if (aspectRatioWidth && aspectRatioWidth.value === "") {
-                        aspectRatioWidth.value = aspectRatioWidth.placeholder;
-                        (aspectRatioWidth as HTMLInputElement).value = aspectRatioWidth.placeholder;
+            const aspectRatioHeight: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
+            const aspectRatioWidth: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
+            if (isNullOrUndefined(aspectRatioElement)) {
+                if (aspectRatioHeight) {
+                    const elem: NumericTextBox = getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox;
+                    if (aspectRatioHeight && (aspectRatioHeight as HTMLInputElement).value === '') {
+                        elem.value = parseFloat(elem.placeholder);
+                        (aspectRatioHeight as HTMLInputElement).value = elem.placeholder + 'px';
                     }
                 }
-            } else {
-                const aspectRatioHeight: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
-                const aspectRatioWidth: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
-                if (isNullOrUndefined(aspectRatioElement)) {
-                    if (aspectRatioHeight) {
-                        const elem: NumericTextBox = getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox;
-                        if (aspectRatioHeight && (aspectRatioHeight as HTMLInputElement).value === '') {
-                            elem.value = parseFloat(elem.placeholder);
-                            (aspectRatioHeight as HTMLInputElement).value = elem.placeholder + 'px';
-                        }
-                    }
-                    if (aspectRatioWidth) {
-                        const elem: NumericTextBox = getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox;
-                        if (aspectRatioWidth && (aspectRatioWidth as HTMLInputElement).value === '') {
-                            elem.value = parseFloat(elem.placeholder);
-                            (aspectRatioWidth as HTMLInputElement).value = elem.placeholder + 'px';
-                        }
+                if (aspectRatioWidth) {
+                    const elem: NumericTextBox = getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox;
+                    if (aspectRatioWidth && (aspectRatioWidth as HTMLInputElement).value === '') {
+                        elem.value = parseFloat(elem.placeholder);
+                        (aspectRatioWidth as HTMLInputElement).value = elem.placeholder + 'px';
                     }
                 }
             }
@@ -3657,7 +3522,7 @@ export class Selection {
         let bool: boolean = false;
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const target: any = e.target;
-        if ((target.id === this.parent.element.id + '_ok' || target.id === '') && !isBlazor()) {
+        if (target.id === this.parent.element.id + '_ok' || target.id === '') {
             bool = true;
         }
         return bool;
@@ -3691,9 +3556,7 @@ export class Selection {
             e.preventDefault();
             if (!parent.isCropTab && (parent.activeObj.shape && parent.activeObj.shape.split('-')[0] !== 'crop')) {
                 parent.okBtn();
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
-                }
+                parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
             }
             let type: string = '';
             if (e.type === 'mousewheel' && (parent.zoomSettings.zoomTrigger & ZoomTrigger.MouseWheel) === ZoomTrigger.MouseWheel) {
@@ -3742,17 +3605,21 @@ export class Selection {
         this.isInitialTextEdited = false;
     }
 
-    private clearSelection(): void {
+    private clearSelection(resetCrop?: boolean): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
-            parent.togglePen = false;
-            parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
-            this.dragElement = '';
-            this.dragPoint.startX = this.dragPoint.startY = this.dragPoint.endX = this.dragPoint.endY = 0;
-            parent.currObjType.shape = '';
-            this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
-            parent.currObjType.isActiveObj = true; parent.currObjType.isCustomCrop = false;
-            parent.upperCanvas.style.cursor = parent.cursor = 'default';
+            if (resetCrop) {
+                parent.notify('draw', {prop: 'performCancel', value: {isContextualToolbar: null}});
+            } else {
+                parent.togglePen = false;
+                parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
+                this.dragElement = '';
+                this.dragPoint.startX = this.dragPoint.startY = this.dragPoint.endX = this.dragPoint.endY = 0;
+                parent.currObjType.shape = '';
+                this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
+                parent.currObjType.isActiveObj = true; parent.currObjType.isCustomCrop = false;
+                parent.upperCanvas.style.cursor = parent.cursor = 'default';
+            }
         }
     }
 
@@ -4019,13 +3886,7 @@ export class Selection {
                 if (splitWords !== undefined && splitWords[0] === 'crop'){
                     this.isCropSelection = true;
                 }
-                if (!this.isCropSelection && isBlazor() && isNullOrUndefined(parent.eventType) &&
-                    parent.events && parent.events.shapeChanging.hasDelegate === true) {
-                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                    (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape',  shapeChangingArgs, null) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
-                        this.shapeEvent(shapeChangingArgs);
-                    });
-                } else if (!this.isCropSelection) {
+                if (!this.isCropSelection) {
                     parent.trigger('shapeChanging', shapeChangingArgs);
                     this.shapeEvent(shapeChangingArgs);
                 } else {
@@ -4040,35 +3901,14 @@ export class Selection {
                             startY: shapeChangingArgs.currentShapeSettings.startY,
                             width: shapeChangingArgs.currentShapeSettings.width,
                             height: shapeChangingArgs.currentShapeSettings.height}};
-                    if (isBlazor() && parent.events && parent.events.onSelectionResizeStart.hasDelegate === true) {
-                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                        (parent.dotNetRef.invokeMethodAsync('SelectionEventAsync', 'OnSelectionResizeStart', selectionChangingArgs) as any).then((selectionChangingArgs: SelectionChangeEventArgs) => {
-                            shapeChangingArgs.currentShapeSettings.startX = selectionChangingArgs.currentSelectionSettings.startX;
-                            shapeChangingArgs.currentShapeSettings.startY = selectionChangingArgs.currentSelectionSettings.startY;
-                            shapeChangingArgs.currentShapeSettings.width = selectionChangingArgs.currentSelectionSettings.width;
-                            shapeChangingArgs.currentShapeSettings.height = selectionChangingArgs.currentSelectionSettings.height;
-                            this.shapeEvent(shapeChangingArgs);
-                        });
-                    } else {
-                        parent.trigger('selectionChanging', selectionChangingArgs);
-                        shapeChangingArgs.currentShapeSettings.startX = selectionChangingArgs.currentSelectionSettings.startX;
-                        shapeChangingArgs.currentShapeSettings.startY = selectionChangingArgs.currentSelectionSettings.startY;
-                        shapeChangingArgs.currentShapeSettings.width = selectionChangingArgs.currentSelectionSettings.width;
-                        shapeChangingArgs.currentShapeSettings.height = selectionChangingArgs.currentSelectionSettings.height;
-                        this.shapeEvent(shapeChangingArgs);
-                    }
+                    parent.trigger('selectionChanging', selectionChangingArgs);
+                    shapeChangingArgs.currentShapeSettings.startX = selectionChangingArgs.currentSelectionSettings.startX;
+                    shapeChangingArgs.currentShapeSettings.startY = selectionChangingArgs.currentSelectionSettings.startY;
+                    shapeChangingArgs.currentShapeSettings.width = selectionChangingArgs.currentSelectionSettings.width;
+                    shapeChangingArgs.currentShapeSettings.height = selectionChangingArgs.currentSelectionSettings.height;
+                    this.shapeEvent(shapeChangingArgs);
                 }
                 isShape = true;
-                if (isBlazor()) {
-                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                    const tempCursor: any = parent.upperCanvas.style.cursor;
-                    this.setCursor(x, y);
-                    if (shapeChangingArgs.action === 'select' && parent.upperCanvas.style.cursor === 'move') {
-                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                        (parent as any).getShapeValue(parent.activeObj.shape);
-                    }
-                    parent.upperCanvas.style.cursor = tempCursor;
-                }
             }
         }
         return isShape;
@@ -4282,9 +4122,7 @@ export class Selection {
                         value: {context: this.lowerContext, isSave: null, isFlip: null}});
                 }
             }
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-            }
+            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
         }
     }
 
@@ -4394,11 +4232,7 @@ export class Selection {
                 parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
                 this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
                 parent.notify('draw', {prop: 'render-image', value: {isMouseWheel: null}});
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-                } else {
-                    parent.updateToolbar(parent.element, 'imageLoaded');
-                }
+                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
             } else if (parent.activeObj.shape) {
                 parent.objColl.push(parent.activeObj);
                 const prevCropObj: CurrentObject = extend({}, parent.cropObj, {}, true) as CurrentObject;
@@ -4417,14 +4251,8 @@ export class Selection {
                 shapeChangingArgs = {cancel: false, action: 'delete', previousShapeSettings: previousShapeSettings, currentShapeSettings: null};
                 parent.notify('shape', { prop: 'setKeyHistory', onPropertyChange: false, value: {keyHistory: '' }});
                 parent.clearSelection();
-                if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
-                    parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape', shapeChangingArgs, null);
-                } else {
-                    parent.trigger('shapeChanging', shapeChangingArgs);
-                    if (!isBlazor()) {
-                        parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-                    }
-                }
+                parent.trigger('shapeChanging', shapeChangingArgs);
+                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
                 if (!isNullOrUndefined(prevObj.objColl[prevObj.objColl.length - 1].currIndex)) {
                     parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
                         value: {operation: 'deleteObj', previousObj: prevObj, previousObjColl: this.tempObjColl,
@@ -4454,6 +4282,11 @@ export class Selection {
 
     private updatePrevShapeSettings(obj?: Object): ShapeSettings {
         const parent: ImageEditor = this.parent; const fontStyle: string[] = [];
+        if (isNullOrUndefined(parent.activeObj.currIndex)) {
+            const shapeIDObj: Object = {id: 'shape_' + (parent.objColl.length + 1) };
+            parent.notify('shape', { prop: 'getNewShapeId', onPropertyChange: false, value: {obj: shapeIDObj }});
+            parent.activeObj.currIndex = shapeIDObj['id'];
+        }
         if (parent.activeObj.shape === 'text' && parent.activeObj.textSettings) {
             if (parent.activeObj.textSettings.bold) {
                 fontStyle.push('bold');
@@ -4481,7 +4314,7 @@ export class Selection {
             fontFamily: shape === 'text' ? (textSettings ? textSettings.fontFamily : null) : null,
             fontStyle: shape === 'text' ? fontStyle : null,
             color: shape === 'text' ? (strokeSettings ? strokeSettings.strokeColor : null) : null,
-            degree: shape === 'ellipse' || shape === 'rectangle' || shape === 'image' || shape === 'text' ? rotatedAngle * (180 / Math.PI) : null,
+            degree: shape === 'ellipse' || shape === 'rectangle' || shape === 'image' || shape === 'text'? rotatedAngle * (180 / Math.PI) : null,
             imageData: shape === 'image' ? imageElement.src : null,
             opacity: shape === 'image' ? opacity : null,
             radiusX: shape === 'ellipse' ? width / 2 : null,
@@ -4562,13 +4395,8 @@ export class Selection {
     private getNumTextValue(obj?: Object): Point {
         const parent: ImageEditor = this.parent; const elem: HTMLElement = parent.element as HTMLElement;
         let height: number; let width: number; let widthElement: HTMLInputElement; let heightElement: HTMLInputElement;
-        if (isBlazor()) {
-            widthElement = elem.querySelector('.e-ie-toolbar-e-resize-width-input .e-textbox');
-            heightElement = elem.querySelector('.e-ie-toolbar-e-resize-height-input .e-textbox');
-        } else {
-            widthElement = (elem.querySelector('#' + elem.id + '_resizeWidth') as HTMLInputElement);
-            heightElement = (elem.querySelector('#' + elem.id + '_resizeHeight') as HTMLInputElement);
-        }
+        widthElement = (elem.querySelector('#' + elem.id + '_resizeWidth') as HTMLInputElement);
+        heightElement = (elem.querySelector('#' + elem.id + '_resizeHeight') as HTMLInputElement);
         if (widthElement && heightElement) {
             let heightString: string = heightElement.value.replace(/,/g, '');
             let widthString: string = widthElement.value.replace(/,/g, '');
@@ -4589,13 +4417,8 @@ export class Selection {
 
     private isValueUpdated(): boolean {
         let isValue: boolean = true; let widthElement: HTMLInputElement; let heightElement: HTMLInputElement;
-        if (!isBlazor()) {
-            widthElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_resizeWidth') as HTMLInputElement);
-            heightElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_resizeHeight') as HTMLInputElement);
-        } else {
-            widthElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-width-input .e-textbox');
-            heightElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-height-input .e-textbox');
-        }
+        widthElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_resizeWidth') as HTMLInputElement);
+        heightElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_resizeHeight') as HTMLInputElement);
         if (widthElement && heightElement) {
             if (heightElement.value.replace(/,/g, '') === '' && widthElement.value.replace(/,/g, '') === '') {
                 isValue = false;

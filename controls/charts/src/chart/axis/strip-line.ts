@@ -315,7 +315,7 @@ export class StripLine {
             chart.enableCanvas, parent, chart.renderer.drawRectangle(
                 new RectOption(
                     id, 'none', stripline.border, stripline.opacity,
-                    rect, 0, 0, '', null
+                    rect, 0, 0, '', stripline.border.dashArray
                 )
             ),
             chart.redraw, true, 'x', 'y', null, null, true, true, previousRect

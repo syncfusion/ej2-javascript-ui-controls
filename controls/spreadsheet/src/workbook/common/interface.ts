@@ -1,4 +1,4 @@
-import { CellStyleModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel } from './class-model';
+import { CellStyleModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel, SortCollectionModel } from './class-model';
 import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType, DataBar, ColorScale, IconSet } from './index';
 import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel, TopBottom, HighlightCell } from '../index';
 import { CFColor, Workbook, PdfPageOrientation } from '../index';
@@ -218,6 +218,7 @@ export interface SortDescriptor {
 export interface SortEventArgs {
     range?: string;
     sortOptions?: SortOptions;
+    previousSort?: SortCollectionModel | SortCollectionModel[];
 }
 
 /**
@@ -484,6 +485,7 @@ export interface CellUpdateArgs {
     eventOnly?: boolean;
     requestType?: string;
     cellDelete?: boolean;
+    mergedCells?: boolean;
     isFormulaDependent?: boolean;
     skipFormatCheck?: boolean;
     isRandomFormula?: boolean;
@@ -540,6 +542,8 @@ export interface AutoDetectGeneralFormatArgs {
     rowIdx?: number;
     colIdx?: number;
     sheet?: SheetModel;
+    cellVal?: string;
+    prevVal?: string;
 }
 /** @hidden */
 export interface checkCellValid {
@@ -602,4 +606,15 @@ export interface VisibleMergeIndexArgs {
     rowIdx: number;
     colIdx: number;
     isMergedHiddenCell?: boolean;
+}
+
+/**@hidden */
+export interface LocaleNumericSettings {
+    decimal: string;
+    group: string;
+    timeSeparator: string;
+    dateSeparator: string;
+    am?: string;
+    pm?: string;
+    percentSign?: string;
 }

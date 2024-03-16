@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-treegrid",
-	"version": "24.2.5",
+	"version": "20.12.1",
 	"description": "Essential JS 2 TreeGrid Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -14,6 +14,7 @@
 		"@syncfusion/ej2-popups": "*"
 	},
 	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.1",
 		"@types/chai": "^3.4.28",
 		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",

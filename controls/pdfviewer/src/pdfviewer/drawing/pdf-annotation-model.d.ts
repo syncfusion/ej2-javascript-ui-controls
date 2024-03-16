@@ -448,6 +448,16 @@ export interface PdfAnnotationBaseModel {
     labelMaxLength?: number;
 
     /**
+     * specifies the custom stamp template of the annotation.
+     */
+    template?: any;
+
+    /**
+      * specifies the custom stamp template size of the annotation.
+      */
+    templateSize?: any;
+
+    /**
      * Represents the opecity value of the annotation
      *
      * @default 1

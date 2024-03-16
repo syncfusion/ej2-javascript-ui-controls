@@ -5,7 +5,7 @@ import { hiddenMerge, updateTableWidth, updateTranslate } from '../common/index'
 import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, getSheet, ColumnModel, RowModel, getColumn, getRow, ChartModel } from '../../workbook/index';
 import { beginAction, getCellIndexes, applyCellFormat, CellFormatArgs, CellModel, MergeArgs, refreshChart } from '../../workbook/index';
 import { activeCellMergedRange, setMerge, ExtendedRowModel, getRowHeight, getRangeIndexes, hideShow } from '../../workbook/index';
-import { ActionEventArgs, skipHiddenIdx } from '../../workbook/index';
+import { ActionEventArgs, skipHiddenIdx, isFilterHidden } from '../../workbook/index';
 import { detach, isUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -111,11 +111,16 @@ export class ShowHide {
         const frozenRow: number = this.parent.frozenRowCount(sheet);
         if (args.hide) {
             let content: HTMLTableElement; let rowHdr: HTMLTableElement; let row: HTMLTableRowElement;
-            const updateBtmIdx: boolean = isFinite && args.endIndex === skipHiddenIdx(sheet, sheet.rowCount - 1, false);
             let prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = [];
             let currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = [];
+            const updateBtmIdx: boolean = isFinite && args.endIndex === skipHiddenIdx(sheet, sheet.rowCount - 1, false);
             for (let i: number = args.startIndex; i <= args.endIndex; i++) {
-                if (isHiddenRow(sheet, i)) { continue; }
+                if (isHiddenRow(sheet, i)) {
+                    if (args.isFiltering && !isFilterHidden(sheet, i)) {
+                        setRow(sheet, i, <ExtendedRowModel>{ isFiltered: true });
+                    }
+                    continue;
+                }
                 if (idx === undefined) {
                     if (args.freezePane) {
                         rowHdr = this.parent.sheetModule.getSelectAllTable();

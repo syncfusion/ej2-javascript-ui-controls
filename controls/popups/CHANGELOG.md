@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 25.1.35 (2024-03-15)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I547853` - Fixed an issue where the dialog was not draggable on mobile devices.
+
+## 24.2.8 (2024-02-27)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#F186300` - Fixed an issue where memory was not being released after closing the dialog when the resize property enabled.
+
 ## 24.2.5 (2024-02-13)
 
 ### Tooltip

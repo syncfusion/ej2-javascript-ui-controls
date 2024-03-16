@@ -215,11 +215,11 @@ export class HeaderFooterProperties {
     }
     private onClose(): void {
         this.container.showHeaderProperties = true;
-        this.container.documentEditor.selection.closeHeaderFooter();
+        this.container.documentEditor.selectionModule.closeHeaderFooter();
     }
     private changeFirstPageOptions(): void {
         if (!this.documentEditor.isReadOnly) {
-            this.documentEditor.selection.sectionFormat.differentFirstPage = this.firstPage.checked;
+            this.documentEditor.selectionModule.sectionFormat.differentFirstPage = this.firstPage.checked;
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 10);
@@ -227,7 +227,7 @@ export class HeaderFooterProperties {
     }
     private changeoddOrEvenOptions(): void {
         if (!this.documentEditor.isReadOnly) {
-            this.documentEditor.selection.sectionFormat.differentOddAndEvenPages = this.oddOrEven.checked;
+            this.documentEditor.selectionModule.sectionFormat.differentOddAndEvenPages = this.oddOrEven.checked;
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 10);
@@ -235,26 +235,26 @@ export class HeaderFooterProperties {
     }
     private changeLinkToPreviousOptions(): void {
         if (!this.documentEditor.isReadOnly) {
-            let headerFooterType: any = ((this.documentEditor.selection.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
+            let headerFooterType: any = ((this.documentEditor.selectionModule.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
             let value: boolean = this.linkToPrevious.checked;
             switch (headerFooterType) {
                 case 'OddHeader':
-                this.documentEditor.selection.sectionFormat.oddPageHeader.linkToPrevious = value;
+                this.documentEditor.selectionModule.sectionFormat.oddPageHeader.linkToPrevious = value;
                 break;
                 case 'OddFooter':
-                this.documentEditor.selection.sectionFormat.oddPageFooter.linkToPrevious = value;
+                this.documentEditor.selectionModule.sectionFormat.oddPageFooter.linkToPrevious = value;
                 break;
                 case 'EvenHeader':
-                this.documentEditor.selection.sectionFormat.evenPageHeader.linkToPrevious = value;
+                this.documentEditor.selectionModule.sectionFormat.evenPageHeader.linkToPrevious = value;
                 break;
                 case 'EvenFooter':
-                this.documentEditor.selection.sectionFormat.evenPageFooter.linkToPrevious = value;
+                this.documentEditor.selectionModule.sectionFormat.evenPageFooter.linkToPrevious = value;
                 break;
                 case 'FirstPageHeader':
-                this.documentEditor.selection.sectionFormat.firstPageHeader.linkToPrevious = value;
+                this.documentEditor.selectionModule.sectionFormat.firstPageHeader.linkToPrevious = value;
                 break;
                 case 'FirstPageFooter':
-                this.documentEditor.selection.sectionFormat.firstPageFooter.linkToPrevious = value;
+                this.documentEditor.selectionModule.sectionFormat.firstPageFooter.linkToPrevious = value;
                 break;
 
             }
@@ -272,7 +272,7 @@ export class HeaderFooterProperties {
             if (headerTop > this.headerFromTop.max) {
                 headerTop = this.headerFromTop.max;
             }
-            this.documentEditor.selection.sectionFormat.headerDistance = headerTop;
+            this.documentEditor.selectionModule.sectionFormat.headerDistance = headerTop;
         }
     }
     private onHeaderValue(e: KeyboardEventArgs): void {
@@ -298,45 +298,45 @@ export class HeaderFooterProperties {
             if (footerTop > this.footerFromTop.max) {
                 footerTop = this.footerFromTop.max;
             }
-            this.documentEditor.selection.sectionFormat.footerDistance = footerTop;
+            this.documentEditor.selectionModule.sectionFormat.footerDistance = footerTop;
         }
     }
     public onSelectionChange(): void {
-        this.headerFromTop.value = this.documentEditor.selection.sectionFormat.headerDistance;
-        this.footerFromTop.value = this.documentEditor.selection.sectionFormat.footerDistance;
-        if (this.documentEditor.selection.sectionFormat.differentFirstPage) {
+        this.headerFromTop.value = this.documentEditor.selectionModule.sectionFormat.headerDistance;
+        this.footerFromTop.value = this.documentEditor.selectionModule.sectionFormat.footerDistance;
+        if (this.documentEditor.selectionModule.sectionFormat.differentFirstPage) {
             this.firstPage.checked = true;
         } else {
             this.firstPage.checked = false;
         }
-        if (this.documentEditor.selection.sectionFormat.differentOddAndEvenPages) {
+        if (this.documentEditor.selectionModule.sectionFormat.differentOddAndEvenPages) {
             this.oddOrEven.checked = true;
         } else {
             this.oddOrEven.checked = false;
         }
-        if (this.documentEditor.selection.start.paragraph.bodyWidget.sectionIndex == 0) {
+        if (this.documentEditor.selectionModule.start.paragraph.bodyWidget.sectionIndex == 0) {
             this.linkToPrevious.disabled = true;
         } else {
             this.linkToPrevious.disabled = false;
-            let headerFooterType: any = ((this.documentEditor.selection.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
+            let headerFooterType: any = ((this.documentEditor.selectionModule.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
             switch (headerFooterType) {
                 case 'OddHeader':
-                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.oddPageHeader.linkToPrevious;
+                this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.oddPageHeader.linkToPrevious;
                 break;
                 case 'OddFooter':
-                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.oddPageFooter.linkToPrevious;
+                this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.oddPageFooter.linkToPrevious;
                 break;
                 case 'EvenHeader':
-                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.evenPageHeader.linkToPrevious;
+                this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.evenPageHeader.linkToPrevious;
                 break;
                 case 'EvenFooter':
-                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.evenPageFooter.linkToPrevious;
+                this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.evenPageFooter.linkToPrevious;
                 break;
                 case 'FirstPageHeader':
-                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.firstPageHeader.linkToPrevious;
+                this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.firstPageHeader.linkToPrevious;
                 break;
                 case 'FirstPageFooter':
-                this.linkToPrevious.checked = this.documentEditor.selection.sectionFormat.firstPageFooter.linkToPrevious;
+                this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.firstPageFooter.linkToPrevious;
                 break;
             }
         }

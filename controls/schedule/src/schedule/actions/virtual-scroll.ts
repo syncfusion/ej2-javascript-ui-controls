@@ -66,6 +66,10 @@ export class VirtualScroll {
             this.renderedLength = conTable.querySelector('tbody').children.length;
             virtual.style.height = (conTable.offsetHeight + (this.parent.resourceBase.expandedResources.length - (this.renderedLength)) *
                 conTable.offsetHeight / this.renderedLength) + 'px';
+            const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+            if ((conWrap.scrollHeight - conWrap.scrollTop) < conWrap.offsetHeight * this.bufferCount) {
+                virtual.style.height = parseInt(virtual.style.height) + (conWrap.offsetHeight * this.bufferCount) + 'px';
+            }
         } else {
             virtual.style.height = '';
         }

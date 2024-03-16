@@ -2,13 +2,19 @@
 
 ## [Unreleased]
 
-## 24.2.4 (2024-02-06)
+## 25.1.35 (2024-03-15)
 
 ### Spreadsheet
 
-#### Bug Fixes
+#### Bug fixes
 
-- Issue with "formula returns the wrong result when performing an arithmetic expression with a negative sign" has been resolved.
+- `#I549016` - Issue with "script error occurs when inserting multiple images into a single active cell and performing delete an action" has been resolved.
+
+#### Features
+
+- `#I369726` - Now, provided support for accepting the culture-based argument separator in the formula.
+
+- `#I369726` - Now, provided support to pass numeric values with culture-based decimal separators as arguments to the formulas.
 
 ## 24.1.41 (2023-12-18)
 

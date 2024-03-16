@@ -55,7 +55,7 @@ export class DropDownButtons {
             addClass([args.element], item.cssClass);
         }
         if (item.command === 'Images' || item.command === 'Videos' || item.command === 'Audios' || item.command === 'Table') {
-            args.element.setAttribute('title', getQuickToolbarTooltipText(item.text));
+            args.element.setAttribute('title', getQuickToolbarTooltipText(item.text) !== ''? getQuickToolbarTooltipText(item.text) : item.text);
         }
         if (item.command === 'Alignments' || item.subCommand === 'JustifyLeft'
             || item.subCommand === 'JustifyRight' || item.subCommand === 'JustifyCenter') {
@@ -65,13 +65,13 @@ export class DropDownButtons {
             args.element.setAttribute('title', getTooltipTextDropdownItems(item.subCommand.toLocaleLowerCase(), this.locator, formatsLocale));
         }
         if (item.command === 'Font') {
-            args.element.setAttribute('title', getTooltipTextDropdownItems(item.value.toLocaleLowerCase(), this.locator, fontNameLocale));
+            args.element.setAttribute('title', getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, fontNameLocale) !== ''? getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, fontNameLocale): item.text);
         }
         if (item.subCommand === 'BulletFormatList') {
-            args.element.setAttribute('title', getTooltipTextDropdownItems(item.value.toLocaleLowerCase(), this.locator, bulletFormatListLocale));
+            args.element.setAttribute('title', getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, bulletFormatListLocale) !== ''? getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, bulletFormatListLocale): item.text);
         }
         if (item.subCommand === 'NumberFormatList') {
-            args.element.setAttribute('title', getTooltipTextDropdownItems(item.text.replace(/\s/g, '').toLocaleLowerCase(), this.locator, numberFormatListLocale));
+            args.element.setAttribute('title', (getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, numberFormatListLocale)) !== ''? getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, numberFormatListLocale): item.text);
         }
         if (item.subCommand === 'FontSize') {
             args.element.setAttribute('title', getTooltipTextDropdownItems(item.value.toLocaleLowerCase(), null, null, this.parent));

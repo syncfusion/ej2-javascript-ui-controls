@@ -15,7 +15,7 @@ import { BulletChartModel } from './bullet-chart-model';
 import { Data } from '../common/model/data';
 import { BulletChartAxis } from './renderer/bullet-axis';
 import { ScaleGroup } from './renderer/scale-render';
-import { redrawElement, textElement, getElement, appendChildElement, RectOption, stringToNumber } from '../common/utils/helper';
+import { redrawElement, textElement, getElement, appendChildElement, RectOption, stringToNumber, removeElement } from '../common/utils/helper';
 import { BulletTooltip } from './user-interaction/tooltip';
 import { IPrintEventArgs } from '../chart/model/chart-interface';
 import { ExportType } from '../common/utils/enum';
@@ -543,6 +543,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     /** @private */
     public format: Function;
     private isLegend: boolean;
+    /** @private */
+    private currentLegendIndex: number = 0;
+    private previousTargetId: string = '';
     /**
      * Gets the current visible ranges of the bullet Chart.
      *
@@ -636,6 +639,14 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Material3') > -1) {
             this.valueFill = !(this.valueFill) ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.valueFill;
             this.targetColor = (this.targetColor == '#191919') ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.targetColor;
+        }
+        if (!(document.getElementById(this.element.id + 'Keyboard_bullet_chart_focus'))) {
+            const style: HTMLStyleElement = document.createElement('style');
+            style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_bullet_chart_focus');
+            style.innerText = '.e-bullet-chart-focused:focus,' +
+                'text[id*=_BulletChartTitle]:focus, text[id*=_BulletChartSubTitle]:focus, rect[id*=_svg_FeatureMeasure_]:focus, g[id*=_chart_legend_g_]:focus {outline: none } .e-bullet-chart-focused:focus-visible,' +
+                'text[id*=_BulletChartTitle]:focus-visible, text[id*=_BulletChartSubTitle]:focus-visible, rect[id*=_svg_FeatureMeasure_]:focus-visible, g[id*=_chart_legend_g_]:focus-visible {outline: 1.5px ' + this.themeStyle.tabColor + ' solid}';
+            document.body.appendChild(style);
         }
     }
 
@@ -731,7 +742,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         const rect: RectOption = new RectOption(
             this.element.id + '_ChartBorder', this.themeStyle.background,
             { width: this.border.width || 0, color: this.border.color || 'transparent' }, 1,
-            new Rect(0, 0, this.availableSize.width, this.availableSize.height)
+            new Rect(0, 0, this.availableSize.width, this.availableSize.height), 0, 0, '', this.border.dashArray
         );
         this.svgObject.appendChild(this.renderer.drawRectangle(rect) as HTMLElement);
     }
@@ -1095,7 +1106,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                 this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFont.color, this.svgObject, null, null, null, null, null, null, null, null, null, null, this.themeStyle.titleFont);
             if (element) {
                 element.setAttribute('aria-label', this.title + '. Syncfusion interactive chart.');
-                element.setAttribute('tabindex', this.tabIndex.toString());
+                element.setAttribute('tabindex', '0');
+                element.setAttribute('role', 'img');
             }
             if (this.subtitle) {
                 this.renderBulletChartSubTitle(x, y, anchor);
@@ -1259,7 +1271,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         );
         if (element) {
             element.setAttribute('aria-label', this.subtitle);
-            element.setAttribute('tabindex', this.tabIndex.toString());
+            element.setAttribute('tabindex', '0');
+            element.setAttribute('role', 'img');
         }
     }
 
@@ -1307,6 +1320,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         EventHandler.remove(this.element, moveEvent, this.bulletMouseMove);
         EventHandler.remove(this.element, cancelEvent, this.bulletMouseLeave);
         EventHandler.remove(this.element, 'click', this.bulletChartOnMouseClick);
+        EventHandler.remove(this.element, 'keyup', this.chartKeyUp);
 
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -1325,6 +1339,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         EventHandler.add(this.element, cancelEvent, this.bulletMouseLeave, this);
         EventHandler.add(this.element, Browser.touchStartEvent, this.bulletMouseDown, this);
         EventHandler.add(this.element, 'click', this.bulletChartOnMouseClick, this);
+        EventHandler.add(this.element, 'keyup', this.chartKeyUp, this);
         this.resizeBound = this.bulletResize.bind(this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -1486,6 +1501,80 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
+     * Handles the keyboard onkeydown on bullet chart.
+     *
+     * @returns {boolean} false
+     * @private
+     */
+    public chartKeyUp(e: KeyboardEvent): boolean {
+        let targetId: string = e.target['id'];
+        let groupElement: HTMLElement;
+        const targetElement: HTMLElement = e.target as HTMLElement;
+        const legendElement: HTMLElement = getElement(this.element.id + '_chart_legend_translate_g') as HTMLElement;
+        if (legendElement) {
+            const firstChild: HTMLElement = legendElement.firstElementChild as HTMLElement;
+            let className: string = firstChild.getAttribute('class');
+            if (className && className.indexOf('e-bullet-chart-focused') === -1) {
+                className = className + ' e-bullet-chart-focused';
+            }
+            else if (!className) {
+                className = 'e-bullet-chart-focused';
+            }
+            firstChild.setAttribute('class', className);
+        }
+        if (e.code === 'Tab') {
+            if (this.previousTargetId !== '') {
+                if (this.previousTargetId.indexOf('_chart_legend_g_') > -1 && targetId.indexOf('_chart_legend_g_') === -1) {
+                    groupElement = getElement(this.element.id + '_chart_legend_translate_g') as HTMLElement;
+                    this.setTabIndex(groupElement.children[this.currentLegendIndex] as HTMLElement,
+                                     groupElement.firstElementChild as HTMLElement);
+                }
+            }
+            this.previousTargetId = targetId;
+        }
+        else if (e.code.indexOf('Arrow') > -1) {
+            e.preventDefault();
+            if ((targetId.indexOf('_chart_legend_') > -1)) {
+                const legendElement: HTMLCollection = targetElement.parentElement.children;
+                legendElement[this.currentLegendIndex].removeAttribute('tabindex');
+                this.currentLegendIndex += (e.code === 'ArrowUp' || e.code === 'ArrowRight') ? + 1 : - 1;
+                this.currentLegendIndex = this.getActualIndex(this.currentLegendIndex, legendElement.length);
+                const currentLegend: Element = legendElement[this.currentLegendIndex];
+                this.focusChild(currentLegend as HTMLElement);
+                targetId = currentLegend.children[1].id;
+            }
+        }
+        return false;
+    }
+
+    private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
+        if (previousElement) {
+            previousElement.removeAttribute('tabindex');
+        }
+        if (currentElement) {
+            currentElement.setAttribute('tabindex', '0');
+        }
+    }
+
+    private getActualIndex(index: number, totalLength: number): number {
+        return index > totalLength - 1 ? 0 : (index < 0 ? totalLength - 1 : index);
+    }
+
+    private focusChild(element: HTMLElement): string {
+        element.setAttribute('tabindex', '0');
+        let className: string = element.getAttribute('class');
+        element.setAttribute('tabindex', '0');
+        if (className && className.indexOf('e-bullet-chart-focused') === -1) {
+            className = 'e-bullet-chart-focused ' + className;
+        } else if (!className) {
+            className = 'e-bullet-chart-focused';
+        }
+        element.setAttribute('class', className);
+        element.focus();
+        return element.id;
+    }
+
+    /**
      * Called internally if any of the property value changed.
      *
      * @private
@@ -1624,6 +1713,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         this.svgObject = null;
         this.element.classList.remove('e-BulletChart');
         this.element.innerText = '';
+        const element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_bullet_chart_focus');
+        if (element) { element.remove(); }
+        removeElement('chartmeasuretext');
     }
 
 }

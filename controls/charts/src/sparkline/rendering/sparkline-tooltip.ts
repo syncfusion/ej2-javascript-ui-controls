@@ -135,7 +135,7 @@ export class SparklineTooltip {
     /**
      * To render line series
      */
-    private renderTooltip(points: SparkValues): void {
+    public renderTooltip(points: SparkValues): void {
         const spark: Sparkline = this.sparkline;
         const tooltip: SparklineTooltipSettingsModel = spark.tooltipSettings;
         if (!tooltip.visible) {

@@ -283,13 +283,13 @@ export class RulerHelper {
         let div: HTMLElement = document.getElementById(documentEditor.element.id + (isHorizontal ? '_hRuler' : '_vRuler'));
         const rulerSize: Size = this.getRulerSize(documentEditor);
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
-        const height: number = isHorizontal ? documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.x
-            : (documentEditor.selection.getPageTop(documentEditor.selection.end.paragraph.bodyWidget.page));
+        const height: number = isHorizontal ? documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.x
+            : (documentEditor.selectionModule.getPageTop(documentEditor.selectionModule.end.paragraph.bodyWidget.page));
         const margin: string = isHorizontal ? ('margin-left:' + height + 'px;') : ('margin-top:' + height + 'px;');
-        if (documentEditor.selection.isForward) {
-            this.position = documentEditor.selection.start;
+        if (documentEditor.selectionModule.isForward) {
+            this.position = documentEditor.selectionModule.start;
         } else {
-            this.position = documentEditor.selection.end;
+            this.position = documentEditor.selectionModule.end;
         }
         // const margin: string = isHorizontal ? ('margin-left:' + (pixelsToPoints(documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.x)) + 'px;') : ('margin-top:' + rulerSize.height + 'px;');
         if (!div) {
@@ -337,10 +337,10 @@ export class RulerHelper {
             // Set the scrollLeft property to the desired value (e.g., 100 pixels)
             if (isHorizontal) {
                 rulerObj.scrollLeft = ruler.zeroPosition -
-                    HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin);
+                    HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin);
             } else {
                 rulerObj.scrollTop = ruler.zeroPosition -
-                    HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.topMargin);
+                    HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin);
             }
 
         }
@@ -366,8 +366,8 @@ export class RulerHelper {
                     return;
                 }
                 const divRect = hRuler.getBoundingClientRect();
-                const leftMargin = documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor;
-                const rightMargin = (HelperMethods.convertPixelToPoint(divRect.width) - documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor);
+                const leftMargin = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor;
+                const rightMargin = (HelperMethods.convertPixelToPoint(divRect.width) - documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor);
                 let pixelValue: number = Math.round(e.clientX - divRect.left);
                 let mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(pixelValue);
                 if (!isDragging) {
@@ -391,8 +391,8 @@ export class RulerHelper {
                             resizerEnabled = true;
                             isLeftRulerMargin = false;
                         }
-                    } else if (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.columns.length > 0) {
-                        let columns: WColumnFormat[] = documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.columns
+                    } else if (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns.length > 0) {
+                        let columns: WColumnFormat[] = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns
                         if (documentEditor.layoutType === 'Pages') {
                             for (let i = 1; i <= columns.length; i++) {
                                 let rulerMarginDiv = document.getElementById(documentEditor.element.id + '_hRuler_Margin' + i);
@@ -433,16 +433,16 @@ export class RulerHelper {
                     }
                 }
                 if (isDragging) {
-                    let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
-                    let pageWidth: number = documentEditor.selection.sectionFormat.pageWidth;
-                    let rightMarginValue: number = documentEditor.selection.sectionFormat.rightMargin;
-                    let rightIndentValue: number = documentEditor.selection.paragraphFormat.rightIndent;
+                    let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                    let pageWidth: number = documentEditor.selectionModule.sectionFormat.pageWidth;
+                    let rightMarginValue: number = documentEditor.selectionModule.sectionFormat.rightMargin;
+                    let rightIndentValue: number = documentEditor.selectionModule.paragraphFormat.rightIndent;
                     rightIndentValue = rightIndentValue > 0 ? rightIndentValue : 0;
                     let minimumValue: number = 42;
-                    let firstLineIndent: number = documentEditor.selection.paragraphFormat.firstLineIndent;
-                    let leftMarginValue: number = documentEditor.selection.sectionFormat.leftMargin;
+                    let firstLineIndent: number = documentEditor.selectionModule.paragraphFormat.firstLineIndent;
+                    let leftMarginValue: number = documentEditor.selectionModule.sectionFormat.leftMargin;
                     firstLineIndent = firstLineIndent >= 0 ? firstLineIndent : 0;
-                    let leftIndent: number = documentEditor.selection.paragraphFormat.leftIndent;
+                    let leftIndent: number = documentEditor.selectionModule.paragraphFormat.leftIndent;
                     if (isLeftRulerMargin) {
                         let leftMaxLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(pageWidth - rightMarginValue - rightIndentValue - minimumValue - firstLineIndent - leftIndent) * documentEditor.zoomFactor);
                         let leftMinLimit: number = rulerZeroPoint;
@@ -465,8 +465,8 @@ export class RulerHelper {
                         }
                     }
                     finalmouseXRelativeToDiv = mouseXRelativeToDiv;
-                    const currentRightMargin = (HelperMethods.convertPixelToPoint(divRect.width) - (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor));
-                    if (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.numberOfColumns <= 1) {
+                    const currentRightMargin = (HelperMethods.convertPixelToPoint(divRect.width) - (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor));
+                    if (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.numberOfColumns <= 1) {
                         this.resizeRulerMargins(isLeftRulerMargin, initialValue, currentScrollLeft, currentRightMargin, hRuler, mouseXRelativeToDiv, true, documentEditor);
                     }
                     let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
@@ -500,7 +500,7 @@ export class RulerHelper {
             hRuler.addEventListener("mousedown", (e) => {
                 if (resizerEnabled && !documentEditor.isTableMarkerDragging) {
                     isDragging = true;
-                    if (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.columns.length > 0) {
+                    if (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns.length > 0) {
                         if (isLeftMultiColumn) {
                             columnInitialValue = multiColumnElement.getBoundingClientRect().left;
                         } else if (isRightMultiColumn) {
@@ -526,7 +526,7 @@ export class RulerHelper {
                 if (divRect.y + (divRect.height / 2) <= e.clientY) {
                     mouseDownTabValue = e.clientX - hRuler.getBoundingClientRect().left;
                     if (documentEditor.layoutType === 'Pages') {
-                        mouseDownTabValue = HelperMethods.convertPixelToPoint(mouseDownTabValue - HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin) * documentEditor.zoomFactor);
+                        mouseDownTabValue = HelperMethods.convertPixelToPoint(mouseDownTabValue - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin) * documentEditor.zoomFactor);
                         if (this.position.paragraph.paragraphFormat.bidi) {
                             let paraWidth: number = !isNullOrUndefined(this.position.paragraph['absoluteXPosition']) ? parseFloat(this.position.paragraph['absoluteXPosition']['width'].toString()) : this.position.paragraph.width;
                             paraWidth = HelperMethods.convertPixelToPoint(paraWidth * documentEditor.zoomFactor);
@@ -551,7 +551,7 @@ export class RulerHelper {
                 if (divRect.y + (divRect.height / 2) <= e.clientY) {
                     mouseUpTabValue = e.clientX - hRuler.getBoundingClientRect().left;
                     if (documentEditor.layoutType === 'Pages') {
-                        mouseUpTabValue = HelperMethods.convertPixelToPoint(mouseUpTabValue - HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin) * documentEditor.zoomFactor);
+                        mouseUpTabValue = HelperMethods.convertPixelToPoint(mouseUpTabValue - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin) * documentEditor.zoomFactor);
                         if (this.position.paragraph.paragraphFormat.bidi) {
                             let paraWidth: number = !isNullOrUndefined(this.position.paragraph['absoluteXPosition']) ? parseFloat(this.position.paragraph['absoluteXPosition']['width'].toString()) : this.position.paragraph.width;
                             paraWidth = HelperMethods.convertPixelToPoint(paraWidth * documentEditor.zoomFactor);
@@ -582,20 +582,20 @@ export class RulerHelper {
                                     tabStop.tabJustification = this.getTabJustification(dataNameValue);
                                     tabStop.deletePosition = 0;
                                     tabStop.tabLeader = 'None';
-                                    documentEditor.editor.onApplyParagraphFormat('tabStop', [tabStop], false, false);
+                                    documentEditor.editorModule.onApplyParagraphFormat('tabStop', [tabStop], false, false);
                                 } else if (dataNameValue == 'FirstLineIndent' || dataNameValue == 'HangingIndent') {
                                     let property = 'firstLineIndent';
                                     if (dataNameValue == 'HangingIndent') {
-                                        var initialValue = documentEditor.selection.paragraphFormat.firstLineIndent;
+                                        var initialValue = documentEditor.selectionModule.paragraphFormat.firstLineIndent;
                                         var differenceValue = mouseUpTabValue + initialValue;
-                                        var currentValue = documentEditor.selection.start.paragraph.paragraphFormat.firstLineIndent;
-                                        documentEditor.editor.onApplyParagraphFormat('firstLineIndent', currentValue - differenceValue, false, false);
-                                        var leftIndentCurrentValue = documentEditor.selection.start.paragraph.paragraphFormat.leftIndent + currentValue;
+                                        var currentValue = documentEditor.selectionModule.start.paragraph.paragraphFormat.firstLineIndent;
+                                        documentEditor.editorModule.onApplyParagraphFormat('firstLineIndent', currentValue - differenceValue, false, false);
+                                        var leftIndentCurrentValue = documentEditor.selectionModule.start.paragraph.paragraphFormat.leftIndent + currentValue;
                                         currentValue = currentValue - differenceValue;
-                                        documentEditor.editor.onApplyParagraphFormat('leftIndent', leftIndentCurrentValue - currentValue, false, false, true);
+                                        documentEditor.editorModule.onApplyParagraphFormat('leftIndent', leftIndentCurrentValue - currentValue, false, false, true);
                                     }
                                     else {
-                                        documentEditor.editor.onApplyParagraphFormat(property, mouseDownTabValue, false, false);
+                                        documentEditor.editorModule.onApplyParagraphFormat(property, mouseDownTabValue, false, false);
                                     }
                                 }
                             }
@@ -619,8 +619,8 @@ export class RulerHelper {
                     if (isLeftMultiColumn || isRightMultiColumn) {
                         let finalvalue: number = 0;
                         finalvalue = e.clientX - columnInitialValue;
-                        let secFormat: WSectionFormat = documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.cloneFormat();
-                        let pageWidth: number = documentEditor.selection.sectionFormat.pageWidth - documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin - documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin;
+                        let secFormat: WSectionFormat = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.cloneFormat();
+                        let pageWidth: number = documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin - documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin;
                         let columnSpace: number = isLeftMultiColumn ? (secFormat.columns[0].space + ((HelperMethods.convertPixelToPoint(finalvalue)))) : (secFormat.columns[0].space - ((HelperMethods.convertPixelToPoint(finalvalue))));
                         for (let i: number = 0; i < secFormat.columns.length; i++) {
                             let col: WColumnFormat = secFormat.columns[parseInt(i.toString(), 10)];
@@ -639,11 +639,11 @@ export class RulerHelper {
                         isRightMultiColumn = false;
                     } else if (isLeftRulerMargin) {
                         documentEditor.hRuler.startMargin = (mouseXRelativeToDiv / documentEditor.zoomFactor);
-                        documentEditor.selection.sectionFormat.leftMargin = mouseXRelativeToDiv / documentEditor.zoomFactor;
+                        documentEditor.selectionModule.sectionFormat.leftMargin = mouseXRelativeToDiv / documentEditor.zoomFactor;
                     } else {
                         const rightMargin = HelperMethods.convertPixelToPoint(rulerGeometry.width) - (mouseXRelativeToDiv / documentEditor.zoomFactor);
                         // documentEditor.hRuler.endMargin = rightMargin;
-                        documentEditor.selection.sectionFormat.rightMargin = rightMargin;
+                        documentEditor.selectionModule.sectionFormat.rightMargin = rightMargin;
                     }
 
                     resizerEnabled = false;
@@ -667,8 +667,8 @@ export class RulerHelper {
                     return;
                 }
                 const divRect = vRuler.getBoundingClientRect();
-                const topMargin = documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.topMargin * documentEditor.zoomFactor;
-                const bottomMargin = (HelperMethods.convertPixelToPoint(divRect.height) - documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor);
+                const topMargin = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin * documentEditor.zoomFactor;
+                const bottomMargin = (HelperMethods.convertPixelToPoint(divRect.height) - documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor);
                 const mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
                 let pixelValue: number = Math.round(e.clientY - divRect.top);
                 if (!isDragging) {
@@ -694,11 +694,11 @@ export class RulerHelper {
                 }
                 if (isDragging) {
                     let mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
-                    let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.topMargin) * documentEditor.zoomFactor;
-                    let pageHeight: number = documentEditor.selection.sectionFormat.pageHeight;
+                    let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.topMargin) * documentEditor.zoomFactor;
+                    let pageHeight: number = documentEditor.selectionModule.sectionFormat.pageHeight;
                     let minimumValue: number = 12;
-                    let bottomMarginValue: number = documentEditor.selection.sectionFormat.bottomMargin;
-                    let topMarginValue: number = documentEditor.selection.sectionFormat.topMargin;
+                    let bottomMarginValue: number = documentEditor.selectionModule.sectionFormat.bottomMargin;
+                    let topMarginValue: number = documentEditor.selectionModule.sectionFormat.topMargin;
                     if (isTopRulerMargin) {
                         let topMinLimit: number = rulerZeroPoint;
                         let topMaxLimit: number = rulerZeroPoint + (HelperMethods.convertPointToPixel(pageHeight - bottomMarginValue - minimumValue) * documentEditor.zoomFactor);
@@ -720,7 +720,7 @@ export class RulerHelper {
                             mouseXRelativeToDiv = HelperMethods.convertPixelToPoint(pixelValue);
                         }
                     }
-                    const currentBottomMargin = (HelperMethods.convertPixelToPoint(divRect.height) - (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor));
+                    const currentBottomMargin = (HelperMethods.convertPixelToPoint(divRect.height) - (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor));
                     this.resizeVRulerMargins(isTopRulerMargin, initialYValue, currentScrollTop, currentBottomMargin, vRuler, mouseXRelativeToDiv, documentEditor);
                     
                     let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.y * documentEditor.zoomFactor;
@@ -760,11 +760,11 @@ export class RulerHelper {
                     // updateRuler(documentEditor, documentEditor.hRuler, true);
                     if (isTopRulerMargin) {
                         documentEditor.vRuler.startMargin = (mouseXRelativeToDiv / documentEditor.zoomFactor);
-                        documentEditor.selection.sectionFormat.topMargin = mouseXRelativeToDiv / documentEditor.zoomFactor;
+                        documentEditor.selectionModule.sectionFormat.topMargin = mouseXRelativeToDiv / documentEditor.zoomFactor;
                     } else {
                         const bottomtMargin = HelperMethods.convertPixelToPoint(rulerGeometry.height) - (mouseXRelativeToDiv / documentEditor.zoomFactor);
                         documentEditor.vRuler.endMargin = bottomtMargin;
-                        documentEditor.selection.sectionFormat.bottomMargin = bottomtMargin;
+                        documentEditor.selectionModule.sectionFormat.bottomMargin = bottomtMargin;
                     }
 
                     resizerEnabled = false;
@@ -783,7 +783,7 @@ export class RulerHelper {
         isHorizontal ? documentEditor.hRuler.element = rulerObj : documentEditor.vRuler.element = rulerObj;
         if (rulerObj) {
             // Set the scrollLeft property to the desired value (e.g., 100 pixels)
-            rulerObj.scrollLeft = 2112 - HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin);
+            rulerObj.scrollLeft = 2112 - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin);
         }
     }
 
@@ -850,7 +850,7 @@ export class RulerHelper {
         }
         let indent: HTMLElement = undefined;
         let ownerId: string = documentEditor.element.id;
-        let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin);
+        let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin);
         let currentIndentValue: number;
         let finalValue: number;
         let currentMargin: number;
@@ -931,7 +931,7 @@ export class RulerHelper {
 
         let finalValueTemp: number;
         if (this.position.paragraph.paragraphFormat.bidi) {
-            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin - (documentEditor.selection.sectionFormat.pageWidth - documentEditor.selection.sectionFormat.leftMargin - documentEditor.selection.sectionFormat.rightMargin));
+            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin));
         }
         let leftIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_leftIndent');
         let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
@@ -1057,7 +1057,9 @@ export class RulerHelper {
                 }
             }
             else {
-                this.renderTab(documentEditor, rulerSize, tabStop, justification, i, locale);
+                if (justification !== "List") {
+                    this.renderTab(documentEditor, rulerSize, tabStop, justification, i, locale);
+                }
             }
         }
         if (!isNullOrUndefined(RenderedTabElement)) {
@@ -1072,22 +1074,22 @@ export class RulerHelper {
     private renderRulerMargins(documentEditor: DocumentEditor, isHorizontal: boolean, rulerContainer: HTMLElement): void {
         const rulerSize: Size = this.getRulerSize(documentEditor);
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
-        const height: number = isHorizontal ? documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.x
-            : (documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.y + rulerSize.height);
+        const height: number = isHorizontal ? documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.x
+            : (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.y + rulerSize.height);
         // const margin: string = isHorizontal ? ('margin-left:' + height + 'px;') : ('margin-top:' + height + 'px;');
 
         //const leftMarginValue = 2112 - (HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin));
         const leftMarginValue = 2112 * documentEditor.zoomFactor;
         let rulerMarginDiv: HTMLElement;
         const rulerMargin: string = isHorizontal ? ('margin-left:' + leftMarginValue + 'px;') : ('margin-top:' + leftMarginValue + 'px;');
-        const rulerHeight = (isHorizontal ? rulerSize.height : (rulerGeometry.height - (HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.topMargin + documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.bottomMargin) * documentEditor.zoomFactor)));
+        const rulerHeight = (isHorizontal ? rulerSize.height : (rulerGeometry.height - (HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin + documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin) * documentEditor.zoomFactor)));
         // const rulerHeight =  (isHorizontal ? rulerSize.height : rulerGeometry.height);
         if (isHorizontal) {
             for (let i: number = 1; i <= 13; i++) {
                 rulerMarginDiv = document.getElementById(documentEditor.element.id + '_hRuler_Margin' + i);
                 if (!rulerMarginDiv) {
                     const rulerstyle: string = 'height:' + rulerHeight + 'px;overflow:hidden;width:' +
-                        (rulerGeometry.width - (HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin + documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin) * documentEditor.zoomFactor)) + 'px;position:absolute;' + 'font-size:9px;text-align: left;z-index: -1;display: block' + rulerMargin;
+                        (rulerGeometry.width - (HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin + documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin) * documentEditor.zoomFactor)) + 'px;position:absolute;' + 'font-size:9px;text-align: left;z-index: -1;display: block' + rulerMargin;
                     const rulerattributes: Object = {
                         'id': documentEditor.element.id + '_hRuler_Margin' + i,
                         style: rulerstyle,
@@ -1117,23 +1119,23 @@ export class RulerHelper {
         const leftMarginValue = (documentEditor.hRuler.zeroPosition) * documentEditor.zoomFactor;
         this.updateHorizontalRulerMargin(documentEditor);
         let verticalRulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_Margin');
-        const rulerMarginDivHeight = rulerGeometry.height - (HelperMethods.convertPointToPixel((documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor) + (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.topMargin * documentEditor.zoomFactor)));
+        const rulerMarginDivHeight = rulerGeometry.height - (HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor) + (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin * documentEditor.zoomFactor)));
         verticalRulerMarginDiv.style.marginTop = leftMarginValue + "px";
         verticalRulerMarginDiv.style.height = rulerMarginDivHeight + "px";
     }
 
     private updateHorizontalRulerMargin(documentEditor: DocumentEditor): void {
-        let columns: WColumnFormat[] = documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.columns;
+        let columns: WColumnFormat[] = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns;
         let leftMarginValue: number = (documentEditor.hRuler.zeroPosition) * documentEditor.zoomFactor;
         let skipLoop: boolean = false;
         let paraBidi: boolean = this.position.paragraph.paragraphFormat.bidi;
         let tableBidi: boolean = false;
-        let currnLefttMargin: number = HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin - 72);
-        let currentRightMargin: number = HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin - 72);
+        let currnLefttMargin: number = HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin - 72);
+        let currentRightMargin: number = HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin - 72);
         if (this.position.paragraph.isInsideTable) {
             tableBidi = this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi;
         }
-        const rulerMarginDivWidth = (this.getRulerGeometry(documentEditor).width - (HelperMethods.convertPointToPixel((documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor) + (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor))));
+        const rulerMarginDivWidth = (this.getRulerGeometry(documentEditor).width - (HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor) + (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor))));
         if (paraBidi || tableBidi) {
             leftMarginValue = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - rulerMarginDivWidth;
         }
@@ -1178,7 +1180,7 @@ export class RulerHelper {
         let rulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler_Margin');
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
         if (isRulerTopMargin) {
-            rulerMarginDiv.style.height = (rulerGeometry.height - HelperMethods.convertPointToPixel((documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor) + mousePosition)).toString() + "px";
+            rulerMarginDiv.style.height = (rulerGeometry.height - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor) + mousePosition)).toString() + "px";
 
             if (currentTopMargin < mousePosition) {
                 ruler.scrollTop = currentScrollTop - HelperMethods.convertPointToPixel(mousePosition - currentTopMargin);
@@ -1187,7 +1189,7 @@ export class RulerHelper {
             }
         } else {
             const bottomMargin = HelperMethods.convertPixelToPoint(rulerGeometry.height) - mousePosition;
-            rulerMarginDiv.style.height = (rulerGeometry.height - HelperMethods.convertPointToPixel((documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.topMargin * documentEditor.zoomFactor) + (bottomMargin))).toString() + "px";
+            rulerMarginDiv.style.height = (rulerGeometry.height - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin * documentEditor.zoomFactor) + (bottomMargin))).toString() + "px";
 
             if (currentBottomMargin < mousePosition) {
                 //  ruler.scrollLeft = currentScrollLeft - HelperMethods.convertPointToPixel(mousePosition - currentRightMargin);
@@ -1201,7 +1203,7 @@ export class RulerHelper {
         let rulerMarginDiv: HTMLElement = document.getElementById(documentEditor.element.id + (isHorizontal ? '_hRuler_Margin1' : '_vRuler_Margin'));
         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
         if (!isNullOrUndefined(isRulerLeftMargin) && isRulerLeftMargin) {
-            rulerMarginDiv.style.width = (rulerGeometry.width - HelperMethods.convertPointToPixel((documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor) + mousePosition)).toString() + "px";
+            rulerMarginDiv.style.width = (rulerGeometry.width - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor) + mousePosition)).toString() + "px";
 
             if (currentLeftMargin < mousePosition) {
                 ruler.scrollLeft = currentScrollLeft - HelperMethods.convertPointToPixel(mousePosition - currentLeftMargin);
@@ -1210,7 +1212,7 @@ export class RulerHelper {
             }
         } else {
             const rightMargin = HelperMethods.convertPixelToPoint(rulerGeometry.width) - mousePosition;
-            rulerMarginDiv.style.width = (rulerGeometry.width - HelperMethods.convertPointToPixel((documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor) + (rightMargin))).toString() + "px";
+            rulerMarginDiv.style.width = (rulerGeometry.width - HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor) + (rightMargin))).toString() + "px";
 
             if (currentRightMargin < mousePosition) {
                 //  ruler.scrollLeft = currentScrollLeft - HelperMethods.convertPointToPixel(mousePosition - currentRightMargin);
@@ -1232,7 +1234,7 @@ export class RulerHelper {
         let hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
         let firstLineIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_firstLineIndent');
         if (!firstLineIndent) {
-            const margin: string = ('left:' + (HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin) - 6) * documentEditor.zoomFactor + 'px;');
+            const margin: string = ('left:' + (HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin) - 6) * documentEditor.zoomFactor + 'px;');
             const style: string = 'height:' + ((rulerSize.height - 3) / 2) + 'px;overflow:hidden;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 5;' + margin;
             const attributes: Object = {
                 'id': documentEditor.element.id + '_firstLineIndent',
@@ -1284,13 +1286,13 @@ export class RulerHelper {
                 isDragging = true;
                 firstLineOffset = e.clientX - firstLineIndent.getBoundingClientRect().left;
                 initialValue = HelperMethods.getNumberFromString(firstLineIndent.style.left);
-                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
-                if (documentEditor.selection.paragraphFormat.bidi) {
-                    rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin - (documentEditor.selection.sectionFormat.pageWidth - documentEditor.selection.sectionFormat.leftMargin - documentEditor.selection.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                if (documentEditor.selectionModule.paragraphFormat.bidi) {
+                    rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                 }
                 if (documentEditor.layoutType === 'Continuous') {
                     rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
-                    if (documentEditor.selection.paragraphFormat.bidi) {
+                    if (documentEditor.selectionModule.paragraphFormat.bidi) {
                         rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
                     }
                 }
@@ -1312,12 +1314,12 @@ export class RulerHelper {
                     let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
                     let rightIndentValue: number = HelperMethods.getNumberFromString(rightIndent.style.left);
                     if (documentEditor.layoutType === 'Pages') {
-                        if (documentEditor.selection.paragraphFormat.bidi) {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin - (documentEditor.selection.sectionFormat.pageWidth - documentEditor.selection.sectionFormat.leftMargin - documentEditor.selection.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
-                            maxValue = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(documentEditor.selection.sectionFormat.pageWidth) * documentEditor.zoomFactor);
+                        if (documentEditor.selectionModule.paragraphFormat.bidi) {
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                            maxValue = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor);
                             minValue = rightIndentValue + HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor;
                         } else {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                             minValue = rulerZeroPoint - 6;
                             maxValue = rightIndentValue - HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor;
                         }
@@ -1354,10 +1356,10 @@ export class RulerHelper {
                     if (parseInt(firstLineIndent.style.left.replace('px', '')) < 0) {
                         finalValue *= -1;
                     }
-                    if (documentEditor.selection.paragraphFormat.bidi) {
-                        documentEditor.editor.applyRulerMarkerValues('firstLineIndent', finalValue, initialValue);
+                    if (documentEditor.selectionModule.paragraphFormat.bidi) {
+                        documentEditor.editorModule.applyRulerMarkerValues('firstLineIndent', finalValue, initialValue);
                     } else {
-                        documentEditor.editor.applyRulerMarkerValues('firstLineIndent', initialValue, finalValue);
+                        documentEditor.editorModule.applyRulerMarkerValues('firstLineIndent', initialValue, finalValue);
                     }
                     initialValue = finalValue;
                     let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
@@ -1369,7 +1371,7 @@ export class RulerHelper {
         //Rendering HangingIndent
         let hangingIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_hangingIndent');
         if (!hangingIndent) {
-            const margin: string = ('left:' + (HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin) - 6) + 'px;');
+            const margin: string = ('left:' + (HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin) - 6) + 'px;');
             const style: string = 'height:' + (rulerSize.height / 2) + 'px;top:' + (((rulerSize.height - 3) / 2) + 1) + 'px;overflow:hidden;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 5;' + margin;
             const attributes: Object = {
                 'id': documentEditor.element.id + '_hangingIndent',
@@ -1429,12 +1431,12 @@ export class RulerHelper {
                 let rightPosition: number = HelperMethods.getNumberFromString(rightIndent.style.left);
                 let rulerZeroPoint: number;
                 if (documentEditor.layoutType === 'Pages') {
-                    if (documentEditor.selection.paragraphFormat.bidi) {
-                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin - (documentEditor.selection.sectionFormat.pageWidth - documentEditor.selection.sectionFormat.leftMargin - documentEditor.selection.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                    if (documentEditor.selectionModule.paragraphFormat.bidi) {
+                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                         minLimit = rightPosition + (HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
-                        maxLimit = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(documentEditor.selection.sectionFormat.pageWidth) * documentEditor.zoomFactor);
+                        maxLimit = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor);
                     } else {
-                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                         minLimit = rulerZeroPoint - 6;
                         maxLimit = (rightPosition - HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
                     }
@@ -1464,10 +1466,10 @@ export class RulerHelper {
                 if (isDragging) {
                     let rulerZeroPoint: number;
                     if (documentEditor.layoutType === 'Pages') {
-                        if (documentEditor.selection.paragraphFormat.bidi) {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin - (documentEditor.selection.sectionFormat.pageWidth - documentEditor.selection.sectionFormat.leftMargin - documentEditor.selection.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                        if (documentEditor.selectionModule.paragraphFormat.bidi) {
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                         } else {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                         }
                     } else if (documentEditor.layoutType === 'Continuous') {
                         if (this.position.paragraph.paragraphFormat.bidi) {
@@ -1499,10 +1501,10 @@ export class RulerHelper {
                     if (parseInt(hangingIndent.style.left.replace('px', '')) < 0) {
                         finalValue *= -1;
                     }
-                    if (documentEditor.selection.paragraphFormat.bidi) {
-                        documentEditor.editor.applyRulerMarkerValues('hangingIndent', finalValue, initialValue);
+                    if (documentEditor.selectionModule.paragraphFormat.bidi) {
+                        documentEditor.editorModule.applyRulerMarkerValues('hangingIndent', finalValue, initialValue);
                     } else {
-                        documentEditor.editor.applyRulerMarkerValues('hangingIndent', initialValue, finalValue);
+                        documentEditor.editorModule.applyRulerMarkerValues('hangingIndent', initialValue, finalValue);
                     }
                     initialValue = finalValue;
                     let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
@@ -1514,7 +1516,7 @@ export class RulerHelper {
         //Rendering LeftIndent
         let leftIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_leftIndent');
         if (!leftIndent) {
-            const margin: string = ('left:' + (HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin) - 6) + 'px;');
+            const margin: string = ('left:' + (HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin) - 6) + 'px;');
             const style: string = 'height:4px;top:11px;overflow:hidden;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 5;' + margin;
             const attributes: Object = {
                 'id': documentEditor.element.id + '_leftIndent',
@@ -1579,13 +1581,13 @@ export class RulerHelper {
                 let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
                 let rightPosition: number = HelperMethods.getNumberFromString(rightIndent.style.left);
                 if (documentEditor.layoutType === 'Pages') {
-                    if (documentEditor.selection.paragraphFormat.bidi) {
-                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin - (documentEditor.selection.sectionFormat.pageWidth - documentEditor.selection.sectionFormat.leftMargin - documentEditor.selection.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                    if (documentEditor.selectionModule.paragraphFormat.bidi) {
+                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                         minLimit = (rightPosition + HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
-                        maxLimit = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(documentEditor.selection.sectionFormat.pageWidth) * documentEditor.zoomFactor);
+                        maxLimit = rulerZeroPoint - 6 + (HelperMethods.convertPointToPixel(documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor);
                         isHangingIndent = (HelperMethods.getNumberFromString(hangingIndent.style.left) - rightPosition) <= (HelperMethods.getNumberFromString(firstLineIndent.style.left) - rightPosition);
                     } else {
-                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                         minLimit = rulerZeroPoint - 6;
                         maxLimit = (rightPosition - HelperMethods.convertPointToPixel(42) * documentEditor.zoomFactor);
                         isHangingIndent = (rightPosition - HelperMethods.getNumberFromString(hangingIndent.style.left)) <= (rightPosition - HelperMethods.getNumberFromString(firstLineIndent.style.left));
@@ -1617,9 +1619,9 @@ export class RulerHelper {
                 if (isDragging) {
                     let rulerZeroPoint: number;
                     let value: number;
-                    if (documentEditor.selection.paragraphFormat.bidi) {
+                    if (documentEditor.selectionModule.paragraphFormat.bidi) {
                         if (documentEditor.layoutType === 'Pages') {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin - (documentEditor.selection.sectionFormat.pageWidth - documentEditor.selection.sectionFormat.leftMargin - documentEditor.selection.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                         } else if (documentEditor.layoutType === 'Continuous') {
                             rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
                         }
@@ -1644,7 +1646,7 @@ export class RulerHelper {
                         }
                     } else {
                         if (documentEditor.layoutType === 'Pages') {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                         } else if (documentEditor.layoutType === 'Continuous') {
                             rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
                         }
@@ -1686,10 +1688,10 @@ export class RulerHelper {
                     if (parseInt(leftIndent.style.left.replace('px', '')) < 0) {
                         finalValue *= -1;
                     }
-                    if (documentEditor.selection.paragraphFormat.bidi) {
-                        documentEditor.editor.applyRulerMarkerValues('leftIndent', finalValue, initialValue);
+                    if (documentEditor.selectionModule.paragraphFormat.bidi) {
+                        documentEditor.editorModule.applyRulerMarkerValues('leftIndent', finalValue, initialValue);
                     } else {
-                        documentEditor.editor.applyRulerMarkerValues('leftIndent', initialValue, finalValue);
+                        documentEditor.editorModule.applyRulerMarkerValues('leftIndent', initialValue, finalValue);
                     }
                     initialValue = finalValue;
                     let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
@@ -1700,7 +1702,7 @@ export class RulerHelper {
         //Rendering RightIndent
         let rightIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_rightIndent');
         if (!rightIndent) {
-            const margin: string = ('left:' + (documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.width - HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin) - 6) + 'px;');
+            const margin: string = ('left:' + (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.width - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin) - 6) + 'px;');
             const style: string = 'height:7px;top:8px;overflow:hidden;width:12px;position:absolute;font-size:11px;text-align: left;z-index: 4;' + margin;
             const attributes: Object = {
                 'id': documentEditor.element.id + '_rightIndent',
@@ -1752,13 +1754,13 @@ export class RulerHelper {
                 isDragging = true;
                 rightLineOffset = e.clientX - rightIndent.getBoundingClientRect().left;
                 initialValue = HelperMethods.getNumberFromString(rightIndent.style.left);
-                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
-                if (documentEditor.selection.paragraphFormat.bidi) {
-                    rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin - (documentEditor.selection.sectionFormat.pageWidth - documentEditor.selection.sectionFormat.leftMargin - documentEditor.selection.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                if (documentEditor.selectionModule.paragraphFormat.bidi) {
+                    rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                 }
                 if (documentEditor.layoutType === 'Continuous') {
                     rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
-                    if (documentEditor.selection.paragraphFormat.bidi) {
+                    if (documentEditor.selectionModule.paragraphFormat.bidi) {
                         rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                     }
                 }
@@ -1780,9 +1782,9 @@ export class RulerHelper {
                     let firstLineIndent: HTMLElement = document.getElementById(documentEditor.element.id + '_firstLineIndent');
                     let maxValue: number;
                     let minValue: number;
-                    if (documentEditor.selection.paragraphFormat.bidi) {
+                    if (documentEditor.selectionModule.paragraphFormat.bidi) {
                         if (documentEditor.layoutType === 'Pages') {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin - (documentEditor.selection.sectionFormat.pageWidth - documentEditor.selection.sectionFormat.leftMargin - documentEditor.selection.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin - (documentEditor.selectionModule.sectionFormat.pageWidth - documentEditor.selectionModule.sectionFormat.leftMargin - documentEditor.selectionModule.sectionFormat.rightMargin)) * documentEditor.zoomFactor;
                         } else if (documentEditor.layoutType === 'Continuous') {
                             rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width  * documentEditor.zoomFactor);
                         }
@@ -1793,7 +1795,7 @@ export class RulerHelper {
                         minValue = rulerZeroPoint - 6;
                     } else {
                         if (documentEditor.layoutType === 'Pages') {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                         } else if (documentEditor.layoutType === 'Continuous') {
                             rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
                         }
@@ -1821,10 +1823,10 @@ export class RulerHelper {
                 if (isDragging) {
                     isDragging = false;
                     let finalValue: number = HelperMethods.getNumberFromString(rightIndent.style.left);
-                    if (documentEditor.selection.paragraphFormat.bidi) {
-                        documentEditor.editor.applyRulerMarkerValues('rightIndent', initialValue, finalValue);
+                    if (documentEditor.selectionModule.paragraphFormat.bidi) {
+                        documentEditor.editorModule.applyRulerMarkerValues('rightIndent', initialValue, finalValue);
                     } else {
-                        documentEditor.editor.applyRulerMarkerValues('rightIndent', finalValue, initialValue);
+                        documentEditor.editorModule.applyRulerMarkerValues('rightIndent', finalValue, initialValue);
                     }
                     initialValue = finalValue;
                     let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
@@ -1854,10 +1856,10 @@ export class RulerHelper {
         if (isNullOrUndefined(documentEditor.hRuler) && isNullOrUndefined(documentEditor.vRuler)) {
             return;
         }
-        if (documentEditor.selection.isForward) {
-            this.position = documentEditor.selection.start;
+        if (documentEditor.selectionModule.isForward) {
+            this.position = documentEditor.selectionModule.start;
         } else {
-            this.position = documentEditor.selection.end;
+            this.position = documentEditor.selectionModule.end;
         }
         this.updateRulerDimension(documentEditor, documentEditor.hRuler, hOffset, rerenderRuler);
         this.updateRulerDimension(documentEditor, documentEditor.vRuler, hOffset, rerenderRuler);
@@ -1981,15 +1983,15 @@ export class RulerHelper {
                     const value = parts[parts.length - 1];
                     currentMarkerPostion = parseInt(value);
                 }
-                const tableWidget: TableWidget = ((documentEditor.selection.end.paragraph.containerWidget as TableCellWidget).ownerTable as TableWidget)
+                const tableWidget: TableWidget = ((documentEditor.selectionModule.end.paragraph.containerWidget as TableCellWidget).ownerTable as TableWidget)
                 documentEditor.editorModule.tableResize.currentResizingTable = tableWidget;
                 documentEditor.editorModule.tableResize.resizeNode = 0;
                 documentEditor.editorModule.tableResize.resizerPosition = currentMarkerPostion;
                 documentEditor.editorModule.tableResize.startingPoint.x = touchPoint.x;
                 documentEditor.editorModule.tableResize.startingPoint.y = touchPoint.y;
-                documentEditor.editorHistory.initResizingHistory(touchPoint, documentEditor.editorModule.tableResize);
+                documentEditor.editorHistoryModule.initResizingHistory(touchPoint, documentEditor.editorModule.tableResize);
 
-                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
                 let value: number = rulerZeroPoint + e.clientX - tableMarkerOffset - hRuler.getBoundingClientRect().left;
                 let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.x;
                 let indicatorLineValue: number = startValue + (value - rulerZeroPoint) + 6;
@@ -2003,10 +2005,10 @@ export class RulerHelper {
                 }
                 if (documentEditor.isTableMarkerDragging) {
                     let hRuler: HTMLElement = document.getElementById(documentEditor.element.id + '_hRuler');
-                    let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin) * documentEditor.zoomFactor;
-                    if (documentEditor.selection.end.paragraph.associatedCell.ownerTable.tableFormat.bidi) {
+                    let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin) * documentEditor.zoomFactor;
+                    if (documentEditor.selectionModule.end.paragraph.associatedCell.ownerTable.tableFormat.bidi) {
                         const rulerGeometry: Size = this.getRulerGeometry(documentEditor);
-                        const rulerMarginDivWidth = (rulerGeometry.width - (HelperMethods.convertPointToPixel((documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor) + (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor))));
+                        const rulerMarginDivWidth = (rulerGeometry.width - (HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor) + (documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin * documentEditor.zoomFactor))));
                         rulerZeroPoint -= rulerMarginDivWidth;
                     }
                     let value: number = rulerZeroPoint + e.clientX - tableMarkerOffset - hRuler.getBoundingClientRect().left;
@@ -2058,10 +2060,10 @@ export class RulerHelper {
         ruler.length = documentEditor.zoomFactor < 1 ? ((ruler.zeroPosition * 2) / documentEditor.zoomFactor) : ((ruler.zeroPosition * 2) * documentEditor.zoomFactor);
         const rulerObj: HTMLElement = ruler.element;
         if (isHorizontal) {
-            rulerObj.style.marginLeft = (documentEditor.layoutType === 'Pages' ? documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.x : 0) + 'px';
+            rulerObj.style.marginLeft = (documentEditor.layoutType === 'Pages' ? documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.x : 0) + 'px';
         } else {
             rulerObj.parentElement.style.display = documentEditor.layoutType === 'Pages' ? 'block' : 'none';
-            rulerObj.style.marginTop = documentEditor.selection.getPageTop(documentEditor.selection.end.paragraph.bodyWidget.page) + 'px';
+            rulerObj.style.marginTop = documentEditor.selectionModule.getPageTop(documentEditor.selectionModule.end.paragraph.bodyWidget.page) + 'px';
         }
         if (rerenderRuler) {
             ruler.offset = offset;
@@ -2081,10 +2083,10 @@ export class RulerHelper {
                     tableBidi = this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi;
                 }
                 if (paraBidi || tableBidi) {
-                    const rulerMarginDivWidth = (rulerGeometry.width - (HelperMethods.convertPointToPixel((documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor))));
+                    const rulerMarginDivWidth = (rulerGeometry.width - (HelperMethods.convertPointToPixel((documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * documentEditor.zoomFactor))));
                     rulerObj.scrollLeft = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - rulerMarginDivWidth;
                 } else {
-                    rulerObj.scrollLeft = (ruler.zeroPosition - HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin)) * documentEditor.zoomFactor;
+                    rulerObj.scrollLeft = (ruler.zeroPosition - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin)) * documentEditor.zoomFactor;
                 }
             } else {
                 let paraBidi: boolean = this.position.paragraph.paragraphFormat.bidi;
@@ -2101,7 +2103,7 @@ export class RulerHelper {
                 }
             }
         } else {
-            rulerObj.scrollTop = (ruler.zeroPosition - HelperMethods.convertPointToPixel(documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.topMargin)) * documentEditor.zoomFactor;
+            rulerObj.scrollTop = (ruler.zeroPosition - HelperMethods.convertPointToPixel(documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin)) * documentEditor.zoomFactor;
         }
     }
 
@@ -2167,13 +2169,13 @@ export class RulerHelper {
      */
     private getRulerGeometry(documentEditor: DocumentEditor): Size {
         const rulerSize: Size = this.getRulerSize(documentEditor);
-        let height: number = (documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.height * documentEditor.zoomFactor);
-        let width: number = (documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.width * documentEditor.zoomFactor);
+        let height: number = (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.height * documentEditor.zoomFactor);
+        let width: number = (documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.width * documentEditor.zoomFactor);
         return new Size(width, height);
     }
 
     private getVerticalHeight(documentEditor: DocumentEditor): number {
-        let pageheight: number = HelperMethods.convertPixelToPoint(documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.height);
+        let pageheight: number = HelperMethods.convertPixelToPoint(documentEditor.selectionModule.end.paragraph.bodyWidget.page.boundingRectangle.height);
         let containerHeight: number = documentEditor.element.getBoundingClientRect().height;
         if (pageheight < containerHeight) {
             return pageheight;
@@ -2424,7 +2426,7 @@ export class RulerHelper {
                 tabIndex = parseInt(tabStopElement.id.split('_')[3]);
                 currentTabStop = currrentParagraph.paragraphFormat.tabs[parseInt(tabIndex.toString(), 10)];
                 this.currentTabStopElement = tabStopElement;
-                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin)
+                let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin)
                  * documentEditor.zoomFactor;
                 if (documentEditor.layoutType === 'Continuous') {
                     rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20;
@@ -2455,10 +2457,10 @@ export class RulerHelper {
                             rulerZeroPoint = (documentEditor.hRuler.zeroPosition * documentEditor.zoomFactor) - 20 - (documentEditor.viewer.clientArea.width * documentEditor.zoomFactor);
                         }
                     } else if (documentEditor.layoutType === 'Pages') {
-                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selection.sectionFormat.leftMargin)
+                        rulerZeroPoint = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin)
                             * documentEditor.zoomFactor;
                         if (this.position.paragraph.bidi) {
-                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 + documentEditor.selection.sectionFormat.rightMargin - documentEditor.selection.sectionFormat.pageWidth) * documentEditor.zoomFactor;
+                            rulerZeroPoint = HelperMethods.convertPointToPixel(1584 + documentEditor.selectionModule.sectionFormat.rightMargin - documentEditor.selectionModule.sectionFormat.pageWidth) * documentEditor.zoomFactor;
                         }
                     }
                     let value: number = rulerZeroPoint + e.clientX - tabStopOffset - hRuler.getBoundingClientRect().left;
@@ -2499,16 +2501,16 @@ export class RulerHelper {
             document.addEventListener("mouseup", () => {
                 if (isDragging && !isNullOrUndefined(currentTabStop)) {
                     if (!isNullOrUndefined(this.currentTabStopElement) && this.currentTabStopElement.style.display == 'none') {
-                        documentEditor.editor.removeTabStops([currrentParagraph], [currentTabStop]);
+                        documentEditor.editorModule.removeTabStops([currrentParagraph], [currentTabStop]);
                         this.currentTabStopElement.parentNode.removeChild(this.currentTabStopElement);
                     } else {
                         let finalValue: number = HelperMethods.getNumberFromString(tabStopElement.style.left);
                         initialValue = finalValue;
-                        documentEditor.editor.removeTabStops([currrentParagraph], [currentTabStop]);
+                        documentEditor.editorModule.removeTabStops([currrentParagraph], [currentTabStop]);
                         finalValue = HelperMethods.convertPixelToPoint(finalValue / documentEditor.zoomFactor) - 1584;
                         finalValue = currrentParagraph.paragraphFormat.bidi? finalValue * -1 : finalValue;
                         currentTabStop.position = finalValue;
-                        documentEditor.editor.updateTabStopCollection(currrentParagraph, [currentTabStop]);
+                        documentEditor.editorModule.updateTabStopCollection(currrentParagraph, [currentTabStop]);
                     }
                     this.updateTabStopMarkers(documentEditor);
                     isDragging = false;
@@ -2523,11 +2525,11 @@ export class RulerHelper {
 
     public updateMargin(ruler: Ruler, documentEditor: DocumentEditor, isHorizontal: boolean): void {
         if (isHorizontal) {
-            ruler.startMargin = documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.leftMargin;
-            ruler.endMargin = documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.rightMargin;
+            ruler.startMargin = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin;
+            ruler.endMargin = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin;
         } else {
-            ruler.startMargin = documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.topMargin;
-            ruler.endMargin = documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.bottomMargin;
+            ruler.startMargin = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.topMargin;
+            ruler.endMargin = documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin;
         }
     }
 

@@ -519,17 +519,22 @@ export class BordersAndShadingDialog {
             htmlAttributes:{'aria-labelledby':localeValue.getConstant('Apply To')}
         });
         this.ulelementShading.appendTo(ulelementShading);
+        const {columns , createPopupOnClick , cssClass , disabled , enablePersistence , inline , mode , modeSwitcher , noColor , presetColors , showButtons } = this.documentHelper.owner.documentEditorSettings.colorPickerSettings;
         this.borderColorPicker = new ColorPicker({
             value: '#000000', change: this.applyPreviewTableBorderColor,
             enableRtl: isRtl, locale: this.documentHelper.owner.locale, cssClass: 'e-de-dlg-clr-picker',
-            enableOpacity: false
+            enableOpacity: false,
+            mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick, disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors
         });
+        this.documentHelper.borderColorPicker = this.borderColorPicker;
         this.borderColorPicker.appendTo(borderColorPickerElement);
         this.shadingColorPicker = new ColorPicker({
             value: '#FFFFFF', change: this.applyPreviewTableBackgroundColor,
             enableRtl: isRtl, locale: this.documentHelper.owner.locale, cssClass: 'e-de-dlg-clr-picker',
-            enableOpacity: false
+            enableOpacity: false,
+            mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick, disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors
         });
+        this.documentHelper.shadingColorPicker = this.shadingColorPicker;
         this.shadingColorPicker.appendTo(shadingColorPickerElement);
         if (isRtl) {
             label.classList.add('e-de-rtl');
@@ -598,7 +603,7 @@ export class BordersAndShadingDialog {
             if (tablePropertiesDialog) {
                 tablePropertiesDialog.isTableBordersAndShadingUpdated = true;
             }
-            const currentTableFormat: WTableFormat = this.documentHelper.owner.selection.tableFormat.table.tableFormat;
+            const currentTableFormat: WTableFormat = this.documentHelper.owner.selectionModule.tableFormat.table.tableFormat;
             this.tableFormat.copyFormat(currentTableFormat);
             this.tableFormat.borders = new WBorders();
             if (!isNullOrUndefined(borders)) {
@@ -636,8 +641,13 @@ export class BordersAndShadingDialog {
             } else if (this.ulelementShading.value === 'Table') {
                 editorModule.onTableFormat(this.tableFormat, true);
             }
-            if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
-                this.documentHelper.owner.editorHistory.updateComplexHistory();
+            if (!isNullOrUndefined(this.documentHelper.owner.editorHistoryModule.currentHistoryInfo)) {
+                this.documentHelper.owner.editorHistoryModule.updateComplexHistory();
+            }
+            if (this.ulelementShading.value === 'Cell') {
+                editorModule.isCellFormatApplied = true;
+            } else {
+                editorModule.isCellFormatApplied = false;
             }
         }
         if (this.ulelementShading.value === 'Cell') {

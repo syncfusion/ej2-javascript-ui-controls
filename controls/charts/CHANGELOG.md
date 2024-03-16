@@ -2,6 +2,45 @@
 
 ## [Unreleased]
 
+## 25.1.35 (2024-03-15)
+
+### Chart
+
+#### Features
+
+- `#I528518` - Now, it is possible to specify the dasharray for all types of striplines border, including vertical, horizontal, and segmented, in the chart.
+
+### 3DCircularChart
+
+The 3D Circular Chart provides a graphical representation of data in three dimensions, with each slice's size indicating its proportion relative to the entire dataset. Unlike traditional 2D charts, 3D charts add depth to visualization, providing a better understanding of data patterns.
+
+- **Series**: The 3D Circular Chart can plot pie and donut types.
+- **Data binding**: Bind the 3D Circular Chart component with an array of JSON objects or a data manager. In addition to chart series, data labels and tooltips can also be bound to the data.
+- **Data labels**: Annotate points with labels to improve the readability of data.
+- **Legends**: Provide additional information about points in a customizable and interactive legend.
+- **User interaction**: Add interactive features such as tooltips, rotation, tilt, data point highlight and selection.
+- **Print and Export**: Print a 3D Circular Chart directly from the browser and export it in JPEG and PNG formats.
+- **RTL**: The right-to-left mode aligns tooltips, legends, and data in the 3D Circular Chart component from right to left.
+
+## 24.2.9 (2024-03-05)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I558392` - Now the line color of the Pareto chart is stable when toggling the legend.
+- `#I558247` - Now sorting is working in the Pareto chart.
+- `#I557017` - Now the column is rendered properly when a corner radius is used.
+
+## 24.2.8 (2024-02-27)
+
+### Chart
+
+#### Bug Fixes
+
+- `#T553171` - Now the center label is aligned properly when increasing the font size.
+- `#I548552` - The y-axis now dynamically changes based on the current visible points when zooming.
+
 ## 24.2.7 (2024-02-20)
 
 ### Chart

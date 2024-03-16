@@ -1,4 +1,5 @@
 import { Property, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
+import { SortComparer } from '../base/interface';
 
 /**
  * Defines alignments of text, they are
@@ -138,6 +139,17 @@ export class Column extends ChildProperty<Column> {
      */
     @Property(null)
     public template: string | Function;
+
+    /**
+     * Defines the custom sort comparer function.
+     * The sort comparer function has the same functionality like
+     * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
+     * 
+     * @default null
+     * @aspType string
+     */
+    @Property(null)
+    public sortComparer: SortComparer | string;
 
     /**
      * Defines the column template as string or HTML element ID which is used to add customized element in the column header.

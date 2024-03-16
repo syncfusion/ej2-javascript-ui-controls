@@ -170,7 +170,7 @@ export class TextSearch {
                     }
                     const offset: number = (span.line).getOffset(span, index);
                     result.start = this.getTextPosition(span.line, offset.toString());
-                    result.start.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
+                    result.start.location = this.owner.selectionModule.getPhysicalPositionInternal(span.line, offset, true);
                     result.start.setPositionParagraph(span.line, offset);
                 }
                 if (match.index + match[0].length <= startIndex + spanLength) {
@@ -181,7 +181,7 @@ export class TextSearch {
                     }
                     const offset: number = (span.line).getOffset(span, index);
                     result.end = this.getTextPosition(span.line, offset.toString());
-                    result.end.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
+                    result.end.location = this.owner.selectionModule.getPhysicalPositionInternal(span.line, offset, true);
                     result.end.setPositionParagraph(span.line, offset);
                     isMatched = true;
                     break;
@@ -210,14 +210,14 @@ export class TextSearch {
         let inline: ElementBox = undefined;
         let selectionEnd: TextPosition = undefined;
         if (hierachicalPosition !== undefined) {
-            selectionEnd = this.owner.selection.end;
+            selectionEnd = this.owner.selectionModule.end;
         }
         if (hierachicalPosition !== undefined && isFirstMatch && selectionEnd !== undefined && selectionEnd.paragraph !== undefined) {
             if (selectionEnd.paragraph instanceof ParagraphWidget) {
                 let indexInInline: number = 0;
                 // IndexInInline Handled specifically for simple find operation to start from starting point
                 /* eslint-disable-next-line max-len */
-                const inlineElement: ElementInfo = (selectionEnd.currentWidget as LineWidget).getInline(this.owner.selection.start.offset, indexInInline);
+                const inlineElement: ElementInfo = (selectionEnd.currentWidget as LineWidget).getInline(this.owner.selectionModule.start.offset, indexInInline);
                 inline = inlineElement.element as ElementBox;
                 indexInInline = inlineElement.index;
                 if (!isNullOrUndefined(inline)) {
@@ -226,7 +226,7 @@ export class TextSearch {
                     while (results.length === 0 && !isNullOrUndefined(nextParagraphWidget)) {
                         while (!isNullOrUndefined(nextParagraphWidget) && nextParagraphWidget.childWidgets.length === 0) {
                             /* eslint-disable-next-line max-len */
-                            nextParagraphWidget = this.owner.selection.getNextParagraph(nextParagraphWidget.containerWidget as BodyWidget) as ParagraphWidget;
+                            nextParagraphWidget = this.owner.selectionModule.getNextParagraph(nextParagraphWidget.containerWidget as BodyWidget) as ParagraphWidget;
                         }
                         if (isNullOrUndefined(nextParagraphWidget)) {
                             break;
@@ -298,7 +298,7 @@ export class TextSearch {
         let paragraphWidget: ParagraphWidget = this.owner.documentHelper.getFirstParagraphBlock(section.childWidgets[0] as BlockWidget);
         /* eslint-disable-next-line max-len */
         while (!isNullOrUndefined(paragraphWidget) && paragraphWidget.childWidgets.length === 1 && (paragraphWidget.childWidgets[0] as LineWidget).children.length === 0) {
-            paragraphWidget = this.owner.selection.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
+            paragraphWidget = this.owner.selectionModule.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
         }
         while (!isNullOrUndefined(paragraphWidget) && paragraphWidget.childWidgets.length > 0) {
             const inlineElement: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
@@ -307,10 +307,10 @@ export class TextSearch {
                 break;
             }
             this.findInline(inlineEle, pattern, findOption, 0, isFirstMatch, results, selectionEnd);
-            paragraphWidget = this.owner.selection.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
+            paragraphWidget = this.owner.selectionModule.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
             /* eslint-disable-next-line max-len */
             while (!isNullOrUndefined(paragraphWidget) && (paragraphWidget.childWidgets.length === 1) && (paragraphWidget.childWidgets[0] as LineWidget).children.length === 0) {
-                paragraphWidget = this.owner.selection.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
+                paragraphWidget = this.owner.selectionModule.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
             }
         }
         if (isFirstMatch && !isNullOrUndefined(results) && results.length > 0) {
@@ -335,7 +335,7 @@ export class TextSearch {
             return undefined;
         }
         /* eslint-disable-next-line max-len */
-        const paragraphWidget: ParagraphWidget = this.owner.selection.getNextParagraphBlock(inlineElement.line.paragraph) as ParagraphWidget;
+        const paragraphWidget: ParagraphWidget = this.owner.selectionModule.getNextParagraphBlock(inlineElement.line.paragraph) as ParagraphWidget;
         return paragraphWidget;
     }
     public getTextPosition(lineWidget: LineWidget, hierarchicalIndex: string): TextPosition {

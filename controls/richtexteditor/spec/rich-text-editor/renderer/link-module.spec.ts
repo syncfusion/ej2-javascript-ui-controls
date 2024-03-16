@@ -631,6 +631,25 @@ describe('Link Module', () => {
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
             expect(rteObj.contentModule.getEditPanel().querySelector('p').children[0].tagName === 'A').toBe(true);
         });
+
+        it('872981 - Apply link to the content with multipel link element along with extra text', () => {
+            rteObj.value = `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit c<strong class="startNode">ontent and return the valid </strong><a href="https://ej2.syncfusion.com/home/" target="_blank"><strong>HTML markup</strong></a><strong> or </strong><a href="https://ej2.syncfusion.com/home/" target="_blank"><strong>markdown</strong></a><strong class="endNode"> of the c</strong>ontent</p>`;
+            rteObj.dataBind();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let startNode = rteObj.element.querySelector('.startNode');
+            let endNode = rteObj.element.querySelector('.endNode');
+            let selObj: any = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), startNode.childNodes[0], endNode.childNodes[0], 0, 9);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            expect(rteObj.contentModule.getEditPanel().innerHTML === `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit c<strong class="startNode"><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">ontent and return the valid </a></strong><a href="https://ej2.syncfusion.com/home/" target="_blank"><strong><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">HTML markup</a></strong></a><strong><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window"> or </a></strong><a href="https://ej2.syncfusion.com/home/" target="_blank"><strong><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">markdown</a></strong></a><strong class="endNode"><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window"> of the c</a></strong>ontent</p>`).toBe(true);
+            expect(window.getSelection().anchorNode.nodeName === 'STRONG').toBe(true);
+            expect(window.getSelection().focusNode.nodeName === 'STRONG').toBe(true);
+            expect(window.getSelection().anchorOffset === 0).toBe(true);
+            expect(window.getSelection().focusOffset === 1).toBe(true);
+        });
     });
 
     describe('EJ2-59865 - css class dependency component - Link Module', () => {

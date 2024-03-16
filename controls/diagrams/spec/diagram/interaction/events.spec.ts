@@ -170,8 +170,8 @@ describe('Diagram Control', () => {
             diagram.sizeChange = (args: ISizeChangeEventArgs) => {
                 args.cancel = true;
                 if (args.state === 'Completed') {
-                    expect(args.newValue.offsetX == offsetX &&
-                        args.newValue.offsetY == offsetY).toBe(true);
+                    expect(args.newValue.width == width &&
+                        args.newValue.height == height).toBe(true);
 
                 }
             };
@@ -216,16 +216,16 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, 350, 500, true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 450, 500, true);
             mouseEvents.mouseUpEvent(diagramCanvas, 450, 500, true);
-            let offsetX: number = diagram.selectedItems.offsetX;
-            let offsetY: number = diagram.selectedItems.offsetY;
+            let width: number = diagram.selectedItems.width;
+            let height: number = diagram.selectedItems.height;
             diagram.sizeChange = (args: ISizeChangeEventArgs) => {
                 if (args.state === 'Start') {
                     console.log('Start');
                   } else if (args.state === 'Progress') {
                     console.log('Progress');
                   } else if (args.state === 'Completed') {
-                    expect(args.newValue.offsetX == offsetX &&
-                        args.newValue.offsetY == offsetY).toBe(true);
+                    expect(args.newValue.width == width &&
+                        args.newValue.height == height).toBe(true);
                     console.log('Completed');
                   }
             };

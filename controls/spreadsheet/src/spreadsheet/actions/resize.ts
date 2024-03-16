@@ -325,13 +325,13 @@ export class Resize {
     }
 
     private setAutofit(idx: number, isCol: boolean, prevData?: string, hdrCell?: Element): void {
-        const sheet: SheetModel = this.parent.getActiveSheet(); let includeHeader: boolean;
+        const sheet: SheetModel = this.parent.getActiveSheet(); let autoFitWithHeader: boolean;
         if (hdrCell) {
             const eventArgs: { [key: string]: string | number | boolean } = { cancel: false, index: idx, isCol: isCol,
                 sheetIndex: this.parent.activeSheetIndex };
             if (isCol) {
                 eventArgs.oldWidth = prevData;
-                eventArgs.includeHeader = false;
+                eventArgs.autoFitWithHeader = false;
             } else {
                 eventArgs.oldHeight = prevData;
             }
@@ -339,7 +339,7 @@ export class Resize {
             if (eventArgs.cancel) {
                 return;
             }
-            includeHeader = <boolean>eventArgs.includeHeader;
+            autoFitWithHeader = <boolean>eventArgs.autoFitWithHeader;
         }
         let oldValue: number; let cell: CellModel = {}; let cellEle: HTMLElement; let colGrp: HTMLElement; let wrapCell: boolean;
         const table: HTMLElement = this.parent.createElement(
@@ -359,7 +359,7 @@ export class Resize {
                 row.appendChild(cellEle);
                 tBody.appendChild(row);
             };
-            if (includeHeader) {
+            if (autoFitWithHeader) {
                 appendRow(hdrCell.textContent);
             }
             for (let rowIdx: number = 0, len: number = sheet.rows.length; rowIdx < len; rowIdx++) {
@@ -754,6 +754,7 @@ export class Resize {
     public destroy(): void {
         this.unwireEvents();
         this.removeEventListener();
+        if (this.trgtEle) { this.trgtEle.remove(); } this.trgtEle = null;
         this.parent = null;
     }
     /**

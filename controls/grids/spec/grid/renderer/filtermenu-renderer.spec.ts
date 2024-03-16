@@ -125,7 +125,7 @@ describe('filter menu module =>', () => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'filterAfterOpen') {
                     let struiObj1: AutoComplete = document.querySelector('#strui-' + gridObj.getColumns()[1].uid)[instances][0];
-                    expect(gridObj.filterSettings.columns[0].value).toEqual(struiObj1.value);
+                    expect(gridObj.filterSettings.columns[0].value).toEqual((struiObj1.value as string | number | boolean | Date));
                     (<HTMLInputElement>document.querySelector('.e-flmenu-cancelbtn')).click();
                     expect(gridObj.filterSettings.columns.length).toBe(0);
                     gridObj.actionComplete = null;

@@ -614,7 +614,6 @@ export class ConnectTool extends ToolBase {
         this.checkPropertyValue();
         this.commandHandler.updateSelector();
         this.commandHandler.removeSnap();
-        this.commandHandler.changeAnnotationDrag(args);
         if ((!(this instanceof ConnectorDrawingTool)) && ((this.endPoint === 'ConnectorSourceEnd' &&
             (args.source as SelectorModel).connectors.length &&
             ((!Point.equals((args.source as SelectorModel).connectors[0].sourcePoint, this.undoElement.connectors[0].sourcePoint) ||

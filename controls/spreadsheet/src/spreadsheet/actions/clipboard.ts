@@ -10,12 +10,12 @@ import { BeforePasteEventArgs, hasTemplate, getTextHeightWithBorder, getLines, g
 import { enableToolbarItems, rowHeightChanged, completeAction, DialogBeforeOpenEventArgs, insertImage } from '../common/index';
 import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, createImageElement, setMaxHgt } from '../common/index';
 import { getMaxHgt, setRowEleHeight, locale, deleteImage, getRowIdxFromClientY, getColIdxFromClientX, cut } from '../common/index';
-import { OpenOptions, colWidthChanged, PasteModelArgs } from '../common/index';
+import { OpenOptions, colWidthChanged, PasteModelArgs, getFilterRange, FilterInfoArgs } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLocked, FilterCollectionModel } from '../../workbook/index';
-import { getFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
+import { setFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
 import { ConditionalFormatModel, getUpdatedFormula, clearCFRule, checkUniqueRange, clearFormulaDependentCells } from '../../workbook/index';
 import { updateCell, ModelType, beginAction, isFilterHidden, applyCF, CFArgs, ApplyCFArgs, checkRange } from '../../workbook/index';
 import { removeUniquecol } from '../../workbook/common/event';
@@ -467,7 +467,7 @@ export class Clipboard {
                                     const colInd: number = y + k;
                                     cell = extend({}, cell ? cell : {}, null, true);
                                     if (!isExtend && this.copiedInfo && !this.copiedInfo.isCut && cell.formula) {
-                                        const newFormula: string = getUpdatedFormula([x + l, colInd], [i, j], prevSheet, isInRange ? cell : null);
+                                        const newFormula: string = getUpdatedFormula([x + l, colInd], [i, j], prevSheet, this.parent, isInRange ? cell : null);
                                         if (!isNullOrUndefined(newFormula)) {
                                             cell.formula = newFormula;
                                         }
@@ -672,7 +672,7 @@ export class Clipboard {
 
     private updateFilter(copyInfo: { range: number[], sId: number, isCut: boolean }, pastedRange: number[]): void {
         let isFilterCut: boolean; let diff: number[];
-        this.parent.notify(getFilteredCollection, null);
+        this.parent.notify(setFilteredCollection, null);
         for (let i: number = 0; i < this.parent.sheets.length; i++) {
             if (this.parent.filterCollection && this.parent.filterCollection[i as number] &&
                 this.parent.filterCollection[i as number].sheetIndex === getSheetIndexFromId(this.parent as Workbook, copyInfo.sId)) {
@@ -1089,17 +1089,13 @@ export class Clipboard {
             if (this.copiedInfo && html.includes('<table class="e-spreadsheet"')) {
                 let isFilteredRange: boolean = false;
                 if (!this.copiedInfo.isCut) {
-                    const filterCol: FilterCollectionModel[] = this.parent.filterCollection;
-                    if (filterCol) {
-                        for (let i: number = 0; i < filterCol.length; i++) {
-                            const indexes: number[] = getRangeIndexes(filterCol[i as number].filterRange);
-                            const copyIndexes: number[] = this.copiedInfo.range;
-                            if (indexes[0] === copyIndexes[0] && indexes[1] === copyIndexes[1] && indexes[2] === copyIndexes[2]
-                                && indexes[3] === copyIndexes[3]) {
-                                isFilteredRange = true;
-                                break;
-                            }
-                        }
+                    const filterArgs: FilterInfoArgs = { sheetIdx: getSheetIndexFromId(this.parent as Workbook, this.copiedInfo.sId) };
+                    this.parent.notify(getFilterRange, filterArgs);
+                    if (filterArgs.isFiltered) {
+                        const indexes: number[] = filterArgs.filterRange;
+                        const copyIndexes: number[] = this.copiedInfo.range;
+                        isFilteredRange = indexes[0] === copyIndexes[0] && indexes[1] === copyIndexes[1] && indexes[2] === copyIndexes[2] &&
+                            indexes[3] === copyIndexes[3];
                     }
                 }
                 if (!isFilteredRange) {

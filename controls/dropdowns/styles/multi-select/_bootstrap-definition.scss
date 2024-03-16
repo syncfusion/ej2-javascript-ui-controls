@@ -189,4 +189,8 @@ $ddl-closer-margin-top-bigger-small: -4em !default;
     height: $ddl-chip-hooker-square;
     width: $ddl-chip-hooker-square;
   }
+
+  .e-bigger.e-multiselect.e-control-container .e-multi-select-wrapper .e-clear-icon {
+    margin-top: -3.2em;
+  }
 }

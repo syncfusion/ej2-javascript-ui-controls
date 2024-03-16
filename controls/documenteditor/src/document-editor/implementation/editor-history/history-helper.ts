@@ -102,7 +102,7 @@ export class RowHistoryFormat {
         this.startingPoint = startingPoint;
         this.rowFormat = rowFormat;
         this.rowHeightType = rowFormat.heightType;
-        this.tableHierarchicalIndex = owner.selection.getHierarchicalIndex(table, '0');
+        this.tableHierarchicalIndex = owner.selectionModule.getHierarchicalIndex(table, '0');
     }
     public revertChanges(isRedo: boolean, owner: DocumentEditor, table: TableWidget): void {
         //backup current format values.
@@ -166,7 +166,7 @@ export class TableHistoryInfo {
             }
             this.rows.push(rowFormat);
         }
-        this.tableHierarchicalIndex = this.owner.selection.getHierarchicalIndex(table, '0');
+        this.tableHierarchicalIndex = this.owner.selectionModule.getHierarchicalIndex(table, '0');
     }
     public destroy(): void {
         this.tableHierarchicalIndex = undefined;

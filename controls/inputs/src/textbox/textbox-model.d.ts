@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';import { addClass, removeClass } from '@syncfusion/ej2-base';import { FloatLabelType, Input, InputObject } from '../input/input';
+import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';import { addClass, removeClass } from '@syncfusion/ej2-base';import { FloatLabelType, Input, InputObject, containerAttributes, TEXTBOX_FOCUS } from '../input/input';
 import {ChangedEventArgs,FocusOutEventArgs,FocusInEventArgs,InputEventArgs} from "./textbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 

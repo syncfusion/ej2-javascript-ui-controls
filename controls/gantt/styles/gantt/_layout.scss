@@ -41,6 +41,10 @@
           height: $gantt-bigger-timeline-top-header-cell-height;
         }
 
+        .e-timeline-single-header-cell {
+          height: $gantt-bigger-header-border-height;
+        }
+        
         .e-event-markers {
           .e-span-label {
             border-radius: $gantt-bigger-event-markers-border-radius;
@@ -748,6 +752,10 @@
       }
 
       .e-timeline-header-table-container > thead > tr > th {
+        border-left: 0;
+      }
+
+      .e-timeline-header-table-container > thead > tr > td {
         border-left: 0;
       }
 
@@ -1496,7 +1504,7 @@
     .e-richtexteditor {
       border-bottom-width: $gantt-richtext-border-bottom;
       height: $gantt-dialog-rte-height !important; /* stylelint-disable-line declaration-no-important */
-      overflow: hidden;
+      overflow: hidden scroll;
     }
 
     .e-richtexteditor.e-rte-tb-expand {
@@ -1508,7 +1516,6 @@
       height: $gantt-dialog-rte-content-height;
       overflow: hidden;
     }
-
     > .e-dlg-content {
       padding: 0 !important; /* stylelint-disable-line declaration-no-important */
       @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {

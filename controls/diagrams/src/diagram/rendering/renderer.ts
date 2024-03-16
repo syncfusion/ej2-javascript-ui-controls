@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { DiagramElement } from '../core/elements/diagram-element';
+
 import { PathElement } from '../core/elements/path-element';
 import { ImageElement } from '../core/elements/image-element';
 import { TextElement } from '../core/elements/text-element';
@@ -291,7 +292,7 @@ export class DiagramRenderer {
             x: x, y: y, fill: 'transparent', stroke: '#00cc00', angle: element.rotateAngle,
             pivotX: element.pivot.x, pivotY: element.pivot.y, strokeWidth: isFirst ? 2 : 1,
             dashArray: '', opacity: 1, cornerRadius: 0,
-            visible: true, id: element.id + '_highlighter', class: 'e-diagram-selection-indicator'
+            visible: true, id: element.id + '_highlighter', class: isFirst ? 'e-diagram-first-selection-indicator e-diagram-selection-indicator' : 'e-diagram-selection-indicator'
         };
         const parentSvg: SVGSVGElement = this.getParentSvg(element, 'selector');
         this.svgRenderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg);
@@ -324,7 +325,7 @@ export class DiagramRenderer {
         }
         options.stroke = '#00cc00';
         options.strokeWidth = isFirst ? 2 : 1;
-        options.class = 'e-diagram-selection-indicator';
+        options.class = isFirst ? 'e-diagram-first-selection-indicator e-diagram-selection-indicator' : 'e-diagram-selection-indicator';
         const parentSvg: SVGSVGElement = this.getParentSvg(element, 'selector');
         this.svgRenderer.drawPath(canvas as SVGElement, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel, transform.scale);
     }
@@ -768,9 +769,12 @@ export class DiagramRenderer {
                 v = -5;
                 break;
             case 'Rhombus':
-            case 'Circle':
             case 'Diamond':
                 h = -10;
+                v = -5;
+                break;
+             case 'Circle':
+                h = -5;
                 v = -5;
                 break;
             case 'IndentedArrow':
@@ -1360,8 +1364,8 @@ export class DiagramRenderer {
         this.renderer.drawPath(canvas, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel);
     }
 
-    // Function to filter 'A' commands and extract r1 and r2 values
-    private findAndStoreArcValues(arr:any) {
+     // Function to filter 'A' commands and extract r1 and r2 values
+     private findAndStoreArcValues(arr:any) {
         let rValues:any = []; 
         arr.forEach((obj:any) => {
           if (obj.command === 'A') {

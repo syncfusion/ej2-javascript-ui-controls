@@ -9,6 +9,7 @@ import { createElement, Browser, EventHandler, isNullOrUndefined, select, closes
 import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1, data17, data18, data19, doubleClickEmpty } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
 import { FileSelectEventArgs } from '../../../src';
+import { sortComparer } from "../../../src/file-manager/common/utility";
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -686,6 +687,43 @@ describe('FileManager control Grid view', () => {
             expect(document.getElementById('file_grid').querySelectorAll('.e-rhandler').length).toBe(4);
             done();
         });
+    });
+    describe('sortComparer function', () => {
+        it('should sort folders before files', (done: Function) => {
+            const folderName = 'folder';
+            const fileName = 'file.txt';
+            expect(sortComparer(folderName, fileName)).toBeLessThan(0);
+            expect(sortComparer(fileName, folderName)).toBeGreaterThan(0);
+            done();
+        });
+        it('should sort based on natural sorting', (done: Function) => {
+            const folderName1 = '2';
+            const folderName2 = '10.0';
+            expect(sortComparer(folderName1, folderName2)).toBeLessThan(0);
+            expect(sortComparer(folderName2, folderName1)).toBeGreaterThan(0);
+            done();
+        });
+        it('should sort based on numerical value', (done: Function) => {
+            var file1 = 'file2.txt';
+            var file2 = 'file10.txt';
+            expect(sortComparer(file1, file2)).toBeLessThan(0);
+            expect(sortComparer(file2, file1)).toBeGreaterThan(0);
+            done();
+        });
+        it('should sort alphabetically when numerical values are the same', (done: Function) => {
+            const file1 = 'file2a.txt';
+            const file2 = 'file2b.txt';
+            expect(sortComparer(file1, file2)).toBeLessThan(0);
+            expect(sortComparer(file2, file1)).toBeGreaterThan(0);
+            done();
+        });
+        it('should sort shorter strings before longer ones when other parts are equal', (done: Function) => {
+            const file1 = 'file2.txt';
+            const file2 = 'file2a.txt';
+            expect(sortComparer(file1, file2)).toBeLessThan(0);
+            expect(sortComparer(file2, file1)).toBeGreaterThan(0);
+            done();
+        });   
     });
     describe('Grid viewtesting', () => {
         let mouseEventArgs: any, tapEvent: any;

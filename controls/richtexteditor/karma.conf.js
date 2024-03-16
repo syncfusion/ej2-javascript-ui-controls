@@ -18,6 +18,7 @@ module.exports = function (config) {
       "test-main.js",
       { pattern: "src/**/*.js", included: false },
       { pattern: "spec/**/*.spec.js", included: false },
+      { pattern: "spec/content/**/*", watched: false, included: false, served: true, nocache: false },
       { pattern: "node_modules/@syncfusion/ej2-base/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-data/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-lists/**/*.js", included: false },

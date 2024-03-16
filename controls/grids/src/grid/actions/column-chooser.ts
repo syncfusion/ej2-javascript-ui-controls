@@ -112,10 +112,12 @@ export class ColumnChooser implements IAction {
     }
 
     private rtlUpdate(): void {
-        if (this.parent.enableRtl) {
-            addClass([].slice.call(this.innerDiv.getElementsByClassName('e-checkbox-wrapper')), ['e-rtl']);
-        } else {
-            removeClass([].slice.call(this.innerDiv.getElementsByClassName('e-checkbox-wrapper')), ['e-rtl']);
+        if (!isNullOrUndefined(this.innerDiv)) {
+            if (this.parent.enableRtl) {
+                addClass([].slice.call(this.innerDiv.getElementsByClassName('e-checkbox-wrapper')), ['e-rtl']);
+            } else {
+                removeClass([].slice.call(this.innerDiv.getElementsByClassName('e-checkbox-wrapper')), ['e-rtl']);
+            }
         }
     }
 
@@ -435,7 +437,7 @@ export class ColumnChooser implements IAction {
         this.innerDiv = this.parent.createElement('div', { className: 'e-innerdiv e-cc' });
         searchDiv.appendChild(ccsearchele);
         searchDiv.appendChild(ccsearchicon);
-        this.searchBoxObj = new SearchBox(ccsearchele);
+        this.searchBoxObj = new SearchBox(ccsearchele, this.serviceLocator);
         const innerDivContent: HTMLElement | string[] | string = this.refreshCheckboxList(this.parent.getColumns() as Column[]);
         this.innerDiv.appendChild((innerDivContent as Element));
         conDiv.appendChild(this.innerDiv);
@@ -476,6 +478,9 @@ export class ColumnChooser implements IAction {
             if (this.parent.enableAdaptiveUI && this.parent.scrollModule) {
                 this.parent.scrollModule.refresh();
             }
+            if (this.parent.editSettings.showAddNewRow) {
+                this.parent.notify(events.showAddNewRowFocus, {});
+            }
         }
     }
 
@@ -499,6 +504,7 @@ export class ColumnChooser implements IAction {
     public resetColumnState(): void {
         this.showColumn = [];
         this.hideColumn = [];
+        this.changedColumns = [];
         this.hideDialog();
     }
 

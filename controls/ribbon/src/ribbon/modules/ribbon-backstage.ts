@@ -136,6 +136,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
         };
         this.parent.tabObj.refreshActiveTabBorder();
         this.addBackStageMenuTooltip(backStageOptions);
+        this.addBackStageMenuKeyTip(backStageOptions);
         EventHandler.add(document, 'click', this.onClickEvent, this);
     }
 
@@ -149,6 +150,25 @@ export class RibbonBackstage extends Component<HTMLElement> {
         if (isTooltipPresent(backStageOptions.ribbonTooltipSettings)) {
             this.backstageButtonEle.classList.add(constants.RIBBON_TOOLTIP_TARGET);
             this.parent.tooltipData.push({ id: this.backstageButtonEle.id, data: backStageOptions.ribbonTooltipSettings });
+        }
+    }
+
+    private addBackStageMenuKeyTip(backStageOptions: BackStageMenuModel): void {
+        if (backStageOptions.keyTip) {
+            if (!((this.parent.keyTipElements as {[key: string]: object})['backstage'])) {
+                (this.parent.keyTipElements as {[key: string]: object})['backstage'] = [];
+            }
+            ((this.parent.keyTipElements as {[key: string]: object})['backstage'] as object[]).push({ id: this.backstageButtonEle.id, type: 'backstage', keyTip: backStageOptions.keyTip});
+        }
+        if (backStageOptions.items && backStageOptions.items.length) {
+            if (!((this.parent.keyTipElements as {[key: string]: object})['backstageMenu'])) {
+                (this.parent.keyTipElements as {[key: string]: object})['backstageMenu'] = [];
+            }
+            for (let i: number = 0; i < backStageOptions.items.length; i++) {
+                if (backStageOptions.items[parseInt(i.toString(), 10)].keyTip) {
+                    ((this.parent.keyTipElements as {[key: string]: object})['backstageMenu'] as object[]).push({ id: backStageOptions.items[parseInt(i.toString(), 10)].id, type: 'backstageMenu', keyTip: backStageOptions.items[parseInt(i.toString(), 10)].keyTip})
+                }
+            }
         }
     }
 
@@ -429,7 +449,9 @@ export class RibbonBackstage extends Component<HTMLElement> {
                     }
                 }
                 this.removeBackstageMenuTooltip();
+                this.removeBackstageMenuKeyTip();
                 this.addBackStageMenuTooltip(backStageOptions);
+                this.addBackStageMenuKeyTip(backStageOptions);
             }
             else {
                 this.createBackStage(backStageOptions);
@@ -450,6 +472,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
 
     private destroyDDB(): void {
         this.removeBackstageMenuTooltip();
+        this.removeBackstageMenuKeyTip();
         const tabEle: HTMLElement = this.parent.tabObj.element;
         tabEle.style.removeProperty(constants.RIBBON_FILE_MENU_WIDTH);
         this.destroyMenu();
@@ -465,6 +488,20 @@ export class RibbonBackstage extends Component<HTMLElement> {
         if (index !== -1) {
             this.backstageButtonEle.classList.remove(constants.RIBBON_TOOLTIP_TARGET);
             this.parent.tooltipData.splice(index, 1);
+        }
+    }
+    private removeBackstageMenuKeyTip(): void {
+        if ((this.parent.keyTipElements as {[key: string]: object})['backstage'] && ((this.parent.keyTipElements as {[key: string]: object})['backstage'] as object[]).length) {
+            const index: number = getIndex((this.parent.keyTipElements as {[key: string]: object})['backstage'] as object[], (e: object) => { return (e as any).id === this.backstageButtonEle.id; });
+            if (index !== -1) {
+                ((this.parent.keyTipElements as {[key: string]: object})['backstage'] as object[]).splice(index, 1);
+            }
+        }
+        if ((this.parent.keyTipElements as {[key: string]: object})['backstageMenu'] && ((this.parent.keyTipElements as {[key: string]: object})['backstageMenu'] as object[]).length) {
+            for (let i: number = 0; i < ((this.parent.keyTipElements as {[key: string]: object})['backstageMenu'] as object[]).length; i++) {
+                ((this.parent.keyTipElements as {[key: string]: object})['backstageMenu'] as object[]).splice(i, 1);
+                i--;
+            }
         }
     }
 

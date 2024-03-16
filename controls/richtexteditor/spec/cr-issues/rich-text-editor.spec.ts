@@ -2539,6 +2539,35 @@ describe('RTE CR issues', () => {
         });
     });
 
+    describe('873317: Images with source srcset not properly pasted into the RichTextEditor.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                pasteCleanupSettings : {
+                    keepFormat : false
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it ('Should add full URL to the Source tag srcset attribute.', (done: DoneFn) => {
+            editor.focusIn();
+            const clipBoardData: string = `\n\n\x3C!--StartFragment--><article class="ocpArticleContent" style="display: block; box-sizing: border-box; margin-top: 20px; margin-left: auto; margin-right: auto; font-family: &quot;Segoe UI&quot;, &quot;Segoe UI Web&quot;, wf_segoe-ui_normal, &quot;Helvetica Neue&quot;, &quot;BBAlpha Sans&quot;, &quot;S60 Sans&quot;, Arial, sans-serif; font-weight: 400; max-width: 768px; color: rgb(54, 54, 54); font-size: 10px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><section aria-labelledby="ID0EDD" class="ocpSection" style="display: block; box-sizing: border-box;"><ol type="1" itemscope="" itemtype="http://schema.org/ItemList" style="box-sizing: border-box; margin: 30px 0px 30px 30px; padding-left: 18px; padding-bottom: 0px; display: block; font-size: 1.6em;"><li itemprop="itemListElement" itemscope="" itemtype="http://schema.org/ListItem" style="box-sizing: border-box; margin-top: 26px; margin-left: 0px; padding-left: 6px; line-height: 1.42857em; display: list-item; font-size: 1em;"><p style="font-size: 1em; box-sizing: border-box; color: rgb(30, 30, 30); font-family: &quot;Segoe UI&quot;, &quot;Segoe UI Web&quot;, wf_segoe-ui_normal, &quot;Helvetica Neue&quot;, &quot;BBAlpha Sans&quot;, &quot;S60 Sans&quot;, Arial, sans-serif; line-height: 1.5; padding: 0px;">Click<span>&nbsp;</span><b class="ocpUI" style="font-weight: 700; box-sizing: border-box; font-family: &quot;Segoe UI&quot;, &quot;Segoe UI Web&quot;, wf_segoe-ui_normal, &quot;Helvetica Neue&quot;, &quot;BBAlpha Sans&quot;, &quot;S60 Sans&quot;, Arial, sans-serif;">OK</b>.</p></li></ol></section></article><div class="ocArticleFooterShareContainer" style="box-sizing: border-box; margin: 30px auto 0px; max-width: 768px; padding: 20px 0px 10px; color: rgb(54, 54, 54); font-family: &quot;Segoe UI Light&quot;, wf_segoe-ui_light, Arial, &quot;Helvetica Neue&quot;, Verdana, Helvetica, sans-serif; font-size: 10px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><div class="ocArticleFooterShareLinksWrapper" data-bi-area="share" style="box-sizing: border-box;"><a id="ocFacebookButton" class="ocShareButton" target="_blank" data-bi-bhvr="SOCIALSHARE" data-bi-name="facebook" data-bi-slot="1" ms.interactiontype="1" ms.ea_offer="SOC" ms.cmpgrp="Share" ms.ea_action="Goto" ms.pgarea="Body" title="Share on Facebook" aria-label="Share on Facebook" href="https://www.facebook.com/sharer.php?u=https%3A%2F%2Fsupport.microsoft.com%2Fen-gb%2Foffice%2Fconvert-text-to-a-table-or-a-table-to-text-b5ce45db-52d5-4fe3-8e9c-e04b62f189e1" style="color: rgb(54, 54, 54); text-decoration: none; box-sizing: border-box; padding-left: 0px;"><picture style="box-sizing: border-box;"><source srcset="/images/Facebook-GrayScale.webp" type="image/webp" style="box-sizing: border-box;"><img class="ocArticleFooterImage" src="https://support.microsoft.com/images/Facebook-GrayScale.png" alt="Facebook" ms.cmpgrp="content" ms.pgarea="Body" loading="lazy" style="box-sizing: border-box; vertical-align: middle; border: none; padding-top: 5px;"><span>&nbsp;</span></picture></a><a id="ocLinkedInButton" class="ocShareButton" target="_blank" data-bi-bhvr="SOCIALSHARE" data-bi-name="linkedIn" data-bi-slot="2" ms.interactiontype="1" ms.ea_offer="SOC" ms.cmpgrp="Share" ms.ea_action="Goto" ms.pgarea="Body" title="Share on LinkedIn" aria-label="Share on LinkedIn" href="https://linkedin.com/shareArticle?mini=true&amp;url=https%3A%2F%2Fsupport.microsoft.com%2Fen-gb%2Foffice%2Fconvert-text-to-a-table-or-a-table-to-text-b5ce45db-52d5-4fe3-8e9c-e04b62f189e1&amp;title=Convert%20text%20to%20a%20table%20or%20a%20table%20to%20text" style="color: rgb(54, 54, 54); text-decoration: none; box-sizing: border-box; padding-left: 18px;"><picture style="box-sizing: border-box;"><source srcset="/images/LinkedIn-GrayScale.webp" type="image/webp" style="box-sizing: border-box;"><img class="ocArticleFooterImage" src="https://support.microsoft.com/images/Linkedin-GrayScale.png" alt="LinkedIn" ms.cmpgrp="content" ms.pgarea="Body" loading="lazy" style="box-sizing: border-box; vertical-align: middle; border: none; padding-top: 5px;"><span>&nbsp;</span></picture></a><a id="ocEmailButton" class="ocShareButton" target="_blank" data-bi-bhvr="SOCIALSHARE" data-bi-name="email" data-bi-slot="3" ms.interactiontype="1" ms.ea_offer="SOC" ms.cmpgrp="Share" ms.ea_action="Goto" ms.pgarea="Body" title="Share by email" aria-label="Share by email" data-name="I think you'd be interested in this: Convert text to a table or a table to text" href="mailto://?subject=I%20think%20you%27d%20be%20interested%20in%20this%3A%20Convert%20text%20to%20a%20table%20or%20a%20table%20to%20text&amp;body=Convert%20text%20to%20a%20table%20or%20a%20table%20to%20text%20https%3A%2F%2Fsupport.microsoft.com%2Fen-gb%2Foffice%2Fconvert-text-to-a-table-or-a-table-to-text-b5ce45db-52d5-4fe3-8e9c-e04b62f189e1" style="color: rgb(54, 54, 54); text-decoration: none; box-sizing: border-box; padding-left: 18px;"><picture style="box-sizing: border-box;"><source srcset="/images/Mail-GrayScale.webp" type="image/webp" style="box-sizing: border-box;"><img class="ocArticleFooterImage" src="https://support.microsoft.com/images/Mail-GrayScale.png" alt="Email" ms.cmpgrp="content" ms.pgarea="Body" loading="lazy" style="box-sizing: border-box; vertical-align: middle; border: none; padding-top: 5px;"></picture></a></div></div>\x3C!--EndFragment-->\n\n`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                const sourceElems: NodeListOf<HTMLSourceElement> = editor.inputElement.querySelectorAll('source');
+                for (let i: number = 0; i < sourceElems.length; i++) {
+                    expect(sourceElems[i].srcset.indexOf('https://support.microsoft.com')).toBe(0);
+                }
+                done();
+            }, 100);
+        });
+    });
+
     describe('EJ2-855260 - The font family is not applied properly when pasted from a Word document.', () => {
         let editor: RichTextEditor;
         beforeAll(() => {
@@ -3327,7 +3356,6 @@ describe('RTE CR issues', () => {
             done();
         });
     });
-
     describe('866230 - Script error throws when using click event with custom toolbar template in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeEach(() => {
@@ -3392,7 +3420,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj2);
             Browser.userAgent =defaultUserAgent;
         });
-    });
+    });      
     describe('870038 - Pasted image tag added inside the link tag in the RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -3409,7 +3437,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
-    describe('870180: Copy pasted text to override an existing text pastes at wrong position in RichTextEditor', () => {
+  describe('870180: Copy pasted text to override an existing text pastes at wrong position in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -3419,7 +3447,6 @@ describe('RTE CR issues', () => {
                 }
             });
         });
-
         it('copy and paste text', () => {
             rteObj.focusIn();
             const clipBoardData: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><span style="color: rgb(22, 22, 22); font-family: &quot;Segoe UI&quot;, SegoeUI, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">A query that requests more than one table, or more than the allowed number of table rows, will result in:</span>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
@@ -3433,8 +3460,8 @@ describe('RTE CR issues', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    });
-    describe('870485: Pressing Enter Key After Pasting an Image Removes the Image in RichTextEditor', () => {
+     });  
+     describe('870485: Pressing Enter Key After Pasting an Image Removes the Image in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
         beforeAll(() => {
@@ -3451,6 +3478,88 @@ describe('RTE CR issues', () => {
             (rteObj as any).keyDown(keyBoardEvent);
             expect(rteObj.inputElement.querySelector('img') !== null).toBe(true);
         });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('870298: Numbered list not removed when we delete the entire list using backspace key in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        it('Checking the backspace on list', (done: Function) => {
+            rteObj = renderRTE({
+                value: '<ol><li id="firstli">list1</li><li>list2</li><li>list3</li><li id="lastli">list4</li></ol>',
+            });
+            let startNode: any = (rteObj as any).inputElement.querySelector('#firstli');
+            let endNode: any = (rteObj as any).inputElement.querySelector('#lastli');
+            let sel = new NodeSelection().setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 5);
+            (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((rteObj as any).inputElement.querySelectorAll('ol').length).toBe(0);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('870298: Numbered list not removed when we delete the entire list using backspace key in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        it('Checking the backspace on list', (done: Function) => {
+            rteObj = renderRTE({
+                value: `<ol style=" margin-bottom: 1em; margin-top: 1em; font-size: 16.8px; line-height: 1.1; margin-left: 0px; padding-left: 2em; color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;, Georgia, &quot;SBL Greek&quot;, serif; font-style: normal; font-weight: 400; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(247, 247, 249);"><li style=" font-size: 0.95em; line-height: 1.1; margin-left: 0.75em; margin-top: 1em; margin-bottom: 1em;"><em>Report One</em>: an internal proposal written in Memo format</li><li style=" font-size: 0.95em; line-height: 1.1; margin-left: 0.75em; margin-top: 0.5em; margin-bottom: 1em;"><em>Report Two</em>: an internal proposal written in Short Report format</li><li style=" font-size: 0.95em; line-height: 1.1; margin-left: 0.75em; margin-top: 0.5em; margin-bottom: 1em;"><em>Report Three</em>: A comparative recommendation report written for an external client in Long Report format.</li></ol>`,
+            });
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelectorAll('li')[2].querySelector('em'), 0);
+            (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect(rteObj.inputElement.querySelectorAll('li').length).toBe(2);
+            expect(rteObj.inputElement.querySelectorAll('li')[1].innerText).toBe('Report Two: an internal proposal written in Short Report formatReport Three: A comparative recommendation report written for an external client in Long Report format.');
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('869646: Script error throws when pasting some content into the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: 'keydown',
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ''
+          };
+        const data: string = '<html>\r\n<body>\r\n\x3C!--StartFragment--><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><br class="Apple-interchange-newline"><br></p><p style="margin: 0px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">test</p>\x3C!--EndFragment-->\r\n</body>\r\n</html>';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value:`<p><br></p><p><br></p><p>test</p>`,
+                pasteCleanupSettings: {
+                    keepFormat: true,
+                }
+            });
+        });
+
+        it('copy and paste text', (done) => {
+            rteObj.dataBind();
+            keyBoardEvent.clipboardData = {
+                getData: () => {
+                    return data;
+                },
+                items: []
+            };
+            setTimeout(function () {
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.firstChild, rteObj.inputElement.lastChild.childNodes[0], 0, 4);
+                rteObj.onPaste(keyBoardEvent);
+                done();
+            }, 400);
+            expect(rteObj.inputElement.querySelectorAll('p').length === 3).toBe(true);
+          });
         afterAll(() => {
             destroy(rteObj);
         });

@@ -231,6 +231,7 @@ export class AnnotationBase {
                 this.annotation.verticalAlignment, elementRect.height, argsData.location.y
             ) + 'px';
             argsData.content.setAttribute('aria-label', this.annotation.description || 'Annotation');
+            argsData.content.setAttribute('role', 'img');
             appendElement(argsData.content, parentElement, this.control.redraw, true, 'left', 'top');
         }
     }

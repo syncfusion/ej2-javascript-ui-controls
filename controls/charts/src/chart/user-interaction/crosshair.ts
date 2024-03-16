@@ -254,8 +254,8 @@ export class Crosshair {
             axis = chart.axisCollections[k as number];
             axisRect = !axis.placeNextToAxisLine ? axis.rect : axis.updatedRect;
             if (axis.crosshairTooltip.enable) {
-                if ((this.valueX <= (axisRect.x + axisRect.width) && axisRect.x <= this.valueX) ||
-                    (this.valueY <= (axisRect.y + axisRect.height) && axisRect.y <= this.valueY)) {
+                if (axisRect && ((this.valueX <= (axisRect.x + axisRect.width) && axisRect.x <= this.valueX) ||
+                    (this.valueY <= (axisRect.y + axisRect.height) && axisRect.y <= this.valueY))) {
                     pathElement = document.getElementById(this.elementID + '_axis_tooltip_' + k);
                     textElem = document.getElementById(this.elementID + '_axis_tooltip_text_' + k);
                     text = this.getAxisText(axis);

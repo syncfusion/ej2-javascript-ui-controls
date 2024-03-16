@@ -595,6 +595,54 @@ describe('Format Painter Module', () => {
         });
     });
 
+    describe('814493 - Copy formats in list and paste the format in the same list with nested list with para tag wrapped inside the same list', () => {
+        let rteObject : RichTextEditor ;
+        const innerHTML: string = `<ul>
+        <li style="font-weight: bold;"><strong class="copyFormat">Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</strong>
+        </li>
+        <li>
+            Capable of handling markdown editing.<p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255);">The Rich Text Editor (RTE) control is an easy</p><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255);"><b style="font-weight: bold;">Functional Specifications/Requirements:</b></p><ol style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255);"><li style="margin-bottom: 10px;"><p style="margin: 0px;" class="pasteFormat">Provide the tool bar support, it’s also customizable.</p></li><li style="margin-bottom: 10px;"><p style="margin: 0px;">Options to get the HTML elements with styles.</p></li></ol>
+        </li>
+        <li>
+            Contains a modular library to load the necessary functionality on demand.</li>
+    </ul>`;
+        beforeEach( (done: Function) => {
+            rteObject = renderRTE({
+                toolbarSettings : { items: ['FormatPainter', 'ClearFormat', 'Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'LowerCase', 'UpperCase', '|',
+                    'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                    'Indent', 'Outdent', '|',
+                    'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                    'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                } , value: innerHTML
+            });
+            done();
+        });
+        afterEach( () => {
+            destroy(rteObject);
+        });
+        it('Copy formats in list and paste the format in the same list with nested list with para tag wrapped inside the same list', (done: Function) => {
+            rteObject.focusIn();
+            let range = new Range();
+            let startElement = rteObject.inputElement.querySelector('.copyFormat');
+            range.setStart(startElement.firstChild, 0);
+            range.setEnd(startElement.firstChild, 5);
+            rteObject.selectRange(range);
+            rteObject.keyDown(copyKeyBoardEventArgs);
+            startElement = rteObject.inputElement.querySelector('.pasteFormat');
+            range.setStart(startElement.firstChild, 5);
+            range.setEnd(startElement.firstChild, 5);
+            rteObject.selectRange(range);
+            rteObject.keyDown(pasteKeyBoardEventArgs);
+            startElement = rteObject.inputElement.querySelector('.pasteFormat');
+            expect(startElement.closest('li').parentElement.tagName === 'UL').toEqual(true);
+            done();
+        });
+    });
+
     describe('Format Painter Setting testing' , () => {
         let rteObject : RichTextEditor ;
         const innerHTML: string = `<h1 class="title">Format Painter</h1>

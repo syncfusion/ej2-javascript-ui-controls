@@ -127,7 +127,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: theme === 'BootstrapDark' ? 'Helvetica' : theme === 'FabricDark' ? 'Segoe UI' : theme === 'MaterialDark' ? 'Roboto' : 'Segoe UI',
             dataLabelFont:{
                 fontFamily: theme === 'BootstrapDark' ? 'Helvetica' : theme === 'FabricDark' ? 'Segoe UI' : theme === 'MaterialDark' ? 'Roboto' : 'Segoe UI', color: theme === 'BootstrapDark' ? '#676767' : theme === 'FabricDark' ? '#A19F9D' : theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.6)' : '#969696'
-            }
+            },
+            tabColor: theme === 'BootstrapDark' ? '#0070F0' : theme === 'MaterialDark' ? '#00B0FF' : theme === 'FabricDark' ? '#0074CC' : '#FFD939'
         };
         break;
     case 'Bootstrap4':
@@ -146,7 +147,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: 'Helvetica',
             dataLabelFont:{
                 fontFamily: 'Helvetica', color: '#495057'
-            }
+            },
+            tabColor: '#007BFF'
         };
         break;
     case 'Tailwind':
@@ -165,7 +167,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: 'Inter',
             dataLabelFont:{
                 fontFamily: 'Inter', color: '#6B7280'
-            }
+            },
+            tabColor: '#4F46E5'
         };
         break;
     case 'TailwindDark':
@@ -184,7 +187,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: 'Inter',
             dataLabelFont:{
                 fontFamily: 'Inter', color: '#9CA3AF'
-            }
+            },
+            tabColor: '#22D3EE'
         };
         break;
     case 'Bootstrap5':
@@ -203,7 +207,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: 'Helvetica',
             dataLabelFont:{
                 fontFamily: 'Helvetica', color: '#495057'
-            }
+            },
+            tabColor: '#0D6EFD'
         };
         break;
     case 'Bootstrap5Dark':
@@ -222,7 +227,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: 'Helvetica',
             dataLabelFont:{
                 fontFamily: 'Helvetica', color: '#E9ECEF'
-            }
+            },
+            tabColor: '#0D6EFD'
         };
         break;
     case 'Fluent':
@@ -241,7 +247,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: 'Segoe UI',
             dataLabelFont:{
                 fontFamily: 'Segoe UI', color: '#3B3A39'
-            }
+            },
+            tabColor: '#0078D4'
         };
         break;
     case 'FluentDark':
@@ -260,7 +267,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: 'Segoe UI',
             dataLabelFont:{
                 fontFamily: 'Segoe UI', color: '#D2D0CE'
-            }
+            },
+            tabColor: '#0078D4'
         };
         break;
     case 'Material3':
@@ -279,7 +287,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: 'Roboto',
             dataLabelFont:{
                 fontFamily: 'Roboto', color: '#49454E'
-            }
+            },
+            tabColor: '#49454E'
         };
         break;
     case 'Material3Dark':
@@ -298,7 +307,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: 'Roboto',
             dataLabelFont:{
                 fontFamily: 'Roboto', color: '#CAC4D0'
-            }
+            },
+            tabColor: '#CAC4D0'
         };
         break;
     default: {
@@ -314,7 +324,8 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
             tooltipFontFamily: theme === 'Bootstrap' ? 'Helvetica' : theme === 'Fabric' ? 'Segoe UI' : 'Roboto',
             dataLabelFont:{
                 fontFamily: theme === 'Bootstrap' ? 'Helvetica' : theme === 'Fabric' ? 'Segoe UI' : 'Roboto', color: theme === 'Bootstrap' ? '#676767' : theme === 'Fabric' ? '#666666' : 'rgba(97, 97, 97, 1)' 
-            }
+            },
+            tabColor: theme === 'Material' ? '#ff4081' : theme === 'Fabric' ? '#0078D6' : '#317AB9'
         };
         break;
     }

@@ -157,6 +157,7 @@ export class Annotations {
         element.style.left = (location.x - (elementRect.width / 2)) + 'px';
         element.style.top = (location.y - (elementRect.height / 2)) + 'px';
         element.setAttribute('aria-label', annotation.description || 'Annotation');
+        element.setAttribute('role', 'region');
     }
 
     /**

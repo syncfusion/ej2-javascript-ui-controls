@@ -46,7 +46,7 @@ export class Toolbar {
             }
             const preItems: ToolbarItem[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
                 'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport',
-                'PdfExport', 'Indent', 'Outdent', 'CriticalPath'];
+                'PdfExport', 'Indent', 'Outdent', 'CriticalPath', 'Undo', 'Redo'];
             for (const item of preItems) {
                 let itemStr: string;
                 let localeName: string;
@@ -152,6 +152,7 @@ export class Toolbar {
                 this.updateSearchTextBox();
             }
         }
+        this.enableItems([this.parent.controlId + '_redo',this.parent.controlId + '_undo'], false); // disable toolbar items.
         if (this.parent.readOnly) {
             this.enableItems(
                 [this.parent.element.id + '_add', this.parent.element.id + '_update', this.parent.element.id + '_delete'
@@ -365,6 +366,12 @@ export class Toolbar {
                     break;
                 case gID + '_zoomtofit':
                     this.zoomToFit();
+                    break;
+                case gID + '_undo':
+                    this.parent.undo();
+                    break;
+                case gID + '_redo':
+                    this.parent.redo();
                     break;
                 }
             }

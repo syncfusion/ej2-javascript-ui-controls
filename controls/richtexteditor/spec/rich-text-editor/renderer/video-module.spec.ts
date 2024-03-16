@@ -357,6 +357,50 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('868800 - The resize was not working in the video elements while Rich Textbox Editor inside the iframe', () => {
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        let innerHTML: string = `<p><b>Description:</b></p>
+        <p>The Rich Text Editor (RTE) control is an easy to render in
+        client side. Customer easy to edit the contents and get the HTML content for
+        <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>
+        `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML,
+                insertVideoSettings: { resizeByPercent: true },
+                iframeSettings: {enable: true}
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('The resize was not working in the video elements while Rich Textbox Editor inside the iframe', () => {
+            let trg = (rteObj.contentModule.getEditPanel().querySelector('video') as HTMLElement);
+            (rteObj.videoModule as any).resizeStart({ target: trg, pageX: 0 });
+            let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botRight') as HTMLElement;
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            resizeBot.dispatchEvent(clickEvent);
+            (rteObj.videoModule as any).resizeStart(clickEvent);
+            (<any>rteObj.videoModule).resizeBtnStat.botRight = true;
+            (rteObj.videoModule as any).resizing({ target: resizeBot, pageX: 200 });
+            let width = (rteObj.contentModule.getEditPanel().querySelector('video') as HTMLElement).offsetWidth;
+            (<any>rteObj.videoModule).resizeBtnStat.botRight = true;
+            (rteObj.videoModule as any).resizing({ target: resizeBot, pageX: 300 });
+            width += 100;
+            expect(width).toEqual(width);
+            (<any>rteObj.videoModule).resizeBtnStat.botRight = true;
+            (rteObj.videoModule as any).resizing({ target: resizeBot, pageX: 100 });
+            width -= 200;
+            expect(width).toEqual(width);
+        });
+    });
+
     describe('mobile resize', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

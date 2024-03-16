@@ -30,6 +30,10 @@
       font-size: $grid-bigger-icon-font-size;
     }
 
+    .e-res-toolbar .e-toolbar-items .e-toolbar-item.e-search-wrapper.e-responsive-right{
+      padding-right: $grid-res-toolbar-search-wrapper-padding-right;
+    }
+
     .e-res-toolbar .e-toolbar-items .e-toolbar-item.e-search-wrapper {
       padding: $grid-res-toolbar-search-wrapper-padding;
 
@@ -1273,6 +1277,10 @@
           & .e-responsive-right {
             width: calc(100% - 50px);
 
+            &.e-search-wrapper {
+              width: auto;
+            }
+            
             & .e-search-wrapper {
               & .e-input-group::before,
               & .e-input-group::after {
@@ -1364,6 +1372,10 @@
 
       & .e-search:focus {
         opacity: $grid-toolbar-searchbar-text-opacity;
+      }
+
+      & .e-search::placeholder {
+        color: $grid-toolbar-placeholder-text-color;
       }
 
       & .e-search {
@@ -2016,8 +2028,13 @@ margin: $grid-group-animator-cell-margin;
 
     &.e-responsive .e-rowcell.e-gridchkbox,
     &.e-responsive .e-rowcell.e-gridchkbox-cell,
-    &.e-responsive .e-headercelldiv.e-headerchkcelldiv {
+    &.e-responsive .e-headercelldiv.e-headerchkcelldiv,
+    &.e-responsive .e-rowcell.e-boolcell {
       text-overflow: clip;
+    }
+
+    .e-addedrow .e-rowcell.e-boolcell .e-frame.e-check {
+      color: $grid-checkmark-color;
     }
 
     &.e-default .e-headercell,
@@ -2068,6 +2085,31 @@ margin: $grid-group-animator-cell-margin;
       border-width: $grid-headercell-both-border-width;
     }
 
+    &:not(.sf-grid, .e-rtl).e-default.e-bothlines .e-headercell.e-leftfreeze.e-freezeleftborder {
+      border-right-width: 2px;
+    }
+
+    &:not(.sf-grid, .e-rtl).e-default.e-bothlines .e-headercell.e-rightfreeze.e-freezerightborder {
+      border-left-width: 2px;
+    }
+
+    &:not(.sf-grid, .e-rtl).e-default.e-bothlines .e-headercell.e-fixedfreeze.e-freezerightborder {
+      border-right-width: 1px;
+    }
+
+    &.e-rtl:not(.sf-grid).e-default.e-bothlines .e-headercell.e-leftfreeze.e-freezeleftborder {
+      border-left-width: 2px;
+    }
+
+    &.e-rtl:not(.sf-grid).e-default.e-bothlines .e-headercell.e-rightfreeze.e-freezerightborder {
+      border-right-width: 2px;
+    }
+
+    &.e-rtl:not(.sf-grid).e-default.e-bothlines .e-headercell.e-fixedfreeze.e-freezeleftborder {
+      border-right-width: 1px;
+    }
+
+
     &:not(.sf-grid).e-default table th[rowspan]  {
       border-width: $grid-headercell-both-border-width;
     }
@@ -2104,7 +2146,7 @@ margin: $grid-group-animator-cell-margin;
       }
   
     &.e-default:not(.e-rtl) tr {
-        & td:first-child:not(.e-xlsel-left-border, .e-fixedfreeze.e-freezeleftborder),
+        & td:first-child:not(.e-xlsel-left-border, .e-fixedfreeze.e-freezeleftborder, .e-addfreezefirstchildborder),
         & th.e-headercell:first-child:not(.e-firstcell):not(.e-headercell.e-frozen-left-border),
         & th.e-filterbarcell:first-child:not(.e-filterbarcell.e-frozen-left-border) {
             border-left-width: 0;  
@@ -3531,7 +3573,7 @@ margin: $grid-group-animator-cell-margin;
       box-shadow: -4px 0 8px $grid-frozen-shadow-background-color;
     }
 
-    &.e-right-shadow .e-rightfreeze.e-freezerightborder:not(.e-xlsel-left-border) {
+    &.e-right-shadow:not(.e-rtl) .e-rightfreeze.e-freezerightborder:not(.e-xlsel-left-border) {
       border-left-color: transparent;
     }
 
@@ -3552,15 +3594,15 @@ margin: $grid-group-animator-cell-margin;
       box-shadow: $grid-dragborder-box-shadow, 4px 0 8px $grid-frozen-shadow-background-color;
     }
 
-    &.e-lib.e-default .e-headercell.e-fixedfreeze.e-freezeleftborder,
-    &.e-lib .e-fixedfreeze.e-freezeleftborder,
-    .e-fixedfreeze.e-freezeleftborder {
+    &.e-lib.e-default:not(.e-rtl) .e-headercell.e-fixedfreeze.e-freezeleftborder:not(.e-removefreezeleftborder),
+    &.e-lib:not(.e-rtl) .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezeleftborder),
+    &:not(.e-rtl) .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezeleftborder) {
       border-left-width: 1px;
     }
 
-    &.e-lib.e-default .e-headercell.e-fixedfreeze.e-freezerightborder,
-    &.e-lib .e-fixedfreeze.e-freezerightborder,
-    .e-fixedfreeze.e-freezerightborder {
+    &.e-lib.e-default:not(.e-rtl) .e-headercell.e-fixedfreeze.e-freezerightborder:not(.e-removefreezerightborder),
+    &.e-lib:not(.e-rtl) .e-fixedfreeze.e-freezerightborder:not(.e-removefreezerightborder),
+    &:not(.e-rtl) .e-fixedfreeze.e-freezerightborder:not(.e-removefreezerightborder) {
       border-right-width: 1px;
     }
 
@@ -3709,15 +3751,15 @@ margin: $grid-group-animator-cell-margin;
         border-right-width: 2px;
       }
   
-      &.e-lib.e-default .e-headercell.e-fixedfreeze.e-freezeleftborder,
-      &.e-lib .e-fixedfreeze.e-freezeleftborder,
-      .e-fixedfreeze.e-freezeleftborder {
+      &.e-lib.e-default .e-headercell.e-fixedfreeze.e-freezeleftborder:not(.e-removefreezerightborder),
+      &.e-lib .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezerightborder),
+      .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezerightborder) {
         border-right-width: 1px;
       }
   
-      &.e-lib.e-default .e-headercell.e-fixedfreeze.e-freezerightborder,
-      &.e-lib .e-fixedfreeze.e-freezerightborder,
-      .e-fixedfreeze.e-freezerightborder {
+      &.e-lib.e-default .e-headercell.e-fixedfreeze.e-freezerightborder:not(.e-removefreezeleftborder),
+      &.e-lib .e-fixedfreeze.e-freezerightborder:not(.e-removefreezeleftborder),
+      .e-fixedfreeze.e-freezerightborder:not(.e-removefreezeleftborder) {
         border-left-width: 1px;
       }
 
@@ -3912,11 +3954,11 @@ margin: $grid-group-animator-cell-margin;
         border-right-width: 2px;
       }
 
-      & .e-rowcell.e-fixedfreeze.e-freezeleftborder:not(.e-xlsel-right-border) {
+      & .e-rowcell.e-fixedfreeze.e-freezeleftborder:not(.e-xlsel-right-border, .e-removefreezerightborder) {
         border-right-width: 1px;
       }
 
-      & .e-rowcell.e-fixedfreeze.e-freezerightborder:not(.e-xlsel-left-border) {
+      & .e-rowcell.e-fixedfreeze.e-freezerightborder:not(.e-xlsel-left-border, .e-removefreezeleftborder) {
         border-left-width: 1px;
       }
 
@@ -3971,7 +4013,7 @@ margin: $grid-group-animator-cell-margin;
       }
 
       &.e-default.e-bothlines tr {
-        & td:first-child:not(.e-summarycell),
+        & td:first-child:not(.e-summarycell, .e-freezeleftborder),
         & th:first-child {
           border-left-width: 1px;
         }
@@ -3983,7 +4025,7 @@ margin: $grid-group-animator-cell-margin;
       }
 
       &.e-default {
-        & tr td:last-child:not(.e-xlsel-left-border),
+        & tr td:last-child:not(.e-xlsel-left-border, .e-addfreezefirstchildborder),
         & .e-gridheader table tr th:last-child {
           border-left: 0;
         }
@@ -5036,6 +5078,12 @@ margin: $grid-group-animator-cell-margin;
     & .e-emptyrow {
       & td.e-lastrowcell {
         border-bottom: 0;
+      }
+    }
+
+    & .e-emptyrow.e-show-added-row {
+      & td.e-lastrowcell {
+        border-bottom: $grid-border-bottom-width;
       }
     }
 

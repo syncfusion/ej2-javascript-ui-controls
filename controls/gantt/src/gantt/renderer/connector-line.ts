@@ -371,7 +371,7 @@ export class ConnectorLine {
      * @private
      */
     private getHeightValue(data: IConnectorLineObject): number {
-        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
+        if (this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
             return (data.parentIndex * this.parent.rowHeight) > (data.childIndex * this.parent.rowHeight) ?
             ((data.parentIndex * this.parent.rowHeight) - (data.childIndex * this.parent.rowHeight)) :
             ((data.childIndex * this.parent.rowHeight) - (data.parentIndex * this.parent.rowHeight));
@@ -467,7 +467,7 @@ export class ConnectorLine {
         let parentOverlapTopValue: number = 0;
         let childOverlapTopValue: number = 0;
         let count: number = 0;
-        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
+        if (this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
                 if (this.parent.getRowByIndex(i as number).style.display != 'none') {
                     if (count < data.parentIndex) {

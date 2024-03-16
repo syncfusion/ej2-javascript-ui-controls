@@ -24,6 +24,8 @@ export const RIBBON_POPUP_CONTROL: string = 'e-ribbon-popup-control';
 /** @hidden */
 export const RIBBON_POPUP_OPEN: string = 'e-ribbon-open';
 /** @hidden */
+export const RIBBON_KEYTIP: string = 'e-ribbon-keytip';
+/** @hidden */
 export const SPACE: string = ' ';
 /** @hidden */
 export const HORIZONTAL_SCROLLBAR: string = 'e-hscroll-bar';
@@ -31,6 +33,8 @@ export const HORIZONTAL_SCROLLBAR: string = 'e-hscroll-bar';
 export const HIDE_CSS: string = 'e-ribbon-hide';
 /** @hidden */
 export const RIBBON_TAB: string = 'e-ribbon-tab';
+/** @hidden */
+export const RIBBON_CONTEXTUAL_TAB: string = 'e-ribbon-contextual-tab';
 /** @hidden */
 export const RIBBON_TAB_ACTIVE: string = 'e-ribbon-active';
 /** @hidden */
@@ -63,6 +67,8 @@ export const RIBBON_MULTIPLE_BUTTON_SELECTION: string = 'e-ribbon-multiple-selec
 export const RIBBON_GROUP_BUTTON: string = 'e-ribbon-group-button';
 /** @hidden */
 export const RIBBON_GROUP_BUTTON_OVERFLOW_POPUP: string = 'e-ribbon-group-button-overflow-popup';
+/** @hidden */
+export const RIBBON_GROUP_BUTTON_CONTENT: string = 'e-ribbon-group-button-content';
 /** @hidden */
 export const RIBBON_GROUP_CONTAINER: string = 'e-ribbon-group-container';
 /** @hidden */
@@ -189,6 +195,8 @@ export const RIBBON_FOOTER_MENU_LIST: string = '_footermenulist';
 export const RIBBON_HELP_PANE_TEMPLATE_ID: string = '_helppanetemplate';
 /** @hidden */
 export const RIBBON_GROUP_BUTTON_ID: string = '_grpbtn';
+/** @hidden */
+export const RIBBON_KEYTIP_ID: string = '_keytip';
 
 /** @hidden */
 export const RIBBON_FILE_MENU_WIDTH: string = '--fileMenuWidth';

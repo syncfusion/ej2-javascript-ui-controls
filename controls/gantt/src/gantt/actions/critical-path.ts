@@ -271,7 +271,10 @@ export class CriticalPath {
                 indexFromTaskId = this.resourceCollectionIds.indexOf(fromDateArray1[0].toString());
                 indexToTaskId = this.resourceCollectionIds.indexOf(fromDataObject[0]['todateID'].toString());
             }
-            const fromIdFlatData: ITaskData = flatRecords[indexFromTaskId as number].ganttProperties;
+            let fromIdFlatData: ITaskData;
+            if (indexFromTaskId != -1) {
+                fromIdFlatData = flatRecords[indexFromTaskId as number].ganttProperties;
+            }
             const toIdFlatData: ITaskData = flatRecords[indexToTaskId as number].ganttProperties;
             if (fromDateArray1.length > 1) {
                 if (fromDateArray1[1].indexOf('hour') !== -1) {
@@ -283,72 +286,21 @@ export class CriticalPath {
                     offsetInMillSec = parseFloat(fromDateArray1[1]);
                 }
             }
-            // calculate slack value for the task contains predecessor connection in "finish to start".
-            if (fromDataPredecessor[i as number] === 'FS') {
-                if (fromIdFlatData.endDate > toIdFlatData.startDate) {
-                    /* eslint-disable-next-line */
-                    dateDifference = -(this.parent.dataOperation.getDuration(toIdFlatData.startDate, fromIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
-                }
-                else {
-                    /* eslint-disable-next-line */
-                    dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.endDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
-                }
-
-                // execute if the slack value is not set initially.
-                if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
-                    // execute if the offset value is not given.
-                    if (fromDateArray1.length <= 1) {
-                        if (collection[totaskId as number]['slack'] + dateDifference < 0) {
-                            collection[fromTaskIdIndex as number]['slack'] = 0;
-                        }
-                        else {
-                            collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
-                        }
-                    }
-                }
-                // execute if the current calculated slack value is less than the previous slack value.
-                else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference &&
-                    collection[fromTaskIdIndex as number]['slack'] !== 0) {
-                    // execute if the offset value is not given.
-                    if (fromDateArray1.length <= 1) {
-                        if (collection[totaskId as number]['slack'] + dateDifference < 0) {
-                            collection[fromTaskIdIndex as number]['slack'] = 0;
-                        }
-                        else {
-                            collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
-                        }
-                    }
-                }
-                // execute if the offset value is given.
-                if (fromDateArray1.length > 1) {
-                    collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
-                    collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
-                    if (collection[fromTaskIdIndex as number]['slack'] < 0) {
-                        collection[fromTaskIdIndex as number]['slack'] = 0;
-                    }
-                }
-                collection[fromTaskIdIndex as number]['fs'] = 1;
-                collection[fromTaskIdIndex as number]['fsslack'] = collection[fromTaskIdIndex as number]['slack'];
-                collection[fromTaskIdIndex as number]['enddate'] = fromIdFlatData.startDate;
-                if (fromIdFlatData.endDate >= checkEndDate && fromIdFlatData.endDate <= checkEndDate) {
-                    collection[fromTaskIdIndex as number]['slack'] = 0;
-                }
-            }
-
-            //  calculate slack value for the task contains predecessor connection in "start to start".
-            if (fromDataPredecessor[i as number] === 'SS') {
-                // It execute if the task is in auto mode.
-                if (fromIdFlatData.isAutoSchedule) {
-                    if (fromIdFlatData.startDate > toIdFlatData.startDate) {
+            if (fromIdFlatData) {
+                // calculate slack value for the task contains predecessor connection in "finish to start".
+                if (fromDataPredecessor[i as number] === 'FS') {
+                    if (fromIdFlatData.endDate > toIdFlatData.startDate) {
                         /* eslint-disable-next-line */
-                        dateDifference = -(this.parent.dataOperation.getDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
+                        dateDifference = -(this.parent.dataOperation.getDuration(toIdFlatData.startDate, fromIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
                     }
                     else {
                         /* eslint-disable-next-line */
-                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
+                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.endDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
                     }
-                    // It execute while the slack value is not set to the corresponding task.
+
+                    // execute if the slack value is not set initially.
                     if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
+                        // execute if the offset value is not given.
                         if (fromDateArray1.length <= 1) {
                             if (collection[totaskId as number]['slack'] + dateDifference < 0) {
                                 collection[fromTaskIdIndex as number]['slack'] = 0;
@@ -358,9 +310,10 @@ export class CriticalPath {
                             }
                         }
                     }
-                    //It execute while already the slack value is set and it is higher than the datedifference. 
+                    // execute if the current calculated slack value is less than the previous slack value.
                     else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference &&
                         collection[fromTaskIdIndex as number]['slack'] !== 0) {
+                        // execute if the offset value is not given.
                         if (fromDateArray1.length <= 1) {
                             if (collection[totaskId as number]['slack'] + dateDifference < 0) {
                                 collection[fromTaskIdIndex as number]['slack'] = 0;
@@ -381,109 +334,38 @@ export class CriticalPath {
                     collection[fromTaskIdIndex as number]['fs'] = 1;
                     collection[fromTaskIdIndex as number]['fsslack'] = collection[fromTaskIdIndex as number]['slack'];
                     collection[fromTaskIdIndex as number]['enddate'] = fromIdFlatData.startDate;
-                }
-                // It execute if the task is in not an auto mode task.
-                else if (!fromIdFlatData.isAutoSchedule) {
-                    dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
-                    if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
-                        collection[fromTaskIdIndex as number]['slack'] = dateDifference;
-                    }
-                    else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference &&
-                        collection[fromTaskIdIndex as number]['slack'] !== 0) {
-                        collection[fromTaskIdIndex as number]['slack'] = dateDifference;
+                    if (fromIdFlatData.endDate >= checkEndDate && fromIdFlatData.endDate <= checkEndDate) {
+                        collection[fromTaskIdIndex as number]['slack'] = 0;
                     }
                 }
-                if (fromIdFlatData.endDate >= checkEndDate && fromIdFlatData.endDate <= checkEndDate) {
-                    collection[fromTaskIdIndex as number]['slack'] = 0;
-                }
-            }
 
-            //  calculate slack value for the task contains predecessor connection in "finish to finish".
-            if (fromDataPredecessor[i as number] === 'FF') {
-                // execute if the previous task is from finish to start or finish to finish state.
-                if (collection[totaskId as number]['fs'] === 1 || collection[totaskId as number]['ff'] === 1 ||
-                    collection[totaskId as number]['fs'] === -1) {
-                    if (collection[totaskId as number]['fs'] === 1 || collection[totaskId as number]['ff'] === 1) {
-                        prevTaskEnddate = toIdFlatData.endDate;
-                        ffslack = collection[totaskId as number]['slack'];
-                    }
-                    if (collection[totaskId as number]['fs'] === -1) {
-                        prevTaskEnddate = collection[totaskId as number]['enddate'];
-                        ffslack = collection[totaskId as number]['slack'];
-                    }
-                    if (prevTaskEnddate > fromIdFlatData.endDate) {
-                        dateDifference = -(this.getSlackDuration(fromIdFlatData.endDate, prevTaskEnddate, 'minute',
-                            flatRecords[indexFromTaskId as number]));
-                    }
-                    else {
-                        dateDifference = this.getSlackDuration(prevTaskEnddate, fromIdFlatData.endDate, 'minute',
-                            flatRecords[indexFromTaskId as number]);
-                    }
-                    // set the slack value if the slack value is not set initially.
-                    if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
-                        // execute if the offset value is not given.
-                        if (fromDateArray1.length <= 1) {
-                            if (ffslack - dateDifference < 0) {
-                                collection[fromTaskIdIndex as number]['slack'] = 0;
-                            }
-                            else {
-                                collection[fromTaskIdIndex as number]['slack'] = ffslack - dateDifference;
-                            }
+                //  calculate slack value for the task contains predecessor connection in "start to start".
+                if (fromDataPredecessor[i as number] === 'SS') {
+                    // It execute if the task is in auto mode.
+                    if (fromIdFlatData.isAutoSchedule) {
+                        if (fromIdFlatData.startDate > toIdFlatData.startDate) {
+                            /* eslint-disable-next-line */
+                            dateDifference = -(this.parent.dataOperation.getDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
                         }
-                    }
-                    // overright the slack value if the current calculated slack value is less than the previous slack value.
-                    else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference && collection[fromTaskIdIndex as number]['slack'] !== 0) {
-                        // execute if the offset value is not given.
-                        if (fromDateArray1.length <= 1) {
-                            if (ffslack - dateDifference < 0) {
-                                collection[fromTaskIdIndex as number]['slack'] = 0;
-                            }
-                            else {
-                                collection[fromTaskIdIndex as number]['slack'] = ffslack - dateDifference;
-                            }
+                        else {
+                            /* eslint-disable-next-line */
+                            dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
                         }
-                    }
-                    // execute if the offset value is given.
-                    if (fromDateArray1.length > 1) {
-                        collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] - dateDifference;
-                        collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
-                        if (collection[fromTaskIdIndex as number]['slack'] < 0) {
-                            collection[fromTaskIdIndex as number]['slack'] = 0;
-                        }
-                    }
-                    collection[fromTaskIdIndex as number]['ff'] = 1;
-                    collection[fromTaskIdIndex as number]['enddate'] = prevTaskEnddate;
-                    collection[fromTaskIdIndex as number]['fsslack'] = ffslack;
-                }
-                if (fromIdFlatData.endDate >= checkEndDate && fromIdFlatData.endDate <= checkEndDate) {
-                    collection[fromTaskIdIndex as number]['slack'] = 0;
-                }
-            }
-
-            //  calculate slack value for the task contains predecessor connection in "start to finish".
-            if (fromDataPredecessor[i as number] === 'SF') {
-                //It execute if the task is an auto mode task.
-                if (fromIdFlatData.isAutoSchedule) {
-                    //execute if the slack value is not set initially.
-                    if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
-                        // execute if the offset value is not given.
-                        if (fromDateArray1.length <= 1) {
-                            // execute if the previous task does no has sucessor.
-                            if (isNullOrUndefined(collection[totaskId as number]['to'])) {
-                                dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute',
-                                    flatRecords[indexFromTaskId as number]);
-                                collection[fromTaskIdIndex as number]['slack'] = dateDifference;
-                            }
-                            // execute if the previous task has sucessor.
-                            else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
-                                if (toIdFlatData.endDate > fromIdFlatData.startDate) {
-                                    /* eslint-disable-next-line */
-                                    dateDifference = -(this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
+                        // It execute while the slack value is not set to the corresponding task.
+                        if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
+                            if (fromDateArray1.length <= 1) {
+                                if (collection[totaskId as number]['slack'] + dateDifference < 0) {
+                                    collection[fromTaskIdIndex as number]['slack'] = 0;
                                 }
                                 else {
-                                    dateDifference = this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute',
-                                        flatRecords[indexFromTaskId as number]);
+                                    collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
                                 }
+                            }
+                        }
+                        //It execute while already the slack value is set and it is higher than the datedifference. 
+                        else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference &&
+                            collection[fromTaskIdIndex as number]['slack'] !== 0) {
+                            if (fromDateArray1.length <= 1) {
                                 if (collection[totaskId as number]['slack'] + dateDifference < 0) {
                                     collection[fromTaskIdIndex as number]['slack'] = 0;
                                 }
@@ -493,20 +375,7 @@ export class CriticalPath {
                             }
                         }
                         // execute if the offset value is given.
-                        else if (fromDateArray1.length > 1) {
-                            if (toIdFlatData.endDate >= fromIdFlatData.endDate) {
-                                if (fromIdFlatData.startDate > toIdFlatData.endDate) {
-                                    /* eslint-disable-next-line */
-                                    dateDifference = -(this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', flatRecords[indexFromTaskId as number]));
-                                }
-                                else {
-                                    /* eslint-disable-next-line */
-                                    dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
-                                }
-                            } else {
-                                dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute',
-                                    flatRecords[indexFromTaskId as number]);
-                            }
+                        if (fromDateArray1.length > 1) {
                             collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
                             collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
                             if (collection[fromTaskIdIndex as number]['slack'] < 0) {
@@ -517,26 +386,108 @@ export class CriticalPath {
                         collection[fromTaskIdIndex as number]['fsslack'] = collection[fromTaskIdIndex as number]['slack'];
                         collection[fromTaskIdIndex as number]['enddate'] = fromIdFlatData.startDate;
                     }
-                    else {
-                        if (fromDateArray1.length <= 1) {
-                            if (isNullOrUndefined(collection[totaskId as number]['to'])) {
-                                /* eslint-disable-next-line */
-                                dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
-                            } else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
-                                if (toIdFlatData.endDate > fromIdFlatData.startDate) {
-                                    // eslint-disable-next-line
-                                    dateDifference = -(this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
+                    // It execute if the task is in not an auto mode task.
+                    else if (!fromIdFlatData.isAutoSchedule) {
+                        dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
+                        if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
+                            collection[fromTaskIdIndex as number]['slack'] = dateDifference;
+                        }
+                        else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference &&
+                            collection[fromTaskIdIndex as number]['slack'] !== 0) {
+                            collection[fromTaskIdIndex as number]['slack'] = dateDifference;
+                        }
+                    }
+                    if (fromIdFlatData.endDate >= checkEndDate && fromIdFlatData.endDate <= checkEndDate) {
+                        collection[fromTaskIdIndex as number]['slack'] = 0;
+                    }
+                }
+
+                //  calculate slack value for the task contains predecessor connection in "finish to finish".
+                if (fromDataPredecessor[i as number] === 'FF') {
+                    // execute if the previous task is from finish to start or finish to finish state.
+                    if (collection[totaskId as number]['fs'] === 1 || collection[totaskId as number]['ff'] === 1 ||
+                        collection[totaskId as number]['fs'] === -1) {
+                        if (collection[totaskId as number]['fs'] === 1 || collection[totaskId as number]['ff'] === 1) {
+                            prevTaskEnddate = toIdFlatData.endDate;
+                            ffslack = collection[totaskId as number]['slack'];
+                        }
+                        if (collection[totaskId as number]['fs'] === -1) {
+                            prevTaskEnddate = collection[totaskId as number]['enddate'];
+                            ffslack = collection[totaskId as number]['slack'];
+                        }
+                        if (prevTaskEnddate > fromIdFlatData.endDate) {
+                            dateDifference = -(this.getSlackDuration(fromIdFlatData.endDate, prevTaskEnddate, 'minute',
+                                flatRecords[indexFromTaskId as number]));
+                        }
+                        else {
+                            dateDifference = this.getSlackDuration(prevTaskEnddate, fromIdFlatData.endDate, 'minute',
+                                flatRecords[indexFromTaskId as number]);
+                        }
+                        // set the slack value if the slack value is not set initially.
+                        if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
+                            // execute if the offset value is not given.
+                            if (fromDateArray1.length <= 1) {
+                                if (ffslack - dateDifference < 0) {
+                                    collection[fromTaskIdIndex as number]['slack'] = 0;
                                 }
                                 else {
-                                    dateDifference = this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute',
-                                        flatRecords[indexFromTaskId as number]);
+                                    collection[fromTaskIdIndex as number]['slack'] = ffslack - dateDifference;
                                 }
                             }
-                            // execute if the current calculated slack value is less than the previous slack value.
-                            if (collection[fromTaskIdIndex as number]['slack'] > dateDifference && collection[fromTaskIdIndex as number]['slack'] !== 0) {
+                        }
+                        // overright the slack value if the current calculated slack value is less than the previous slack value.
+                        else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference && collection[fromTaskIdIndex as number]['slack'] !== 0) {
+                            // execute if the offset value is not given.
+                            if (fromDateArray1.length <= 1) {
+                                if (ffslack - dateDifference < 0) {
+                                    collection[fromTaskIdIndex as number]['slack'] = 0;
+                                }
+                                else {
+                                    collection[fromTaskIdIndex as number]['slack'] = ffslack - dateDifference;
+                                }
+                            }
+                        }
+                        // execute if the offset value is given.
+                        if (fromDateArray1.length > 1) {
+                            collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] - dateDifference;
+                            collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
+                            if (collection[fromTaskIdIndex as number]['slack'] < 0) {
+                                collection[fromTaskIdIndex as number]['slack'] = 0;
+                            }
+                        }
+                        collection[fromTaskIdIndex as number]['ff'] = 1;
+                        collection[fromTaskIdIndex as number]['enddate'] = prevTaskEnddate;
+                        collection[fromTaskIdIndex as number]['fsslack'] = ffslack;
+                    }
+                    if (fromIdFlatData.endDate >= checkEndDate && fromIdFlatData.endDate <= checkEndDate) {
+                        collection[fromTaskIdIndex as number]['slack'] = 0;
+                    }
+                }
+
+                //  calculate slack value for the task contains predecessor connection in "start to finish".
+                if (fromDataPredecessor[i as number] === 'SF') {
+                    //It execute if the task is an auto mode task.
+                    if (fromIdFlatData.isAutoSchedule) {
+                        //execute if the slack value is not set initially.
+                        if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
+                            // execute if the offset value is not given.
+                            if (fromDateArray1.length <= 1) {
+                                // execute if the previous task does no has sucessor.
                                 if (isNullOrUndefined(collection[totaskId as number]['to'])) {
+                                    dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute',
+                                        flatRecords[indexFromTaskId as number]);
                                     collection[fromTaskIdIndex as number]['slack'] = dateDifference;
-                                } else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
+                                }
+                                // execute if the previous task has sucessor.
+                                else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
+                                    if (toIdFlatData.endDate > fromIdFlatData.startDate) {
+                                        /* eslint-disable-next-line */
+                                        dateDifference = -(this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
+                                    }
+                                    else {
+                                        dateDifference = this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute',
+                                            flatRecords[indexFromTaskId as number]);
+                                    }
                                     if (collection[totaskId as number]['slack'] + dateDifference < 0) {
                                         collection[fromTaskIdIndex as number]['slack'] = 0;
                                     }
@@ -545,53 +496,107 @@ export class CriticalPath {
                                     }
                                 }
                             }
-                        } else if (fromDateArray1.length > 1) {
-                            if (toIdFlatData.endDate > fromIdFlatData.endDate) {
-                                if (fromIdFlatData.startDate > toIdFlatData.endDate) {
-                                    /* eslint-disable-next-line */
-                                    dateDifference = -(this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', flatRecords[indexFromTaskId as number]));
+                            // execute if the offset value is given.
+                            else if (fromDateArray1.length > 1) {
+                                if (toIdFlatData.endDate >= fromIdFlatData.endDate) {
+                                    if (fromIdFlatData.startDate > toIdFlatData.endDate) {
+                                        /* eslint-disable-next-line */
+                                        dateDifference = -(this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', flatRecords[indexFromTaskId as number]));
+                                    }
+                                    else {
+                                        /* eslint-disable-next-line */
+                                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
+                                    }
+                                } else {
+                                    dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute',
+                                        flatRecords[indexFromTaskId as number]);
                                 }
-                                else {
-                                    // eslint-disable-next-line
-                                    dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
-                                }
-                            } else {
-                                /* eslint-disable-next-line */
-                                dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
-                            }
-                            // execute if the current calculated slack value is less than the previous slack value.
-                            if (collection[fromTaskIdIndex as number]['slack'] > dateDifference && collection[fromTaskIdIndex as number]['slack'] !== 0) {
                                 collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
                                 collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
                                 if (collection[fromTaskIdIndex as number]['slack'] < 0) {
                                     collection[fromTaskIdIndex as number]['slack'] = 0;
                                 }
                             }
+                            collection[fromTaskIdIndex as number]['fs'] = 1;
+                            collection[fromTaskIdIndex as number]['fsslack'] = collection[fromTaskIdIndex as number]['slack'];
+                            collection[fromTaskIdIndex as number]['enddate'] = fromIdFlatData.startDate;
                         }
-                        collection[fromTaskIdIndex as number]['fs'] = 1;
-                        collection[fromTaskIdIndex as number]['fsslack'] = collection[fromTaskIdIndex as number]['slack'];
-                        collection[fromTaskIdIndex as number]['enddate'] = fromIdFlatData.startDate;
+                        else {
+                            if (fromDateArray1.length <= 1) {
+                                if (isNullOrUndefined(collection[totaskId as number]['to'])) {
+                                    /* eslint-disable-next-line */
+                                    dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
+                                } else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
+                                    if (toIdFlatData.endDate > fromIdFlatData.startDate) {
+                                        // eslint-disable-next-line
+                                        dateDifference = -(this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
+                                    }
+                                    else {
+                                        dateDifference = this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute',
+                                            flatRecords[indexFromTaskId as number]);
+                                    }
+                                }
+                                // execute if the current calculated slack value is less than the previous slack value.
+                                if (collection[fromTaskIdIndex as number]['slack'] > dateDifference && collection[fromTaskIdIndex as number]['slack'] !== 0) {
+                                    if (isNullOrUndefined(collection[totaskId as number]['to'])) {
+                                        collection[fromTaskIdIndex as number]['slack'] = dateDifference;
+                                    } else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
+                                        if (collection[totaskId as number]['slack'] + dateDifference < 0) {
+                                            collection[fromTaskIdIndex as number]['slack'] = 0;
+                                        }
+                                        else {
+                                            collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
+                                        }
+                                    }
+                                }
+                            } else if (fromDateArray1.length > 1) {
+                                if (toIdFlatData.endDate > fromIdFlatData.endDate) {
+                                    if (fromIdFlatData.startDate > toIdFlatData.endDate) {
+                                        /* eslint-disable-next-line */
+                                        dateDifference = -(this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', flatRecords[indexFromTaskId as number]));
+                                    }
+                                    else {
+                                        // eslint-disable-next-line
+                                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
+                                    }
+                                } else {
+                                    /* eslint-disable-next-line */
+                                    dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
+                                }
+                                // execute if the current calculated slack value is less than the previous slack value.
+                                if (collection[fromTaskIdIndex as number]['slack'] > dateDifference && collection[fromTaskIdIndex as number]['slack'] !== 0) {
+                                    collection[fromTaskIdIndex as number]['slack'] = collection[totaskId as number]['slack'] + dateDifference;
+                                    collection[fromTaskIdIndex as number]['slack'] = collection[fromTaskIdIndex as number]['slack'] - (offsetInMillSec);
+                                    if (collection[fromTaskIdIndex as number]['slack'] < 0) {
+                                        collection[fromTaskIdIndex as number]['slack'] = 0;
+                                    }
+                                }
+                            }
+                            collection[fromTaskIdIndex as number]['fs'] = 1;
+                            collection[fromTaskIdIndex as number]['fsslack'] = collection[fromTaskIdIndex as number]['slack'];
+                            collection[fromTaskIdIndex as number]['enddate'] = fromIdFlatData.startDate;
+                        }
+                    }
+                    //It execute if the task is an auto mode task.
+                    else if (!fromIdFlatData.isAutoSchedule) {
+                        dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
+                        if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
+                            collection[fromTaskIdIndex as number]['slack'] = dateDifference;
+                        }
+                        else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference && collection[fromTaskIdIndex as number]['slack'] !== 0) {
+                            collection[fromTaskIdIndex as number]['slack'] = dateDifference;
+                        }
+                    }
+                    if (fromIdFlatData.endDate >= checkEndDate && fromIdFlatData.endDate <= checkEndDate) {
+                        collection[fromTaskIdIndex as number]['slack'] = 0;
                     }
                 }
-                //It execute if the task is an auto mode task.
-                else if (!fromIdFlatData.isAutoSchedule) {
-                    dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
-                    if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
-                        collection[fromTaskIdIndex as number]['slack'] = dateDifference;
-                    }
-                    else if (collection[fromTaskIdIndex as number]['slack'] > dateDifference && collection[fromTaskIdIndex as number]['slack'] !== 0) {
-                        collection[fromTaskIdIndex as number]['slack'] = dateDifference;
-                    }
+                if (collection[fromTaskIdIndex as number]['from']) {
+                    fromDataObject.push({
+                        fromdata: collection[fromTaskIdIndex as number]['from'], todateID: collection[fromTaskIdIndex as number]['taskid'],
+                        fromDataPredecessor: collection[fromTaskIdIndex as number]['fromPredecessor']
+                    });
                 }
-                if (fromIdFlatData.endDate >= checkEndDate && fromIdFlatData.endDate <= checkEndDate) {
-                    collection[fromTaskIdIndex as number]['slack'] = 0;
-                }
-            }
-            if (collection[fromTaskIdIndex as number]['from']) {
-                fromDataObject.push({
-                    fromdata: collection[fromTaskIdIndex as number]['from'], todateID: collection[fromTaskIdIndex as number]['taskid'],
-                    fromDataPredecessor: collection[fromTaskIdIndex as number]['fromPredecessor']
-                });
             }
         }
         if (fromDataObject) {
@@ -688,51 +693,57 @@ export class CriticalPath {
                 }
                 let dateDifference: number;
                 const currentData: ITaskData = flatRecords[index as number].ganttProperties;
-                if (predecessorLength[i as number].type === 'FS') {
-                    /* eslint-disable-next-line */
-                    if (predecessorLength[i as number].to != currentData.taskId.toString() || this.parent.viewType === 'ResourceView'){
+                if (toID != -1) {
+                    if (predecessorLength[i as number].type === 'FS') {
                         /* eslint-disable-next-line */
-                        dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
-                    }
-                    else {
-                        toID = this.parent.ids.indexOf(predecessorLength[i as number].from);
-                        /* eslint-disable-next-line */
-                        dateDifference = this.parent.dataOperation.getDuration(flatRecords[toID as number].ganttProperties.endDate, currentData.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
-                        if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack == noSlackValue) {
-                            flatRecords[toID as number].slack = flatRecords[index as number].slack;
-                            flatRecords[toID as number].ganttProperties.slack = flatRecords[index as number].slack;
+                        if (predecessorLength[i as number].to != currentData.taskId.toString() || this.parent.viewType === 'ResourceView') {
+                            /* eslint-disable-next-line */
+                            dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                        }
+                        else {
+                            toID = this.parent.ids.indexOf(predecessorLength[i as number].from);
+                            /* eslint-disable-next-line */
+                            if (toID != -1) {
+                                dateDifference = this.parent.dataOperation.getDuration(flatRecords[toID as number].ganttProperties.endDate, currentData.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                                if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack == noSlackValue) {
+                                    flatRecords[toID as number].slack = flatRecords[index as number].slack;
+                                    flatRecords[toID as number].ganttProperties.slack = flatRecords[index as number].slack;
+                                }
+                            }
+                        }
+                        if (toID != -1) {
+                            if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack !== noSlackValue) {
+                                flatRecords[index as number].slack = flatRecords[toID as number].slack;
+                                flatRecords[index as number].ganttProperties.slack = flatRecords[toID as number].slack;
+                            }
+                            else if (dateDifference !== 0 && index !== toID && flatRecords[toID as number].isCritical) {
+                                flatRecords[index as number].slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
+                                flatRecords[index as number].ganttProperties.slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
+                            }
                         }
                     }
-                    if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack !== noSlackValue) {
-                        flatRecords[index as number].slack = flatRecords[toID as number].slack;
-                        flatRecords[index as number].ganttProperties.slack = flatRecords[toID as number].slack;
+                    else if (predecessorLength[i as number].type === 'SF') {
+                        /* eslint-disable-next-line */
+                        dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
                     }
-                    else if (dateDifference !== 0 && index !== toID && flatRecords[toID as number].isCritical) {
-                        flatRecords[index as number].slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
-                        flatRecords[index as number].ganttProperties.slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
+                    else if (predecessorLength[i as number].type === 'SS') {
+                        /* eslint-disable-next-line */
+                        dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
                     }
-                }
-                else if (predecessorLength[i as number].type === 'SF') {
-                    /* eslint-disable-next-line */
-                    dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
-                }
-                else if (predecessorLength[i as number].type === 'SS') {
-                    /* eslint-disable-next-line */
-                    dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
-                }
-                else {
-                    /* eslint-disable-next-line */
-                    dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
-                }
-                if (typeof (flatRecords[index as number][this.parent.taskFields.id]) === 'number') {
-                    predecessorFrom = parseInt(predecessorLength[i as number].from, 10);
-                } else {
-                    predecessorFrom = predecessorLength[i as number].from
-                }
-                if (predecessorFrom === flatRecords[index as number][this.parent.taskFields.id] &&
-                    flatRecords[toID as number].slack === noSlackValue && dateDifference <= 0) {
-                    flatRecords[index as number].slack = noSlackValue;
-                    flatRecords[index as number].ganttProperties.slack = noSlackValue;
+                    else {
+                        /* eslint-disable-next-line */
+                        dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                    }
+                    if (typeof (flatRecords[index as number][this.parent.taskFields.id]) === 'number') {
+                        predecessorFrom = parseInt(predecessorLength[i as number].from, 10);
+                    } else {
+                        predecessorFrom = predecessorLength[i as number].from
+                    }
+                    if (predecessorFrom === flatRecords[index as number][this.parent.taskFields.id] &&
+                        flatRecords[toID as number].slack === noSlackValue && dateDifference <= 0) {
+                        flatRecords[index as number].slack = noSlackValue;
+                        flatRecords[index as number].ganttProperties.slack = noSlackValue;
+                    }
                 }
             }
             if (flatRecords[index as number].slack === noSlackValue) {

@@ -314,11 +314,10 @@ describe('Gantt filter support', () => {
             ganttObj.filterByColumn("duration","equal",11);
             (<HTMLElement>ganttObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
         });
-        it('Initial Filtering resourceID', (done: Function) => {
+        it('Initial Filtering resourceID', () => {
             ganttObj.actionComplete = function (args: any): void {
                 if(args.requestType === 'filtering'){
                 expect(ganttObj.currentViewData.length).toBe(20);
-                done();
                 }
               }
             let element: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[0];
@@ -327,7 +326,6 @@ describe('Gantt filter support', () => {
             triggerMouseEvent(element1, 'click');
             let element2: any = document.getElementsByClassName('e-footer-content')[0].children[0];
             triggerMouseEvent(element2, 'click');
-            done();
         });
     });
     describe('Gantt Excel filter action', () => {
@@ -392,11 +390,10 @@ describe('Gantt filter support', () => {
             ganttObj.filterByColumn("duration","equal",11);
             (<HTMLElement>ganttObj.element.querySelectorAll('.e-filtermenudiv')[2]).click();
         });
-        it('Initial Filtering Task Name', (done: Function) => {
+        it('Initial Filtering Task Name', () => {
             ganttObj.actionComplete = function (args: any): void {
                 if(args.requestType === 'filtering'){
                 expect(ganttObj.currentViewData.length).toBe(3);
-                done();
                 }
               }
             let element: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[0];
@@ -405,7 +402,6 @@ describe('Gantt filter support', () => {
             triggerMouseEvent(element1, 'click');
             let element3: any = document.getElementsByClassName("e-control e-btn e-lib e-primary e-flat")[0];
             triggerMouseEvent(element3, 'click');
-            done();
         });
     });
     describe('Gantt disable filter for one column', () => {
@@ -495,6 +491,7 @@ describe('Gantt filter support', () => {
                         child: 'subtasks',
                     },
                     columns: [
+                        { field: 'TaskID', visible: false },
                         {
                             field: 'TaskName',
                             headerText: 'Task Name',
@@ -627,6 +624,7 @@ describe('Gantt filter support', () => {
                         child: 'subtasks',
                     },
                     columns: [
+                        { field: 'TaskID', visible: false },
                         {
                             field: 'TaskName',
                             headerText: 'Task Name',

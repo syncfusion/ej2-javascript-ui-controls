@@ -23,6 +23,14 @@ export class BackstageItem extends ChildProperty<BackstageItem>  {
     public id: string;
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    @Property('')
+    public keyTip: string;
+
+    /**
      * Specifies the backstage item’s content as selector.
      *
      * @default ''
@@ -92,4 +100,3 @@ export interface BackstageItemClickArgs extends BaseEventArgs {
      */
     isBackButton: boolean;
 }
-  

@@ -242,10 +242,19 @@ export class Render {
             }
         }
         this.parent['args'] = args;
-        if ((isNullOrUndefined(this.parent.rowTemplate) && !((<{ isReact?: boolean }>this.parent).isReact))
-            || (((<{ isReact?: boolean }>this.parent).isReact) &&
-                !args.column['template'])) {
+        const columnModel: Column[] = getValue('columnModel', this.parent);
+        const treeColumn: Column = columnModel[this.parent.treeColumnIndex];
+        if ((isNullOrUndefined(this.parent.rowTemplate) && !((<{ isReact?: boolean }>this.parent).isReact))) {
             this.parent.trigger(events.queryCellInfo, args);
+        } else if ((((<{ isReact?: boolean }>this.parent).isReact) &&
+            treeColumn.field !== args.column.field)) {
+            const renderReactTemplates: string = 'renderReactTemplates';
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const thisRef: Render = this;
+            // tslint:disable-next-line:typedef
+            thisRef.parent[`${renderReactTemplates}`](function () {
+                thisRef.parent.trigger(events.queryCellInfo, args);
+            });
         }
     }
     private updateTreeCell(args: QueryCellInfoEventArgs, cellElement: HTMLElement): void {

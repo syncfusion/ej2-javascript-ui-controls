@@ -2,41 +2,7 @@
 
 ## [Unreleased]
 
-## 24.2.7 (2024-02-20)
-
-### PDF Parser
-
-#### Bug Fixes
-
-- Resolved an exception encountered while importing annotations from JSON file with custom data.
-
-## 24.2.5 (2024-02-13)
-
-### PDF Parser
-
-#### Bug Fixes
-
-- Resolved an exception during form field reordering.
-- Resolved an exception encountered while parsing destination from document link annotation.
-
-## 24.1.47 (2024-01-23)
-
-### PDF Parser
-
-#### Bug Fixes
-
-- The issues related to the preservation of transparent background colour in form fields and free text annotation have been resolved.
-
-## 24.1.44 (2024-01-03)
-
-### PDF Parser
-
-#### Bug Fixes
-
-- Appearance preservation issues in custom stamp annotation import and export have been resolved.
-- Resolved the exception encountered during the negative number value set to leader extension property of line annotations.
-
-## 24.1.41 (2023-12-18)
+## 25.1.35 (2024-03-15)
 
 ### PDF Parser
 

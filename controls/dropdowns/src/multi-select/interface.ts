@@ -37,6 +37,7 @@ export interface IMulitSelect extends Component<HTMLElement> {
     componentWrapper?: HTMLDivElement
     templateList?: { [key: string]: Object }
     itemTemplate?: string
+    enableVirtualization?: boolean
     headerTemplate?: string
     mobFilter?: boolean
     header?: HTMLElement

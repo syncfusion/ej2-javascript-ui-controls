@@ -51,9 +51,10 @@ export interface MenuModel extends MenuBaseModel{
     title?: string;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to enable the rendering of untrusted HTML values in the Menu component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
     enableHtmlSanitizer?: boolean;
 

@@ -196,7 +196,7 @@ export class AxisRenderer {
                     && axis.hideIntersectingLabel && (i === (length - 1))) ? '' : label.text;
                 label.text = (axis.showLastLabel && axis.hideIntersectingLabel && isCompleteAngle(axis.startAngle, axis.endAngle)
                     && (i === 0)) ? '' : label.text;
-                textElement(
+                const labelTextElement: Element = textElement(
                     new TextOption(
                         gauge.element.id + '_Axis_' + index + '_Label_' + i,
                         location.x, location.y, anchor, label.text,
@@ -205,6 +205,8 @@ export class AxisRenderer {
                     textFont, style.useRangeColor ? getRangeColor(label.value, <Range[]>axis.ranges, color) : color,
                     labelElement, 'pointer-events:none;'
                 );
+                labelTextElement.setAttribute('aria-label', label.text);
+                labelTextElement.setAttribute('role', 'region');
                 if (axis.hideIntersectingLabel) {
                     textWidth = label.size.width;
                     textHeight = !style.autoAngle ? label.size.height : textWidth;

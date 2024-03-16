@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Browser } from '@syncfusion/ej2-base';import { rotateTextSize, firstToLowerCase, isBreakLabel, getTitle } from '../../common/utils/helper';import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';import { DoubleRange } from '../utils/doubleRange';import { Chart3DSeries } from '../series/chart-series';import { Double3D } from '../axis/double-axis';import { DateTime3D } from '../axis/date-time-axis';import { Category3D } from '../axis/category-axis';import { DateTimeCategory3D } from '../axis/date-time-category-axis';import { ChartRangePadding, EdgeLabelPlacement, IntervalType, LabelIntersectAction, LabelPlacement, Orientation, SkeletonType, TextAlignment, ValueType } from '../../common/utils/enum';import { axisRangeCalculated } from '../../common/model/constants';import { textWrap } from '../../common/utils/helper';import { isNullOrUndefined } from '@syncfusion/ej2-base';import { Chart3D } from '../chart3D';import { Chart3DAxisRangeCalculatedEventArgs, Chart3DFont } from '../model/chart3d-Interface';import { VisibleRangeModel } from '../../common/model/interface';import { Chart3DFontModel } from '../model/chart3d-Interface-model';import { valueToCoefficients } from '../utils/chart3dRender';
+import { Property, Complex, ChildProperty, Browser } from '@syncfusion/ej2-base';import { rotateTextSize, firstToLowerCase, isBreakLabel, getTitle } from '../../common/utils/helper';import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';import { DoubleRange } from '../utils/doubleRange';import { Chart3DSeries } from '../series/chart-series';import { Double3D } from '../axis/double-axis';import { DateTime3D } from '../axis/date-time-axis';import { Category3D } from '../axis/category-axis';import { DateTimeCategory3D } from '../axis/date-time-category-axis';import { ChartRangePadding, EdgeLabelPlacement, IntervalType, LabelIntersectAction, LabelPlacement, Orientation, SkeletonType, TextAlignment, ValueType } from '../../common/utils/enum';import { axisRangeCalculated } from '../../common/model/constants';import { textWrap } from '../../common/utils/helper';import { isNullOrUndefined } from '@syncfusion/ej2-base';import { Chart3D } from '../chart3D';import { Chart3DAxisRangeCalculatedEventArgs, Chart3DTextFont } from '../model/chart3d-Interface';import { VisibleRangeModel } from '../../common/model/interface';import { Chart3DTextFontModel } from '../model/chart3d-Interface-model';import { valueToCoefficients } from '../utils/chart3dRender';
 
 /**
  * Interface for a class Chart3DRow
@@ -136,7 +136,7 @@ export interface Chart3DAxisModel {
     /**
      * Options to customize the axis label.
      */
-    labelStyle?: Chart3DFontModel;
+    labelStyle?: Chart3DTextFontModel;
 
     /**
      * Specifies the title of an axis.
@@ -148,7 +148,7 @@ export interface Chart3DAxisModel {
     /**
      * Options for customizing the axis title.
      */
-    titleStyle?: Chart3DFontModel;
+    titleStyle?: Chart3DTextFontModel;
 
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.

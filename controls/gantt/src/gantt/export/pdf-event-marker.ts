@@ -40,7 +40,7 @@ export class EventMarker {
             let diff: number = 10;
             if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
                 taskGraphics.drawLine(eventLine, new PointF(startPoint.x + (left - cumulativeWidth) + diff, cumulativeHeight), new PointF(startPoint.x + (left - cumulativeWidth) + diff, pageSize.height));
-                if (!isNullOrUndefined(eventMarker.label)) {
+                if (!isNullOrUndefined(eventMarker.label) && eventMarker.label.length > 0){
                     taskGraphics.save();
                     taskGraphics.translateTransform(startPoint.x + (left - cumulativeWidth) + 7 + diff, cumulativeHeight + pixelToPoint(50) + strSize.height / 2)
                     taskGraphics.rotateTransform(45);
@@ -53,7 +53,7 @@ export class EventMarker {
             }
             else {
                 taskGraphics.drawLine(eventLine, new PointF(startPoint.x + pixelToPoint(left - cumulativeWidth) + diff, cumulativeHeight), new PointF(startPoint.x + pixelToPoint(left - cumulativeWidth) + diff, pageSize.height));
-                if (!isNullOrUndefined(eventMarker.label)) {
+                if (!isNullOrUndefined(eventMarker.label) && eventMarker.label.length > 0) {
                     taskGraphics.save();
                     taskGraphics.translateTransform(startPoint.x + pixelToPoint(left - cumulativeWidth) + 7 + diff, cumulativeHeight + pixelToPoint(50) + strSize.height / 2)
                     taskGraphics.rotateTransform(45);

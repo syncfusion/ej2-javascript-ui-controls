@@ -224,6 +224,7 @@ export class _PdfStream extends _PdfBaseStream {
 }
 export class _PdfContentStream extends _PdfBaseStream {
     _bytes: number[];
+    _pendingResources: string;
     get length(): number {
         return this._bytes.length;
     }

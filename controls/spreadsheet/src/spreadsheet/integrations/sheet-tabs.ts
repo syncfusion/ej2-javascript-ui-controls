@@ -699,6 +699,7 @@ export class SheetTabs {
         EventHandler.remove(document, 'mousedown touchstart', this.renameInputFocusOut);
         const ele: HTMLElement = document.getElementById(this.parent.element.id + '_sheet_tab_panel');
         if (ele) { remove(ele); }
+        if (this.selaggregateCnt) { this.selaggregateCnt = null; }
         this.parent = null;
     }
 

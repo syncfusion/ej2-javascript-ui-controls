@@ -49,7 +49,7 @@ export class HistoryInfo extends BaseHistoryInfo {
                 if (this.editorHistory.isUndoing) {
                     for (let i: number = 0; i < this.modifiedActions.length; i++) {
                         if (action == 'RestrictEditing') {
-                            this.modifiedActions[parseInt(i.toString(), 10)].markerData.push(this.owner.editor.getMarkerData(this.modifiedActions[parseInt(i.toString(), 10)].removedNodes[0] as ElementBox));
+                            this.modifiedActions[parseInt(i.toString(), 10)].markerData.push(this.owner.editorModule.getMarkerData(this.modifiedActions[parseInt(i.toString(), 10)].removedNodes[0] as ElementBox));
                         }
                         operations.push(this.modifiedActions[parseInt(i.toString(), 10)].getDeleteOperation('DeleteBookmark', i == 0 ? true : undefined));
                         this.modifiedActions[parseInt(i.toString(), 10)].markerData.shift();
@@ -102,7 +102,7 @@ export class HistoryInfo extends BaseHistoryInfo {
             case 'PageBreak':
             case 'ColumnBreak':
                 if (this.owner.enableTrackChanges) {
-                    for (let i:number = 0; i < this.modifiedActions.length; i++) {
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
                         let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
                         if (currentHistory.removedNodes.length > 0) {
                             operations = operations.concat(currentHistory.getDeleteOperationsForTrackChanges());
@@ -111,19 +111,19 @@ export class HistoryInfo extends BaseHistoryInfo {
                         let operation: Operation = currentHistory.getInsertOperation('Enter');
                         let breakOperation: Operation = this.getInsertOperation(action);
                         operation.markerData = markerData;
-                        breakOperation.markerData = this.owner.editor.getMarkerData(undefined, undefined, this.owner.editor.getRevision(markerData.revisionId));
+                        breakOperation.markerData = this.owner.editorModule.getMarkerData(undefined, undefined, this.owner.editorModule.getRevision(markerData.revisionId));
                         operations.push(operation);
                         operations.push(breakOperation);
                         operations.push(operation);
                         operation.markerData.skipOperation = true;
                     }
                 } else {
-                    if(this.editorHistory.isUndoing) {
-                        for(let i: number = 0; i < 3; i++) {
+                    if (this.editorHistory.isUndoing) {
+                        for (let i: number = 0; i < 3; i++) {
                             operations.push(this.getDeleteOperation('Delete'));
                         }
                     } else {
-                        for (let i:number = 0; i < this.modifiedActions.length; i++) {
+                        for (let i: number = 0; i < this.modifiedActions.length; i++) {
                             let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
                             if (currentHistory.removedNodes.length > 0) {
                                 operations.push(currentHistory.getDeleteOperation(action));
@@ -138,20 +138,58 @@ export class HistoryInfo extends BaseHistoryInfo {
             case 'InsertHyperlink':
             case 'AutoFormatHyperlink':
             case 'RemoveHyperlink':
-                for (var i = 0; i < this.modifiedActions.length; i++) {
-                    var currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
-                    if (currentHistory.action === 'InsertInline') {
-                        if (currentHistory.insertedText === CONTROL_CHARACTERS.Marker_Start || currentHistory.insertedText === CONTROL_CHARACTERS.Marker_End) {
-                            operations.push(currentHistory.getInsertOperation('InsertHyperlink'));
-                        } else {
-                            operations.push(currentHistory.getInsertOperation('Insert'));
+                if (this.editorHistory.isUndoing && action === 'RemoveHyperlink') {
+                    let length: number = 0;
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                        let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                        if (currentHistory.action == 'FontColor' || currentHistory.action === 'Underline') {
+                            length = currentHistory.endIndex - currentHistory.startIndex;
                         }
                     }
-                    else if (currentHistory.action === 'Delete') {
-                        operations.push(currentHistory.getDeleteOperation(currentHistory.action));
+                    if (!isNullOrUndefined(this.modifiedActions[parseInt((this.modifiedActions.length - 1).toString(), 10)].fieldBegin)) {
+                        this.modifiedActions[parseInt((this.modifiedActions.length - 1).toString(), 10)].endIndex = this.modifiedActions[parseInt((this.modifiedActions.length - 1).toString(), 10)].startIndex + length;
+                        let operation: Operation = this.modifiedActions[parseInt((this.modifiedActions.length - 1).toString(), 10)].getDeleteOperation('Delete');
+                        operation.markerData = undefined;
+                        operations.push(operation);
+                        let operationCollection: Operation[] = this.modifiedActions[parseInt((this.modifiedActions.length - 1).toString(), 10)].getFieldOperation();
+                        operations = [...operations, ...operationCollection];
                     }
-                    else if (currentHistory.action === 'Underline' || currentHistory.action === 'FontColor') {
-                        operations = operations.concat(currentHistory.getActionInfo());
+                } else {
+                    for (var i = 0; i < this.modifiedActions.length; i++) {
+                        var currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                        if (currentHistory.action === 'InsertHyperlink') {
+                            operations.push(...currentHistory.getActionInfo());
+                        } else if (currentHistory.action === 'InsertInline') {
+                            if (currentHistory.insertedText === CONTROL_CHARACTERS.Marker_Start || currentHistory.insertedText === CONTROL_CHARACTERS.Marker_End) {
+                                if (this.editorHistory.isUndoing) {
+                                    operations.push(currentHistory.getDeleteOperation(currentHistory.action));
+                                } else {
+                                    operations.push(currentHistory.getInsertOperation('InsertHyperlink'));
+                                }
+                            } else {
+                                if (this.editorHistory.isUndoing) {
+                                    operations.push(currentHistory.getDeleteOperation(currentHistory.action));
+                                } else {
+                                    operations.push(currentHistory.getInsertOperation('Insert'));
+                                }
+                            }
+                        }
+                        else if (currentHistory.action === 'Delete') {
+                            operations.push(currentHistory.getDeleteOperation(currentHistory.action));
+                        }
+                        else if (currentHistory.action === 'Underline') {
+                            operations = operations.concat(currentHistory.getActionInfo());
+                        }
+                        else if (currentHistory.action === 'FontColor') {
+                            operations = operations.concat(currentHistory.getActionInfo());
+                            if (action === 'RemoveHyperlink') {
+                                // Clear format not synced when removeHyperlink 
+                                operations = operations.concat(currentHistory.buildFormatOperation('ClearFormat', true));
+                            }
+                        }
+                    }
+                    if (this.editorHistory.isUndoing) {
+                        operations.reverse();
                     }
                 }
                 break;
@@ -188,9 +226,9 @@ export class HistoryInfo extends BaseHistoryInfo {
                         } else if (currentHistory.action === 'DeleteComment') {
                             operationCollection = (currentHistory as HistoryInfo).getActionInfo();
                         } else {
-                            this.owner.sfdtExportModule.iscommentInsert = false;
+                            this.owner.sfdtExportModule.iscontentInsert = false;
                             operationCollection = currentHistory.getActionInfo();
-                            this.owner.sfdtExportModule.iscommentInsert = true;
+                            this.owner.sfdtExportModule.iscontentInsert = true;
                         }
                         operations = [...operations, ...operationCollection];
                     }
@@ -235,7 +273,7 @@ export class HistoryInfo extends BaseHistoryInfo {
                 operations = currentHistory.getFieldOperation();
                 break;
             case 'IMEInput':
-                if (isInvertOperation) {
+                if (isInvertOperation && (!(this.editorHistory.isUndoing || this.editorHistory.isRedoing))) {
                     if (this.modifiedActions[0].removedNodes.length > 0) {
                         let removeOperation: Operation = this.modifiedActions[0].getDeleteOperation('Delete');
                         removeOperation.length = removeOperation.text.length;
@@ -255,24 +293,50 @@ export class HistoryInfo extends BaseHistoryInfo {
                     }
                 } else {
                     let currentHistory: BaseHistoryInfo = this.modifiedActions[this.modifiedActions.length - 1];
-                    if (currentHistory.removedNodes.length > 0) {
-                        operations.push(currentHistory.getDeleteOperation(action));
+                    if (this.editorHistory.isUndoing || this.editorHistory.isRedoing) {
+                        for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                            currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                            if (currentHistory.removedNodes.length > 0) {
+                                operations.push(currentHistory.getDeleteOperation(action));
+                            }
+                            if (currentHistory.isRemovedNodes) {
+                                let operationCollection: Operation[] = currentHistory.getDeleteContent('BackSpace');
+                                operations = [...operations, ...operationCollection];
+                            }
+                            currentHistory.isRemovedNodes = false;
+                        }
+                    } else {
+                        if (currentHistory.removedNodes.length > 0) {
+                            operations.push(currentHistory.getDeleteOperation(action));
+                        }
+                        operations.push(currentHistory.getInsertOperation(this.action));
                     }
-                    operations.push(currentHistory.getInsertOperation(this.action));
+                    currentHistory.isRemovedNodes = false;
                 }
                 break;
             case 'Accept All':
             case 'ReplaceAll':
             case 'Reject All':
                 let isSkip: boolean = false;
-                for (let i = 0; i < this.modifiedActions.length; i++) {
-                    let currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
-                    if (!isNullOrUndefined(currentHistory.cellOperation) && currentHistory.cellOperation.length > 0) {
-                        operations.push(currentHistory.cellOperation[0]);
-                        isSkip = true;
-                    } else {
-                        let operationsCollection: Operation[] = currentHistory.getActionInfo();
-                        operations.push(...operationsCollection);
+                if (this.editorHistory.isUndoing || this.editorHistory.isRedoing) {
+                    let currentHistory: BaseHistoryInfo = this.modifiedActions[this.modifiedActions.length - 1];
+                    operations.push(...currentHistory.cellOperation);
+                    currentHistory.cellOperation = [];
+                    if (currentHistory.isRemovedNodes) {
+                        let operationCollection: Operation[] = currentHistory.getDeleteContent('Insert');
+                        operations = [...operations, ...operationCollection];
+                    }
+                } else {
+                    for (let i = 0; i < this.modifiedActions.length; i++) {
+                        let currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
+                        if (!isNullOrUndefined(currentHistory.cellOperation) && currentHistory.cellOperation.length > 0) {
+                            operations.push(currentHistory.cellOperation[0]);
+                            isSkip = true;
+                            currentHistory.cellOperation = [];
+                        } else {
+                            let operationsCollection: Operation[] = currentHistory.getActionInfo();
+                            operations.push(...operationsCollection);
+                        }
                     }
                 }
                 // if (!isSkip && (action === 'Accept All' || action === 'Reject All')) {
@@ -294,6 +358,10 @@ export class HistoryInfo extends BaseHistoryInfo {
                     let tocOperations: Operation[] = currentHistory.getActionInfo();
                     operations.push(...tocOperations);
                 }
+                if (this.editorHistory.isUndoing) {
+                    let lastelement: Operation = operations.pop();
+                    operations.unshift(lastelement);
+                }
                 break;
             case 'DragAndDropContent':
                 for (let i: number = 0; i < this.modifiedActions.length; i++) {
@@ -304,9 +372,16 @@ export class HistoryInfo extends BaseHistoryInfo {
                 }
                 break;
             case 'ClearFormat':
-                let clearHistory: BaseHistoryInfo = this.modifiedActions[this.modifiedActions.length - 1];
-                let formatOperation: Operation[] = clearHistory.buildFormatOperation('ClearFormat', true);
-                operations = formatOperation.slice();
+                if (this.editorHistory.isUndoing) {
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                        operations.push(...this.modifiedActions[parseInt(i.toString(), 10)].modifiedFormatOperation);
+                        this.modifiedActions[parseInt(i.toString(), 10)].modifiedFormatOperation = [];
+                    }
+                } else {
+                    let clearHistory: BaseHistoryInfo = this.modifiedActions[this.modifiedActions.length - 1];
+                    let formatOperation: Operation[] = clearHistory.buildFormatOperation('ClearFormat', true);
+                    operations = formatOperation.slice();
+                }
                 break;
             case 'ApplyStyle':
                 let styleHistory: BaseHistoryInfo;
@@ -337,7 +412,7 @@ export class HistoryInfo extends BaseHistoryInfo {
                 } else {
                     this.modifiedActions[0].createCellFormat('BordersAndShading');
                     this.modifiedActions[0].type = 'CellFormat';
-                    operations = this.modifiedActions[0].getSelectedCellOperation('BordersAndShading', undefined, true, true);
+                    operations = this.modifiedActions[0].getSelectedCellOperation('BordersAndShading', undefined, true, true, true);
                 }
                 break;
             case 'AutoList':
@@ -355,13 +430,18 @@ export class HistoryInfo extends BaseHistoryInfo {
                         tablePropHistory.type = 'TableFormat';
                         operations.push(tablePropHistory.getFormatOperation());
                     } else if (tablePropHistory.action === 'RowFormat') {
-                        tablePropHistory.createRowFormat(tablePropHistory.action);
-                        tablePropHistory.type = 'RowFormat';
-                        operations.push(tablePropHistory.getFormatOperation());
+                        if (this.editorHistory.isUndoing || this.editorHistory.isRedoing && tablePropHistory.modifiedProperties.length > 1) {
+                            operations = tablePropHistory.modifiedFormatOperation;
+                            tablePropHistory.modifiedFormatOperation = [];
+                        } else {
+                            tablePropHistory.createRowFormat(tablePropHistory.action);
+                            tablePropHistory.type = 'RowFormat';
+                            operations.push(tablePropHistory.getFormatOperation());
+                        }
                     } else if (tablePropHistory.action === 'CellFormat') {
                         tablePropHistory.createCellFormat(tablePropHistory.action);
                         tablePropHistory.type = 'CellFormat';
-                        let cellProp: Operation[] = tablePropHistory.getSelectedCellOperation(tablePropHistory.action);
+                        let cellProp: Operation[] = tablePropHistory.getSelectedCellOperation(tablePropHistory.action, false, false, false, true);
                         for (let i: number = 0; i < cellProp.length; i++) {
                             operations.push(cellProp[parseInt(i.toString(), 10)]);
                         }
@@ -371,7 +451,7 @@ export class HistoryInfo extends BaseHistoryInfo {
             case 'CellMarginsSelection':
                 this.modifiedActions[this.modifiedActions.length - 1].createCellFormat('CellOptions');
                 this.modifiedActions[this.modifiedActions.length - 1].type = 'CellFormat';
-                operations = this.modifiedActions[this.modifiedActions.length - 1].getSelectedCellOperation('CellOptions').slice();
+                operations = this.modifiedActions[this.modifiedActions.length - 1].getSelectedCellOperation('CellOptions', false, false, false, true).slice();
                 break;
         }
         return operations;
@@ -407,9 +487,9 @@ export class HistoryInfo extends BaseHistoryInfo {
                     this.owner.documentHelper.editRanges.get(user).splice(index, 1);
                 }
             } else {
-                this.owner.editor.updateRangeCollection(this.editRangeStart, user);
+                this.owner.editorModule.updateRangeCollection(this.editRangeStart, user);
             }
-            this.owner.selection.updateEditRangeCollection();
+            this.owner.selectionModule.updateEditRangeCollection();
         }
         if (!this.isChildHistoryInfo) {
             this.editorHistory.updateComplexHistory();

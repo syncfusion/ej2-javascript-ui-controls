@@ -7,7 +7,7 @@ import { stringToNumber, getAngleFromValue, getLocationFromAngle, getPointer, ge
 import { getMousePosition, getElementSize } from '../utils/helper-tooltip';
 import { TooltipSettings } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
-import { Browser, createElement, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { Browser, createElement, isNullOrUndefined, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { tooltipRender } from '../model/constants';
 import { titleTooltip } from '../utils/helper-legend';
 
@@ -576,6 +576,9 @@ export class GaugeTooltip {
         this.currentRange = null;
         this.currentAnnotation = null;
         this.borderStyle = null;
+        if (!isNullOrUndefined(this.svgTooltip)) {
+            this.svgTooltip.destroy();
+        }
         this.svgTooltip = null;
         this.tooltipRect = null;
         this.pointerEle = null;

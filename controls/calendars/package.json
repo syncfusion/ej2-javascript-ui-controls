@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-calendars",
-	"version": "24.2.5",
+	"version": "18.32.5",
 	"description": "A complete package of date or time components with built-in features such as date formatting, inline editing, multiple (range) selection, range restriction, month and year selection, strict mode, and globalization.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -15,6 +15,7 @@
 		"@syncfusion/ej2-popups": "*"
 	},
 	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.1",
 		"@types/chai": "^3.4.28",
 		"@types/es6-promise": "0.0.28",
 		"@types/jasmine": "2.8.9",

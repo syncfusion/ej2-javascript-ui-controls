@@ -828,3 +828,7 @@ export const PIVOT_FILTER_TAB_CONTAINER: string = 'e-filter-tab-container';
 export const PIVOT_FILTER_MEMBER_LIMIT: string = 'e-node-limit';
 /** @hidden */
 export const FREEZED_CELL: string = 'e-leftfreeze';
+/** @hidden */
+export const PIVOT_CONTENT_LOADER: string = 'e-pivot-content-loader';
+/** @hidden */
+export const PIVOT_HIDE_LOADER: string = 'e-hide-loader';

@@ -110,6 +110,8 @@ export class RowRenderer implements IRowRenderer {
      */
     public destroy(): void {
         this.parent.off(deInitProperties, this.initProps);
+        if (this.element) { this.element.remove(); }
+        if (this.bottomBorderWidth) { this.bottomBorderWidth = null; }
         this.parent = null; this.element = null;
     }
 }

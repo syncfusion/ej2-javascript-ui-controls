@@ -517,6 +517,18 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public labelMaxLength: number;
 
     /**
+     * specifies the custom stamp template of the annotation.
+     */
+    @Property('')
+    public template: any;
+ 
+    /**
+      * specifies the custom stamp template size of the annotation.
+      */
+    @Property('')
+    public templateSize: any;
+ 
+    /**
      * Represents the opecity value of the annotation
      *
      * @default 1

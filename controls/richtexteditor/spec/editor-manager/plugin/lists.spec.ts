@@ -695,6 +695,29 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
+
+        describe('873315 - Applying list to the blockquotes element', () => {
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true"><p class="startFocus">Line 1</p><p>Line 2</p><blockquote>Line 3 with quotation</blockquote><p>Line 4</p><p>Line 5</p><blockquote>Line 6&nbsp;<span style="background-color: unset; text-align: inherit;">with quotation</span></blockquote><p>Line 7</p><p class="endFocus">Line 8</p></div>`
+            });
+            beforeAll(() => {
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            it(' Applying list to the blockquotes content', () => {
+                startNode = editNode.querySelector('.startFocus');
+                endNode = editNode.querySelector('.endFocus');
+                editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 3);
+                editorObj.execCommand("Lists", 'OL', null);
+                expect(editNode.querySelectorAll('blockquote')[0].closest('OL')).toBe(null);
+                expect(editNode.querySelectorAll('blockquote')[1].closest('OL')).toBe(null);
+                expect(editNode.innerHTML === `<ol><li class="startfocus">Line 1</li><li>Line 2</li></ol><blockquote><ol><li>Line 3 with quotation</li></ol></blockquote><ol><li>Line 4</li><li>Line 5</li></ol><blockquote><ol><li>Line 6&nbsp;<span style="background-color: unset; text-align: inherit;">with quotation</span></li></ol></blockquote><ol><li>Line 7</li><li class="endfocus">Line 8</li></ol>`).toBe(true);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
         
         describe('EJ2-60037 - Console error occurs when list applied in fire fox testing', () => {
             let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
@@ -1726,6 +1749,37 @@ describe ('left indent testing', () => {
             });
         });
 
+        describe('872830 - Space key press cursor position test ', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><p>RTE Content</p><p class="selectNode">1.</p><div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
+            it(' Space key press cursor position test', () => {
+                startNode = editNode.querySelector('.selectNode');
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 2);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.selectnode').parentElement.tagName).toBe('OL');
+                expect(editNode.querySelector('.selectnode').parentElement.childNodes[0].childNodes[0].nodeName).toBe('BR');
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
         describe('- Space key press testing', () => {
             let elem: HTMLElement;
             let innerValue: string = `<div id="content-edit"><p>one node</p><p class='space-two-node'>1.two node</p><p><br></p>
@@ -1794,6 +1848,36 @@ describe ('left indent testing', () => {
                 keyBoardEvent.event.which = 13;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
                 expect(editNode.querySelector('#imageList')).not.toBe(null);
+            });
+
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
+        describe('872421 - Enter key press testing in nested list', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><ol><li>List 1</li><li>List 2<ol><li style="list-style-type: none;"><ol><li style="list-style-type: none;"><ol><li class="focusNode"><br></li></ol></li></ol></li></ol></li></ol></div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
+
+            it(' Enter key press testing in nested list after OL 1.', () => {
+                startNode = editNode.querySelector('.focusNode');
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'enter';
+                keyBoardEvent.event.which = 13;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.innerHTML === `<ol><li>List 1</li><li>List 2<ol><li style="list-style-type: none;"><ol><li style=""></li></ol></li></ol></li></ol>`).toBe(true);
             });
 
             afterAll(() => {

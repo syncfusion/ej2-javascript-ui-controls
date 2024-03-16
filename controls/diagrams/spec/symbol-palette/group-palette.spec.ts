@@ -11,6 +11,7 @@ import { ConnectorModel } from '../../src/diagram/objects/connector-model';
 import { NodeConstraints } from '../../src/diagram/enum/enum';
 import { UndoRedo } from '../../src/diagram/objects/undo-redo';
 import {
+    SymbolInfo,
     SymbolPalette
 } from '../../src/symbol-palette/index';
 
@@ -247,8 +248,6 @@ describe('Symbol Palette - Group', () => {
                 events.mouseUpEvent(palette.element, 150, 150, false, false);
                 palette.getPersistData();
                 let start: HTMLElement = document.getElementById('group3');
-                console.log(start.offsetWidth);
-                console.log(start.offsetHeight);
                 expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
                 done();
             }, 10);
@@ -344,8 +343,6 @@ describe('Symbol Palette - Group', () => {
                 events.mouseUpEvent(palette.element, 150, 150, false, false);
                 palette.getPersistData();
                 let start: HTMLElement = document.getElementById('SHAPE_BELL11');
-                console.log(start.offsetWidth);
-                console.log(start.offsetHeight);
                 expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
                 done();
             }, 10);
@@ -390,19 +387,17 @@ describe('Symbol Palette - Group', () => {
             ele.remove();
         });
         it('Checking highlights', (done: Function) => {
-                palette.refresh();
-                setTimeout(() => {
-                    let events: MouseEvents = new MouseEvents();
-                    events.mouseDownEvent(palette.element, 70, 125, false, false);
-                    events.mouseMoveEvent(palette.element, 150, 150, false, false);
-                    events.mouseUpEvent(palette.element, 150, 150, false, false);
-                    palette.getPersistData();
-                    let start: HTMLElement = document.getElementById('group');
-                    console.log(start.offsetWidth);
-                    console.log(start.offsetHeight);
-                    expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
-                    done();
-                }, 10);
+            palette.refresh();
+            setTimeout(() => {
+                let events: MouseEvents = new MouseEvents();
+                events.mouseDownEvent(palette.element, 70, 125, false, false);
+                events.mouseMoveEvent(palette.element, 150, 150, false, false);
+                events.mouseUpEvent(palette.element, 150, 150, false, false);
+                palette.getPersistData();
+                let start: HTMLElement = document.getElementById('group');
+                expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
+                done();
+            }, 10);
         });
     });
     describe('Testing multiSelect tool enables selector for dropped node', () => {
@@ -485,7 +480,6 @@ describe('Symbol Palette - Group', () => {
         });
      
     });
-
 
 });
 
@@ -731,4 +725,68 @@ describe('Symbol Palette - Draggable Element', () => {
             done();
         });
     });
+    describe('873843-Issue with node height and width in the symbol palette',()=>{
+                let diagram: Diagram;
+                let palette: SymbolPalette;
+                let ele: HTMLElement;
+                let mouseEvents: MouseEvents = new MouseEvents();
+                beforeAll((): void => {
+                    ele = createElement('div', { styles: 'width:100%;height:500px;' });
+                    ele.appendChild(createElement('div', { id: 'symbolpaletteBpmnSize', styles: 'width:25%;float:left;' }));
+                    ele.appendChild(createElement('div', { id: 'diagramBpmnSize', styles: 'width:50%;height:500px;float:left;' }));
+                    document.body.appendChild(ele);
+                    diagram = new Diagram({
+                        width: '70%', height: 500
+                    });
+                    diagram.appendTo('#diagramBpmnSize');
+                    var BpmnShape : NodeModel[] =[{
+                        annotations: [
+                          {
+                            content: 'Event',
+                            margin: { top: 15 },
+                            offset: { x: 0.5, y: 1 },
+                          },
+                        ],
+                        height: 40,
+                        id: 'Event',
+                        shape: {
+                          event: {
+                            event: 'Start',
+                          },
+                          type: 'Bpmn',
+                          shape: 'Event',
+                        },
+                        width: 40,
+                      },
+                    ]
+                    var palettes = [
+                        {
+                            id: 'BpmnShapes', expanded: true, symbols: BpmnShape
+                            , title: 'Bpmn'
+                        }
+                    ];
+                    palette = new SymbolPalette({
+                        width: '25%', height: '500px',
+                        palettes: palettes,
+                        symbolHeight: 50, symbolWidth: 50,
+                        symbolPreview: { height: 100, width: 100 },
+                        enableSearch: true,
+                        symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+                        getSymbolInfo: (symbol: NodeModel): SymbolInfo => {
+                            return { description:{text:symbol.id} };
+                        }
+                    });
+                    palette.appendTo('#symbolpaletteBpmnSize');
+                });
+                afterAll((): void => {
+                    diagram.destroy();
+                    palette.destroy();
+                    ele.remove();
+                });
+                it('Checking bpmn event shape size ', (done: Function) => {
+                    let element = (document.getElementById('Event_container').getBoundingClientRect());
+                    expect(element !== null).toBe(true);
+                    done();
+                });
+            });
 });

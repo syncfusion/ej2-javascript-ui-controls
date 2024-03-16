@@ -165,15 +165,8 @@ export interface TabModel extends ComponentModel{
 
     /**
      * An array of object that is used to configure the Tab component.
-     * ```typescript
-     *   let tabObj: Tab = new Tab( {
-     *     items: [
-     *       { header: { text: 'TabItem1' }, content: 'Tab Item1 Content' },
-     *       { header: { text: 'TabItem2' }, content: 'Tab Item2 Content' }
-     *     ]
-     *   });
-     *   tabObj.appendTo('#tab');
-     * ```
+     * 
+     * {% codeBlock src='tab/items/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
@@ -203,16 +196,8 @@ export interface TabModel extends ComponentModel{
 
     /**
      * Specifies the index for activating the current Tab item.
-     * ```typescript
-     *   let tabObj: Tab = new Tab( {
-     *     selectedItem: 1,
-     *     items: [
-     *       { header: { text: 'TabItem1' }, content: 'Tab Item1 Content' },
-     *       { header: { text: 'TabItem2' }, content: 'Tab Item2 Content' }
-     *     ]
-     *   });
-     *   tabObj.appendTo('#tab');
-     * ```
+     * 
+     * {% codeBlock src='tab/selectedItem/index.md' %}{% endcodeBlock %}   
      *
      * @default 0
      */
@@ -274,9 +259,10 @@ export interface TabModel extends ComponentModel{
     enablePersistence?: boolean;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to enable the rendering of untrusted HTML values in the Tab component.
+     * When this property is enabled, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
     enableHtmlSanitizer?: boolean;
 

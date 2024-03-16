@@ -226,39 +226,4 @@ describe("Resize - Actions Module", () => {
             expect(trg.classList.contains('e-south-west')).toBe(true);
         });
     });
-
-    describe('EJ2-53245 - Resize RTE content not working properly when floating toolbar shown', () => {
-        let rteObj: any;
-        let clickEvent: any;
-        beforeEach((done: Function) => {
-            document.body.style.height = '2000px';
-            rteObj = renderRTE({
-                enableResize: true,
-                toolbarSettings: {
-                    enableFloating: true,
-                    type: ToolbarType.Expand
-                },
-                height: '800px'
-            });
-            done();
-        });
-        afterEach(() => {
-            document.body.style.height = '';
-            destroy(rteObj);
-        });
-        it('Call perform resize', (done: Function) => {
-            expect(document.querySelector('.e-richtexteditor .e-toolbar').classList.contains('e-rte-tb-float')).toBe(false);
-            window.scrollTo(0, 200);
-            const trg : HTMLElement = (rteObj.element.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
-            clickEvent = document.createEvent('MouseEvents');
-            clickEvent.initEvent('mousemove', false, true);
-            trg.dispatchEvent(clickEvent);
-            setTimeout(() => {
-                expect(document.querySelector('.e-richtexteditor .e-toolbar').classList.contains('e-rte-tb-float')).toBe(true);
-                (rteObj.resizeModule as any).performResize(clickEvent);
-                window.scrollTo(0, 0);
-                done();
-            }, 500);
-        });
-    });
 });

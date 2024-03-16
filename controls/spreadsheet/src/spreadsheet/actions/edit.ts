@@ -28,7 +28,6 @@ export class Edit {
     private isCellEdit: boolean = true;
     private isNewValueEdit: boolean = true;
     private isAltEnter: boolean = false;
-    private validCharacters: string[] = ['+', '-', '*', '/', ',', '(', '=', '&', ':'];
     private formulaBarCurStartPos: number = null;
     private curEndPos: number = null;
     private curStartPos: number = null;
@@ -227,7 +226,8 @@ export class Edit {
                 editElement.focus();
                 this.altEnter();
                 this.isAltEnter = true;
-            } else if (this.isCellEdit && this.editCellData.value !== editElement.textContent && e.keyCode !== 16 && (!e.shiftKey || (e.shiftKey && !isNavigationKey(e.keyCode)))) {
+            } else if (this.isCellEdit && this.editCellData.value !== editElement.textContent && e.keyCode !== 16 && (!e.shiftKey ||
+                    (e.shiftKey && !isNavigationKey(e.keyCode)))) {
                 this.refreshEditor(editElement.textContent, this.isCellEdit);
             }
             const isFormulaEdit: boolean = checkIsFormula(this.editCellData.value, true);
@@ -235,7 +235,8 @@ export class Edit {
                 this.updateFormulaReference(editElement);
                 if (this.endFormulaRef) {
                     const curOffset: { start?: number, end?: number } = this.getCurPosition();
-                    if (curOffset.end && this.validCharacters.indexOf(this.editCellData.value[curOffset.end - 1]) > -1) {
+                    const validCharacters: string[] = ['+', '-', '*', '/', this.parent.listSeparator, '(', '=', '&', ':'];
+                    if (curOffset.end && validCharacters.indexOf(this.editCellData.value[curOffset.end - 1]) > -1) {
                         this.endFormulaRef = false;
                     }
                 }
@@ -406,11 +407,11 @@ export class Edit {
 
     private refreshEditor(
         value: string, refreshFormulaBar?: boolean, refreshEditorElem?: boolean, isAppend?: boolean,
-        trigEvent: boolean = true): void {
+        trigEvent: boolean = true, prevCellValue?:string): void {
         if (isAppend) {
             value = this.editCellData.value = this.editCellData.value + value;
         } else {
-            this.editCellData.value = value;
+            this.editCellData.value = prevCellValue ? prevCellValue : value;
         }
         const editorElem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
         if (refreshEditorElem && editorElem) {
@@ -590,6 +591,7 @@ export class Edit {
                 this.isCellEdit = trgtElem.classList.contains('e-spreadsheet-edit');
                 let isFormula: boolean = checkIsFormula(this.editCellData.value, true);
                 const editorElem: HTMLElement = this.getEditElement(sheet);
+                const validCharacters: string[] = ['+', '-', '*', '/', this.parent.listSeparator, '(', '=', '&', ':'];
                 if (trgtElem.classList.contains('e-cell') || trgtElem.classList.contains('e-header-cell') ||
                     trgtElem.classList.contains('e-selectall') || closest(trgtElem, '.e-toolbar-item.e-active') || closest(trgtElem, '.e-table')) {
                     if (this.isAltEnter) {
@@ -608,8 +610,8 @@ export class Edit {
                         const actCellIdx: number[] = getCellIndexes(sheet.activeCell);
                         const cell: CellModel = getCell(actCellIdx[0], actCellIdx[1], sheet);
                         if (this.selectionStart !== this.selectionEnd && this.editCellData.value === editorElem.textContent &&
-                            this.validCharacters.indexOf(editorElem.textContent.substring((this.selectionStart - 1),
-                                                                                          this.selectionStart)) !== -1) {
+                            validCharacters.indexOf(editorElem.textContent.substring((this.selectionStart - 1), this.selectionStart))
+                            !== -1) {
                             if (isCellReference(editorElem.textContent.substring(this.selectionStart, this.selectionEnd)) &&
                                 editorElem.textContent.indexOf(':') !== this.selectionEnd) {
                                 this.editCellData.value = editorElem.textContent.substring(0, this.selectionStart) +
@@ -622,8 +624,8 @@ export class Edit {
                             if (this.editCellData.sheetIndex !== getSheetIndex(this.parent, sheet.name)) {
                                 const elem: HTMLTextAreaElement =
                                     this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
-                                if (editorElem.textContent.substring(elem.selectionEnd - 1, elem.selectionEnd) !== ',' &&
-                                    !e.shiftKey) {
+                                if (editorElem.textContent.substring(elem.selectionEnd - 1, elem.selectionEnd) !== this.parent.listSeparator
+                                    && !e.shiftKey) {
                                     if (formulaRefIndicator) {
                                         formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                     }
@@ -632,7 +634,7 @@ export class Edit {
                                     return;
                                 }
                             } else {
-                                if (this.validCharacters.indexOf(editorElem.textContent.substring(curPos - 1, curPos)) === -1) {
+                                if (validCharacters.indexOf(editorElem.textContent.substring(curPos - 1, curPos)) === -1) {
                                     if (formulaRefIndicator) {
                                         formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                     }
@@ -658,16 +660,16 @@ export class Edit {
                                     this.endEdit(false, e);
                                 }
                             } else if (this.editCellData.value === editorElem.textContent) {
-                                if (this.validCharacters.indexOf((this.editCellData.value +
+                                if (validCharacters.indexOf((this.editCellData.value +
                                     sheet.selectedRange).substring(curPos - 1, curPos)) === -1) {
                                     if (formulaRefIndicator) {
                                         formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                     }
                                     this.endEdit(false, e);
                                 } else
-                                if (this.validCharacters.indexOf(editorElem.textContent.substring(curPos - 1, curPos)) === -1 ||
+                                if (validCharacters.indexOf(editorElem.textContent.substring(curPos - 1, curPos)) === -1 ||
                                         (editorElem.textContent.substring(curPos, curPos + 1) !== ')' &&
-                                            this.validCharacters.indexOf(editorElem.textContent.substring(curPos, curPos + 1)) === -1)) {
+                                            validCharacters.indexOf(editorElem.textContent.substring(curPos, curPos + 1)) === -1)) {
                                     if (formulaRefIndicator) {
                                         formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                     }
@@ -679,11 +681,10 @@ export class Edit {
                 } else {
                     if (isFormula && this.editCellData.value === editorElem.textContent && editorElem.textContent.indexOf('(') !==
                         editorElem.textContent.length - 1 && !this.isCellEdit &&
-                        this.validCharacters.indexOf(this.editCellData.value.substring(this.selectionStart - 1,
-                                                                                       this.selectionStart)) === -1) {
+                        validCharacters.indexOf(this.editCellData.value.substring(this.selectionStart - 1, this.selectionStart)) === -1) {
                         if (getSheet(this.parent, this.editCellData.sheetIndex).id === sheet.id) {
                             const curPos: number = window.getSelection().focusOffset;
-                            if (this.validCharacters.indexOf(editorElem.textContent.substring(curPos - 1, curPos)) === -1) {
+                            if (validCharacters.indexOf(editorElem.textContent.substring(curPos - 1, curPos)) === -1) {
                                 if (formulaRefIndicator) {
                                     formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                 }
@@ -821,7 +822,7 @@ export class Edit {
                     return;
                 }
                 if (evtArgs.showFormattedText) {
-                    // For SF-354174 ticket we have provided 'dd/MM/yyyy' support and diplayed the formatted value in the editor, which is
+                    // For SF-354174 ticket we have provided 'dd/MM/yyyy' support and diplayed the formatted value in the editor which is
                     // not a default behavior. To handle this, we have added this property and it applies only for the 'dd/MM/yyyy' format.
                     this.editCellData.showFormattedText = true;
                     updateEditValue();
@@ -831,12 +832,14 @@ export class Edit {
                 } else {
                     this.editCellData.value = value;
                 }
+                let prevCellValue: string;
                 if (this.isNewValueEdit) {
+                    prevCellValue = value;
                     value = '';
                 } else {
                     this.isNewValueEdit = true;
                 }
-                if (!isUndefined(value)) { this.refreshEditor(value, false, true, false, false); }
+                if (!isUndefined(value)) { this.refreshEditor(value, false, true, false, false, prevCellValue); }
                 if (refreshCurPos) { this.setCursorPosition(); }
             });
         });
@@ -1102,9 +1105,6 @@ export class Edit {
         this.triggerEvent('cellSave', e, value);
         this.resetEditState();
         this.focusElement(e as KeyboardEventArgs);
-        if (this.parent.showSheetTabs && !this.parent.isProtected) {
-            this.parent.element.querySelector('.e-add-sheet-tab').removeAttribute('disabled');
-        }
     }
 
     private checkUniqueRange(uniquArgs: {cellIdx: number[], isUnique: boolean, uniqueRange?: string, sheetName?: string}): void {
@@ -1351,6 +1351,12 @@ export class Edit {
         this.parent.isEdit = this.isEdit = false;
         this.isCellEdit = true;
         this.parent.notify(formulaOperation, { action: 'endEdit' });
+        if (this.parent.showSheetTabs && !this.parent.isProtected) {
+            const addSheetBtn: Element = this.parent.element.querySelector('.e-add-sheet-tab');
+            if (addSheetBtn) {
+                addSheetBtn.removeAttribute('disabled');
+            }
+        }
     }
 
     private refSelectionRender(): void {
@@ -1413,6 +1419,7 @@ export class Edit {
             this.parent.notify(initiateFormulaReference, { range: eventArgs.editedValue + address, formulaSheetIdx: sheetIdx });
         } else {
             const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.indexOf('!'));
+            const validCharacters: string[] = ['+', '-', '*', '/', this.parent.listSeparator, '(', '=', '&', ':'];
             if (this.parent.getActiveSheet().name === sheetName) {
                 const editedValue: string = eventArgs.editedValue;
                 if (this.selectionStart !== this.selectionEnd) {
@@ -1434,8 +1441,8 @@ export class Edit {
                     + address + editedValue.substring(this.curStartPos);
                     this.curEndPos = this.curStartPos + address.length;
                 } else if (this.selectionStart === this.selectionEnd &&
-                this.validCharacters.indexOf(editedValue.substring(this.selectionStart - 1, this.selectionEnd)) !== -1 &&
-                (this.validCharacters.indexOf(editedValue.substring(this.selectionStart, this.selectionEnd + 1)) !== -1 ||
+                validCharacters.indexOf(editedValue.substring(this.selectionStart - 1, this.selectionEnd)) !== -1 &&
+                (validCharacters.indexOf(editedValue.substring(this.selectionStart, this.selectionEnd + 1)) !== -1 ||
                     editedValue.substring(this.selectionStart, this.selectionEnd + 1) === ')')) {
                     editorEle.textContent = editedValue.substring(0, this.selectionStart)
                     + address + editedValue.substring(this.selectionEnd);
@@ -1489,7 +1496,8 @@ export class Edit {
             const curOffset: { start?: number, end?: number } = this.getCurPosition();
             if (!this.endFormulaRef && curOffset.start === curOffset.end) {
                 this.updateFormulaReference(el);
-                if (curOffset.end && this.validCharacters.indexOf(this.editCellData.value[curOffset.end - 1]) === -1) {
+                const validCharacters: string[] = ['+', '-', '*', '/', this.parent.listSeparator, '(', '=', '&', ':'];
+                if (curOffset.end && validCharacters.indexOf(this.editCellData.value[curOffset.end - 1]) === -1) {
                     this.endFormulaRef = true;
                 }
             }

@@ -232,6 +232,7 @@ $rte-big-tablecell-width : 16px;
 $rte-toolbar-item-frist-last-child-margin: 0;
 $rte-big-toolbar-item-frist-last-child-margin: 0 6px;
 $rte-toolbar-expaned-padding: 0;
+$rte-big-toolbar-expaned-padding: 0;
 $rte-toolbar-expaned-padding-hover: 0;
 $dropdown-btn-font-size: inherit !default;
 $rte-extended-toolbar-items-padding: 0;
@@ -242,7 +243,7 @@ $rte-background-color-icon-fontsize: 14px;
 $rte-big-background-color-icon-fontsize: 18px;
 $rte-dropdown-btn-color-content-padding: 0 !default;
 $rte-big-dropdown-btn-color-content-padding: 1px !default;
-$rte-toolbar-expaned-minwidth: 36px !default;
+$rte-toolbar-expaned-minwidth: 100% !default;
 
 $rte-emoji-pop-background: $bg-base-0;
 $rte-emoji-pop-box-shadow: none;

@@ -429,7 +429,7 @@ export class InkAnnotation {
                     const currentHeight: number = bounds.Height ? bounds.Height - (rectDifference - 1) : bounds.height - (rectDifference - 1);
                     let isLock: boolean = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings.isLock : false;
                     // eslint-disable-next-line
-                    let selectorSettings: any = currentAnnotation.AnnotationSelectorSettings ? currentAnnotation.AnnotationSelectorSettings : this.getSelector(currentAnnotation, 'Ink');
+                    let selectorSettings: any = currentAnnotation.AnnotationSelectorSettings ? typeof(currentAnnotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(currentAnnotation.AnnotationSelectorSettings) : currentAnnotation.AnnotationSelectorSettings : this.getSelector(currentAnnotation, 'Ink');
                     const customData: any = this.pdfViewer.annotation.getCustomData(currentAnnotation);
                     let isPrint: boolean = true;
                     if (currentAnnotation.AnnotationSettings) {

@@ -369,7 +369,7 @@ afterAll(() => {
         it('event marker tooltip tag', () => {
             let marker: HTMLElement = ganttObj.element.querySelector('#stripline0 > div') as HTMLElement;
             triggerMouseEvent(marker, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td>StartDate</td></tr><tr><td>EndDate</td></tr></tbody></table>');
+            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class="e-gantt-tooltiptable"><tbody><tr><td>StartDate</td></tr><tr><td>EndDate</td></tr></tbody></table>');
         });
         afterAll(() => {
             if (ganttObj) {

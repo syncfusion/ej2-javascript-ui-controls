@@ -2,7 +2,7 @@
  * Gantt toolbar spec
  */
 import { Gantt, Edit, Toolbar, Selection, Filter, PdfExport } from '../../src/index';
-import { exportData, image,adventProFont } from '../base/data-source.spec';
+import { exportData, image,adventProFont,GanttData1} from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
@@ -177,6 +177,7 @@ describe('Gantt pdfexport support', () => {
                             expect(args.name).toBe("pdfExportComplete");
                         },
                         columns: [
+                            { field: 'TaskID', visible: false },
                             {
                                 field: 'TaskName',
                                 headerText: 'Task Name',
@@ -231,6 +232,7 @@ describe('Gantt PDF Export with blobdata', () => {
                     expect(!isNullOrUndefined(args)).toBe(true);
                 },
                 columns: [
+                    { field: 'TaskID', visible: false },
                     {
                         field: 'TaskName',
                         headerText: 'Task Name',
@@ -308,6 +310,7 @@ describe('Gantt PDF Export with baseline', () => {
                     expect(args.name).toBe("pdfExportComplete");
                 },
                 columns: [
+                    { field: 'TaskID', visible: false },
                     {
                         field: 'TaskName',
                         headerText: 'Task Name',
@@ -383,6 +386,7 @@ describe('Gantt PDF Export with eventmarker', () => {
                     expect(args.name).toBe("pdfExportComplete");
                 },
                 columns: [
+                    { field: 'TaskID', visible: false },
                     {
                         field: 'TaskName',
                         headerText: 'Task Name',
@@ -469,6 +473,7 @@ describe('Gantt PDF Export with eventmarker without label', () => {
                     expect(args.name).toBe("pdfExportComplete");
                 },
                 columns: [
+                    { field: 'TaskID', visible: false },
                     {
                         field: 'TaskName',
                         headerText: 'Task Name',
@@ -500,6 +505,128 @@ describe('Gantt PDF Export with eventmarker without label', () => {
         ganttObj.pdfExport();
     });
 }); 
+describe('Gantt PDF Export indicator', () => {
+    Gantt.Inject(Toolbar, PdfExport);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: GanttData1,
+                height: '450px',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                allowPdfExport: true,
+                toolbar: ['PdfExport'],
+                toolbarClick: (args?: any) => {
+                    if (args.item.id === 'ganttContainer_pdfexport') {
+                        ganttObj.pdfExport();
+                    }
+                }
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with indicator', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with eventmarker without empty  label', () => {
+    Gantt.Inject(Toolbar, PdfExport);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource:  [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                            Indicators: [
+                                {
+                                    'date': '04/10/2019',
+                                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                    'name': 'Indicator title',
+                                    'tooltip': 'tooltip'
+                                }
+                            ] 
+                        },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                        ]
+                    }],
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 20,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                eventMarkers: [
+                    {
+                        label: '',
+                        day: '04/02/2019',
+                        cssClass: 'e-custom-event-marker',
+
+                    }
+                ],
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with eventMarker without empty lable', () => {
+        ganttObj.pdfExport();
+    });
+});
 describe('Gantt PDF Export with customization of header and footer', () => {
     Gantt.Inject(Toolbar, PdfExport);
     let ganttObj: Gantt;
@@ -552,6 +679,7 @@ describe('Gantt PDF Export with customization of header and footer', () => {
                     expect(args.name).toBe("pdfExportComplete");
                 },
                 columns: [
+                    { field: 'TaskID', visible: false },
                     {
                         field: 'TaskName',
                         headerText: 'Task Name',
@@ -742,6 +870,7 @@ describe('Gantt PDF Export with holiday label', () => {
                     expect(args.name).toBe("pdfExportComplete");
                 },
                 columns: [
+                    { field: 'TaskID', visible: false },
                     {
                         field: 'TaskName',
                         headerText: 'Task Name',
@@ -791,8 +920,8 @@ describe('Gantt PDF Export with holiday label', () => {
         };
         ganttObj.pdfExport(exportProperties);
     });
-}); 
-describe('Gantt PDF Export with Long text to taskname', () => {
+});
+describe('Gantt PDF Export  with number taskname', () => {
     Gantt.Inject(Toolbar, PdfExport);
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
@@ -801,7 +930,7 @@ describe('Gantt PDF Export with Long text to taskname', () => {
                 dataSource:  [
                     {
                         TaskID: 1,
-                        TaskName:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+                        TaskName:"1project",
                         StartDate: new Date('04/02/2019'),
                         EndDate: new Date('04/21/2019'),
                         subtasks: [
@@ -861,6 +990,9 @@ describe('Gantt PDF Export with Long text to taskname', () => {
                         label: 'Project approval and kick-off'
                     }
                 ],
+                labelSettings: {
+                    taskLabel: 'TaskName',
+                  },
                 treeColumnIndex: 0,
                 height: '450px',
             }, done);

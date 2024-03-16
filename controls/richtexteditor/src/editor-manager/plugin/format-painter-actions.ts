@@ -384,6 +384,14 @@ export class FormatPainterActions implements IFormatPainterEditor{
         const range: Range = this.parent.nodeSelection.getRange(docElement);
         const isCollapsed: boolean = range.collapsed;
         const blockNodes: Node[] = this.parent.domNode.blockNodes();
+        const isListCopied: boolean = this.isListCopied();
+        if (isListCopied) {
+            for (let i: number = 0; i < blockNodes.length; i++) {
+                if (closest(blockNodes[i as number], 'li')) {
+                    blockNodes[i as number] = closest(blockNodes[i as number], 'li');
+                }
+            }
+        }
         let isFullNodeSelected: boolean = false;
         if (blockNodes.length === 1) {
             isFullNodeSelected = blockNodes[0].textContent.trim() === range.toString().trim();
@@ -391,6 +399,17 @@ export class FormatPainterActions implements IFormatPainterEditor{
         if (this.isBlockElement(clonedElem) && isCollapsed || blockNodes.length > 1 || isFullNodeSelected) {
             this.insertBlockNode(clonedElem, range, docElement, blockNodes);
         }
+    }
+
+    private isListCopied(): boolean {
+        let isListCopied: boolean = false;
+        for (let i: number = 0; i < this.copyCollection.length; i++) {
+            if (this.copyCollection[i as number].tagName === 'OL' || this.copyCollection[i as number].tagName === 'UL'){
+                isListCopied = true;
+                break;
+            }
+        }
+        return isListCopied;
     }
 
     private insertBlockNode(element: HTMLElement, range: Range, docElement: Document, nodes: Node[]): void {

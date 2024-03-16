@@ -1,7 +1,8 @@
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { AnnotationType, CommentStatus } from './index';
-import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel, FormFieldModel } from '../pdfviewer-model';
+import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel, FormFieldModel, KeyGestureModel, KeyboardCommandModel } from '../pdfviewer-model';
 import { IFormField, IFormFieldBound } from '../form-designer';
+import { KeyboardCommand } from '../pdfviewer';
 /**
  * Exports types used by PDF viewer.
  */
@@ -161,7 +162,25 @@ export interface AjaxRequestSuccessEventArgs extends BaseEventArgs {
      */
      cancel: boolean
 }
+/**
+ * The event arguments furnish essential details about the completion of the page rendering event.
+ */
+export interface PageRenderCompleteEventArgs extends BaseEventArgs {
+    /**
+     * Get the name of the Event.
+     */
+    name: string
+    /**
+     * Get the loaded PDF document name in the PDF viewer.
+     */
+    documentName: string
+    /**
+     * Specifies the data related to the completion of page rendering.
+     */
+    // eslint-disable-next-line
+    data: any
 
+}
 /**
  * This event arguments provides the necessary information about form validation.
  */
@@ -1116,6 +1135,16 @@ export interface AjaxRequestInitiateEventArgs extends BaseEventArgs {
     // eslint-disable-next-line
     JsonData: any;
 }
+/**
+ * The event arguments furnish essential details about the initiation of the page rendering.
+ */
+export interface PageRenderInitiateEventArgs extends BaseEventArgs {
+    /**
+     * Specifies the data requesting page rendering.
+     */
+    // eslint-disable-next-line
+    jsonData: any;
+}
 
 /**
  * This event arguments provide the necessary information about download start event.
@@ -1504,4 +1533,50 @@ export interface FormFieldUnselectArgs extends BaseEventArgs {
      * Get the page number.
      */
     pageIndex: number
+}
+/**
+ * Defines the event arguments for the 'customContentMenu' event, providing essential information about the selection.
+ */
+export interface CustomContextMenuSelectEventArgs extends BaseEventArgs {
+    /**
+     * id - Represents the identifier of the currently selected custom context menu item.
+     */
+    id: string
+}
+/**
+ * This event provides essential information about the 'CustomContextMenuBeforeOpen' event through its arguments.
+ */
+export interface CustomContextMenuBeforeOpenEventArgs extends BaseEventArgs {  
+    /**
+     * ids -Defines an array containing the identifiers of the added custom context menu items.
+     */
+    ids: string[]
+}
+/**
+ * Specifies the custom command and the keystroke gesture that triggers its execution.
+ */
+export interface KeyboardCustomCommandsEventArgs extends BaseEventArgs {
+    /**
+     * keyboardCommand -Defines a command and a key gesture to define when the command should be executed.
+     */
+    keyboardCommand: KeyboardCommandModel
+}
+/**
+ * This event arguments provide the necessary information about page organizer save as event.
+ */
+export interface PageOrganizerSaveAsEventArgs extends BaseEventArgs {
+    /**
+     * File name of the currently loaded PDF document in the Page Organizer.
+     */
+    fileName: string
+    /**
+     * Defines the base 64 string of the loaded PDF document data.
+     */
+    downloadDocument: string
+    /**
+     * It allows you to control the execution of an save as event. When set to true, it prevents further processing of the event, effectively stopping the save as operation.
+     * 
+     * @default false
+     */
+    cancel: boolean;
 }

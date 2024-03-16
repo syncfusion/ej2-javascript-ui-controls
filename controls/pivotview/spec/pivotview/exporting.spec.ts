@@ -61,6 +61,7 @@ describe('PDF Export', () => {
                         args.cell.height = 150;
                     }
                 },
+                virtualScrollSettings: { allowSinglePage: false }
             });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -135,6 +136,7 @@ describe('PDF Export', () => {
                         args.column.width = 50;
                     }
                 },
+                virtualScrollSettings: { allowSinglePage: false }
             });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -230,6 +232,7 @@ describe('PDF Export', () => {
                 showFieldList: true,
                 showGroupingBar: true,
                 height: '500px',
+                virtualScrollSettings: { allowSinglePage: false }
             });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -347,6 +350,7 @@ describe('PDF Export', () => {
                 showFieldList: true,
                 showGroupingBar: true,
                 height: '500px',
+                virtualScrollSettings: { allowSinglePage: false }
             });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -687,7 +691,8 @@ describe('PDF Export', () => {
                 displayOption: { view: 'Both', primary: 'Table' },
                 chartSettings: {
                     value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false,
-                }
+                },
+                virtualScrollSettings: { allowSinglePage: false }
             });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -1679,6 +1684,7 @@ describe('PDF Export', () => {
                 enableVirtualization: true,
                 displayOption: { view: 'Chart' },
                 toolbar: ['Export'],
+                virtualScrollSettings: { allowSinglePage: false }
             });
             pivotGridObj.appendTo('#PivotGrid');
         });

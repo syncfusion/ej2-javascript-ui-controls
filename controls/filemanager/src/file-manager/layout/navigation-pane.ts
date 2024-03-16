@@ -281,7 +281,6 @@ export class NavigationPane {
         this.parent.selectedItems = [];
         this.parent.itemData = nodeData;
         const previousPath: string = this.parent.path;
-        const sNode: Element = select('[data-uid="' + this.treeObj.selectedNodes[0] + '"]', this.treeObj.element);
         if (!this.isRightClick && this.isSameNodeClicked ) {
             updatePath(args.node, this.parent.itemData[0], this.parent);
         }

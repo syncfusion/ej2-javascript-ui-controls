@@ -16,11 +16,22 @@ import { RibbonTooltip } from './ribbon-tooltip';
 import { RibbonTooltipModel } from './ribbon-tooltip-model';
 import { RibbonGroupButtonSettingsModel } from './ribbon-group-button-settings-model';
 import { RibbonGroupButtonSettings } from './ribbon-group-button-settings';
+import { RibbonGallerySettingsModel } from './ribbon-gallery-settings-model';
+import { RibbonGallerySettings } from './ribbon-gallery-settings';
 
 /**
  * Defines the ribbon item.
  */
 export class RibbonItem extends ChildProperty<RibbonItem>  {
+
+    /**
+     * Defines the key tip text to be accessed for specified Ribbon item.
+     *
+     * @default ''
+     */
+    @Property('')
+    public keyTip: string;
+
     /**
      * Defines the active size of the ribbon item.
      *
@@ -158,6 +169,14 @@ export class RibbonItem extends ChildProperty<RibbonItem>  {
      */
     @Complex<RibbonGroupButtonSettingsModel>({}, RibbonGroupButtonSettings)
     public groupButtonSettings: RibbonGroupButtonSettingsModel;
+
+    /**
+     * Defines the properties of the gallery view in Ribbon.
+     *
+     * @default {}
+     */
+    @Complex<RibbonGallerySettingsModel>({}, RibbonGallerySettings)
+    public gallerySettings: RibbonGallerySettingsModel;
 
     /**
      * @param {Object} prop - Gets the property of item.

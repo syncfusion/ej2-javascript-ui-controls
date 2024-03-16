@@ -123,7 +123,7 @@ export class KeyboardNavigation {
                                 focus(listWrapper);
                             }
                         }
-                    } else if (dlgInst.element.classList.contains('e-goto-dlg')) {
+                    } else if (dlgInst.element.classList.contains('e-goto-dlg') && !dlgInst.element.classList.contains('e-dlg-modal')) {
                         if (e.shiftKey) {
                             if (document.activeElement.className.includes('e-dlg-closeicon-btn')) {
                                 const footerOkBtn: HTMLElement = dlgInst.element.querySelector('.e-footer-content .e-btn');

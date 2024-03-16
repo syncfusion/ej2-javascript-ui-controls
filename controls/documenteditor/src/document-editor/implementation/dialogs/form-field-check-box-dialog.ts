@@ -188,7 +188,7 @@ export class CheckBoxFormFieldDialog {
      * @returns {void}
      */
     public loadCheckBoxDialog(): void {
-        let inline: ElementBox = this.owner.selection.getCurrentFormField();
+        let inline: ElementBox = this.owner.selectionModule.getCurrentFormField();
         if (inline instanceof FieldElementBox) {
             this.fieldBegin = inline;
             let fieldData: CheckBoxFormField = this.fieldBegin.formFieldData as CheckBoxFormField;
@@ -288,7 +288,7 @@ export class CheckBoxFormFieldDialog {
             checkBoxField.sizeType = 'Auto';
             checkBoxField.size = 11;
         }
-        this.owner.editor.editFormField('CheckBox', checkBoxField);
+        this.owner.editorModule.editFormField('CheckBox', checkBoxField);
     }
     /**
      * @private

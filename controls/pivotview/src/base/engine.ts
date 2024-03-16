@@ -104,9 +104,7 @@ export class PivotEngine {
     /** @hidden */
     public isPagingOrVirtualizationEnabled: boolean = false;
     /** @hidden */
-    public valueMatrix: IMatrix2D = [];
-    /** @hidden */
-    public indexMatrix: IMatrix2D = [];
+    public valueMatrix: ValueMatrixInfo[][] = [];
     private reportDataType: { [key: string]: string };
     private allowValueFilter: boolean;
     private isValueFiltered: boolean;
@@ -132,11 +130,12 @@ export class PivotEngine {
     private isValueHasAdvancedAggregate: boolean = false;
     private rawIndexObject: INumberIndex = {};
     private valueSortHeaderText: string;
-    private valueAxisFields: IValueFields = {};
     private showSubTotalsAtTop: boolean;
     private showSubTotalsAtBottom: boolean;
     private reformAxisCount: number = 0;
     private isEditing: boolean = false;
+    /** @hidden */
+    public valueAxisFields: IValueFields = {};
     /** @hidden */
     public data: IDataSet[] | string[][] = [];
     /** @hidden */
@@ -163,6 +162,7 @@ export class PivotEngine {
     private enableVirtualization: boolean = false;
     private enableHtmlSanitizer: boolean = false;
     private isParentLevelAdded: boolean = true;
+    private enableOptimizedRendering: boolean = false;
 
     /**
      * It is used to clear properties.
@@ -234,8 +234,6 @@ export class PivotEngine {
         this.dataSourceSettings.excludeFields = isNullOrUndefined(dataSource.excludeFields) ? [] : dataSource.excludeFields;
         this.enableValueSorting = false;
         this.headerCollection = { rowHeaders: [], columnHeaders: [], rowHeadersCount: 0, columnHeadersCount: 0 };
-        this.valueMatrix = [];
-        this.indexMatrix = [];
         this.aggregatedValueMatrix = [];
         this.rMembers = [];
         this.cMembers = [];
@@ -269,6 +267,7 @@ export class PivotEngine {
             customProperties.clonedReport) : {};
         this.enablePaging = customProperties.enablePaging;
         this.enableVirtualization = customProperties.enableVirtualization;
+        this.enableOptimizedRendering = customProperties.enableOptimizedRendering;
         this.enableHtmlSanitizer = customProperties.enableHtmlSanitizer;
         this.isPagingOrVirtualizationEnabled = this.enablePaging || this.enableVirtualization;
         this.enableSort = dataSource.enableSorting;
@@ -343,9 +342,8 @@ export class PivotEngine {
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
             this.removeIrrelevantFields(Object.keys(this.fieldList));
-            this.fillFieldMembers(this.data as IDataSet[], this.indexMatrix);
+            this.fillFieldMembers();
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-            this.valueMatrix = this.generateValueMatrix(this.data as IDataSet[]);
             this.filterMembers = [];
             let columnLength: number = this.dataSourceSettings.columns.length - 1;
             this.columnKeys = {};
@@ -1028,8 +1026,8 @@ export class PivotEngine {
         const isHavingFormat: any = (!isNullOrUndefined(formatField[currentField as string]) && !isNullOrUndefined(this.formatFields[currentField as string].format)) ? (this.formatFields[currentField as string].format).toLowerCase().match(/p[0-9]/) : undefined;
         return !isNullOrUndefined(isHavingFormat) ? (Number((this.formatFields[currentField as string].format).replace(/[^0-9]/g, ''))) : 2;
     } // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private getFormattedFields(fields: IFieldOptions[]): void {
-        this.formatFields = this.setFormattedFields(this.dataSourceSettings.formatSettings);
+    private getFormattedFields(dataSourceSettings: IDataOptions, fields?: IFieldOptions[]): void {
+        this.formatFields = this.setFormattedFields(dataSourceSettings.formatSettings);
         // for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
         // if (fields[len as number] && fields[len as number].name === this.dataSourceSettings.formatSettings[cnt as number].name) {
         //     this.formatFields[fields[len as number].name] = this.dataSourceSettings.formatSettings[cnt as number];
@@ -1078,7 +1076,7 @@ export class PivotEngine {
         let keys: string[] = this.fields;
         let dataFields: IFieldOptions[] = extend([], this.dataSourceSettings.rows, null, true) as IFieldOptions[];
         dataFields = dataFields.concat(this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters);
-        this.getFormattedFields(dataFields);
+        this.getFormattedFields(this.dataSourceSettings, dataFields);
         this.getCalculatedField(keys);
         keys = this.fields;
         let len: number = keys.length;
@@ -1119,8 +1117,8 @@ export class PivotEngine {
                         this.groupingFieldsInfo[key as string] ? this.groupingFieldsInfo[key as string] : undefined;
                     if (this.isValueFiltersAvail && isValueFilteringEnabled) {
                         this.fieldList[key as string].dateMember = [];
-                        this.fieldList[key as string].formattedMembers = {};
                         this.fieldList[key as string].members = {};
+                        this.fieldList[key as string].isMembersFilled = false;
                     }
                     this.updateMembersOrder(key);
                 } else {
@@ -1372,79 +1370,104 @@ export class PivotEngine {
             }
         }
     }
-    private fillFieldMembers(data: IDataSet[], indMat: IMatrix2D): void {
+    /**
+     * It is used to update the current field members.
+     *
+     * @param {string} fieldName -  Current field Name.
+     * @returns {void}
+     * @hidden
+     */
+    public fetchFieldMembers(fieldName: string): void {
+        const fieldPosition: number = this.fieldList[fieldName as string].index;
+        this.generateMembers(fieldPosition, new Set<number>());
+    }
+    private generateMembers(kl: number, formulaFields: Set<number>): void {
+        const dlen: number = this.data.length as number;
         const keys: string[] = this.fields;
-        const dlen: number = data.length as number;
         const fList: IFieldListOptions = this.fieldList;
-        const kLn: number = keys.length;
-        for (let kl: number = 0; kl < kLn; kl++) {
-            const key: string = keys[kl as number];
-            if (!fList[key as string].members || this.allowDataCompression) {
-                fList[key as string].members = {};
+        const key: string = keys[kl as number];
+        if (!fList[key as string].members || this.allowDataCompression) {
+            fList[key as string].members = {};
+            if (this.allowDataCompression) {
+                fList[key as string].isMembersFilled = false;
             }
-            if (!fList[key as string].formattedMembers || this.allowDataCompression) {
-                fList[key as string].formattedMembers = {};
-            }
-            if (!fList[key as string].dateMember || this.allowDataCompression) {
-                fList[key as string].dateMember = [];
-            }
-            const members: IMembers = fList[key as string].members;
-            const isDataAvail: boolean = Object.keys(members).length > 0 ? true : false;
-            const formattedMembers: IMembers = fList[key as string].formattedMembers;
-            const dateMember: IAxisSet[] = fList[key as string].dateMember;
+        }
+        if (!fList[key as string].dateMember || this.allowDataCompression) {
+            fList[key as string].dateMember = [];
+        }
+        const members: IMembers =  fList[key as string].members;
+        const dateMember: IAxisSet[] = fList[key as string].dateMember;
+        if ((fList[key as string].isSelected || formulaFields.has(kl as number)) && !fList[key as string].isMembersFilled) {
+            const isDataAvail: boolean = Object.keys(members).length > 0;
             let membersCnt: number = 0;
-            let fmembersCnt: number = 0;
             const isFieldHasExpandAll: boolean = fList[key as string].expandAll;
+            const isDateType: boolean = PivotUtil.isDateField(key as string, this);
             //let sort: string[] = [];
             for (let dl: number = 0; dl < dlen; dl++) {
-                let mkey: string = data[dl as number][this.fieldKeys[key as string] as string] as string;
+                const memberkey: any = (this.data as IDataSet[])[dl as number][this.fieldKeys[key as string] as string]; // eslint-disable-line @typescript-eslint/no-explicit-any
+                let mkey: string = memberkey as string;
                 mkey = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(mkey) : mkey;
                 // if (!isNullOrUndefined(mkey)) {
                 if (!isDataAvail) {
-                    let fKey: string = mkey;
-                    const formattedValue: IAxisSet = (this.pageSettings && (this.formatFields[key as string] &&
-                        !this.valueAxisFields[key as string])) ? this.getFormattedValue(mkey, key) : ({
-                            formattedText: mkey === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(mkey)) :
-                                mkey === undefined ? (this.localeObj ? (key in this.groupingFields) ?
-                                    this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
-                                    String(mkey)) : mkey.toString(), actualText: mkey === null ? (this.localeObj ?
-                                this.localeObj.getConstant('null') : String(mkey)) : mkey === undefined ? (this.localeObj ?
-                                (key in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
-                                    this.localeObj.getConstant('undefined') : String(mkey)) : mkey
-                        });
-                    if (formattedValue.formattedText) {
-                        fKey = formattedValue.formattedText;
-                    }
+                    const formattedValue: IAxisSet = isDateType ? this.getFormattedValue(mkey, key) : ({
+                        formattedText: mkey === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(mkey)) :
+                            mkey === undefined ? (this.localeObj ? (key in this.groupingFields) ?
+                                this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
+                                String(mkey)) : mkey.toString(), actualText: mkey === null ? (this.localeObj ?
+                            this.localeObj.getConstant('null') : String(mkey)) : mkey === undefined ? (this.localeObj ?
+                            (key in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                                this.localeObj.getConstant('undefined') : String(mkey)) : mkey
+                    });
                     if (!members.hasOwnProperty(mkey)) {    // eslint-disable-line no-prototype-builtins
                         membersCnt++;
                         members[mkey as string] = {
                             index: [dl as number], ordinal: membersCnt,
-                            isDrilled: this.isExpandAll || isFieldHasExpandAll ? true : false
+                            isDrilled: this.isExpandAll || isFieldHasExpandAll,
+                            caption: formattedValue.formattedText
                         };
-                        dateMember.push({ formattedText: formattedValue.formattedText, actualText: (formattedValue.dateText ?
-                            formattedValue.dateText : formattedValue.actualText) });
+                        dateMember.push({ formattedText: formattedValue.formattedText, actualText: isDateType ?
+                            formattedValue.dateText : formattedValue.actualText });
                         //sort.push(mkey);
                     } else {
                         members[mkey as string].index.push(dl);
                     }
-                    if (!formattedMembers.hasOwnProperty(fKey)) {   // eslint-disable-line no-prototype-builtins
-                        fmembersCnt++;
-                        formattedMembers[fKey as string] = {
-                            index: [dl as number], ordinal: fmembersCnt,
-                            isDrilled: this.isExpandAll || isFieldHasExpandAll ? true : false
-                        };
-                    } else {
-                        formattedMembers[fKey as string].index.push(dl);
-                    }
                 }
-                if (!(indMat[dl as number])) {
-                    indMat[dl as number] = [];
-                    indMat[dl as number][kl as number] = members[mkey as string].ordinal;
-                } else {
-                    indMat[dl as number][kl as number] = members[mkey as string].ordinal;
+                const memberName: number = isNullOrUndefined(memberkey) ? memberkey : fList[key as string].type === 'number' ?
+                    (!isNaN(Number(memberkey)) ? Number(memberkey) : undefined) : 1;
+                const valueMatrixInfo: ValueMatrixInfo = {
+                    ordinal: members[mkey as string].ordinal,
+                    member: memberName
+                };
+                if (!(this.valueMatrix[dl as number])) {
+                    this.valueMatrix[dl as number] = [];
                 }
+                this.valueMatrix[dl as number][kl as number] = valueMatrixInfo;
                 // }
             }
+            fList[key as string].isMembersFilled = true;
+        }
+    }
+    private fillFieldMembers(): void {
+        const keys: string[] = this.fields;
+        const fList: IFieldListOptions = this.fieldList;
+        const kLn: number = keys.length;
+        if (this.data.length - this.valueMatrix.length < 0) {
+            this.valueMatrix = this.valueMatrix.slice(0, this.data.length);
+        }
+        const formulaFields: Set<number> = new Set<number>();
+        if (this.calculatedFormulas && Object.keys(this.calculatedFormulas).length > 0) {
+            for (const key in this.calculatedFormulas) {
+                if (fList[key as string] && fList[key as string].isSelected) {
+                    const calculatedFormulas: Object[] = <Object[]>this.calculatedFormulas[key as string];
+                    for (let i: number = 0; i < calculatedFormulas.length; i++) {
+                        const values: { [key: string]: Object } = <{ [key: string]: Object }>calculatedFormulas[i as number];
+                        formulaFields.add(<number>values.index);
+                    }
+                }
+            }
+        }
+        for (let kl: number = 0; kl < kLn; kl++) {
+            this.generateMembers(kl, formulaFields);
             /*sort = Object.keys(members).sort();
             let sortedMembers: Members = {};
             for (let sln: number = 0, slt: number = sort.length; sln < slt; sln++) {
@@ -1453,28 +1476,26 @@ export class PivotEngine {
             fList[key].members = sortedMembers; */
         }
     }
-    private generateValueMatrix(data: IDataSet[] | string[][]): IMatrix2D {
+    private generateValueMatrix(): void {
         const keys: string[] = this.fields;
-        let len: number = data.length;
-        const vMat: IMatrix2D = [];
+        let len: number = this.data.length;
         const keyLen: number = keys.length;
         const flList: IFieldListOptions = this.fieldList;
         while (len--) {
             let tkln: number = keyLen;
             //if (isNullOrUndefined(vMat[len as number])) {
-            vMat[len as number] = [];
             //}
             while (tkln--) {
                 const key: string = keys[tkln as number]; /* eslint-disable @typescript-eslint/no-explicit-any */
-                vMat[len as number][tkln as number] = (flList[key as string].type === 'number' ||
-                isNullOrUndefined((data as any)[len as number][this.fieldKeys[key as string] as any])) ?
-                    isNullOrUndefined((data as any)[len as number][this.fieldKeys[key as string] as any]) ?
-                        (data as any)[len as number][this.fieldKeys[key as string] as any] :
-                        !isNaN(Number((data as any)[len as number][this.fieldKeys[key as string] as any])) ?
-                            Number((data as any)[len as number][this.fieldKeys[key as string] as any]) : undefined : 1;
+                const field: IField = flList[key as string];
+                if (field.isMembersFilled) {
+                    const fieldValue: any = (this.data as any)[len as number][this.fieldKeys[key as string] as any];
+                    this.valueMatrix[len as number][tkln as number].member =
+                        isNullOrUndefined(fieldValue) ? fieldValue : (field.type === 'number' ?
+                            (!isNaN(Number(fieldValue)) ? Number(fieldValue) : undefined) : 1);
+                }
             }   /* eslint-enable @typescript-eslint/no-explicit-any */
         }
-        return vMat;
     }
     private updateSortSettings(sortSettings: ISort[], isSort: boolean): void {
         for (let sln: number = 0, slt: number = sortSettings ? sortSettings.length : 0; sln < slt && isSort; sln++) {
@@ -1492,7 +1513,7 @@ export class PivotEngine {
         //this.getFilterExcludeList(source.columns, flist);
         //this.getFilterExcludeList(source.filters, flist);
         // let filters: Iterator = isInclude ? iList : eList;
-        const dln: number = this.indexMatrix.length;
+        const dln: number = this.valueMatrix.length;
         if (isInclude) {
             const keys: number[] = list.include.index;
             for (let ln: number = 0; ln < keys.length; ln++) {
@@ -1801,9 +1822,7 @@ export class PivotEngine {
         field.filter = filter;
         field.filterType = type;
         field.isExcelFilter = isLabelFilter;
-        const members: IMembers = ((this.formatFields[name as string] &&
-            (['date', 'dateTime', 'time'].indexOf(this.formatFields[name as string].type) > -1)) || (name in this.groupingFields)) ?
-            field.formattedMembers : field.members;
+        const members: IMembers = PivotUtil.getFormattedMembers(field.members, name, this);
         const allowFil: boolean = isInclude;
         const final: IIterator = {};
         const filterObj: IStringIndex = {};
@@ -2074,14 +2093,12 @@ export class PivotEngine {
             this.actualData = this.data;
             this.data = this.getGroupedRawData(dataSource);
         }
-        this.indexMatrix = [];
         for (const field of this.fields) {
             this.fieldList[field as string].members = {};
-            this.fieldList[field as string].formattedMembers = {};
             this.fieldList[field as string].dateMember = [];
+            this.fieldList[field as string].isMembersFilled = false;
         }
-        this.fillFieldMembers(this.data as IDataSet[], this.indexMatrix);
-        this.valueMatrix = this.generateValueMatrix(this.data as IDataSet[]);
+        this.fillFieldMembers();
         this.filterMembers = [];
         this.cMembers = [];
         this.rMembers = [];
@@ -2107,7 +2124,7 @@ export class PivotEngine {
         // let dataFields: IFieldOptions[] = extend([], this.dataSourceSettings.rows, null, true) as IFieldOptions[];
         // dataFields = dataFields.concat(this.dataSourceSettings.columns, this.dataSourceSettings.values, this.dataSourceSettings.filters);
         if (showNoDataItems) {
-            for (let ln: number = 0; ln < this.indexMatrix.length; ln++) {
+            for (let ln: number = 0; ln < this.valueMatrix.length; ln++) {
                 filterMembers.push(ln);
             }
         }
@@ -2185,11 +2202,10 @@ export class PivotEngine {
             columnFilteredData = (columnFilteredData.length > 0 ? columnFilteredData : columnHeaders);
             this.isEmptyDataAvail(rowFilteredData, columnFilteredData);
             const savedFieldList: IFieldListOptions = PivotUtil.getClonedFieldList(this.fieldList);
-            this.indexMatrix = []; const fields: IDataSet = (this.data as IDataSet[])[0];
+            const fields: IDataSet = (this.data as IDataSet[])[0];
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
-            this.fillFieldMembers((this.data as IDataSet[]), this.indexMatrix);
+            this.fillFieldMembers();
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-            this.valueMatrix = this.generateValueMatrix((this.data as IDataSet[]));
             this.filterMembers = []; this.updateFilterMembers(dataSource);
             this.isLastHeaderHasMeasures = true;
             this.rMembers = rows.length !== 0 ?
@@ -2375,7 +2391,7 @@ export class PivotEngine {
             for (let ln: number = 0; ln < addPos.length; ln++) {
                 this.filterPosObj[addPos[ln as number]] = addPos[ln as number];
             }
-            for (let ln: number = 0; ln < this.indexMatrix.length; ln++) {
+            for (let ln: number = 0; ln < this.valueMatrix.length; ln++) {
                 filterMembers.push(ln);
             }
             addPos = filterMembers;
@@ -2398,7 +2414,7 @@ export class PivotEngine {
         this.cMembers = this.headerCollection.columnHeaders;
         if (this.allowDataCompression) {
             this.data = this.getGroupedRawData(this.dataSourceSettings);
-            this.valueMatrix = this.generateValueMatrix(this.data);
+            this.generateValueMatrix();
         }
         this.updateEngine();
     }
@@ -2440,6 +2456,8 @@ export class PivotEngine {
                     this.columnCount / (this.dataSourceSettings.values.length - 1)) * this.dataSourceSettings.values.length;
             }
         }
+        this.getFormattedFields(dataSourceSettings);
+        this.fillFieldMembers();
         this.updateEngine();
     }
     private performDrillOperation(
@@ -2731,8 +2749,9 @@ export class PivotEngine {
             if (headers[lenCnt as number].members.length > 0) {
                 this.updateHeadersCount(headers[lenCnt as number].members, axis, position + 1, fields, action, true);
                 if (axis === 'row') {
-                    this.rowCount +=
-                        this.showSubTotalsAtBottom && headers[lenCnt as number].hasChild && headers[lenCnt as number].isDrilled ? 1 : 0;
+                    this.rowCount += this.showSubTotalsAtBottom && headers[lenCnt as number].hasChild && headers[
+                        lenCnt as number
+                    ].isDrilled ? 1 : 0;
                 }
             }
             lenCnt++;
@@ -2952,13 +2971,7 @@ export class PivotEngine {
                 aggreColl.push({ 'header': header, 'value': value });
             }
         }
-        aggreColl.sort((a: any, b: any) => {    // eslint-disable-line @typescript-eslint/no-explicit-any
-            return sortOrder === 'Descending' ? ((b['value'] || b['header']['type'] === 'grand sum' ?
-                b['value'] : 0) - (a['value'] || a['header']['type'] === 'grand sum' ? a['value'] : 0)) :
-                ((a['value'] || a['header']['type'] === 'grand sum' ?
-                    a['value'] : 0) - (b['value'] || b['header']['type'] === 'grand sum' ? b['value'] : 0));
-        });
-        rMembers = aggreColl.map((item: any): any => { return item['header']; });    // eslint-disable-line @typescript-eslint/no-explicit-any
+        rMembers = PivotUtil.getSortedValue(aggreColl, sortOrder);
         for (const header of rMembers) {
             if (header.members.length > 0) {
                 header.members = this.sortByValueRow(header.members, member, sortOrder, mIndex, mType);
@@ -3244,7 +3257,7 @@ export class PivotEngine {
                 member.axis = axis;
                 member.colSpan = 1;
                 const memInd: number = isNoData ? childrens.members[Object.keys(savedMembers)[0]].ordinal :
-                    this.indexMatrix[position[pos as number]][childrens.index];
+                    this.valueMatrix[position[pos as number]][childrens.index].ordinal;
                 let headerValue: string = isNoData ? Object.keys(savedMembers)[0] :   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (data as any)[position[pos as number]][this.fieldKeys[fieldName as string] as any] as string;
                 headerValue = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(headerValue) : headerValue;
@@ -3263,7 +3276,7 @@ export class PivotEngine {
                     this.fieldFilterMem[fieldName as string].memberObj[headerValue as string] === headerValue) {
                     continue;
                 }
-                const formattedValue: IAxisSet = isDateType || this.formatFields[fieldName as string] ? {
+                const formattedValue: IAxisSet = isDateType ? {
                     actualText: headerValue,
                     formattedText: childrens.dateMember[memInd - 1].formattedText,
                     dateText: childrens.dateMember[memInd - 1].actualText
@@ -3342,7 +3355,7 @@ export class PivotEngine {
                 if (!this.frameHeaderObjectsCollection) {
                     if (axis === 'row') {
                         this.rowCount += (this.rowValuesLength + (
-                            hierarchy[iln as number].isDrilled && this.showSubTotalsAtBottom ? 1 : 0
+                            hierarchy[iln as number].isDrilled && hierarchy[iln as number].hasChild && this.showSubTotalsAtBottom ? 1 : 0
                         ));
                     } else {
                         this.columnCount += this.colValuesLength;
@@ -3469,7 +3482,7 @@ export class PivotEngine {
             const childrens: IField = this.fieldList[field as string];
             for (let pos: number = 0, lt: number = position.length; pos < lt; pos++) {
                 const member: IAxisSet = {};
-                const memInd: number = this.indexMatrix[position[pos as number]][childrens.index];
+                const memInd: number = this.valueMatrix[position[pos as number]][childrens.index].ordinal;
                 const slicedHeader: IAxisSet = slicedHeaders[orderedIndex[memInd as number]]; // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let value: string = (data as any)[position[pos as number]][this.fieldKeys[field as string] as any];
                 value = value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value;
@@ -3551,11 +3564,15 @@ export class PivotEngine {
             }
             this.columnPageCount = Math.ceil(this.columnCount / this.pageSettings.columnPageSize);
             this.rowPageCount = Math.ceil(this.rowCount / this.pageSettings.rowPageSize);
-            this.pageSettings.currentColumnPage = this.pageSettings.currentColumnPage >= this.columnPageCount ? this.columnPageCount :
-                this.pageSettings.currentColumnPage;
-            this.pageSettings.currentRowPage = this.pageSettings.currentRowPage >= this.rowPageCount ? this.rowPageCount :
-                this.pageSettings.currentRowPage;
-            const requirePageCount: number = this.enablePaging ? 1 : 3;
+            this.pageSettings.currentColumnPage = this.pageSettings.currentColumnPage >= this.columnPageCount ||
+                (this.enableOptimizedRendering && this.pageSettings.currentColumnPage > 1 &&
+                    ((this.pageSettings.currentColumnPage + 1) * this.colValuesLength) >= this.columnPageCount) ?
+                this.columnPageCount : this.pageSettings.currentColumnPage;
+            this.pageSettings.currentRowPage = this.pageSettings.currentRowPage >= this.rowPageCount  ||
+                (this.enableOptimizedRendering && this.pageSettings.currentRowPage > 1 &&
+                    ((this.pageSettings.currentRowPage + 1) * this.rowValuesLength) >= this.rowPageCount) ?
+                this.rowPageCount : this.pageSettings.currentRowPage;
+            const requirePageCount: number = this.enablePaging || this.enableOptimizedRendering ? 1 : 3;
             this.memberCnt = this.enablePaging ? 0 : -this.rowValuesLength;
             this.rowStartPos = ((this.pageSettings.currentRowPage * this.pageSettings.rowPageSize) -
                 (this.pageSettings.rowPageSize)) * (this.enablePaging ? 1 : this.rowValuesLength) + (this.enablePaging ? 1 : 0);
@@ -3759,10 +3776,9 @@ export class PivotEngine {
                 if (!data[tnum as number]) {
                     data[tnum as number] = [];
                     this.valueContent[actCnt as number] = {} as IAxisSet[];
-                    data[tnum as number][0] = this.valueContent[actCnt as number][0] = PivotUtil.frameHeaderWithKeys(row);
-                } else {
-                    data[tnum as number][0] = this.valueContent[actCnt as number][0] = PivotUtil.frameHeaderWithKeys(row);
                 }
+                data[tnum as number][0] = reformAxis[tnum as number]
+                    = this.valueContent[actCnt as number][0] = PivotUtil.getFormattedHeader(row, this);
                 if (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader)) {
                     const hPos: number = tnum;
                     const actpos: number = actCnt;
@@ -5008,12 +5024,8 @@ export class PivotEngine {
             if (!data[lvl as number]) {
                 data[lvl as number] = [];
                 this.headerContent[lvl as number] = {} as IAxisSet[];
-                data[lvl as number][index as number] = this.headerContent[lvl as number][index as number]
-                    = PivotUtil.frameHeaderWithKeys(axis[rln as number]);
-            } else {
-                data[lvl as number][index as number] = this.headerContent[lvl as number][index as number]
-                    = PivotUtil.frameHeaderWithKeys(axis[rln as number]);
             } // eslint-disable-next-line max-len
+            data[lvl as number][index as number] = this.headerContent[lvl as number][index as number] = PivotUtil.getFormattedHeader(axis[rln as number], this); // eslint-disable-next-line max-len
             const isSingleMeasure: boolean = (this.dataSourceSettings.columns.length === 0 && this.dataSourceSettings.values.length === 1) ? true : false;
             // eslint-disable-next-line max-len
             if ((this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader || isSingleMeasure) && !this.valueAxis && isTotalHide) {
@@ -5074,11 +5086,12 @@ export class PivotEngine {
                 const values: number[] = [];
                 let position: number = 0;
                 while (rowIndex[ri as number] !== undefined) {
-                    if (columnIndex[rowIndex[ri as number]] !== undefined) {
+                    const index: number = rowIndex[ri as number];
+                    if (columnIndex[index as number] !== undefined) {
                         isValueExist = true;
-                        this.rawIndexObject[rowIndex[ri as number]] = rowIndex[ri as number];
-                        if (!isNullOrUndefined(this.valueMatrix[rowIndex[ri as number]][value as number])) {
-                            values.push(this.valueMatrix[rowIndex[ri as number]][value as number]);
+                        this.rawIndexObject[index as number] = index as number;
+                        if (!isNullOrUndefined(this.valueMatrix[index as number][value as number].member)) {
+                            values.push(this.valueMatrix[index as number][value as number].member);
                         }
                     }
                     ri++;
@@ -5099,11 +5112,12 @@ export class PivotEngine {
         case 'count':
             {
                 while (rowIndex[ri as number] !== undefined) {
-                    if (columnIndex[rowIndex[ri as number]] !== undefined) {
+                    const index: number = rowIndex[ri as number];
+                    if (columnIndex[index as number] !== undefined) {
                         isValueExist = true;
-                        this.rawIndexObject[rowIndex[ri as number]] = rowIndex[ri as number];
-                        cellValue += (isNullOrUndefined(this.valueMatrix[rowIndex[ri as number]][value as number]) ?
-                            0 : (this.allowDataCompression ? this.valueMatrix[rowIndex[ri as number]][value as number] : 1));
+                        this.rawIndexObject[index as number] = index as number;
+                        cellValue += (isNullOrUndefined(this.valueMatrix[index as number][value as number].member) ?
+                            0 : (this.allowDataCompression ? this.valueMatrix[index as number][value as number].member : 1));
                     }
                     ri++;
                 }
@@ -5135,10 +5149,11 @@ export class PivotEngine {
         case 'product':
             {
                 while (rowIndex[ri as number] !== undefined) {
-                    if (columnIndex[rowIndex[ri as number]] !== undefined) {
-                        this.rawIndexObject[rowIndex[ri as number]] = rowIndex[ri as number];
+                    const index: number = rowIndex[ri as number];
+                    if (columnIndex[index as number] !== undefined) {
+                        this.rawIndexObject[index as number] = index as number;
                         isValueExist = true;
-                        const currentVal: number = this.valueMatrix[rowIndex[ri as number]][value as number];
+                        const currentVal: number = this.valueMatrix[index as number][value as number].member;
                         if (!isNullOrUndefined(currentVal)) {
                             cellValue = ((isInit || isNullOrUndefined(cellValue)) ? 1 : cellValue);
                             cellValue *= currentVal;
@@ -5163,10 +5178,11 @@ export class PivotEngine {
                 let cVal: number = 0;
                 let avgDifferenceVal: number = 0;
                 while (rowIndex[ri as number] !== undefined) {
-                    if (columnIndex[rowIndex[ri as number]] !== undefined) {
+                    const index: number = rowIndex[ri as number];
+                    if (columnIndex[index as number] !== undefined) {
                         isValueExist = true;
-                        this.rawIndexObject[rowIndex[ri as number]] = rowIndex[ri as number];
-                        const currentVal: number = this.valueMatrix[rowIndex[ri as number]][value as number];
+                        this.rawIndexObject[index as number] = index as number;
+                        const currentVal: number = this.valueMatrix[index as number][value as number].member;
                         if (!isNullOrUndefined(currentVal)) {
                             val += currentVal;
                             indexVal.push(currentVal);
@@ -5196,19 +5212,21 @@ export class PivotEngine {
                 let isFirst: boolean = true;
                 cellValue = undefined;
                 while (rowIndex[ri as number] !== undefined) {
-                    if (columnIndex[rowIndex[ri as number]] !== undefined &&
-                        this.valueMatrix[rowIndex[ri as number]][value as number] !== undefined) {
+                    const index: number = rowIndex[ri as number];
+                    if (columnIndex[index as number] !== undefined &&
+                        this.valueMatrix[index as number][value as number].member !== undefined) {
                         isValueExist = true;
-                        this.rawIndexObject[rowIndex[ri as number]] = rowIndex[ri as number];
-                        if (isNullOrUndefined(cellValue) && isNullOrUndefined(this.valueMatrix[rowIndex[ri as number]][value as number])) {
-                            cellValue = this.valueMatrix[rowIndex[ri as number]][value as number];
+                        this.rawIndexObject[index as number] = index as number;
+                        if (isNullOrUndefined(cellValue) &&
+                            isNullOrUndefined(this.valueMatrix[index as number][value as number].member)) {
+                            cellValue = this.valueMatrix[index as number][value as number].member;
                         } else {
                             if (isFirst) {
-                                cellValue = this.valueMatrix[rowIndex[ri as number]][value as number];
+                                cellValue = this.valueMatrix[index as number][value as number].member;
                                 isFirst = false;
                             } else {
-                                cellValue = this.valueMatrix[rowIndex[ri as number]][value as number] < cellValue ?
-                                    this.valueMatrix[rowIndex[ri as number]][value as number] : cellValue;
+                                cellValue = this.valueMatrix[index as number][value as number].member < cellValue ?
+                                    this.valueMatrix[index as number][value as number].member : cellValue;
                             }
                         }
                     }
@@ -5220,16 +5238,17 @@ export class PivotEngine {
             {
                 let isMaxFirst: boolean = true;
                 while (rowIndex[ri as number] !== undefined) {
-                    if (columnIndex[rowIndex[ri as number]] !== undefined &&
-                            this.valueMatrix[rowIndex[ri as number]][value as number] !== undefined) {
+                    const index: number = rowIndex[ri as number];
+                    if (columnIndex[index as number] !== undefined &&
+                            this.valueMatrix[index as number][value as number].member !== undefined) {
                         isValueExist = true;
-                        this.rawIndexObject[rowIndex[ri as number]] = rowIndex[ri as number];
+                        this.rawIndexObject[index as number] = index as number;
                         if (isMaxFirst) {
-                            cellValue = this.valueMatrix[rowIndex[ri as number]][value as number];
+                            cellValue = this.valueMatrix[index as number][value as number].member;
                             isMaxFirst = false;
                         } else {
-                            cellValue = this.valueMatrix[rowIndex[ri as number]][value as number] > cellValue ?
-                                this.valueMatrix[rowIndex[ri as number]][value as number] : cellValue;
+                            cellValue = this.valueMatrix[index as number][value as number].member > cellValue ?
+                                this.valueMatrix[index as number][value as number].member : cellValue;
                         }
                     }
                     ri++;
@@ -5264,13 +5283,14 @@ export class PivotEngine {
             {
                 cellValue = undefined;
                 while (rowIndex[ri as number] !== undefined) {
-                    if (columnIndex[rowIndex[ri as number]] !== undefined) {
+                    const index: number = rowIndex[ri as number];
+                    if (columnIndex[index as number] !== undefined) {
                         isValueExist = true;
                         if (!isGrandTotal) {
-                            this.rawIndexObject[rowIndex[ri as number]] = rowIndex[ri as number];
+                            this.rawIndexObject[index as number] = index as number;
                         }
                         //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri as number]), 1)[0] : rowIndex[ri as number];
-                        const currentVal: number = this.valueMatrix[rowIndex[ri as number]][value as number];
+                        const currentVal: number = this.valueMatrix[index as number][value as number].member;
                         if (isNullOrUndefined(cellValue) && isNullOrUndefined(currentVal)) {
                             cellValue = currentVal;
                         } else {
@@ -5908,6 +5928,13 @@ export interface IMatrix2D {
 /**
  * @hidden
  */
+export interface ValueMatrixInfo {
+    ordinal: number;
+    member: number;
+}
+/**
+ * @hidden
+ */
 interface ISortedHeaders {
     rMembers: IAxisSet[];
     cMembers: IAxisSet[];
@@ -6428,6 +6455,10 @@ export interface IField {
      * @default false
      */
     isAlphanumeric?: boolean;
+    /**
+     * @hidden
+     */
+    isMembersFilled?: boolean;
 }
 
 /**
@@ -6676,6 +6707,10 @@ export interface ICustomProperties {
      * Specifies the cloned report.
      */
     clonedReport?: IDataOptions;
+    /**
+     * Specifies whether the allowSinglePage option is enabled or not.
+     */
+    enableOptimizedRendering ?: boolean;
 }
 /**
  * @hidden

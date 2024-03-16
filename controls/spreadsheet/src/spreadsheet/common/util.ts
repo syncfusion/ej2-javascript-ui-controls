@@ -1384,7 +1384,7 @@ export function updateAction(
         moveSheet(spreadsheet, eventArgs.position, eventArgs.sheetIndexes, null, isFromUpdateAction);
         break;
     case 'wrap':
-        wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet as Workbook);
+        wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet);
         break;
     case 'hideShow':
         if (eventArgs.isCol) {
@@ -1414,7 +1414,7 @@ export function updateAction(
         } else {
             spreadsheet.notify(
                 initiateFilterUI, { predicates: eventArgs.predicates, range: eventArgs.range, sIdx: eventArgs.sheetIndex, promise: promise,
-                    isInternal: true, useFilterRange: eventArgs.useFilterRange, enableColumnHeaderFiltering: eventArgs.enableColumnHeaderFiltering });
+                    isInternal: true, useFilterRange: eventArgs.useFilterRange, allowHeaderFilter: eventArgs.allowHeaderFilter });
         }
         if (actionEventArgs && !isFromUpdateAction) {
             promise.then((): void => {
@@ -2126,7 +2126,7 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
         }
     }
     if ((cfRule.length || cfRefreshAll) && uiRefresh) {
-        context.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
+        context.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true, isEdit: true });
     }
 }
 

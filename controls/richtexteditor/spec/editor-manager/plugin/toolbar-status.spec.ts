@@ -391,6 +391,32 @@ describe('863471 - Font Family with dynamic font family with similar name doesnt
     });
 });
 
+describe('872419 - List status testing with sub list changed to a different list format', () => {
+    var innervalue = `<div id="div3"><ol><li>dfb<ul style="list-style-image: none; list-style-type: disc;"><li id="UlInsideOlFocus">bdfb</li></ul><ol style="list-style-image: none; list-style-type: lower-greek;"><li>dbfd</li></ol></li><li>bdb</li></ol></div>`;
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('div3') as HTMLDivElement;
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('List status testing with sub list changed to a different list format UL inside a OL ', () => {
+        let node: Node = document.getElementById('UlInsideOlFocus');
+        domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 3, 3);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['div'], ['10pt'], ['Arial']);
+        expect(format.unorderedlist).toEqual(true);
+        expect(format.orderedlist).toEqual(false);
+        expect(format.numberFormatList).toEqual(null);
+        expect(format.bulletFormatList).toEqual('Disc');
+    });
+});
+
 describe('829581 -  Underline and strikethrough toolbars are not highlighted properly in RichTextEditor toolbar', () => {
     var innervalue = '<div id="div1"><p><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;" class="focusNode">Testing</span></span></em></strong></p></div>';
     let domSelection: NodeSelection = new NodeSelection();
@@ -414,7 +440,6 @@ describe('829581 -  Underline and strikethrough toolbars are not highlighted pro
         expect(format.strikethrough).toEqual(true);
     });
 });
-
 
 describe('861659 - Format toolbar name is blank in overview/Online HTML editor tab Case 1', () => {
     let innervalue = '<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to cre<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="snow.jpg" width="auto" height="auto" style="min-width: 0px; min-height: 0px;"> ate and edit content and return the valid of the content</p>';
@@ -452,3 +477,4 @@ describe('861659 - Format toolbar name is blank in overview/Online HTML editor t
         expect(format.formats).toEqual("p");
     });
 });
+

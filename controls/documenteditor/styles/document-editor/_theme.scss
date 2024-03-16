@@ -3211,6 +3211,10 @@
         .e-bigger .e-de-cmt-textarea.e-input {
             padding-top: $e-de-cmt-textarea-padding-top-big;
         }
+        .e-de-cmt-textarea:empty::before {
+            content: attr(placeholder);
+            opacity: 0.5;
+        }
         .e-de-cmt-action-button {
             text-align: right;
             margin-top: $de-reply-footer-margin-top;

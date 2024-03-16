@@ -1,7 +1,7 @@
 import { compile, getComponent, select, addClass } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel, RibbonTooltipModel } from '../models/index';
-import { commonProperties, DisplayMode, EJ2Control, itemProps, RibbonLayout, ribbonTooltipData } from './interface';
+import { commonProperties, DisplayMode, EJ2Control, itemProps, RibbonLayout, ribbonTooltipData, RibbonItemType } from './interface';
 import { Ribbon } from './ribbon';
 import * as constants from './constant';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -55,10 +55,11 @@ export function getTemplateFunction(template: string | HTMLElement | Function): 
  *
  * @param {RibbonTabModel} tabs - Gets the ribbon tab model.
  * @param {string} id - Gets the ID of the tab.
+ * @param {RibbonItemType} type - Gets the type of the item.
  * @returns {itemProps} - Gets the ribbon item.
  * @hidden
  */
-export function getItem(tabs: RibbonTabModel[], id: string): itemProps {
+export function getItem(tabs: RibbonTabModel[], id: string, type?: RibbonItemType): itemProps {
     for (let i: number = 0; i < tabs.length; i++) {
         const tab: RibbonTabModel = tabs[parseInt(i.toString(), 10)];
         for (let j: number = 0; j < tab.groups.length; j++) {
@@ -67,7 +68,7 @@ export function getItem(tabs: RibbonTabModel[], id: string): itemProps {
                 const collection: RibbonCollectionModel = group.collections[parseInt(k.toString(), 10)];
                 for (let l: number = 0; l < collection.items.length; l++) {
                     const item: RibbonItemModel = collection.items[parseInt(l.toString(), 10)];
-                    if (item.id === id) {
+                    if ((id && item.id === id) || (type && item.type === type)) {
                         return {
                             item: item, collection: collection, group: group,
                             tabIndex: i, groupIndex: j, collectionIndex: k, itemIndex: l

@@ -1268,6 +1268,20 @@ describe('ListView', () => {
             expect(treeObj.getSelectedItems().text).toEqual('Music');
         });
 
+        it('unselect the item when a parameter is provided', () => {
+            let li: Element = treeObj.element.querySelector('li');
+            treeObj.selectItem(li);
+            treeObj.unselectItem(li);
+            expect(li.classList.contains('e-active')).toBe(false);
+        });
+
+        it('unselect the item even when no parameter is provided', () => {
+            let li: Element = treeObj.element.querySelector('li');
+            treeObj.selectItem(li);
+            treeObj.unselectItem();
+            expect(li.classList.contains('e-active')).toBe(false);
+        });
+
         it('destroy method', () => {
             treeObj.destroy();
             expect(ele.className).toBe('');
@@ -1995,6 +2009,7 @@ describe('ListView', () => {
         });
 
         afterEach(() => {
+            listObj.destroy();
             ele.remove();
         });
     });

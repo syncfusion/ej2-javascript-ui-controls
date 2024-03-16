@@ -29,6 +29,28 @@
       content: '\e765';
     }
 
+    .e-pv-rotate-right-icon::before{
+      content: '\e8a6';
+    }
+
+    .e-pv-organize-view-icon::before{
+      content: '\e8dc';
+    }
+
+    .e-pv-organize-view-disable-icon::before{
+      color: $pv-thumbnail-icon-disable-color;
+      content: '\e8dc';
+    }
+
+    .e-pv-organize-view-selection-icon::before{
+      color: $pv-thumbnail-icon-selection-color;
+      content: '\e8dc';
+    }
+
+    .e-pv-rotate-left-icon::before{
+      content: '\e8a5';
+    }
+
     .e-pv-prev-search-icon::before {
       color: $icon-color;
       content: '\e765';

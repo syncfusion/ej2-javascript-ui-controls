@@ -49,3 +49,28 @@ export function removeStyleElements(elements: any) {
         [].slice.call(elements).forEach((ele: any) => { detach(ele); });
     }
 }
+
+export function clickImage(image: HTMLImageElement): void {
+    const mouseDown: MouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+    image.dispatchEvent(mouseDown);
+    const mouseUp: MouseEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+    image.dispatchEvent(mouseUp);
+};
+
+export function clickGripper(gripper: HTMLElement): void {
+    const domRect: DOMRect = gripper.getBoundingClientRect() as DOMRect;
+    const mouseDown: MouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window, clientX: domRect.left, clientY: domRect.top , screenX: domRect.left, screenY: domRect.top});
+    gripper.dispatchEvent(mouseDown);
+}
+
+export function moveGripper(gripper: HTMLElement, x: number, y: number): void{
+    const mouseMove: MouseEvent = new MouseEvent('mousemove', { bubbles: true, cancelable: true, view: window, clientX: x, clientY: y });
+    gripper.dispatchEvent(mouseMove);
+}
+
+export function leaveGripper(gripper: HTMLElement): void {
+    const mouseUp: MouseEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+    gripper.dispatchEvent(mouseUp);
+}
+
+export type ImageResizeGripper = 'e-rte-botRight' | 'e-rte-botLeft' | 'e-rte-topRight' | 'e-rte-topLeft';

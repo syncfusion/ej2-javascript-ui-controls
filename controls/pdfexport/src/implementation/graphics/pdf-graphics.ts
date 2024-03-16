@@ -1558,6 +1558,7 @@ export class PdfGraphics {
                     hShift += (!this.rightToLeft(format)) ? lineIndent : 0;
                     let x1 : number = layoutRectangle.x + hShift;
                     let x2 : number = (!this.shouldJustify(lineInfo, layoutRectangle.width, format)) ? x1 + lineWidth - lineIndent : x1 + layoutRectangle.width - lineIndent;
+                    
                     if (font.underline) {
                         let y : number = underlineYOffset;
                         this.drawLine(linePen, x1, y, x2, y);
@@ -1948,6 +1949,7 @@ export class PdfGraphics {
      * @param scaleX Scale factor in the x direction.
      * @param scaleY Scale factor in the y direction.
      */
+    
     public scaleTransform(scaleX : number, scaleY : number) : void {
         let matrix : PdfTransformationMatrix = new PdfTransformationMatrix();
         this.getScaleTransform(scaleX, scaleY, matrix);
@@ -2107,6 +2109,7 @@ export class PdfGraphics {
         this.pdfStreamWriter.restoreGraphicsState();
         return state;
     }
+    
     /**
      * `Draws the specified path`, using its original physical size, at the location specified by a coordinate pair.
      * ```typescript
@@ -2151,6 +2154,7 @@ export class PdfGraphics {
         this.buildUpPath(pathPoints, pathTypes);
         this.drawPathHelper(pen, brush, fillMode, false);
     }
+    
     //drawArc overloads
     /**
      * `Draws the specified arc`, using its original physical size, at the location specified by a coordinate pair.

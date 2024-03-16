@@ -79,11 +79,12 @@ describe('Map navigation properties tesing', () => {
                 },];
             map.refresh();
         });
-        it('Navigation line selected stroke', () => {
+        it('Navigation line selected stroke', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
                 let stroke: string = spec.getAttribute('stroke');
                 expect(stroke).toEqual('red');
+                done();
             };
             map.layers[0].navigationLineSettings = [
                 {
@@ -102,11 +103,12 @@ describe('Map navigation properties tesing', () => {
                 },];
             map.refresh();
         });
-        it('Navigation line selected dashArray', () => {
+        it('Navigation line selected dashArray', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
                 let dashArray: string = spec.getAttribute('stroke-dasharray');
                 expect(dashArray).toEqual('2,1');
+                done();
             };
             map.layers[0].navigationLineSettings = [
                 {
@@ -126,11 +128,12 @@ describe('Map navigation properties tesing', () => {
                 },];
             map.refresh();
         });
-        it('Navigation line selected color', () => {
+        it('Navigation line selected color', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
                 let fill: string = spec.getAttribute('fill');
                 expect(fill).toEqual('none');
+                done();
             };
             map.layers[0].navigationLineSettings = [
                 {

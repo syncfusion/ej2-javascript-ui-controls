@@ -890,6 +890,7 @@ export interface Image {
     height?: number;
     /**  Defines the height for the image */
     width?: number;
+
 }
 export interface Hyperlink {
     /** Defines the Url for hyperlink */
@@ -939,6 +940,10 @@ export interface PdfGanttFontStyle {
     borderColor?: PdfColor;
     /** Defines the format of the cell value */
     format?: PdfStringFormat;
+    /** Defines the fontFamily*/
+    fontFamily?: PdfFontFamily;
+    /** Defines the fontBrush*/
+    fontBrush?: PdfColor;
 }
 
 export interface PdfGanttCellStyle extends PdfGanttFontStyle {
@@ -1037,14 +1042,60 @@ export interface PdfQueryTimelineCellInfoEventArgs {
     value?: string;
 }
 
+
 export interface PdfQueryTaskbarInfoEventArgs {
     /** Defines the Taskbar style */
     taskbar?: ITaskbarStyle;
     /** Specify the value of the task data */
     data?: IGanttData;
-     /** Defines the Indicator */
-     indicators ?:IIndicator[];
+    /** Defines the Indicator */
+    indicators?: IIndicator[];
+    /**
+     *  Defines the customized string content or image for the left, right and task label
+     * */
+    labelSettings?: ILabel;
+    /** 
+     * Defines the taskbar element appearance customizations and provides options to add image and string in taskbar 
+     * */
+    taskbarTemplate?: ITemplateDetails;
 }
+
+export interface ILabel {
+    /** 
+     * Defines the customized string content or image for the leftLabel 
+     * */
+    leftLabel?: ITemplateDetails;
+    /** 
+     * Defines the customized string content or image for the rightLabel
+     *  */
+    rightLabel?: ITemplateDetails;
+    /** 
+     * Defines the customized string content or image for the task label
+     *  */
+    taskLabel?: ITemplateDetails;
+    /**
+     * Specifies the label of left.
+     *
+     * @private
+     */
+    left?: number;
+    /**
+      * Specifies the isLeftCalculated or not.
+      *
+      * @private
+      */
+    isLeftCalculated?: boolean;
+}
+
+export interface ITemplateDetails {
+    /** Defines the value of template content. */
+    value?: string;
+    /** Defines the image of a template content. */
+    image?: Image[];
+    /** Defines the appearance customization details of the template content */
+    fontStyle?: PdfGanttFontStyle;
+}
+
 
 export interface PdfColumnHeaderQueryCellInfoEventArgs {
     /** Defines the PDF grid current cell. */
@@ -1054,7 +1105,11 @@ export interface PdfColumnHeaderQueryCellInfoEventArgs {
     /** Defines the current cell with column */
     column?: ColumnModel;
     /** Specify the value of the column header cell */
-    value?: string | Object ;
+    value?: string | Object;
+    /** Specify the image of the column header cell */
+    image?: PdfImage;
+    /** Defines the customized string content or image for the header cell */
+    headerTemplate?: ITemplateDetails;
 }
 
 /** @private */

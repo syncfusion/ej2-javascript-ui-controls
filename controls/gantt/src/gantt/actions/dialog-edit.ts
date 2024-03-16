@@ -1,9 +1,9 @@
 import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, setValue, closest, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
-import { Tab, TabModel, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
+import { Tab, TabModel, TabItemModel, SelectEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
 import {
-    Grid, Edit, Toolbar as GridToolbar, Page, GridModel, GridActionEventArgs, getObject, ActionEventArgs
+    Grid, Edit, Toolbar as GridToolbar, Page, GridModel, GridActionEventArgs, getObject, ActionEventArgs, Sort, RowDD, Group, Aggregate, ColumnChooser, ContextMenu, ColumnMenu, Resize, Reorder, DetailRow, Search, Print, Toolbar, ToolbarItem, PdfExport, ExcelExport, EditSettingsModel, ContextMenuItem, Filter, ColumnModel, Column
 } from '@syncfusion/ej2-grids';
 import {
     ColumnModel as GridColumnModel, ForeignKey,
@@ -13,10 +13,16 @@ import { Gantt } from '../base/gantt';
 import {
     RichTextEditor, Toolbar as RTEToolbar, Link, HtmlEditor, QuickToolbar,
     RichTextEditorModel,
-    Count, Table
+    Count,
+    Image,
+    Table,
+    EmojiPicker,
+    FileManager,
+    FormatPainter,
+    MarkdownEditor,
 } from '@syncfusion/ej2-richtexteditor';
 import { AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, TaskFieldsModel, ResourceFieldsModel, AddDialogFieldSettings } from '../models/models';
-import { CObject } from '../base/enum';
+import { CObject,DialogFieldType} from '../base/enum';
 import { ColumnModel as GanttColumnModel } from '../models/column';
 import { TextBox, NumericTextBox, NumericTextBoxModel, MaskedTextBox, TextBoxModel, FormValidatorModel, FormValidator } from '@syncfusion/ej2-inputs';
 import {
@@ -28,7 +34,7 @@ import { DropDownList, ComboBox, ComboBoxModel, ChangeEventArgs, DropDownListMod
 import { isScheduledTask } from '../base/utils';
 import {
     TreeGridModel, ColumnModel as TreeGridColumnModel,
-    TreeGrid, Selection, Filter, Edit as TreeGridEdit, VirtualScroll
+    TreeGrid, Selection as TreeGridSelection, Filter as TreeGridFilter, Edit as TreeGridEdit, VirtualScroll,ContextMenuItem as TreeGridContextMenuItem,EditSettingsModel as TreeGridEditSettingsModel,Sort as TreeGridSort ,Page as TreeGridPage,Aggregate as TreeGridAggregate,Reorder as TreeGridReorder, Resize  as TreeGridResize ,Toolbar as TreeGridToolbar, ColumnChooser as TreeGridColumnChooser,RowDD  as TreeGridRowDD,ToolbarItem as TreeGridToolbarItem
 } from '@syncfusion/ej2-treegrid';
 import { getUid } from '../base/utils';
 interface EJ2Instance extends HTMLElement {
@@ -80,6 +86,7 @@ export class DialogEdit {
     private beforeOpenArgs: CObject;
     private inputs: Object;
     private idCollection: IDependencyEditData[];
+    private disableUndo: boolean;
     /**
      * @private
      */
@@ -91,6 +98,7 @@ export class DialogEdit {
     private selectedSegment: ITaskSegment;
     public ganttResources: Object[] = [];
     private isValidData: boolean = true;
+    private isResourceTabUpdated: boolean = false;
     /**
      * @private
      */
@@ -1590,13 +1598,16 @@ export class DialogEdit {
         if (isNullOrUndefined(fields) || fields.length === 0) {
             fields = [];
             if (!isNullOrUndefined(taskSettings.startDate)) {
-                fields.push('startDate');
+                fields.push(this.parent.taskFields.startDate);
             }
             if (!isNullOrUndefined(taskSettings.endDate)) {
-                fields.push('endDate');
+                fields.push(this.parent.taskFields.endDate);
             }
             if (!isNullOrUndefined(taskSettings.duration)) {
-                fields.push('duration');
+                fields.push(this.parent.taskFields.duration);
+            }
+            if (!isNullOrUndefined(taskSettings.id)) {
+                fields.push(this.parent.taskFields.id);
             }
         }
         const segmentInputModel: GridModel = {};
@@ -1623,23 +1634,30 @@ export class DialogEdit {
             let gridColumn: GridColumnModel = {};
             const generalTabString: string = 'General';
             switch (fields[i as number]) {
-            case 'startDate':
-            case 'endDate':
+            case this.parent.taskFields.id:
+                
                 gridColumn = {
-                    field: fields[i as number], headerText: this.localeObj.getConstant(fields[i as number]), editType: 'stringedit', width: '200px',
+                    field: fields[i as number], visible: false, isPrimaryKey:true
+                }
+                gridColumns.push(gridColumn);
+                break;
+            case this.parent.taskFields.startDate:
+            case this.parent.taskFields.endDate:
+                gridColumn = {
+                    field: fields[i as number], headerText: this.localeObj.getConstant((fields[i as number] === this.parent.taskFields.startDate ) ?'startDate' :'endDate'), editType: 'stringedit', width: '200px',
                     edit: {
                         write: (args: CObject): void => {
                             let datePickerModel: object;
 			                if (!isNullOrUndefined(this.beforeOpenArgs[generalTabString as string])) {
-                                datePickerModel = this.beforeOpenArgs[generalTabString as string][this.parent.taskFields[fields[i as number]]];
+                                datePickerModel = this.beforeOpenArgs[generalTabString as string][fields[i as number]];
                             } else {
                                 let columnFields: string[] = this.getGeneralColumnFields();
                                 let columnModel: object = this.getFieldsModel(columnFields);
-                                datePickerModel = columnModel[this.parent.taskFields[fields[i as number]]];
+                                datePickerModel = columnModel[fields[i as number]];
                             }
 			    const value: string = args.rowData[(args.column as GridColumnModel).field];
                             setValue('value', value, datePickerModel);
-		            const datePicker: DatePicker = new this.inputs[this.parent.columnByField[this.parent.taskFields[fields[i as number]]].editType](datePickerModel);
+		            const datePicker: DatePicker = new this.inputs[this.parent.columnByField[fields[i as number]].editType](datePickerModel);
                             datePicker.appendTo(args.element as HTMLElement);
                         },
                         read: (args: HTMLElement): Date => {
@@ -1656,18 +1674,18 @@ export class DialogEdit {
                 }
                 gridColumns.push(gridColumn);
                 break;
-            case 'duration':
+            case this.parent.taskFields.duration:
                 gridColumn = {
-                    field: fields[i as number], headerText: this.localeObj.getConstant(fields[i as number]), editType: 'stringedit', 
+                    field: fields[i as number], headerText: this.localeObj.getConstant(fields[i as number].toLocaleLowerCase()), editType: 'stringedit', 
                     width: '100px', edit: {
                         write: (args: CObject): void => {
                             let inputTextModel: object;
                             if (!isNullOrUndefined(this.beforeOpenArgs[generalTabString as string])) {
-                             inputTextModel = this.beforeOpenArgs[generalTabString as string][this.parent.taskFields[fields[i as number]]];
+                             inputTextModel = this.beforeOpenArgs[generalTabString as string][fields[i as number]];
                             } else {
                                 let columnFields: string[] = this.getGeneralColumnFields();
                                 let columnModel: object = this.getFieldsModel(columnFields);
-                                inputTextModel = columnModel[this.parent.taskFields[fields[i as number]]];
+                                inputTextModel = columnModel[fields[i as number]];
                             }
 			               (inputTextModel as TextBox).floatLabelType = 'Never';
                             const value: string = args.rowData[(args.column as GridColumnModel).field];
@@ -1719,7 +1737,7 @@ export class DialogEdit {
             inputValue = <DatePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + 'SegmentsTabContainer' + columnName))
                 .ej2_instances[0] as DatePicker;
         }
-        if ((!isNullOrUndefined(inputValue.value))&&(inputValue.value.toString() !== tempValue.toString())) {
+        if ((!isNullOrUndefined(inputValue.value)) &&(!isNullOrUndefined(tempValue)) &&(inputValue.value.toString() !== tempValue.toString())) {
             inputValue.value = tempValue as string;
             inputValue.dataBind();
         }
@@ -1728,24 +1746,24 @@ export class DialogEdit {
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
         if (!isNullOrUndefined(taskSettings.duration) && taskSettings.duration.toLowerCase() === columnName.toLowerCase()) {
             if (!isNullOrUndefined(cellValue) && cellValue !== '') {
-                this.selectedSegment.duration = Number(cellValue);
+                this.selectedSegment[taskSettings.duration] = Number(cellValue);
                 let endDate: Date = ganttObj.dataOperation.getEndDate(
-                    this.selectedSegment.startDate, Number(cellValue), this.editedRecord.ganttProperties.durationUnit,
+                    this.selectedSegment[taskSettings.startDate], Number(cellValue), this.editedRecord.ganttProperties.durationUnit,
                     this.editedRecord.ganttProperties, false
                 );
                 endDate = ganttObj.dataOperation.checkEndDate(endDate, this.editedRecord.ganttProperties, false);
-                this.selectedSegment.endDate = endDate;
+                this.selectedSegment[taskSettings.endDate] = endDate;
             }
         }
         if (!isNullOrUndefined(taskSettings.startDate) && taskSettings.startDate.toLowerCase() === columnName.toLowerCase()) {
             if (cellValue !== '') {
                 let startDate: Date = this.parent.dateValidationModule.getDateFromFormat(cellValue);
                 startDate = this.parent.dateValidationModule.checkStartDate(startDate);
-                this.selectedSegment.startDate = startDate;
+                this.selectedSegment[taskSettings.startDate] = startDate;
 
                 if (!isNullOrUndefined(taskSettings.endDate)) {
                     this.selectedSegment.endDate = this.parent.dataOperation.getEndDate(
-                        startDate, this.selectedSegment.duration, this.editedRecord.ganttProperties.durationUnit,
+                        startDate, this.selectedSegment[taskSettings.duration], this.editedRecord.ganttProperties.durationUnit,
                         this.editedRecord.ganttProperties, false
                     );
                 }
@@ -1758,21 +1776,21 @@ export class DialogEdit {
                     this.parent.dateValidationModule.setTime(ganttObj.defaultEndTime, endDate);
                 }
                 endDate = this.parent.dateValidationModule.checkEndDate(endDate, this.editedRecord.ganttProperties);
-                this.selectedSegment.endDate = endDate;
-                this.selectedSegment.duration = this.parent.dataOperation.getDuration(
-                    this.selectedSegment.startDate, this.selectedSegment.endDate, this.editedRecord.ganttProperties.durationUnit,
+                this.selectedSegment[taskSettings.endDate] = endDate;
+                this.selectedSegment[taskSettings.duration] = this.parent.dataOperation.getDuration(
+                    this.selectedSegment[taskSettings.startDate], this.selectedSegment[taskSettings.endDate], this.editedRecord.ganttProperties.durationUnit,
                     true, false, true
                 );
             }
         }
         if (!isNullOrUndefined(taskSettings.startDate)) {
-            this.updateSegmentField('startDate', args, this.selectedSegment);
+            this.updateSegmentField(taskSettings.startDate, args, this.selectedSegment);
         }
         if (!isNullOrUndefined(taskSettings.endDate)) {
-            this.updateSegmentField('endDate', args, this.selectedSegment);
+            this.updateSegmentField(taskSettings.endDate, args, this.selectedSegment);
         }
         if (!isNullOrUndefined(taskSettings.duration)) {
-            this.updateSegmentField('duration', args, this.selectedSegment);
+            this.updateSegmentField(taskSettings.duration, args, this.selectedSegment);
         }
     }
     private getPredecessorModel(fields: string[]): Object {
@@ -1801,7 +1819,7 @@ export class DialogEdit {
             let column: GridColumnModel = {};
             if (fields[i as number].toLowerCase() === 'id') {
                 column = {
-                    field: 'id', headerText: this.localeObj.getConstant('id'), allowEditing: false, width: '70px'
+                    field: 'id', headerText: this.localeObj.getConstant('id'), allowEditing: false, width: '70px', isPrimaryKey:true
                 };
                 columns.push(column);
             } else if (fields[i as number].toLowerCase() === 'name') {
@@ -1970,12 +1988,12 @@ export class DialogEdit {
             if (!isNullOrUndefined(startDate)) {
                 if (args.requestType === 'add') {
                     let arg: Record<string, unknown> = {};
-                    let sDate: Date = getValue('startDate', selectedItem);
-                    let eDate: Date = getValue('endDate', selectedItem);
-                    let duration: number = getValue('duration', selectedItem);
+                    let sDate: Date = getValue(this.parent.taskFields.startDate, selectedItem);
+                    let eDate: Date = getValue(this.parent.taskFields.endDate, selectedItem);
+                    let duration: number = getValue(this.parent.taskFields.duration, selectedItem);
                     const startDate: Date = !isNullOrUndefined(gridData) && gridData.length > 0 ?
-                        (!isNullOrUndefined(taskFields.endDate) && !isNullOrUndefined(gridData[0].endDate as Date)) ? new Date((getValue('endDate', gridData[0]) as Date).getTime()) :
-                            new Date((getValue('startDate', gridData[0]) as Date).getTime()) :
+                        (!isNullOrUndefined(taskFields.endDate) && !isNullOrUndefined(gridData[0][taskFields.endDate] as Date)) ? new Date((getValue(taskFields.endDate, gridData[0]) as Date).getTime()) :
+                            new Date((getValue(taskFields.startDate, gridData[0]) as Date).getTime()) :
                         !isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate) &&
                         new Date((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate.getTime());
                     startDate.setHours(0, 0, 0, 0);
@@ -1993,10 +2011,11 @@ export class DialogEdit {
                     duration = !isNullOrUndefined(taskFields.duration) && !isNullOrUndefined(gridData) && gridData.length <= 0 ?
                         (this.beforeOpenArgs.rowData as IGanttData).ganttProperties.duration : 1;
                     arg = {
-                        startDate: sDate,
-                        endDate: eDate,
-                        duration: duration
+                        [taskFields['startDate']]: sDate,
+                        [taskFields['endDate']]: eDate,
+                        [taskFields['duration']]: duration
                     };
+                    
                     args.rowData = arg;
                 }
             }
@@ -2011,17 +2030,127 @@ export class DialogEdit {
             // }
         }
     }
+    public getDialogTabIndex(tabName: DialogFieldType): number {
+        let indexValue: number;
+        this.parent.addDialogFields.map((item, index: number) => {
+            if (item.type === tabName) {
+                indexValue = index;
+            }
+        })
+        return indexValue
+    }
     private renderSegmentsTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
-        const gridModel: GridModel = this.beforeOpenArgs[itemName as string];
+        let gridModel: GridModel = this.beforeOpenArgs[itemName as string];
         const ganttData: IGanttData = this.beforeOpenArgs.rowData;
         let preData: ITaskSegment[] = [];
         if (this.isEdit) {
-            preData = isNullOrUndefined(ganttData.ganttProperties.segments) ? [] : ganttData.ganttProperties.segments;
+            preData = isNullOrUndefined(ganttData.taskData[this.parent.taskFields['segments']]) ? [] : ganttData.taskData[this.parent.taskFields['segments']];
         }
+	preData.map((item: any, index: number) => {
+            if (isNullOrUndefined(item[this.parent.taskFields["id"]])) {
+                item[this.parent.taskFields["id"]] = index;
+            }
+        });
         gridModel.dataSource = preData;
         gridModel.actionBegin = this.segmentGridActionBegin.bind(this);
+        let tabIndex = this.getDialogTabIndex('Segments');
+        let dialogField: any;
+        if (!this.isEdit) {
+            dialogField = this.parent.addDialogFields[tabIndex as number];
+        } else if (this.isEdit) {
+            dialogField = this.parent.editDialogFields[tabIndex as number];
+        }
+        let allProperty: GridModel;
+        let toolbarCollection: any = []
+        let columnCollection: any = []
+        if (!isNullOrUndefined(dialogField) && !isNullOrUndefined(dialogField.additionalParams)) {
+            allProperty = (dialogField.additionalParams) as GridModel;
+            for (const i in allProperty) {
+                switch (i) {
+                    case "allowFiltering":
+                        Grid.Inject(Filter)
+                        break;
+                    case "allowSorting":
+                        Grid.Inject(Sort)
+                        break;
+                    case "allowPaging":
+                        Grid.Inject(Page)
+                        break;
+                    case "allowGrouping":
+                        Grid.Inject(Group)
+                        break;
+                    case "editSettings":
+                        Grid.Inject(Edit)
+                        break;
+                    case "aggregates":
+                        Grid.Inject(Aggregate)
+                        break;
+                    case "showColumnChooser":
+                        Grid.Inject(ColumnChooser)
+                        break;
+                    case "showColumnMenu":
+                        Grid.Inject(ColumnMenu);
+                        break;
+                    case "contextMenuItems":
+                        Grid.Inject(ContextMenu)
+                        break;
+                    case "allowResizing":
+                        Grid.Inject(Resize)
+                        break;
+                    case "allowReordering":
+                        Grid.Inject(Reorder)
+                        break;
+                    case "detailTemplate":
+                        Grid.Inject(DetailRow)
+                        break;
+                    case "allowRowDragAndDrop":
+                        Grid.Inject(RowDD)
+                        break;
+                    case "searchSettings":
+                        Grid.Inject(Search)
+                        break;
+                    case "selectionSettings":
+                        Grid.Inject(Selection)
+                        break;
+                    case "toolbar":
+                        var toolbar: (string | ItemModel | ToolbarItem)[] = allProperty["toolbar"] as (string | ItemModel | ToolbarItem)[];
+                        toolbar.map((item: any) => {
+                            switch (item) {
+                                case "Search":
+                                    Grid.Inject(Search)
+                                    break;
+                                case "Print":
+                                    Grid.Inject(Print)
+                                    break;
+                                case "PdfExport":
+                                    Grid.Inject(PdfExport)
+                                    break;
+                                case "ExcelExport":
+                                    Grid.Inject(ExcelExport)
+                                    break;
+                                default:
+                                    break;
+                            }
+                        })
+                        toolbarCollection = gridModel.toolbar;
+                        Grid.Inject(GridToolbar);
+                        break;
+                    case "enableVirtualization":
+                        Grid.Inject(VirtualScroll);
+                        break;
+                    case "columns":
+                        columnCollection = gridModel.columns;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
         Grid.Inject(Edit, Page, GridToolbar, ForeignKey);
+        gridModel = { ...gridModel, ...allProperty }
+        gridModel.toolbar = [...toolbarCollection, ...gridModel.toolbar]
+        gridModel.columns = [...columnCollection, ...gridModel.columns] as (Column[] | string[] | ColumnModel[]);
         const gridObj: Grid = new Grid(gridModel);
         const divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
         gridObj.appendTo(divElement);
@@ -2029,6 +2158,7 @@ export class DialogEdit {
     }
     private renderGeneralTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
+        const addFields: any = [];
         const itemModel: Object = this.beforeOpenArgs[itemName as string];
         const divElement: HTMLElement = this.createFormElement('e-edit-form-row', ganttObj.element.id
             + '' + itemName + 'TabContainer');
@@ -2039,6 +2169,30 @@ export class DialogEdit {
             const column: GanttColumnModel = this.parent.columnByField[key as string];
             const inputModel: { [key: string]: Record<string, unknown> } = itemModel[key as string];
             divElement.appendChild(this.renderInputElements(inputModel, column));
+            addFields.push(key)
+        }
+        const tabIndex: number = this.getDialogTabIndex('General');
+       let fields: any = []
+        if (!this.isEdit && !isNullOrUndefined(this.parent.addDialogFields[tabIndex as number]) && !isNullOrUndefined(this.parent.addDialogFields[tabIndex as number].fields)) {
+            fields = this.parent.addDialogFields[tabIndex as number].fields;
+        }
+        else if (this.isEdit && !isNullOrUndefined(this.parent.editDialogFields[tabIndex as number]) && !isNullOrUndefined(this.parent.editDialogFields[tabIndex as number].fields)) {
+            fields = this.parent.editDialogFields[tabIndex as number].fields;
+        }
+        if (!isNullOrUndefined(fields)) {
+            let templateFields = fields.filter((item: any) => !addFields.includes(item));
+            if (!isNullOrUndefined(templateFields)) {
+                const template: string[] = templateFields;
+                for (let i = 0; i <= template.length - 1; i++) {
+                    const scriptElement: HTMLScriptElement | null = document.getElementById(template[i as number]) as HTMLScriptElement;
+                    if (!isNullOrUndefined(scriptElement)) {
+                        const templateContent = scriptElement.innerHTML;
+                        const div: Element = createElement('div');
+                        div.innerHTML = templateContent;
+                        divElement.appendChild(div.children[0])
+                    }
+                }
+            }
         }
         return divElement;
     }
@@ -2105,7 +2259,7 @@ export class DialogEdit {
 
     private renderPredecessorTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
-        const gridModel: GridModel = this.beforeOpenArgs[itemName as string];
+        let gridModel: GridModel = this.beforeOpenArgs[itemName as string];
         const dependencyColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.dependency];
         if (dependencyColumn.allowEditing === false || dependencyColumn.isPrimaryKey || this.parent.readOnly) {
             gridModel.editSettings.allowEditing = false;
@@ -2132,7 +2286,7 @@ export class DialogEdit {
                     dataSource: new DataManager(this.idCollection),
                     popupHeight: '180px',
                     allowCustom: false,
-		    enableRtl: this.parent.enableRtl,
+                    enableRtl: this.parent.enableRtl,
                     fields: { value: 'text' },
                     value: args.rowData[field as string],
                     change: (arg: ChangeEventArgs) => {
@@ -2156,13 +2310,103 @@ export class DialogEdit {
                 return ej2Instance.value as string;
             }
         };
+        let tabIndex = this.getDialogTabIndex('Dependency');
+        let dialogField;
+        if (!this.isEdit) {
+            dialogField = this.parent.addDialogFields[tabIndex as number];
+        } else if (this.isEdit) {
+            dialogField = this.parent.editDialogFields[tabIndex as number];
+        }
+        let toolbarCollection: any = []
+        let allProperty: GridModel;
+        if (!isNullOrUndefined(dialogField) && !isNullOrUndefined(dialogField.additionalParams)) {
+            allProperty = dialogField.additionalParams as GridModel
+            for (const i in allProperty) {
+                switch (i) {
+                    case "allowFiltering":
+                        Grid.Inject(Filter)
+                        break;
+                    case "allowSorting":
+                        Grid.Inject(Sort)
+                        break;
+                    case "allowPaging":
+                        Grid.Inject(Page)
+                        break;
+                    case "allowGrouping":
+                        Grid.Inject(Group)
+                        break;
+                    case "editSettings":
+                        Grid.Inject(Edit)
+                        break;
+                    case "aggregates":
+                        Grid.Inject(Aggregate)
+                        break;
+                    case "showColumnChooser":
+                        Grid.Inject(ColumnChooser)
+                        break;
+                    case "showColumnMenu":
+                        Grid.Inject(ColumnMenu);
+                        break;
+                    case "contextMenuItems":
+                        Grid.Inject(ContextMenu)
+                        break;
+                    case "allowResizing":
+                        Grid.Inject(Resize)
+                        break;
+                    case "allowReordering":
+                        Grid.Inject(Reorder)
+                        break;
+                    case "detailTemplate":
+                        Grid.Inject(DetailRow)
+                        break;
+                    case "allowRowDragAndDrop":
+                        Grid.Inject(RowDD)
+                        break;
+                    case "searchSettings":
+                        Grid.Inject(Search)
+                        break;
+                    case "selectionSettings":
+                        Grid.Inject(Selection)
+                        break;
+                    case "toolbar":
+                        var toolbar: (string | ItemModel | ToolbarItem)[] = allProperty["toolbar"] as (string | ItemModel | ToolbarItem)[];
+                        toolbar.map((item: any) => {
+                            switch (item) {
+                                case "Search":
+                                    Grid.Inject(Search)
+                                    break;
+                                case "Print":
+                                    Grid.Inject(Print)
+                                    break;
+                                case "PdfExport":
+                                    Grid.Inject(PdfExport)
+                                    break;
+                                case "ExcelExport":
+                                    Grid.Inject(ExcelExport)
+                                    break;
+                                default:
+                                    break;
+                            }
+                        })
+                        toolbarCollection = gridModel.toolbar
+                        Grid.Inject(GridToolbar)
+                        break;
+                    case "enableVirtualization":
+                        Grid.Inject(VirtualScroll);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
         Grid.Inject(Edit, Page, GridToolbar, ForeignKey);
+        gridModel = { ...gridModel, ...allProperty };
+        gridModel.toolbar = [...gridModel.toolbar, ...toolbarCollection]
         const gridObj: Grid = new Grid(gridModel);
         const divElement: HTMLElement = this.createDivElement('e-dependent-div', ganttObj.element.id + '' + itemName + 'TabContainer');
         gridObj.appendTo(divElement);
         return divElement;
     }
-
     private gridActionBegin(args: GridActionEventArgs): void {
         const itemName: string = 'Dependency';
         const gridModel: GridModel = this.beforeOpenArgs[itemName as string] as GridModel;
@@ -2214,23 +2458,23 @@ export class DialogEdit {
             this.parent.setRecordValue('resourceInfo', this.parent.dataOperation.setResourceInfo(this.editedRecord), ganttData.ganttProperties, true);
         }
         const rowResource: Object[] = ganttData.ganttProperties.resourceInfo;
-        const inputModel: TreeGridModel = this.beforeOpenArgs[itemName as string];
+        let inputModel: TreeGridModel = this.beforeOpenArgs[itemName as string];
         const resourceTreeGridId: string = ganttObj.element.id + '' + itemName + 'TabContainer';
         let resourceData: Object[] = [];
         if (this.parent.viewType === 'ResourceView') {
             for (let i: number = 0; i < ganttObj.currentViewData.length; i++) {
                 for (let j: number = 0; j < ganttObj.resources.length; j++) {
-                    if (ganttObj.currentViewData[i as number][ganttObj.taskFields.id] === ganttObj.resources[j as number][resourceSettings.id] && 
+                    if (ganttObj.currentViewData[i as number][ganttObj.taskFields.id] === ganttObj.resources[j as number][resourceSettings.id] &&
                         (ganttObj.currentViewData[i as number].hasChildRecords || isNullOrUndefined(ganttObj.currentViewData[i as number].parentItem))) {
                         resourceData.push(ganttObj.resources[j as number]);
                     }
                 }
             }
         }
-	else {
+        else {
             resourceData = extend([], [], ganttObj.resources, true) as Object[];
         }
-	this.parent.dataOperation.updateResourceUnit(resourceData);
+        this.parent.dataOperation.updateResourceUnit(resourceData);
         if (!isNullOrUndefined(rowResource)) {
             let count: number;
             const rowResourceLength: number = rowResource.length;
@@ -2250,6 +2494,10 @@ export class DialogEdit {
             for (let i: number = 0; i < resourceInfo.length; i++) {
                 this.ganttResources.push(resourceInfo[i as number]);
             }
+        } else if (!this.isEdit && !isNullOrUndefined(resourceInfo)) {
+            for (let i: number = 0; i < resourceInfo.length; i++) {
+                this.ganttResources.push(resourceInfo[i as number]);
+            }
         }
         else if (!this.isEdit && !isNullOrUndefined(resourceInfo)) {
             for (let i: number = 0; i < resourceInfo.length; i++) {
@@ -2264,7 +2512,101 @@ export class DialogEdit {
         };
 
         const divElement: HTMLElement = this.createDivElement('e-resource-div', resourceTreeGridId);
-        TreeGrid.Inject(Selection, Filter, TreeGridEdit, VirtualScroll);
+        const tabIndex = this.getDialogTabIndex('Resources');
+        let dialogField: any;
+        if (!this.isEdit) {
+            dialogField = this.parent.addDialogFields[tabIndex as number];
+        } else if (this.isEdit) {
+            dialogField = this.parent.editDialogFields[tabIndex as number];
+        }
+        let allProperty: TreeGridModel;
+        let columnCollection: any = []
+        if (!isNullOrUndefined(dialogField) && !isNullOrUndefined(dialogField.additionalParams)) {
+            allProperty = (dialogField.additionalParams) as TreeGridModel;
+            for (const i in allProperty) {
+                switch (i) {
+                    case "allowFiltering":
+                        TreeGrid.Inject(TreeGridFilter)
+                        break;
+                    case "allowSorting":
+                        TreeGrid.Inject(TreeGridSort)
+                        break;
+                    case "allowPaging":
+                        TreeGrid.Inject(TreeGridPage)
+                        break;
+                    case "editSettings":
+                        TreeGrid.Inject(TreeGridEdit)
+                        break;
+                    case "aggregates":
+                        TreeGrid.Inject(TreeGridAggregate)
+                        break;
+                    case "showColumnChooser":
+                        TreeGrid.Inject(TreeGridAggregate)
+                        break;
+                    case "showColumnMenu":
+                        TreeGrid.Inject(ColumnMenu);
+                        break;
+                    case "contextMenuItems":
+                        TreeGrid.Inject(ContextMenu)
+                        break;
+                    case "allowResizing":
+                        TreeGrid.Inject(TreeGridResize);
+                        break;
+                    case "allowReordering":
+                        TreeGrid.Inject(TreeGridReorder);
+                        break;
+                    case "detailTemplate":
+                        TreeGrid.Inject(DetailRow);
+                        break;
+                    case "allowRowDragAndDrop":
+                        TreeGrid.Inject(TreeGridRowDD);
+                        break;
+                    case "searchSettings":
+                        TreeGrid.Inject(Search);
+                        break;
+                    case "selectionSettings":
+                        TreeGrid.Inject(TreeGridSelection);
+                        break;
+                    case "toolbar":
+                        var toolbars = allProperty["toolbar"] as (string | ItemModel | TreeGridToolbarItem)[];
+                        toolbars.map((item: any) => {
+                            switch (item) {
+                                case "Search":
+                                    TreeGrid.Inject(Search);
+                                    break;
+                                case "Print":
+                                    TreeGrid.Inject(Print);
+                                    break;
+                                case "PdfExport":
+                                    TreeGrid.Inject(PdfExport);
+                                    break;
+                                case "ExcelExport":
+                                    TreeGrid.Inject(ExcelExport);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        })
+                        if (!isNullOrUndefined(toolbars)) {
+                            inputModel.toolbar = [];
+                            inputModel.toolbar = [...inputModel.toolbar, ...toolbars];
+                        }
+                        TreeGrid.Inject(TreeGridToolbar);
+                        break;
+                    case "enableVirtualization":
+                        TreeGrid.Inject(VirtualScroll);
+                        break;
+                    case "columns":
+                        columnCollection = inputModel.columns;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        TreeGrid.Inject(TreeGridSelection, TreeGridFilter, TreeGridEdit, VirtualScroll, TreeGridToolbar);
+        inputModel = { ...inputModel, ...allProperty };
+        inputModel.columns = [...columnCollection, ...inputModel.columns];
         const treeGridObj: TreeGrid = new TreeGrid(inputModel);
         const resourceColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.resourceInfo];
         if (resourceColumn.allowEditing === false || resourceColumn.isPrimaryKey || this.parent.readOnly) {
@@ -2300,24 +2642,74 @@ export class DialogEdit {
     private renderCustomTab(itemName: string): HTMLElement {
         return this.renderGeneralTab(itemName);
     }
-
     private renderNotesTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
-        const inputModel: RichTextEditorModel = this.beforeOpenArgs[itemName as string];
+        let inputModel: RichTextEditorModel = this.beforeOpenArgs[itemName as string];
         inputModel.enableHtmlSanitizer = this.parent.enableHtmlSanitizer;
         const ganttProp: ITaskData = this.editedRecord.ganttProperties;
         const divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
-        RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count, Table);
+        const tabIndex = this.getDialogTabIndex('Notes');
+        let dialogField: any;
+        let toolbarCollection: any = [];
+        if (!this.isEdit) {
+            dialogField = this.parent.addDialogFields[tabIndex as number];
+        } else if (this.isEdit) {
+            dialogField = this.parent.editDialogFields[tabIndex as number];
+        }
+        let allProperty: RichTextEditorModel;
+        if (!isNullOrUndefined(dialogField) && !isNullOrUndefined(dialogField.additionalParams)) {
+            allProperty = dialogField.additionalParams;
+            for (const i in allProperty) {
+                switch (i) {
+                    case "toolbarSettings":
+                        for (const key in allProperty["toolbarSettings"].items) {
+                            switch (key) {
+                                case "Image":
+                                    RichTextEditor.Inject(Image);
+                                    break;
+                                case "CreateTable":
+                                    RichTextEditor.Inject(Table);
+                                    break;
+                                case "EmojiPicker":
+                                    RichTextEditor.Inject(EmojiPicker);
+                                    break;
+                                case "FileManager":
+                                    RichTextEditor.Inject(FileManager);
+
+                                    break;
+                                case "FormatPainter":
+                                    RichTextEditor.Inject(FormatPainter);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        if (!isNullOrUndefined(allProperty["toolbarSettings"].items)) {
+                            toolbarCollection = inputModel.toolbarSettings.items;
+                        }
+                        RichTextEditor.Inject(RTEToolbar);
+                        break;
+                    case "editorMode":
+                        RichTextEditor.Inject(MarkdownEditor);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        }
+	RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count, Table);
         inputModel.value = ganttProp.notes;
         const notesColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.notes];
         if (notesColumn.allowEditing === false || notesColumn.isPrimaryKey || this.parent.readOnly) {
             inputModel.enabled = false;
         }
+        inputModel = { ...inputModel, ...allProperty }
+        inputModel.toolbarSettings.items = [...toolbarCollection, ...inputModel.toolbarSettings.items];
         const rteObj: RichTextEditor = new RichTextEditor(inputModel);
         rteObj.appendTo(divElement);
         return divElement;
     }
-
     private renderInputElements(inputModel: CObject, column: GanttColumnModel): HTMLElement {
         const ganttId: string = this.parent.element.id;
         const ganttData: IGanttData = this.editedRecord;
@@ -2517,6 +2909,65 @@ export class DialogEdit {
         } else {
             this.addedRecord = {};
         }
+        if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent']('Edit')) {
+            if (this.parent.undoRedoModule['redoEnabled']) {
+                this.parent.undoRedoModule['disableRedo']();
+            }
+            if (this.isEdit) {
+                this.parent.undoRedoModule['createUndoCollection']();
+                let action: Object = {};
+                action['action'] = 'DialogEdit';
+                action['modifiedRecords'] = [];
+                this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] = action;
+                if (this.parent.viewType == 'ResourceView') {
+                    let isValid: boolean = false;
+                    if (!this.rowData.ganttProperties.resourceInfo) {
+                        if (this.ganttResources.length > 0) {
+                            isValid = true;
+                        }
+                    }
+                    else if (this.ganttResources.length != this.rowData.ganttProperties.resourceInfo.length) {
+                        isValid = true;
+                    }
+                    else {
+                        for (let i: number = 0; i < this.rowData.ganttProperties.resourceInfo.length; i++) {
+                            if (this.ganttResources[i as number][this.parent.resourceFields.id] !== this.rowData.ganttProperties.resourceInfo[i as number][this.parent.resourceFields.id]) {
+                                isValid = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (isValid) {
+                        let indexes: Object = {};
+                        indexes['deletedIndexes'] = [];
+                        const id: string = 'T' + this.rowData.ganttProperties.taskId;
+                        let rowItems: IGanttData[] = [];
+                        this.parent.taskIds.reduce(function (a: any, e: any, i: any) {
+                            if (e === id) {
+                                if (this.ganttResources.length == 0) {
+                                    rowItems.push(this.parent.flatData[i as number]);
+                                }
+                                else {
+                                    let parent: IGanttData = this.parent.getTaskByUniqueID(this.parent.flatData[i as number].parentUniqueID);
+                                    for (let j: number = 0; j < this.ganttResources.length; j++) {
+                                        if (parent.ganttProperties.taskId != this.ganttResources[j as number][this.parent.resourceFields.id] && rowItems.indexOf(this.parent.flatData[i as number]) == -1) {
+                                            rowItems.push(this.parent.flatData[i as number]);
+                                        }
+                                    }
+                                }
+                            }
+                        }.bind(this), []);
+                        this.parent.undoRedoModule['findPosition'](extend([], [], rowItems, true) as IGanttData[], indexes, 'deletedIndexes');
+                        if (this['indexes']) {
+                            this['indexes']['deletedIndexes'][this['indexes']['deletedIndexes'].length] = indexes['deletedIndexes'][0];
+                        }
+                        else {
+                            this['indexes'] = indexes;
+                        }
+                    }
+                }
+            }
+        }
         const ganttObj: Gantt = this.parent;
         const tabModel: TabModel = this.beforeOpenArgs.tabModel;
         const items: TabItemModel[] = tabModel.items;
@@ -2540,6 +2991,13 @@ export class DialogEdit {
                     this.updateSegmentsData(element, this.beforeOpenArgs.rowData);
                 }
             }
+        }
+        if (!this.disableUndo && this.parent.undoRedoModule) {
+            this.parent.undoRedoModule['getUndoCollection'].splice(this.parent.undoRedoModule['getUndoCollection'].length - 1, 1);
+            if (this.parent.toolbarModule && this.parent.undoRedoModule['getUndoCollection'].length == 0) {
+                this.parent.toolbarModule.enableItems([this.parent.controlId + '_undo'], false);
+            }
+            this.parent['totalUndoAction']--;
         }
         if (this.isEdit) {
             /**
@@ -2573,39 +3031,24 @@ export class DialogEdit {
         return true;
     }
 
-    private updateSegmentTaskData(dataSource: ITaskSegment[]): void {
-        const userData: ITaskSegment[] = [];
-        const taskSettings: TaskFieldsModel = this.parent.taskFields;
-        for (let i: number = 0; i < dataSource.length; i++) {
-            const taskData: Object = {};
 
-            if (!isNullOrUndefined(taskSettings.startDate)) {
-                taskData[this.parent.taskFields.startDate] = dataSource[i as number].startDate;
-            }
-            if (!isNullOrUndefined(taskSettings.endDate)) {
-                taskData[this.parent.taskFields.endDate] = dataSource[i as number].endDate;
-            }
-            if (!isNullOrUndefined(taskSettings.duration)) {
-                taskData[this.parent.taskFields.duration] = Number(dataSource[i as number].duration);
-                dataSource[i as number].duration = taskData[this.parent.taskFields.duration];
-            }
-            userData.push(taskData);
-        }
+    private updateSegmentTaskData(dataSource: ITaskSegment[], data: IGanttData): void {
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
         if (!this.isEdit) {
-            this.addedRecord[taskSettings.segments] = userData;
+            this.addedRecord[taskSettings.segments] = dataSource;
         } else {
-            this.rowData.ganttProperties.segments = dataSource;
+            this.parent.setRecordValue(
+                'taskData.' + this.parent.taskFields.segments,
+                dataSource,
+                this.rowData);
+            this.parent.setRecordValue('segments', this.parent.dataOperation.setSegmentsInfo(this.rowData, true), this.rowData.ganttProperties, true);
             this.parent.setRecordValue(
                 'segments', this.parent.dataOperation.setSegmentsInfo(this.rowData, false), this.rowData.ganttProperties, true
             );
-            this.parent.setRecordValue(
-                'taskData.' + this.parent.taskFields.segments,
-                userData,
-                this.rowData);
-            if (dataSource.length <= 0){
+            if (dataSource.length <= 0) {
                 this.validateDuration(this.rowData);
+            }
         }
-    }
     }
     // eslint-disable-next-line
     private updateSegmentsData(segmentForm: HTMLElement, data: IGanttData): void {
@@ -2620,7 +3063,7 @@ export class DialogEdit {
        } else {
            dataSource = <ITaskSegment[]>gridObj.currentViewData;
        }
-        this.updateSegmentTaskData(dataSource);
+        this.updateSegmentTaskData(dataSource, data);
     }
 
     private updateGeneralTab(generalForm: HTMLElement, isCustom: boolean): void {
@@ -2641,6 +3084,16 @@ export class DialogEdit {
                     controlObj.value = valueString;
                 }
                 const column: GanttColumnModel = ganttObj.columnByField[fieldName as string];
+                if (fieldName == this.parent.taskFields.duration) {
+                    if (parseInt(this.rowData[fieldName as string]) != parseInt(controlObj.value as string)) {
+                        this.disableUndo = true;
+                    }
+                }
+                else {
+                    if (this.rowData[fieldName as string] != controlObj.value) {
+                        this.disableUndo = true;
+                    }
+                }
                 if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
                     let read: Function = column.edit.read as Function;
                     if (typeof read === 'string') {
@@ -2657,7 +3110,7 @@ export class DialogEdit {
                     }
                 } else {
                     if (fieldName === this.parent.taskFields.duration) {
-                        let numericValue: number = parseFloat(String(controlObj.value));;
+                        let numericValue: number = parseFloat(String(controlObj.value));
                         tasksData[fieldName as string] = numericValue
                     }
                     else {
@@ -2724,9 +3177,16 @@ export class DialogEdit {
         let newValues: IPredecessor[] = [];
         let predecessorString: string = '';
         const ids: string[] = [];
+        let parentRecord: IGanttData[] = [];
         for (let i: number = 0; i < dataSource.length; i++) {
             const preData: IPreData = dataSource[i as number];
             if (ids.indexOf(preData.id) === -1) {
+                if(this.parent.viewType == 'ProjectView') {
+                    const currentRecord: IGanttData = this.parent.flatData[(this.parent.ids.indexOf(preData.id))];
+                    if (currentRecord.hasChildRecords && parentRecord.indexOf(currentRecord) == -1) {
+                        parentRecord.push(currentRecord);
+                    }
+                }
                 let name: string = preData.id + preData.type;
                 if (preData.offset && preData.offset.indexOf('-') !== -1) {
                     name += preData.offset;
@@ -2746,6 +3206,12 @@ export class DialogEdit {
                 newValues = [];
                 this.parent.setRecordValue('predecessor', newValues, this.rowData.ganttProperties, true);
                 predecessorString = '';
+            }
+            if (this.parent.undoRedoModule && this.parent.undoRedoModule['getUndoCollection'].length > 0) {
+                this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1]['connectedRecords'] = parentRecord;
+                if (!this.disableUndo && this.rowData.ganttProperties.predecessorsName != predecessorString && (!isNullOrUndefined(this.rowData.ganttProperties.predecessorsName) || predecessorString !== "")) {
+                    this.disableUndo = true;
+                }
             }
             this.parent.setRecordValue('predecessorsName', predecessorString, this.rowData.ganttProperties, true);
             this.parent.setRecordValue(
@@ -2778,6 +3244,17 @@ export class DialogEdit {
         }
         const idArray: object[] = [];
         if (this.isEdit) {
+            if((this.rowData.ganttProperties.resourceInfo && selectedItems.length != this.rowData.ganttProperties.resourceInfo.length) || (isNullOrUndefined(this.rowData.ganttProperties.resourceInfo) && selectedItems.length > 0)) {
+                this.disableUndo = true;
+            }
+            if (!this.disableUndo) {
+                for (let i: number = 0; i < selectedItems.length; i++) {
+                    if (JSON.stringify(selectedItems[i as number]) != JSON.stringify(this.rowData.ganttProperties.resourceInfo[i as number])) {
+                        this.disableUndo = true;
+                        break;
+                    }
+                }
+            }
             this.parent.setRecordValue('resourceInfo', selectedItems, this.editedRecord.ganttProperties, true);
             this.parent.dataOperation.updateMappingData(this.editedRecord, 'resourceInfo');
             this.parent.editModule.updateResourceRelatedFields(this.editedRecord, 'resource');
@@ -2796,9 +3273,20 @@ export class DialogEdit {
         const rte: RichTextEditor = <RichTextEditor>(<EJ2Instance>notesElement).ej2_instances[0];
         if (this.isEdit) {
             if (ganttObj.columnByField[ganttObj.taskFields.notes].disableHtmlEncode === false) {
+                if(this.rowData.ganttProperties.notes != rte.getHtml() && (this.rowData.ganttProperties.notes != null || rte.getHtml() != "<p><br></p>") && !this.disableUndo) {
+                    this.disableUndo = true;
+                }
                 this.parent.setRecordValue('notes', rte.getHtml(), this.rowData.ganttProperties, true);
             } else {
-                this.parent.setRecordValue('notes', rte.getText(), this.rowData.ganttProperties, true);
+                if(this.rowData.ganttProperties.notes != rte.getText() && (this.rowData.ganttProperties.notes != null || rte.getText() != "") && !this.disableUndo) {
+                    this.disableUndo = true;
+                }
+                if (rte.getHtml().includes('href')) {
+                    this.parent.setRecordValue('notes', rte.getHtml(), this.rowData.ganttProperties, true);
+                }
+                else {
+                    this.parent.setRecordValue('notes', rte.getText(), this.rowData.ganttProperties, true);
+                }
             }
             ganttObj.dataOperation.updateMappingData(this.rowData, 'notes');
         } else {

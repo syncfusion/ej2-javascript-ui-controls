@@ -4,17 +4,18 @@ import { _Linearization } from './pdf-parser';
 import { _isWhiteSpace, FormatError, _decode } from './utils';
 import { _PdfCatalog } from './pdf-catalog';
 import { _PdfDictionary, _PdfReference, _isName, _PdfName, _clearPrimitiveCaches } from './pdf-primitives';
-import { PdfPage } from './pdf-page';
+import { PdfDestination, PdfPage } from './pdf-page';
 import { Save } from '@syncfusion/ej2-file-utils';
-import { DataFormat, PdfPermissionFlag, PdfTextAlignment } from './enumerator';
+import { DataFormat, PdfPermissionFlag, PdfTextAlignment, PdfPageOrientation, PdfRotationAngle } from './enumerator';
 import { PdfForm } from './form/form';
+import { PdfField } from './form/field';
 import { PdfBrush, PdfGraphics } from './graphics/pdf-graphics';
 import { PdfFontFamily, PdfFontStyle, PdfStandardFont } from './fonts/pdf-standard-font';
 import { PdfStringFormat, PdfVerticalAlignment } from './fonts/pdf-string-format';
 import { _ExportHelper, _XfdfDocument } from './import-export/xfdf-document';
 import { _JsonDocument } from './import-export/json-document';
 import { _FdfDocument } from './import-export/fdf-document';
-import { PdfBookmarkBase, _PdfNamedDestinationCollection } from './pdf-outline';
+import { PdfBookmark, PdfNamedDestination, PdfBookmarkBase, _PdfNamedDestinationCollection } from './pdf-outline';
 import { _XmlDocument } from './import-export/xml-document';
 import { PdfFileStructure } from './pdf-file-structure';
 /**
@@ -56,6 +57,7 @@ export class PdfDocument {
     _encryptMetaData: boolean = false;
     _isExport: boolean = false;
     private _allowCustomData: boolean = false;
+    _bookmarkHashTable: Map<PdfPage, PdfBookmarkBase[]>;
     /**
      * Initializes a new instance of the `PdfDocument` class.
      *
@@ -413,6 +415,9 @@ export class PdfDocument {
      * ```
      */
     getPage(pageIndex: number): PdfPage {
+        if (pageIndex < 0 || pageIndex >= this.pageCount) {
+            throw new Error('Invalid page index');
+        }
         const cachedPage: PdfPage = this._pages.get(pageIndex);
         if (cachedPage) {
             return cachedPage;
@@ -432,6 +437,523 @@ export class PdfDocument {
         );
         this._pages.set(pageIndex, page);
         return page;
+    }
+    /**
+     * Creates a new page with default page settings and adds it to the collection.
+     *
+     * @returns {PdfPage} PDF page at the specified index.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Add a new PDF page
+     * let page: PdfPage = document.addPage();
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    addPage(): PdfPage
+    /**
+     * Creates a new page with default settings and inserts it into the collection at the specified page index.
+     *
+     * @param {number} index Page index.
+     * @returns {PdfPage} PDF page at the specified index.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create and insert a new PDF page at 5th index
+     * let page: PdfPage = document.addPage(5);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    addPage(index: number): PdfPage
+    /**
+     * Creates a new page with specified page settings and adds it to the collection.
+     *
+     * @param {PdfPageSettings} pageSettings Page settings.
+     * @returns {PdfPage} PDF page at the specified index.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the margins
+     * pageSettings.margins = new PdfMargins(40);
+     * // Sets the page size
+     * pageSettings.size = [595, 842];
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    addPage(pageSettings: PdfPageSettings): PdfPage
+    /**
+     * Creates a new page with specified page settings and inserts it into the collection at the specified page index.
+     *
+     * @param {number} index Page index.
+     * @param {PdfPageSettings} pageSettings Page settings.
+     * @returns {PdfPage} PDF page at the specified index.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the margins
+     * pageSettings.margins = new PdfMargins(40);
+     * // Sets the page size
+     * pageSettings.size = [595, 842];
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Create and insert a new PDF page at 5th index with specified page settings
+     * page = document.addPage(5, pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    addPage(index: number, pageSettings: PdfPageSettings): PdfPage
+    addPage(arg1?: number | PdfPageSettings, arg2?: PdfPageSettings): PdfPage {
+        let settings: PdfPageSettings;
+        let pageIndex: number;
+        if (typeof arg2 !== 'undefined') {
+            settings = arg2;
+            pageIndex = arg1 as number;
+            this._checkPageNumber(pageIndex);
+        } else if (typeof arg1 === 'undefined') {
+            settings = new PdfPageSettings();
+            pageIndex = this.pageCount;
+        } else if (arg1 instanceof PdfPageSettings) {
+            settings = arg1;
+            pageIndex = this.pageCount;
+        } else {
+            settings = new PdfPageSettings();
+            pageIndex = arg1;
+            this._checkPageNumber(pageIndex);
+        }
+        const sectionDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        sectionDictionary.update('Type', _PdfName.get('Pages'));
+        sectionDictionary.update('Count', 1);
+        this._updatePageSettings(sectionDictionary, settings);
+        const sectionReference: _PdfReference = this._crossReference._getNextReference();
+        this._crossReference._cacheMap.set(sectionReference, sectionDictionary);
+        sectionDictionary.objId = sectionReference.toString();
+        const pageDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        pageDictionary.update('Type', _PdfName.get('Page'));
+        const pageReference: _PdfReference = this._crossReference._getNextReference();
+        this._crossReference._cacheMap.set(pageReference, pageDictionary);
+        pageDictionary.objId = pageReference.toString();
+        pageDictionary.update('Parent', sectionReference);
+        sectionDictionary.update('Kids', [pageReference]);
+        const lastPage: PdfPage = this.getPage(pageIndex === this.pageCount ? (pageIndex - 1) : pageIndex);
+        if (lastPage && lastPage._pageDictionary) {
+            const parentReference: _PdfReference = lastPage._pageDictionary._get('Parent');
+            const parentDictionary: _PdfDictionary = this._crossReference._fetch(parentReference);
+            if (parentDictionary && parentDictionary.has('Kids')) {
+                let kids: _PdfReference[] = parentDictionary.get('Kids');
+                if (kids) {
+                    if (pageIndex === this.pageCount) {
+                        kids.push(sectionReference);
+                    } else {
+                        const newKids: _PdfReference[] = [];
+                        kids.forEach((entry: _PdfReference) => {
+                            if (entry === lastPage._ref) {
+                                newKids.push(sectionReference);
+                            }
+                            newKids.push(entry);
+                        });
+                        kids = newKids;
+                        this._updatePageCache(pageIndex);
+                    }
+                    parentDictionary.update('Kids', kids);
+                    sectionDictionary.update('Parent', parentReference);
+                    this._updatePageCount(parentDictionary, 1);
+                    this._pageCount = this.pageCount + 1;
+                }
+            }
+        }
+        const result: PdfPage = new PdfPage(this._crossReference, pageIndex, pageDictionary, pageReference);
+        result._pageSettings = settings;
+        result._isNew = true;
+        this._pages.set(pageIndex, result);
+        return result;
+    }
+    /**
+     * Removes the specified page.
+     *
+     * @param {PdfPage} page The page to remove.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Removes the specified page
+     * document.removePage(page);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    removePage(page: PdfPage): void
+    /**
+     * Removes the page from the specified index.
+     *
+     * @param {number} index The page index to remove.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Removes the first page
+     * document.removePage(0);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    removePage(index: number): void
+    removePage(argument: PdfPage | number): void {
+        const targetPage: PdfPage = (argument instanceof PdfPage) ? argument : this.getPage(argument);
+        this._removePage(targetPage);
+    }
+    _checkPageNumber(index: number): void {
+        if (index < 0 || index > this.pageCount) {
+            throw new Error('Index out of range');
+        }
+    }
+    _updatePageCount(dictionary: _PdfDictionary, valueToIncrement: number): void {
+        dictionary.update('Count', dictionary.get('Count') + valueToIncrement);
+        if (dictionary.has('Parent')) {
+            const parentDictionary: _PdfDictionary = dictionary.get('Parent');
+            if (parentDictionary && parentDictionary.get('Type').name === 'Pages') {
+                this._updatePageCount(parentDictionary, valueToIncrement);
+            }
+        }
+    }
+    _updatePageSettings(dictionary: _PdfDictionary, settings: PdfPageSettings): void {
+        const bounds: number[] = [0, 0, settings.size[0], settings.size[1]];
+        dictionary.update('MediaBox', bounds);
+        dictionary.update('CropBox', bounds);
+        let rotate: number = Math.floor(settings.rotation as number) * 90;
+        if (rotate >= 360) {
+            rotate = rotate % 360;
+        }
+        dictionary.update('Rotate', rotate);
+    }
+    _updatePageCache(index: number, isIncrement: boolean = true): void {
+        const updatedData: Map<number, PdfPage> = new Map<number, PdfPage>();
+        for (let i: number = this.pageCount - 1; i >= 0; i--) {
+            const page: PdfPage = this.getPage(i);
+            if (isIncrement) {
+                if (i >= index) {
+                    updatedData.set(i + 1, page);
+                    page._pageIndex = i + 1;
+                } else {
+                    updatedData.set(i, page);
+                }
+            } else {
+                if (i > index) {
+                    updatedData.set(i - 1, page);
+                    page._pageIndex = i - 1;
+                } else if (i !== index) {
+                    updatedData.set(i, page);
+                }
+            }
+        }
+        this._pages = updatedData;
+        if (!isIncrement) {
+            this._pageCount = this._pages.size;
+        }
+    }
+    _removePage(pageToRemove: PdfPage): void {
+        const bookMarkMap: Map<PdfPage, PdfBookmarkBase[]> = this._parseBookmarkDestination();
+        if (bookMarkMap && bookMarkMap.has(pageToRemove)) {
+            const bookmarks: PdfBookmarkBase[] = bookMarkMap.get(pageToRemove);
+            if (bookmarks) {
+                for (let i: number = 0; i < bookmarks.length; i++) {
+                    const bookmark: PdfBookmarkBase = bookmarks[Number.parseInt(i.toString(), 10)];
+                    if (bookmark) {
+                        const bookmarkDictionary: _PdfDictionary = bookmark._dictionary;
+                        if (bookmarkDictionary) {
+                            if (bookmarkDictionary.has('A')) {
+                                bookmarkDictionary.update('A', null);
+                            }
+                            bookmarkDictionary.update('Dest', null);
+                        }
+                    }
+                }
+            }
+        }
+        this._removePageTemplates(pageToRemove);
+        for (let i: number = this.form.count - 1; i >= 0; --i) {
+            const field: PdfField = this.form.fieldAt(i);
+            if (field && field.page === pageToRemove) {
+                this.form.removeFieldAt(i);
+            }
+        }
+        this._updatePageCache(pageToRemove._pageIndex, false);
+        this._removeParent(pageToRemove._ref, pageToRemove._pageDictionary);
+        if (this._crossReference._cacheMap.has(pageToRemove._ref)) {
+            pageToRemove._pageDictionary._updated = false;
+        }
+    }
+    _removeParent(referenceToRemove: _PdfReference, dictionary: _PdfDictionary): void {
+        const parentReference: _PdfReference = dictionary._get('Parent');
+        const parentDictionary: _PdfDictionary = this._crossReference._fetch(parentReference);
+        if (parentDictionary && parentDictionary.has('Kids')) {
+            let kids: _PdfReference[] = parentDictionary.get('Kids');
+            if (kids.length === 1 && parentDictionary && parentDictionary.get('Type').name === 'Pages') {
+                this._removeParent(parentReference, parentDictionary);
+            } else {
+                kids = kids.filter((item: _PdfReference) => item !== referenceToRemove);
+                parentDictionary.update('Kids', kids);
+                this._updatePageCount(parentDictionary, -1);
+            }
+        }
+    }
+    _parseBookmarkDestination(): Map<PdfPage, PdfBookmarkBase[]> {
+        let current: PdfBookmarkBase = this.bookmarks;
+        if (typeof this._bookmarkHashTable === 'undefined' && current) {
+            this._bookmarkHashTable = new Map<PdfPage, PdfBookmarkBase[]>();
+            const stack: {index: number, kids: PdfBookmarkBase[]}[] = [];
+            let nodeInformation: {index: number, kids: PdfBookmarkBase[]} = {index: 0, kids: current._bookMarkList};
+            do {
+                for (; nodeInformation.index < nodeInformation.kids.length; ) {
+                    current = nodeInformation.kids[nodeInformation.index];
+                    const namedDestination: PdfNamedDestination = (current as PdfBookmark).namedDestination;
+                    if (namedDestination) {
+                        if (namedDestination.destination) {
+                            const page: PdfPage = namedDestination.destination.page;
+                            let list: PdfBookmarkBase[] = this._bookmarkHashTable.get(page);
+                            if (!list) {
+                                list = [];
+                            }
+                            list.push(current);
+                            this._bookmarkHashTable.set(page, list);
+                        }
+                    } else {
+                        const destination: PdfDestination = (current as PdfBookmark).destination;
+                        if (destination) {
+                            const page: PdfPage = destination.page;
+                            let list: PdfBookmarkBase[] = this._bookmarkHashTable.get(page);
+                            if (!list) {
+                                list = [];
+                            }
+                            list.push(current);
+                            this._bookmarkHashTable.set(page, list);
+                        }
+                    }
+                    nodeInformation.index += 1;
+                    if (current.count > 0) {
+                        stack.push(nodeInformation);
+                        nodeInformation = {index: 0, kids: current._bookMarkList};
+                        continue;
+                    }
+                }
+                if (stack.length > 0) {
+                    nodeInformation = stack.pop();
+                    while (nodeInformation.index === nodeInformation.kids.length && stack.length > 0) {
+                        nodeInformation = stack.pop();
+                    }
+                }
+            } while (nodeInformation.index < nodeInformation.kids.length);
+        }
+        return this._bookmarkHashTable;
+    }
+    _removePageTemplates(page: PdfPage): void {
+        let dictionary: _PdfDictionary;
+        if (this._catalog._catalogDictionary.has('Names')) {
+            dictionary = this._catalog._catalogDictionary.get('Names');
+            if (dictionary) {
+                this._removeInternalTemplates(dictionary, 'Pages', page);
+                this._removeInternalTemplates(dictionary, 'Templates', page);
+            }
+        }
+    }
+    _removeInternalTemplates(dictionary: _PdfDictionary, key: string, page: PdfPage): void {
+        if (dictionary.has(key)) {
+            const namedObject: _PdfDictionary = dictionary.get(key);
+            if (namedObject && namedObject.has('Names')) {
+                const nameCollection: _PdfDictionary[] = namedObject.getArray('Names');
+                if (nameCollection && nameCollection.length > 0) {
+                    const namedPageCollection: _PdfDictionary[] = this._getUpdatedPageTemplates(nameCollection, page);
+                    const namedPageDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+                    namedPageDictionary.update('Names', namedPageCollection);
+                    const reference: _PdfReference = this._crossReference._getNextReference();
+                    this._crossReference._cacheMap.set(reference, namedPageDictionary);
+                    namedPageDictionary.objId = reference.toString();
+                    dictionary.update(key, reference);
+                }
+            }
+        }
+    }
+    _getUpdatedPageTemplates(namedPages: _PdfDictionary[], page: PdfPage): _PdfDictionary[] {
+        if (namedPages.length > 0) {
+            for (let i: number = 1; i <= namedPages.length; i = i + 2) {
+                const pageDictionary: _PdfDictionary = namedPages[Number.parseInt(i.toString(), 10)];
+                if (pageDictionary && page._pageDictionary === pageDictionary) {
+                    namedPages.pop();
+                    namedPages.pop();
+                    return namedPages;
+                }
+            }
+        }
+        return namedPages;
+    }
+    /**
+     * Reorders the pages in the PDF document.
+     *
+     * @param {number[]} orderArray The page sequence to arrange the pages.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Reorders the pages in the PDF document
+     * document.reorderPages([3, 2, 1]);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    reorderPages(orderArray: number[]): void {
+        orderArray.forEach((pageNumber: number) => {
+            this._checkPageNumber(pageNumber);
+        });
+        const sortedArray: number[] = this._sortedArray(orderArray);
+        const ascendingOrder: number[] = orderArray.slice().sort((a: number, b: number) => a - b);
+        const inputArray: number[] = Array.from({ length: this.pageCount }, (_: number, i: number) => i);
+        const pagesToRemove: number[] = inputArray.filter((element: number) => sortedArray.indexOf(element) === -1);
+        for (let i: number = pagesToRemove.length - 1; i >= 0; i--) {
+            this.removePage(pagesToRemove[Number.parseInt(i.toString(), 10)]);
+        }
+        const newkids: _PdfReference[] = [];
+        const newPages: Map<number, PdfPage> = new Map<number, PdfPage>();
+        const parentReference: _PdfReference = this._catalog._catalogDictionary._get('Pages');
+        for (let i: number = 0; i < sortedArray.length; i++) {
+            const indexPage: PdfPage = this.getPage(ascendingOrder.indexOf(sortedArray[Number.parseInt(i.toString(), 10)]));
+            indexPage._pageIndex = i;
+            newPages.set(i, indexPage);
+            const sectionDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+            sectionDictionary.update('Type', _PdfName.get('Pages'));
+            sectionDictionary.update('Count', 1);
+            sectionDictionary.update('Parent', parentReference);
+            const sectionReference: _PdfReference = this._crossReference._getNextReference();
+            sectionDictionary.objId = sectionReference.toString();
+            sectionDictionary.update('Kids', [indexPage._ref]);
+            newkids.push(sectionReference);
+            let parentDictionary: _PdfDictionary = indexPage._pageDictionary.get('Parent');
+            while (parentDictionary && parentDictionary.get('Type').name === 'Pages') {
+                parentDictionary.forEach((key: string, value: any) => { // eslint-disable-line
+                    switch (key) {
+                    case 'Parent':
+                    case 'Kids':
+                    case 'Type':
+                    case 'Count':
+                        break;
+                    case 'Resources':
+                        this._cloneResources(parentDictionary.get('Resources'), sectionDictionary);
+                        break;
+                    default:
+                        if (!sectionDictionary.has(key)) {
+                            sectionDictionary.update(key, value);
+                        }
+                        break;
+                    }
+                });
+                if (parentDictionary.has('Parent')) {
+                    parentDictionary = parentDictionary.get('Parent');
+                } else {
+                    break;
+                }
+            }
+            this._crossReference._cacheMap.set(sectionReference, sectionDictionary);
+            const pageSection: _PdfDictionary = this._crossReference._fetch(indexPage._ref);
+            pageSection.update('Parent', sectionReference);
+        }
+        this._pages = newPages;
+        if (this._catalog) {
+            const parentDictionary: _PdfDictionary = this._catalog._topPagesDictionary;
+            if (parentDictionary && parentDictionary.has('Kids')) {
+                let kids: _PdfReference[] = parentDictionary.get('Kids');
+                kids = newkids;
+                parentDictionary.update('Kids', kids);
+            }
+        }
+    }
+    _sortedArray(order: number[]): number[] {
+        const sortedArray: number[] = [];
+        order.forEach((num: number) => {
+            if (sortedArray.indexOf(num) === -1) {
+                sortedArray.push(num);
+            }
+        });
+        return sortedArray;
+    }
+    _cloneResources(source: _PdfDictionary, target: _PdfDictionary): void {
+        if (!target.has('Resources')) {
+            target.update('Resources', source);
+        } else {
+            const resourceDictionary: _PdfDictionary = target.get('Resources');
+            source.forEach((key: string, value: any) => { // eslint-disable-line
+                if (resourceDictionary.has(key)) {
+                    this._cloneInnerResources(key, value, resourceDictionary);
+                } else {
+                    resourceDictionary.update(key, value);
+                }
+            });
+        }
+    }
+    _cloneInnerResources(key: string, value: any, resourceDictionary: _PdfDictionary): void { // eslint-disable-line
+        if (value instanceof _PdfDictionary) {
+            const oldObject: _PdfDictionary = resourceDictionary.get(key);
+            if (oldObject) {
+                let hasNew: boolean = false;
+                oldObject.forEach((innerKey: string, innerValue: any) => { // eslint-disable-line
+                    if (!oldObject.has(innerKey)) {
+                        oldObject.update(innerKey, innerValue);
+                        hasNew = true;
+                    }
+                });
+                if (hasNew) {
+                    resourceDictionary._updated = true;
+                }
+            } else {
+                resourceDictionary.update(key, value);
+            }
+        } else if (Array.isArray(value)) {
+            const oldArray: any[] = resourceDictionary.get(key); // eslint-disable-line
+            if (oldArray) {
+                let hasNew: boolean = false;
+                value.forEach((entry: any) => { // eslint-disable-line
+                    if (oldArray.indexOf(entry) === -1) {
+                        oldArray.push(entry);
+                        hasNew = true;
+                    }
+                });
+                if (hasNew) {
+                    resourceDictionary._updated = true;
+                }
+            } else {
+                resourceDictionary.update(key, value);
+            }
+        }
     }
     /**
      * Saves the modified document.
@@ -1263,5 +1785,544 @@ export class PdfFormFieldExportSettings {
      */
     set asPerSpecification(value: boolean) {
         this._asPerSpecification = value;
+    }
+}
+/**
+ * The class provides various settings related to PDF pages.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Create a new PDF page settings instance
+ * let pageSettings: PdfPageSettings = new PdfPageSettings();
+ * // Sets the margins
+ * pageSettings.margins = new PdfMargins(40);
+ * // Sets the page size
+ * pageSettings.size = [595, 842];
+ * // Sets the page orientation
+ * pageSettings.orientation = PdfPageOrientation.landscape;
+ * // Add a new PDF page with page settings
+ * page = document.addPage(pageSettings);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfPageSettings {
+    _orientation: PdfPageOrientation ;
+    _size: number[] = [595, 842];
+    _isOrientation: boolean = false;
+    _margins: PdfMargins;
+    _rotation: PdfRotationAngle;
+    /**
+     * Initializes a new instance of the `PdfPageSettings` class
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the margins
+     * pageSettings.margins = new PdfMargins(40);
+     * // Sets the page size
+     * pageSettings.size = [595, 842];
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor() {
+        this._orientation = PdfPageOrientation.portrait;
+        this._size = [595, 842];
+        this._margins = new PdfMargins();
+        this._rotation = PdfRotationAngle.angle0;
+    }
+    /**
+     * Gets the orientation of the page.
+     *
+     * @returns {PdfPageOrientation} The orientation.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the page size
+     * pageSettings.size = [842, 595];
+     * // Gets the page orientation
+     * let orientation: PdfPageOrientation = pageSettings.orientation;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get orientation(): PdfPageOrientation {
+        return this._orientation;
+    }
+    /**
+     * Sets the orientation of the page.
+     *
+     * @param {PdfPageOrientation} value The orientation.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set orientation(value: PdfPageOrientation) {
+        this._isOrientation = true;
+        if (this._orientation !== value) {
+            this._orientation = value;
+            this._updateSize(value);
+        }
+    }
+    /**
+     * Gets the size of the page.
+     *
+     * @returns {number[]} The width and height of the page as number array.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the width and height of the PDF page as number array
+     * let size: number[] = page.size;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get size(): number[] {
+        return this._size;
+    }
+    /**
+     * Sets the width and height of the page.
+     *
+     * @param {number[]} value The width and height of the page as number array.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the page size
+     * pageSettings.size = [595, 842];
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set size(value: number[]) {
+        if (this._isOrientation) {
+            this._updateSize(value);
+        } else {
+            this._size = value;
+            this._updateOrientation();
+        }
+    }
+    /**
+     * Gets the margin value of the page.
+     *
+     * @returns {PdfMargins} PDF margins
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Gets the margins
+     * let margins: PdfMargins = pageSettings.margins;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get margins(): PdfMargins {
+        return this._margins;
+    }
+    /**
+     * Sets the margin value of the page.
+     *
+     * @param {PdfMargins} value PDF margins
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the margins
+     * pageSettings.margins = new PdfMargins(40);
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set margins(value: PdfMargins) {
+        this._margins = value;
+    }
+    /**
+     * Gets the rotation angle of the PDF page.
+     *
+     * @returns {PdfRotationAngle} PDF rotation angle
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Gets the rotation angle
+     * let rotation: PdfRotationAngle = pageSettings.rotation;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get rotation(): PdfRotationAngle {
+        return this._rotation;
+    }
+    /**
+     * Sets the rotation angle of the PDF page.
+     *
+     * @param {PdfRotationAngle} value PDF rotation angle
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the rotation angle
+     * pageSettings.rotation = PdfRotationAngle.angle90;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set rotation(value: PdfRotationAngle) {
+        this._rotation = value;
+        if (value >= 4) {
+            this._rotation = (value % 4) as PdfRotationAngle;
+        }
+    }
+    _updateSize(size: number[]): void
+    _updateSize(orientation: PdfPageOrientation): void
+    _updateSize(value: number[] | PdfPageOrientation): void {
+        let pageOrientation: PdfPageOrientation;
+        let pageSize: number[];
+        if (Array.isArray(value)) {
+            pageOrientation = this.orientation;
+            pageSize = value;
+        } else {
+            pageOrientation = value;
+            pageSize = this._size;
+        }
+        if (pageOrientation === PdfPageOrientation.portrait) {
+            this._size = [Math.min(pageSize[0], pageSize[1]), Math.max(pageSize[0], pageSize[1])];
+        } else {
+            this._size = [Math.max(pageSize[0], pageSize[1]), Math.min(pageSize[0], pageSize[1])];
+        }
+    }
+    _updateOrientation(): void {
+        this._orientation = (this._size[1] >= this._size[0]) ? PdfPageOrientation.portrait : PdfPageOrientation.landscape;
+    }
+    _getActualSize(): number[] {
+        const width: number = this._size[0] - (this._margins._left + this._margins._right);
+        const height: number = this._size[1] - (this._margins._top + this._margins._bottom);
+        return [width, height];
+    }
+}
+/**
+ * A class representing PDF page margins.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Create a new PDF page settings instance
+ * let pageSettings: PdfPageSettings = new PdfPageSettings();
+ * // Sets the margins
+ * pageSettings.margins = new PdfMargins(40);
+ * // Sets the page size
+ * pageSettings.size = [595, 842];
+ * // Sets the page orientation
+ * pageSettings.orientation = PdfPageOrientation.landscape;
+ * // Add a new PDF page with page settings
+ * page = document.addPage(pageSettings);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfMargins {
+    _left: number;
+    _right: number;
+    _top: number;
+    _bottom: number;
+    /**
+     * Initializes a new instance of the `PdfMargins` class.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the margins
+     * pageSettings.margins = new PdfMargins(40);
+     * // Sets the page size
+     * pageSettings.size = [595, 842];
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor()
+    /**
+     * Initializes a new instance with specified margin values for each page side.
+     *
+     * @param {number} all The margin value for each side of the page.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the margins
+     * pageSettings.margins = new PdfMargins(40);
+     * // Sets the page size
+     * pageSettings.size = [595, 842];
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(all: number)
+    constructor(all?: number) {
+        if (typeof all === 'undefined') {
+            this._left = this._right = this._top = this._bottom = 40;
+        } else {
+            this._left = this._right = this._top = this._bottom = all;
+        }
+    }
+    /**
+     * Gets the left margin value of the page.
+     *
+     * @returns {number} Left margin.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Gets the left margin
+     * let left: number = pageSettings.margins.left;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get left(): number {
+        return this._left;
+    }
+    /**
+     * Sets the left margin value of the page.
+     *
+     * @param {number} value Left margin.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the margins
+     * let margins: PdfMargins = new PdfMargins();
+     * margins.left = 40;
+     * margins.right = 40;
+     * margins.top = 20;
+     * margins.bottom = 20;
+     * pageSettings.margins = margins;
+     * // Sets the page size
+     * pageSettings.size = [595, 842];
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set left(value: number) {
+        this._left = value;
+    }
+    /**
+     * Gets the right margin value of the page.
+     *
+     * @returns {number} Right margin.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Gets the right margin
+     * let right: number = pageSettings.margins.right;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get right(): number {
+        return this._right;
+    }
+    /**
+     * Sets the right margin value of the page.
+     *
+     * @param {number} value - Right margin.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the margins
+     * let margins: PdfMargins = new PdfMargins();
+     * margins.left = 40;
+     * margins.right = 40;
+     * margins.top = 20;
+     * margins.bottom = 20;
+     * pageSettings.margins = margins;
+     * // Sets the page size
+     * pageSettings.size = [595, 842];
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set right(value: number) {
+        this._right = value;
+    }
+    /**
+     * Gets the top margin value of the page.
+     *
+     * @returns {number} Top margin.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Gets the top margin
+     * let top: number = pageSettings.margins.top;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get top(): number {
+        return this._top;
+    }
+    /**
+     *Sets the top margin value of the page.
+     *
+     * @param {number} value Top margin.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the margins
+     * let margins: PdfMargins = new PdfMargins();
+     * margins.left = 40;
+     * margins.right = 40;
+     * margins.top = 20;
+     * margins.bottom = 20;
+     * pageSettings.margins = margins;
+     * // Sets the page size
+     * pageSettings.size = [595, 842];
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set top(value: number) {
+        this._top = value;
+    }
+    /**
+     * Get the bottom margin value of the page.
+     *
+     * @returns {number} Bottom margin.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Gets the bottom margin
+     * let bottom: number = pageSettings.margins.bottom;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get bottom(): number {
+        return this._bottom;
+    }
+    /**
+     * Sets the bottom margin value of the page.
+     *
+     * @param {number} value Bottom margin.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings instance
+     * let pageSettings: PdfPageSettings = new PdfPageSettings();
+     * // Sets the margins
+     * let margins: PdfMargins = new PdfMargins();
+     * margins.left = 40;
+     * margins.right = 40;
+     * margins.top = 20;
+     * margins.bottom = 20;
+     * pageSettings.margins = margins;
+     * // Sets the page size
+     * pageSettings.size = [595, 842];
+     * // Sets the page orientation
+     * pageSettings.orientation = PdfPageOrientation.landscape;
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set bottom(value: number) {
+        this._bottom = value;
     }
 }

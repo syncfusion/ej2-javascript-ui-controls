@@ -15,6 +15,7 @@ import { StockChart } from '../../stock-chart/stock-chart';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { IPDFArgs } from '../../common/model/interface';
 import { Chart3D } from '../../chart3d';
+import { CircularChart3D } from '../../circularchart3d/circularchart3d';
 
 /**
  * Export Functionalities
@@ -26,7 +27,7 @@ interface IControlValue {
     svg: Element;
 }
 export class ExportUtils {
-    private control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D;
+    private control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D | CircularChart3D;
 
     /**
      * Constructor for chart and accumulation annotation
@@ -34,7 +35,7 @@ export class ExportUtils {
      * @param control
      */
 
-    constructor(control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D) {
+    constructor(control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D | CircularChart3D) {
         this.control = control;
     }
 
@@ -48,7 +49,7 @@ export class ExportUtils {
     public export(
         type: ExportType, fileName: string,
         orientation?: PdfPageOrientation,
-        controls?: (Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D)[],
+        controls?: (Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D | CircularChart3D)[],
         width?: number, height?: number, isVertical?: boolean,
         header?: IPDFArgs, footer?: IPDFArgs, exportToMultiplePage?: boolean
     ): void {
@@ -141,7 +142,8 @@ export class ExportUtils {
      * @param chart
      */
 
-    public getDataUrl(chart: Chart | AccumulationChart | Chart3D ): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string } {
+    public getDataUrl(
+        chart: Chart | AccumulationChart | Chart3D | CircularChart3D ): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string } {
         const controlValue: IControlValue[] = this.getControlsValue([chart]);
         let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
         const isCanvas: boolean = (this.control as Chart).enableCanvas;
@@ -215,7 +217,7 @@ export class ExportUtils {
      */
 
     // eslint-disable-next-line max-len
-    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart | Chart3D)[], isVertical?: boolean, isMultiPages?: boolean, type?: ExportType): IControlValue[] {
+    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart | Chart3D | CircularChart3D)[], isVertical?: boolean, isMultiPages?: boolean, type?: ExportType): IControlValue[] {
         let width: number = 0;
         let height: number = 0;
         let svgObject: Element = new SvgRenderer('').createSvg({

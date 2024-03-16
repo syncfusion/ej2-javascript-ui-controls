@@ -18,7 +18,7 @@ export class ToolbarStatus {
      * get method
      *
      * @param {Document} docElement - specifies the document element
-     * @param {Node} targetNode - specifies the target node
+     * @param {Node} rootNode - specifies the content editable element
      * @param {string[]} formatNode - specifies the format node
      * @param {string[]} fontSize - specifies the font size
      * @param {string[]} fontName - specifies the font name.
@@ -29,7 +29,7 @@ export class ToolbarStatus {
      */
     public static get(
         docElement: Document,
-        targetNode: Node,
+        rootNode: Node,
         formatNode?: string[],
         fontSize?: string[],
         fontName?: string[], documentNode?: Node): IToolbarStatus {
@@ -62,7 +62,7 @@ export class ToolbarStatus {
         }
         for (let index: number = 0; index < nodes.length; index++) {
             // eslint-disable-next-line max-len
-            formatCollection = this.getFormatParent(docElement, formatCollection, nodes[index as number], targetNode, formatNode, fontSize, fontName);
+            formatCollection = this.getFormatParent(docElement, formatCollection, nodes[index as number], rootNode, formatNode, fontSize, fontName);
             if ((index === 0 && formatCollection.bold) || !formatCollection.bold) {
                 nodeCollection.bold = formatCollection.bold;
             }
@@ -143,10 +143,20 @@ export class ToolbarStatus {
         formatNode?: string[],
         fontSize?: string[],
         fontName?: string[]): IToolbarStatus {
+        let isListUpdated: boolean = false;
+        let isComplexListUpdated: boolean = false;
         if (targetNode.contains(node) ||
             (node.nodeType === 3 && targetNode.nodeType !== 3 && targetNode.contains(node.parentNode))) {
             do {
-                formatCollection = this.isFormattedNode(docElement, formatCollection, node, formatNode, fontSize, fontName);
+                formatCollection = this.isFormattedNode(
+                    docElement, formatCollection, node, isListUpdated, isComplexListUpdated,
+                    formatNode, fontSize, fontName);
+                if (formatCollection.orderedlist || formatCollection.unorderedlist) {
+                    isListUpdated = true;
+                }
+                if (formatCollection.bulletFormatList || formatCollection.numberFormatList) {
+                    isComplexListUpdated = true;
+                }
                 node = node.parentNode;
             }
             while (node && (node !== targetNode));
@@ -158,6 +168,8 @@ export class ToolbarStatus {
         docElement: Document,
         formatCollection: IToolbarStatus,
         node: Node,
+        isListUpdated: boolean,
+        isComplexListUpdated: boolean,
         formatNode?: string[],
         fontSize?: string[],
         fontName?: string[]): IToolbarStatus {
@@ -191,10 +203,10 @@ export class ToolbarStatus {
         if (!formatCollection.backgroundcolor) {
             formatCollection.backgroundcolor = this.isBackgroundColor(node);
         }
-        if (!formatCollection.orderedlist) {
+        if (!formatCollection.orderedlist && !isListUpdated) {
             formatCollection.orderedlist = this.isOrderedList(node);
         }
-        if (!formatCollection.unorderedlist) {
+        if (!formatCollection.unorderedlist && !isListUpdated) {
             formatCollection.unorderedlist = this.isUnorderedList(node);
         }
         if (!formatCollection.alignments) {
@@ -209,10 +221,10 @@ export class ToolbarStatus {
         if (!formatCollection.createlink) {
             formatCollection.createlink = this.isLink(node);
         }
-        if (!formatCollection.numberFormatList) {
+        if (!formatCollection.numberFormatList && !isComplexListUpdated) {
             formatCollection.numberFormatList = this.isNumberFormatList(node) as string;
         }
-        if (!formatCollection.bulletFormatList) {
+        if (!formatCollection.bulletFormatList && !isComplexListUpdated) {
             formatCollection.bulletFormatList = this.isBulletFormatList(node) as string;
         }
         return formatCollection;

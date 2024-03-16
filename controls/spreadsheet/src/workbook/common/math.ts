@@ -98,13 +98,14 @@ export function isNumber(val: string | number): boolean {
  * @returns {ToDateArgs} - Returns Date format.
  */
 export function toDate(
-    text: Date | string | number, intl: Internationalization, locale: string, format?: string, cell?: CellModel): ToDateArgs {
+    text: Date | string | number, intl: Internationalization, locale: string, format?: string, cell?: CellModel,
+    isDateTime?: boolean): ToDateArgs {
     const defaultDateFormats: Object = IntlBase.getDependables(cldrData, locale, null).dateObject;
     const availabelDateTimeFormat: Object = (defaultDateFormats as any).dateTimeFormats.availableFormats;
-    const dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' };
+    const dObj: ToDateArgs = { dateObj: null, isCustom: false, type: '' }; let dateVal: Date;
     const updateTime: Function = (): void => {
         if (dObj.type === 'time') {
-            dObj.dateObj = new Date('01/01/1900 ' + dObj.dateObj.toLocaleTimeString());
+            dObj.dateObj = new Date((dateVal ? dateVal.toDateString() : '01/01/1900') + ' ' + dObj.dateObj.toLocaleTimeString());
         }
     };
     if (format) {
@@ -129,44 +130,62 @@ export function toDate(
                 }
             }
         }
-        if (text.indexOf(':') < 0) {
-            for (const key of Object.keys((defaultDateFormats as { dateFormats?: object }).dateFormats)) {
-                dObj.dateObj = intl.parseDate(
-                    text, { format: (defaultDateFormats as { dateFormats?: object }).dateFormats[`${key}`], skeleton: key });
-                if (dObj.dateObj) {
-                    dObj.type = 'date';
-                    dObj.isCustom = false;
-                    break;
+        const parseDateTimeValue: Function = (text: string): void => {
+            if (text.indexOf(':') < 0) {
+                for (const key of Object.keys((defaultDateFormats as { dateFormats?: object }).dateFormats)) {
+                    dObj.dateObj = intl.parseDate(
+                        text, { format: (defaultDateFormats as { dateFormats?: object }).dateFormats[`${key}`], skeleton: key });
+                    if (dObj.dateObj) {
+                        dObj.type = 'date';
+                        dObj.isCustom = false;
+                        break;
+                    }
                 }
             }
-        }
-        if (isNullOrUndefined(dObj.dateObj)) {
-            let dateTimeFormat: string;
-            for (const key of Object.keys(availabelDateTimeFormat)) {
-                dateTimeFormat = availabelDateTimeFormat[`${key}`];
-                dObj.dateObj = intl.parseDate(text as string, { format: dateTimeFormat, skeleton: key });
-                if (!dObj.dateObj && text.indexOf(':') > -1 && dateTimeFormat.indexOf(':') > -1) { // parsing time format without am or pm
-                    dObj.dateObj = intl.parseDate(text, { format: dateTimeFormat.split(' ')[0] });
-                }
-                if (dObj.dateObj) {
-                    dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
-                    updateTime();
-                    dObj.isCustom = true;
-                    break;
-                }
-            }
-        }
-        if (isNullOrUndefined(dObj.dateObj)) {
-            for (const key of Object.keys((defaultDateFormats as { timeFormats?: object }).timeFormats)) {
-                dObj.dateObj = intl.parseDate(
-                    text, { format: (defaultDateFormats as { timeFormats?: object }).timeFormats[`${key}`], skeleton: key });
-                if (dObj.dateObj) {
-                    dObj.type = 'time';
-                    updateTime();
-                    dObj.isCustom = false;
-                    break;
+            if (isNullOrUndefined(dObj.dateObj)) {
+                let dateTimeFormat: string;
+                for (const key of Object.keys(availabelDateTimeFormat)) {
+                    dateTimeFormat = availabelDateTimeFormat[`${key}`];
+                    dObj.dateObj = intl.parseDate(text as string, { format: dateTimeFormat, skeleton: key });
+                    if (!dObj.dateObj && text.indexOf(':') > -1 && dateTimeFormat.indexOf(':') > -1) { // parsing time format without am or pm
+                        dObj.dateObj = intl.parseDate(text, { format: dateTimeFormat.split(' ')[0] });
+                    }
+                    if (dObj.dateObj) {
+                        dObj.type = text.toString().indexOf(':') > -1 ? 'time' : 'datetime';
+                        updateTime();
+                        dObj.isCustom = true;
+                        break;
+                    }
                 }
             }
+            if (isNullOrUndefined(dObj.dateObj)) {
+                for (const key of Object.keys((defaultDateFormats as { timeFormats?: object }).timeFormats)) {
+                    dObj.dateObj = intl.parseDate(
+                        text, { format: (defaultDateFormats as { timeFormats?: object }).timeFormats[`${key}`], skeleton: key });
+                    if (dObj.dateObj) {
+                        dObj.type = 'time';
+                        updateTime();
+                        dObj.isCustom = false;
+                        break;
+                    }
+                }
+            }
+        };
+        if (isDateTime) {
+            const dateTimeArr: string[] = text.split(' ');
+            if (dateTimeArr.length >= 2) {
+                parseDateTimeValue(dateTimeArr.shift());
+                if (dObj.dateObj) {
+                    dateVal = dObj.dateObj;
+                    dObj.dateObj = null;
+                    parseDateTimeValue(dateTimeArr.join(' '));
+                    if (dObj.dateObj) {
+                        dObj.type = 'datetime';
+                    }
+                }
+            }
+        } else {
+            parseDateTimeValue(text);
         }
     }
     if (text !== '#DIV/0!' && !dObj.dateObj && new Date(text).toString() !== 'Invalid Date') {

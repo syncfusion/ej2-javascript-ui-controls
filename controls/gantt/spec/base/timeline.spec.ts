@@ -2071,4 +2071,270 @@ describe('Render top Tier alone in Zoom to fit', () => {
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/02/2019');
         }); 
     });
+     describe('870027: Zooming action', () => {
+        let ganttObj: Gantt;
+        var editingData = [
+            {
+                TaskID: 1,
+                TaskName: 'Project initiation',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('01/01/2019'), Duration: 0,
+                        Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+                    },
+                    {
+                        TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2',
+                        resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                            'From an engineer or company specializing in soil testing'
+                    },
+                    { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3', Progress: 30 },
+                ]
+            },
+        ];
+        var editingResources = [
+            { resourceId: 1, resourceName: 'Martin Tamer' },
+            { resourceId: 2, resourceName: 'Rose Fuller' },
+            { resourceId: 3, resourceName: 'Margaret Buchanan' },
+            { resourceId: 4, resourceName: 'Fuller King' },
+            { resourceId: 5, resourceName: 'Davolio Fuller' },
+            { resourceId: 6, resourceName: 'Van Jack' },
+            { resourceId: 7, resourceName: 'Fuller Buchanan' },
+            { resourceId: 8, resourceName: 'Jack Davolio' },
+            { resourceId: 9, resourceName: 'Tamer Vinet' },
+            { resourceId: 10, resourceName: 'Vinet Fuller' },
+            { resourceId: 11, resourceName: 'Bergs Anton' },
+            { resourceId: 12, resourceName: 'Construction Supervisor' }
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: editingData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Job Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                dateFormat:"MMM dd, y",
+
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "35%",
+                },
+
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Month',
+                        format: 'MMM',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        format: 'd',
+                        count: 1,
+                    },
+                },
+                searchSettings: { fields: ['TaskName', 'Duration']
+                },
+                allowResizing: true,
+                readOnly: false,
+                resources: editingResources,
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                },
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('01/01/2019'),
+            projectEndDate: new Date('01/01/2022'),
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('perform ZoomTofit and zoomout', () => {
+            ganttObj.actionComplete = (args: any):void => {
+                if(args.requestType === "ZoomOut"){
+                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe('1/1/2019');
+                }
+            }
+            ganttObj.dataBind();
+            ganttObj.fitToProject();
+            ganttObj.zoomOut();
+        }); 
+    });
+    describe('CR-871590: top and bottom tier shows null when using custom zooming levels ', () => {
+        let ganttObj: Gantt;
+        let projectNewData  : Object[]= [
+            {
+                TaskID: 1,
+                TaskName: 'Project initiation',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 0,
+                        Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+                    },
+                    {
+                        TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2',
+                        resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                            'From an engineer or company specializing in soil testing'
+                    },
+                    { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3', Progress: 30 },
+                ]
+            },
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectNewData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                },
+                toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExpandAll', 'CollapseAll'],
+                projectStartDate: new Date('03/24/2019'),
+                projectEndDate: new Date('07/06/2019'),
+                labelSettings: {
+                    leftLabel: 'TaskName'
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', width: 250 },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Predecessor' },
+                    { field: 'Progress' },
+                ],
+                splitterSettings: {
+                    position: "35%"
+                },
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('top and bottom tier shows null when using custom zooming levels ', () => {
+            ganttObj.zoomingLevels =[
+                {
+                    topTier: { unit: 'Year',
+                    format: 'yyyy',
+                    count: 1, },
+                    bottomTier: { unit: 'Month',
+                    count: 3, }, 
+                    timelineUnitSize: 99,
+                    level: 0,
+                    timelineViewMode: 'Year',
+                },
+                {
+                    topTier: { unit: 'Year',
+                    format: 'yyyy',
+                    count: 1, },
+                    bottomTier: { unit: 'Month',
+                    format: 'MMM yyyy',
+                    count: 1 }, timelineUnitSize: 99,
+                    level: 1,
+                    timelineViewMode: 'Year',
+                },
+                {
+                    topTier: { unit: 'Month',
+                    format: 'MMM, yy',
+                    count: 1, },
+                    bottomTier: { unit: 'Week',
+                    format: 'dd',
+                    count: 1, }, timelineUnitSize: 33,
+                    level: 2,
+                    timelineViewMode: 'Month',
+                },
+                {
+                    topTier: { unit: 'Month',
+                    format: 'MMM, yyyy',
+                    count: 1, },
+                    bottomTier: { unit: 'Week',
+                    format: 'dd MMM',
+                    count: 1, }, timelineUnitSize: 66,
+                    level: 3,
+                    timelineViewMode: 'Month',
+                },
+                {
+                    topTier: { unit: 'Month',
+                    format: 'MMM, yyyy',
+                    count: 1, },
+                    bottomTier: { unit: 'Week',
+                    format: 'dd MMM',
+                    count: 1, }, timelineUnitSize: 99,
+                    level: 4,
+                    timelineViewMode: 'Month',
+                },
+                {
+                    topTier: { unit: 'Week',
+                    format: 'MMM dd, yyyy',
+                    count: 1, },
+                    bottomTier: { unit: 'Day',
+                    format: 'd',
+                    count: 1, }, timelineUnitSize: 33,
+                    level: 5,
+                    timelineViewMode: 'Week',
+                },
+            ];
+            ganttObj.zoomIn();
+            expect(ganttObj.currentZoomingLevel.level).toBe(5);
+        }); 
+    });
 });

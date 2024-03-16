@@ -113,6 +113,7 @@ export class Edit {
     }
     private beforeBatchCancel(args: Object) : void {
         if (this.parent.editSettings.mode === 'Cell') {
+            args['requestType'] = 'cancel';
             this.parent.trigger(events.actionComplete, args);
         }
     }

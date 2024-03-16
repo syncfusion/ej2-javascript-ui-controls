@@ -6,7 +6,7 @@ import { ListView } from '@syncfusion/ej2-lists';
 import { AjaxHandler } from '../index';
 
 /**
- * BookmarkView module
+ * The `BookmarkView` module is used to handle bookmark view navigation of PDF viewer.
  */
 export class BookmarkView {
     private pdfViewer: PdfViewer;
@@ -41,6 +41,31 @@ export class BookmarkView {
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
+    }
+
+
+    /**
+     * Open the bookmark pane of the PDF Viewer.
+     *
+     * @returns void
+     */
+
+    public openBookmarkPane(): void {
+        if (this.pdfViewerBase.navigationPane) {
+            this.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
+        }
+    }
+
+    /**
+     * Close the bookmark pane of the PDF Viewer.
+     *
+     * @returns void
+     */
+
+    public closeBookmarkPane(): void {
+        if (this.pdfViewerBase.navigationPane) {
+            this.pdfViewerBase.navigationPane.closeBookmarkPane();
+        }
     }
 
     /**

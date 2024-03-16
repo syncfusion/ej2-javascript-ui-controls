@@ -46,7 +46,6 @@ export class HtmlEditor {
     private saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
     private clickTimeout: number;
-    private tooltipTargetEle: Element
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -346,10 +345,10 @@ export class HtmlEditor {
                     this.parent.notify(events.enterHandler, { args: e.args });
                     const newRange: Range = this.parent.getRange();
                     if (!isNullOrUndefined(newRange.startContainer) && this.parent.height !== 'auto' && newRange.startContainer.nodeName !== '#text'
-                                && !this.parent.iframeSettings.enable && (newRange.startContainer as Element).getBoundingClientRect().bottom > this.parent.element.getBoundingClientRect().bottom) {
-                                    this.parent.element.querySelector('.e-rte-content').scrollTop +=  (newRange.startContainer as Element).getBoundingClientRect().bottom - this.parent.element.getBoundingClientRect().bottom;
+                        && !this.parent.iframeSettings.enable && (newRange.startContainer as Element).getBoundingClientRect().bottom > this.parent.element.getBoundingClientRect().bottom) {
+                        this.parent.element.querySelector('.e-rte-content').scrollTop += (newRange.startContainer as Element).getBoundingClientRect().bottom - this.parent.element.getBoundingClientRect().bottom;
                     }
-                    else if(!isNullOrUndefined(newRange.startContainer) && this.parent.height === 'auto' && newRange.startContainer.nodeName !== '#text'
+                    else if (!isNullOrUndefined(newRange.startContainer) && this.parent.height === 'auto' && newRange.startContainer.nodeName !== '#text'
                         && !this.parent.iframeSettings.enable && window.innerHeight < (newRange.startContainer as Element).getBoundingClientRect().top) {
                         (newRange.startContainer as Element).scrollIntoView({ block: 'end', inline: 'nearest' });
                     }
@@ -450,9 +449,9 @@ export class HtmlEditor {
                 const liElement: HTMLElement = (this.getRangeLiNode(currentRange.startContainer) as HTMLElement);
                 if (liElement.previousElementSibling && liElement.previousElementSibling.childElementCount > 0) {
                     this.oldRangeElement = liElement.previousElementSibling.lastElementChild.nodeName === 'BR' ?
-                        liElement.previousElementSibling : liElement.previousElementSibling.lastElementChild;
-                        if (!isNOU(liElement.lastElementChild) && liElement.lastElementChild.nodeName !== 'BR' &&
-                        isNOU(liElement.lastElementChild.previousSibling)) {
+                        liElement.previousElementSibling : liElement.previousElementSibling.lastChild as HTMLElement;
+                    if (!isNOU(liElement.lastElementChild) && liElement.lastElementChild.nodeName !== 'BR' &&
+                    isNOU(liElement.lastElementChild.previousSibling) && liElement.lastChild.nodeName !== "#text") {
                         this.rangeElement = liElement.lastElementChild;
                         isLiElement = true;
                     } else {
@@ -473,7 +472,7 @@ export class HtmlEditor {
                         ? this.oldRangeElement.lastElementChild.lastElementChild :
                         this.oldRangeElement.lastElementChild;
                 }
-                let lastNode: Node = this.oldRangeElement.lastChild;
+                let lastNode: Node = this.oldRangeElement.lastChild ? this.oldRangeElement.lastChild : this.oldRangeElement;
                 while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text' &&
                     lastNode.nodeName !== 'BR') {
                     lastNode = lastNode.lastChild;
@@ -481,12 +480,17 @@ export class HtmlEditor {
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),
                     // eslint-disable-next-line
                     lastNode as Element, lastNode.textContent.length);
-                if (this.oldRangeElement.querySelectorAll('BR').length === 1) {
+                if (this.oldRangeElement.nodeName !== '#text' && this.oldRangeElement.querySelectorAll('BR').length === 1) {
                     detach(this.oldRangeElement.querySelector('BR'));
                 }
                 if (!isNOU(this.rangeElement) && this.oldRangeElement !== this.rangeElement) {
                     while (this.rangeElement.firstChild) {
-                        this.oldRangeElement.appendChild(this.rangeElement.childNodes[0]);
+                        if (this.oldRangeElement.nodeName === '#text') {
+                            this.oldRangeElement.parentElement.appendChild(this.rangeElement.childNodes[0]);
+                        }
+                        else {
+                            this.oldRangeElement.appendChild(this.rangeElement.childNodes[0]);
+                        }
                     }
                     // eslint-disable-next-line
                     !isLiElement ? detach(this.rangeElement) : detach(this.rangeElement.parentElement);
@@ -522,7 +526,11 @@ export class HtmlEditor {
             (!isNullOrUndefined(this.deleteRangeElement.nextElementSibling) && this.deleteRangeElement.nextElementSibling.tagName === 'TABLE'))) {
                 return;
             }
-            if (this.getCaretIndex(currentRange, this.deleteRangeElement) === this.deleteRangeElement.textContent.length) {
+            let isImgWithEmptyBlockNode: boolean = false;
+            if (this.deleteRangeElement.querySelectorAll('img').length > 0 && this.deleteRangeElement.textContent.trim() === '') {
+                isImgWithEmptyBlockNode = true;
+            }
+            if (this.getCaretIndex(currentRange, this.deleteRangeElement) === this.deleteRangeElement.textContent.length && !isImgWithEmptyBlockNode) {
                 if (!isNullOrUndefined(liElement)) {
                     if (isLiElement || !isNullOrUndefined(liElement.nextElementSibling)) {
                         this.deleteOldRangeElement = this.getRangeElement(liElement.nextElementSibling);
@@ -707,35 +715,14 @@ export class HtmlEditor {
                 e, value);
         }
     }
-    private mouseOutHandler (): void {
-        if (!isNOU(this.tooltipTargetEle)){
-            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
-        } else {
-            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
-                this.parent.contentModule.getDocument();
-            this.tooltipTargetEle = currentDocument.querySelector('[data-title]');
-            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
-        }
-        this.tooltipTargetEle.removeAttribute('data-title');
-        EventHandler.remove(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler);
-    }
     private onToolbarClick(args: ClickEventArgs): void {
         let save: NodeSelection;
         let selectNodeEle: Node[];
         let selectParentEle: Node[];
         const item: IToolbarItemModel = args.item as IToolbarItemModel;
         const closestElement: Element = closest(args.originalEvent.target as Element, '.e-rte-quick-popup');
-        const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
-            this.parent.contentModule.getDocument();
-        this.tooltipTargetEle = closest(args.originalEvent.target as Element, '[data-tooltip-id]');
-        if (!isNOU(this.tooltipTargetEle) && this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
-            this.parent.notify(events.destroyTooltip, {args: event});
-            if(!this.tooltipTargetEle.closest('.e-rte-quick-popup')){
-                this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
-                this.tooltipTargetEle.removeAttribute('title');
-                EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
-            }
-        }
+        let target: HTMLElement = args.originalEvent.target as HTMLElement;
+        this.parent.notify(events.closeTooltip,{target: target});
         if (item.command !== 'FormatPainter') {
             if (closestElement && !closestElement.classList.contains('e-rte-inline-popup') && !closestElement.classList.contains('e-rte-text-popup')) {
                 if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||

@@ -1398,5 +1398,44 @@ describe('Conditional formatting ->', () => {
                 done();
             });
         });
+        describe('EJ2-872953 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Duplicate Values conditional formatting is not working correctly with empty cells.', (done: Function) => {
+                helper.invoke('conditionalFormat', [{ type: 'Duplicate', cFColor: "RedFT", range: 'F2:F13' }]);
+                expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [1, 5]).style.color).toBe('rgb(156, 0, 85)');
+                expect(helper.invoke('getCell', [7, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [7, 5]).style.color).toBe('rgb(156, 0, 85)');
+                helper.edit('F3','');
+                helper.edit('F8','');
+                expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [1, 5]).style.color).toBe('');
+                expect(helper.invoke('getCell', [7, 5]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [7, 5]).style.color).toBe('');
+                expect(helper.invoke('getCell', [11, 5]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [11, 5]).style.color).toBe('');
+                expect(helper.invoke('getCell', [12, 5]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [12, 5]).style.color).toBe('');
+                helper.click('#spreadsheet_undo');
+                expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [1, 5]).style.color).toBe('rgb(156, 0, 85)');
+                expect(helper.invoke('getCell', [7, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [7, 5]).style.color).toBe('rgb(156, 0, 85)');
+                helper.invoke('selectRange', ['F8']);
+                helper.triggerKeyNativeEvent(46);
+                expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [1, 5]).style.color).toBe('');
+                expect(helper.invoke('getCell', [7, 5]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [7, 5]).style.color).toBe('');
+                done();
+            });
+        });
     });
 });

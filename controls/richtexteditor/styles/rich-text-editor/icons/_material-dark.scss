@@ -135,10 +135,13 @@
       content: '\e94b';
     }
 
-    .e-replace::before,
+    .e-replace::before {
+      content: '\e359';
+    }
+
     .e-audio-replace::before,
     .e-video-replace::before {
-      content: '\e359';
+      content: '\e308';
     }
 
     .e-align::before {
@@ -223,11 +226,11 @@
     }
 
     .e-table-header::before {
-      content: '\e705';
+      content: '\e9b8';
     }
 
     .e-table-remove::before {
-      content: '\eb00';
+      content: '\e292';
     }
 
     .e-table-rows::before {

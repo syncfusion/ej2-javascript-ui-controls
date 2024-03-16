@@ -1,0 +1,45 @@
+$sidebar-box-shadow: $shadow-none !default;
+
+//color variables
+$sidebar-background: $content-bg-color !default;
+$sidebar-border: $border-light !default;
+$sidebar-overlay: $overlay-bg-color !default;
+
+.e-sidebar {
+  /* stylelint-disable property-no-vendor-prefix */
+  -webkit-tap-highlight-color: transparent;
+  background: $sidebar-background;
+  height: 100%;
+  overflow: auto;
+  position: fixed;
+  top: 0;
+  transition: none;
+  vertical-align: middle;
+  visibility: hidden;
+  will-change: transform;
+
+  /* stylelint-disable */
+  &.e-right {
+    @if ($skin-name == 'tailwind') {
+      border-left: 1px solid $sidebar-border !important;
+    }
+    @else {
+      border-left: 1px solid $sidebar-border;
+    }
+    left: auto;
+    right: 0;
+    top: 0;
+  }
+
+  &.e-left {
+    @if ($skin-name == 'tailwind') {
+      border-right: 1px solid $sidebar-border !important;
+    }
+    @else {
+      border-right: 1px solid $sidebar-border;
+    }
+    left: 0;
+    right: auto;
+    top: 0;
+  }
+}

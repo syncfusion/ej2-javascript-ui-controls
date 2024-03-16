@@ -3,7 +3,7 @@ import { removeClass } from '@syncfusion/ej2-base';
 import { remove, closest as closestElement, classList, BlazorDragEventArgs, extend } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
 import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses, isActionPrevent } from '../base/util';
-import { resetRowIndex } from '../base/util';
+import { resetRowIndex, resetCachedRowIndex, groupReorderRowObject } from '../base/util';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import * as events from '../base/constant';
@@ -85,7 +85,9 @@ export class RowDD {
         removeElement(this.startedRow, '.e-indentcell');
         removeElement(this.startedRow, '.e-detailrowcollapse');
         removeElement(this.startedRow, '.e-detailrowexpand');
-        this.removeCell(this.startedRow, literals.gridChkBox);
+        if (!(gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache)) {
+            this.removeCell(this.startedRow, literals.gridChkBox);
+        }
         const exp: RegExp = new RegExp('e-active', 'g'); //high contrast issue
         this.startedRow.innerHTML = this.startedRow.innerHTML.replace(exp, '');
         tbody.appendChild(this.startedRow);
@@ -107,8 +109,8 @@ export class RowDD {
 
     private dragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs } & BlazorDragEventArgs) => {
         const gObj: IGrid = this.parent;
-        if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length &&
-            !isNullOrUndefined(e.target.closest('tr'))) {
+        if ((gObj.enableVirtualization || gObj.infiniteScrollSettings.enableCache) && gObj.allowGrouping &&
+            gObj.groupSettings.columns.length && !isNullOrUndefined(e.target.closest('tr'))) {
             const dragTrs: NodeListOf<Element> = e.dragElement.querySelectorAll('tr');
             const indentCells: NodeListOf<Element> = e.target.closest('tr').querySelectorAll('.e-indentcell');
             for (let i: number = 0; i < dragTrs.length; i++) {
@@ -215,8 +217,9 @@ export class RowDD {
                 classList(cloneElement, ['e-grabcur'], ['e-notallowedcur']);
             }
         } else {
-            const elem: Element = parentsUntil(target, 'e-grid');
-            if (elem && elem.id === cloneElement.parentElement.id) {
+            const element: Element = parentsUntil(target, 'e-grid');
+            if (element && element.id === cloneElement.parentElement.id && parentsUntil(target, 'e-row') &&
+                !parentsUntil(target, 'e-addedrow')) {
                 classList(cloneElement, ['e-movecur'], ['e-defaultcur']);
             } else {
                 classList(cloneElement, ['e-notallowedcur'], ['e-movecur']);
@@ -240,10 +243,16 @@ export class RowDD {
                         islastRowIndex = trElement && parseInt(trElement.getAttribute(literals.dataRowIndex), 10) ===
                             this.parent.renderModule.data.dataManager.dataSource.json.length - 1;
                     } else {
-                        const lastRowUid: string = this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).
-                            getAttribute('data-uid');
-                        islastRowIndex = trElement && lastRowUid === trElement.getAttribute('data-uid') && lastRowUid !==
-                            this.startedRow.getAttribute('data-uid');
+                        const rowIndex: number = this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache &&
+                            !this.parent.groupSettings.enableLazyLoading ?
+                            this.parent.pageSettings.currentPage * this.parent.pageSettings.pageSize - 1 :
+                            this.parent.getCurrentViewRecords().length - 1;
+                        const lastRow: Element = this.parent.getRowByIndex(rowIndex);
+                        islastRowIndex = trElement && lastRow && lastRow.getAttribute('data-uid') === trElement.getAttribute('data-uid') &&
+                            lastRow.getAttribute('data-uid') !== this.startedRow.getAttribute('data-uid');
+                        if (this.isNewRowAdded() && this.parent.editSettings.newRowPosition === 'Bottom') {
+                            islastRowIndex = false;
+                        }
                     }
                     if (islastRowIndex && !this.parent.rowDropSettings.targetID) {
                         const bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-dragborder' });
@@ -285,6 +294,11 @@ export class RowDD {
         }
     }
 
+    private isNewRowAdded(): boolean {
+        return this.parent.editSettings && this.parent.editSettings.showAddNewRow &&
+            !(this.parent.enableInfiniteScrolling || this.parent.enableVirtualization);
+    }
+
     private groupRowDDIndicator(rowElement: HTMLElement[], isAdd: boolean): void {
         addRemoveActiveClasses([rowElement[0]], isAdd, 'e-dragleft');
         addRemoveActiveClasses(rowElement, isAdd, 'e-dragtop', 'e-dragbottom');
@@ -292,6 +306,9 @@ export class RowDD {
     }
 
     private dragStop: Function = (e: { target: HTMLTableRowElement, event: MouseEventArgs, helper: Element }) => {
+        if (this.parent.isCheckBoxSelection && this.parent.enableInfiniteScrolling) {
+            window.getSelection().removeAllRanges();
+        }
         document.body.classList.remove('e-prevent-select');
         if (isActionPrevent(this.parent)) {
             this.parent.notify(events.preventBatch, {
@@ -371,16 +388,22 @@ export class RowDD {
         const tbodyContent: Element = gObj.getContentTable().querySelector( literals.tbody);
         const tbodyHeader: Element = gObj.getHeaderTable().querySelector( literals.tbody);
         for (let i: number = 0, len: number = args.rows.length; i < len; i++) {
-            if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length &&
+            const row: Element = args.rows[parseInt(i.toString(), 10)];
+            if (((gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length) ||
+                (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache)) &&
                 args.rows.length === 1) {
-                const removeElem: Element = gObj.getRowElementByUID(args.rows[parseInt(i.toString(), 10)].getAttribute('data-uid'));
+                const removeElem: Element = gObj.getRowElementByUID(row.getAttribute('data-uid'));
                 if (!isNullOrUndefined(removeElem)) {
                     remove(removeElem);
                 }
             }
-            tbody.insertBefore(args.rows[parseInt(i.toString(), 10)], target);
+            const dragstartrow: HTMLElement = row.querySelector('.e-dragstartrow');
+            if (dragstartrow) {
+                dragstartrow.classList.remove('e-dragstartrow');
+            }
+            tbody.insertBefore(row, target);
             if (gObj.allowGrouping && gObj.groupSettings.columns.length) {
-                const dragRowUid: string = args.rows[parseInt(i.toString(), 10)].getAttribute('data-uid');
+                const dragRowUid: string = row.getAttribute('data-uid');
                 const dropRowUid: string = args.target.parentElement.getAttribute('data-uid');
                 const dragRowObject: Row<Column> = gObj.getRowObjectFromUID(dragRowUid);
                 const dropRowObject: Row<Column> = gObj.getRowObjectFromUID(dropRowUid);
@@ -389,16 +412,31 @@ export class RowDD {
                 }
             }
         }
-        const tr: HTMLTableRowElement[] = [].slice.call(tbody.getElementsByClassName(literals.row));
-        if (!gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length) {
-            gObj['groupModule'].groupReorderRowObject(args, tr);
-            resetRowIndex(this.parent, gObj.getRowsObject().filter((data: Row<Column>) => data.isDataRow), tr);
-            this.parent.notify(events.refreshExpandandCollapse, { rows: this.parent.getRowsObject() });
-        }
-        else if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length) {
-            gObj['groupModule'].groupReorderRowObject(args, tr);
-            gObj['groupModule'].vGroupResetRowIndex();
-            this.parent.notify(events.refreshExpandandCollapse, { rows: this.parent.vRows });
+        const tr: HTMLTableRowElement[] = [].slice.call(gObj.editSettings.showAddNewRow ?
+            tbody.querySelectorAll('.e-row:not(.e-addedrow)') : tbody.getElementsByClassName(literals.row));
+        if (gObj.allowGrouping && gObj.groupSettings.columns.length) {
+            if (gObj.groupSettings.enableLazyLoading || (gObj.enableInfiniteScrolling &&
+                gObj.infiniteScrollSettings.enableCache && tr.length > gObj.pageSettings.pageSize * 3)) {
+                gObj.refresh();
+            } else {
+                groupReorderRowObject(this.parent, args, tr);
+                if (gObj.enableVirtualization || (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache)) {
+                    resetCachedRowIndex(gObj);
+                } else {
+                    resetRowIndex(this.parent, gObj.getRowsObject().filter((data: Row<Column>) => data.isDataRow), tr);
+                }
+                this.parent.notify(events.refreshExpandandCollapse, {
+                    rows: gObj.enableVirtualization ? this.parent.vRows : this.parent.getRowsObject()
+                });
+            }
+        } else if (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache &&
+            !gObj.groupSettings.columns.length) {
+            if (tr.length > gObj.pageSettings.pageSize * 3) {
+                gObj.refresh();
+            } else {
+                groupReorderRowObject(this.parent, args, tr);
+                resetCachedRowIndex(gObj);
+            }
         }
         else {
             this.refreshData(tr);
@@ -439,8 +477,12 @@ export class RowDD {
             !gObj.groupSettings.columns.length)) {
             targetIdx = targetIdx + 1;
         }
+        let targetTR: Element = gObj.getRowByIndex(targetIdx);
+        if (targetIdx === gObj.getRows().length && this.isNewRowAdded() && this.parent.editSettings.newRowPosition === 'Bottom') {
+            targetTR = this.parent.element.querySelector('.e-row.e-addedrow');
+        }
         const tr: Element = gObj.allowGrouping && gObj.groupSettings.columns.length && targetIdx !== -1 &&
-            args.fromIndex < args.dropIndex ? (gObj.getRowByIndex(targetIdx).nextSibling as Element) : gObj.getRowByIndex(targetIdx);
+            args.fromIndex < args.dropIndex && targetTR ? (targetTR.nextSibling as Element) : targetTR;
         return tr;
     }
 
@@ -515,6 +557,8 @@ export class RowDD {
                 }
                 this.selectedRowColls = indexes;
             }
+            this.selectedRowColls = [];
+        } else {
             this.selectedRowColls = [];
         }
     }
@@ -725,7 +769,8 @@ export class RowDD {
             }
             let rowElement: HTMLElement[] = [];
             let targetRowIndex: number = parseInt(targetRow.getAttribute(literals.dataRowIndex), 10);
-            if (targetRow && targetRowIndex === 0) {
+            if (targetRow && targetRowIndex === 0 &&
+                !(this.isNewRowAdded() && this.parent.editSettings.newRowPosition === 'Top')) {
                 if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
                     element = targetRow;
                     rowElement = [].slice.call(element
@@ -763,8 +808,12 @@ export class RowDD {
                         .e-detailrowcollapse:not(.e-hide)`));
                 }
                 else {
-                    element = this.parent.getRowByIndex(targetRowIndex - 1);
-                    rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
+                    if (targetRowIndex === 0 && this.isNewRowAdded() && this.parent.editSettings.newRowPosition === 'Top') {
+                        element = this.parent.element.querySelector('.e-row.e-addedrow tr');
+                    } else {
+                        element = this.parent.getRowByIndex(targetRowIndex - 1);
+                    }
+                    rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse,.e-dragindentcell'));
                 }
             } else { rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse')); }
 
@@ -785,8 +834,15 @@ export class RowDD {
 
     private removeFirstRowBorder(element: Element): void {
         if (this.isDropGrid.element.getElementsByClassName('e-firstrow-dragborder').length > 0 && element &&
-            (element as HTMLTableRowElement).rowIndex !== 0) {
+            ((element as HTMLTableRowElement).rowIndex !== 0 || element.classList.contains('e-columnheader'))) {
             remove(this.isDropGrid.element.getElementsByClassName('e-firstrow-dragborder')[0]);
+        } else {
+            const addNewRow: HTMLElement = this.parent.element.querySelector('.e-row.e-addedrow tr');
+            if (addNewRow && addNewRow.querySelector('.e-dragborder')) {
+                const rowElement: HTMLElement[] = [].slice.call(addNewRow.
+                    querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse,.e-dragindentcell'));
+                addRemoveActiveClasses(rowElement, false, 'e-dragborder');
+            }
         }
     }
 
@@ -796,9 +852,12 @@ export class RowDD {
             islastRowIndex = element && parseInt(element.getAttribute(literals.dataRowIndex), 10) !==
                 this.parent.renderModule.data.dataManager.dataSource.json.length - 1;
         } else {
-            islastRowIndex = element &&
-                this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') !==
-                element.getAttribute('data-uid');
+            const rowIndex: number = this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache &&
+                !this.parent.groupSettings.enableLazyLoading ?
+                this.parent.pageSettings.currentPage * this.parent.pageSettings.pageSize - 1 :
+                this.parent.getCurrentViewRecords().length - 1;
+            const lastRow: Element = this.parent.getRowByIndex(rowIndex);
+            islastRowIndex = element && lastRow && lastRow.getAttribute('data-uid') !== element.getAttribute('data-uid');
         }
         if (this.parent.element.getElementsByClassName('e-lastrow-dragborder').length > 0 && element && islastRowIndex) {
             remove(this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0]);
@@ -978,14 +1037,14 @@ export class RowDD {
         const dragIdx: number = parseInt(this.startedRow.getAttribute(literals.dataRowIndex), 10);
         if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
             || gObj.getSelectedRecords().length === 0) {
-            if (this.parent.enableVirtualization) {
+            if (gObj.enableVirtualization || (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache)) {
                 this.rows = [this.startedRow];
             } else {
-                this.rows = [this.parent.getRowByIndex(dragIdx)];
+                this.rows = [gObj.getRowByIndex(dragIdx)];
             }
-            this.rowData = [this.parent.getRowInfo((this.startedRow).querySelector('.' + literals.rowCell)).rowData];
-            if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length &&
-                gObj.getSelectedRows().length) {
+            this.rowData = [gObj.getRowInfo((this.startedRow).querySelector('.' + literals.rowCell)).rowData];
+            if ((gObj.enableVirtualization || (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache))
+                && gObj.allowGrouping && gObj.groupSettings.columns.length && gObj.getSelectedRows().length) {
                 this.rows = gObj.getSelectedRows();
                 this.rowData = gObj.getSelectedRecords();
             }

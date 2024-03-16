@@ -320,14 +320,14 @@ export function isHeightCheckNeeded(style: CellStyleModel, onActionUpdate?: bool
  * @param {number[]} currIndexes - current indexes in which formula get updated
  * @param {number[]} prevIndexes - copied indexes
  * @param {SheetModel} sheet - sheet model
- * @param {CellModel} prevCell - copied or prev cell
  * @param {Workbook} context - Represents workbook instance
+ * @param {CellModel} prevCell - Copied or previous cell model
  * @param {boolean} isSort - Represents sort action
  * @returns {string} - retruns updated formula
  * @hidden
  */
 export function getUpdatedFormula(
-    currIndexes: number[], prevIndexes: number[], sheet: SheetModel, prevCell?: CellModel, context?: Workbook, isSort?: boolean): string {
+    currIndexes: number[], prevIndexes: number[], sheet: SheetModel, context: Workbook, prevCell?: CellModel, isSort?: boolean): string {
     let cIdxValue: string; let cell: CellModel;
     if (prevIndexes) {
         cell = prevCell || getCell(prevIndexes[0], prevIndexes[1], sheet, false, true);
@@ -340,14 +340,14 @@ export function getUpdatedFormula(
         if (cIdxValue.indexOf('=') === 0) {
             cIdxValue = cIdxValue.slice(1);
         }
-        cIdxValue = cIdxValue.split('(').join(',').split(')').join(',');
+        cIdxValue = cIdxValue.split('(').join(context.listSeparator).split(')').join(context.listSeparator);
         const formulaOperators: string[] = ['+', '-', '*', '/', '>=', '<=', '<>', '>', '<', '=', '%']; let splitArray: string[];
         let value: string = cIdxValue;
         for (let i: number = 0; i < formulaOperators.length; i++) {
             splitArray = value.split(formulaOperators[i as number]);
-            value = splitArray.join(',');
+            value = splitArray.join(context.listSeparator);
         }
-        splitArray = value.split(',');
+        splitArray = value.split(context.listSeparator);
         const newAddress: { [key: string]: string }[] = []; let newRef: string; let refObj: { [key: string]: string };
         let isSheetRef: boolean; let cellRefArr: string[]; let cellRef: string;
         for (let j: number = 0; j < splitArray.length; j++) {
@@ -358,7 +358,7 @@ export function getUpdatedFormula(
             } else {
                 cellRef = splitArray[j as number].toUpperCase();
             }
-            if (isCellReference(cellRef)) {
+            if (isCellReference(cellRef) && !cellRef.includes('$')) {
                 const range: number[] = getRangeIndexes(cellRef);
                 const newRange: number[] = [currIndexes[0] - (prevIndexes[0] - range[0]), currIndexes[1] - (prevIndexes[1] - range[1]),
                     currIndexes[0] - (prevIndexes[0] - range[2]), currIndexes[1] - (prevIndexes[1] - range[3])];
@@ -412,13 +412,17 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
     if (!prop.preventEvt) { // Prevent event triggering for public method cell update.
         context.trigger(beforeCellUpdate, args);
     }
-    if (!prop.eventOnly && !args.cancel) { // `eventOnly` - To trigger event event and return without cell model update.
+    if (!prop.eventOnly && !args.cancel) { // `eventOnly` - To trigger event and return without cell model update.
         if (prop.valChange) {
             const prevCell: CellModel = getCell(args.rowIndex, args.colIndex, sheet);
             const prevCellVal: string = !prop.preventEvt && context.getDisplayText(prevCell);
             const isFormulaCell: boolean = !!(prevCell && prevCell.formula);
             setCell(args.rowIndex, args.colIndex, sheet, args.cell, !prop.pvtExtend);
             const cell: CellModel = getCell(args.rowIndex, args.colIndex, sheet, false, true);
+            if (prop.mergedCells) {
+                delete cell.value;
+                delete cell.formula;
+            }
             const evtArgs: { [key: string]: string | boolean | number[] | number } = { action: 'updateCellValue',
                 address: [args.rowIndex, args.colIndex], sheetIndex: getSheetIndex(context, sheet.name), value:
                 isFormulaCell && !cell.formula ? (cell.value || (<unknown>cell.value === 0 ? '0' : '')) : (cell.formula || cell.value ||
@@ -435,7 +439,8 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             }
             if (prop.uiRefresh) {
                 context.serviceLocator.getService<{ refresh: Function }>('cell').refresh(
-                    args.rowIndex, args.colIndex, prop.lastCell, prop.td, prop.checkCF, prop.checkWrap, prop.skipFormatCheck, prop.isRandomFormula);
+                    args.rowIndex, args.colIndex, prop.lastCell, prop.td, prop.checkCF, prop.checkWrap, prop.skipFormatCheck,
+                    prop.isRandomFormula);
             }
             if (!prop.preventEvt) {
                 const cellDisplayText: string = context.getDisplayText(cell);

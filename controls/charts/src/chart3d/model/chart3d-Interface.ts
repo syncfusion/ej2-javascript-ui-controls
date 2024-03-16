@@ -5,10 +5,10 @@ import { Chart3DAxis, Visible3DLabels } from '../axis/axis';
 import { BorderModel, FontModel } from '../../common/model/base-model';
 import { Chart3DSeriesModel } from '../series/chart-series-model';
 import { Matrix3D } from '../utils/chart3dRender';
-import { ChartTheme, LegendShape } from '../../common/utils/enum';
+import { Alignment, ChartTheme, LegendShape, TextOverflow, TitlePosition } from '../../common/utils/enum';
 import { VisibleRangeModel } from '../../common/model/interface';
-import { ChildProperty, Property } from '@syncfusion/ej2-base';
-import { Chart3DFontModel } from './chart3d-Interface-model';
+import { ChildProperty, Complex, Property } from '@syncfusion/ej2-base';
+import { Chart3DTextFontModel, TitleBorderModel } from './chart3d-Interface-model';
 
 /**
  * Interface for event argument objects in a 3D chart.
@@ -379,7 +379,7 @@ export interface Chart3DTextRenderEventArgs extends Chart3DEventArgs {
     /** Defines the text for the data label. */
     text: string;
     /** Defines data label text style. */
-    textStyle: Chart3DFontModel;
+    textStyle: Chart3DTextFontModel;
     /** Defines the data label border. */
     border: BorderModel;
     /** Defines the data label template.
@@ -761,7 +761,7 @@ export type Chart3DFadeOutMode =
  * Configures the fonts in charts.
  */
 
-export class Chart3DFont extends ChildProperty<Chart3DFont> {
+export class Chart3DTextFont extends ChildProperty<Chart3DTextFont> {
 
     /**
      * FontStyle for the text.
@@ -814,4 +814,161 @@ export class Chart3DFont extends ChildProperty<Chart3DFont> {
     @Property(1)
     public opacity: number;
 
+}
+
+/**
+ * Configures the borders in the 3D chart title.
+ */
+export class TitleBorder extends ChildProperty<TitleBorder> {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default 'transparent'
+     */
+
+    @Property('transparent')
+    public color: string;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 0
+     */
+
+    @Property(0)
+    public width: number;
+
+    /**
+     * corder radius for the border.
+     *
+     * @default 0.8
+     */
+
+    @Property(0.8)
+    public cornerRadius: number;
+
+}
+
+/**
+ * Configures the title settings in 3D chart.
+ */
+export class TitleSettings extends ChildProperty<TitleSettings> {
+
+    /**
+     * FontStyle for the text.
+     *
+     * @default 'Normal'
+     */
+
+    @Property('Normal')
+    public fontStyle: string;
+
+    /**
+     * Font size for the text.
+     *
+     * @default '15px'
+     */
+
+    @Property('15px')
+    public size: string;
+
+    /**
+     * FontWeight for the text.
+     *
+     * @default '500'
+     */
+
+    @Property('500')
+    public fontWeight: string;
+
+    /**
+     * Color for the text.
+     *
+     * @default ''
+     */
+
+    @Property('')
+    public color: string;
+
+    /**
+     * text alignment.
+     *
+     * @default 'Center'
+     */
+
+    @Property('Center')
+    public textAlignment: Alignment;
+
+    /**
+     * FontFamily for the text.
+     */
+    @Property('Segoe UI')
+    public fontFamily: string;
+
+    /**
+     * Opacity for the text.
+     *
+     * @default 1
+     */
+
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * Specifies the chart title text overflow.
+     *
+     * @default 'Wrap'
+     */
+
+    @Property('Wrap')
+    public textOverflow: TextOverflow;
+
+    /**
+     * Defines the position for the chart title.
+     * * Top: Displays the title at the top of the chart.
+     * * Left: Displays the title at the left of the chart.
+     * * Bottom: Displays the title at the bottom of the chart.
+     * * Right: Displays the title at the right of the chart.
+     * * Custom: Displays the title based on the given x and y values.
+     *
+     * @default 'Top'
+     */
+
+    @Property('Top')
+    public position: TitlePosition;
+
+    /**
+     * Defines the X coordinate for the chart title.
+     *
+     * @default 0
+     */
+
+    @Property(0)
+    public x: number;
+
+    /**
+     * Defines the Y coordinate for the chart title.
+     *
+     * @default 0
+     */
+
+    @Property(0)
+    public y: number;
+
+    /**
+     * Background of the title border.
+     *
+     * @default 'transparent'
+     */
+
+    @Property('transparent')
+    public background: string;
+
+    /**
+     * Options to customize the border of the chart title.
+     */
+
+    @Complex<TitleBorderModel>({}, TitleBorder)
+    public border: TitleBorderModel;
 }

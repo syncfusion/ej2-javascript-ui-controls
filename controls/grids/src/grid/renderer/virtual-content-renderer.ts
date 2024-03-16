@@ -86,6 +86,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private isNormaledit: boolean = this.parent.editSettings.mode === 'Normal';
     /** @hidden */
     public virtualData: Object = {};
+    private virtualInfiniteData: Object = {};
     private emptyRowData: Object = {};
     private initialRowTop: number;
     private isContextMenuOpen: boolean = false;
@@ -182,6 +183,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                     this.parent.showMaskRow(info.axis);
                     this.parent.addShimmerEffect();
                 }
+                if (this.parent.editSettings.showAddNewRow) {
+                    this.parent.closeEdit();
+                }
                 this.parent.notify(
                     viewInfo.event,
                     { requestType: 'virtualscroll', virtualInfo: viewInfo, focusElement: scrollArgs.focusElement });
@@ -215,6 +219,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.parent.addShimmerEffect();
         }
         this.parent.islazyloadRequest = false;
+        if (this.parent.editSettings.showAddNewRow) {
+            this.parent.closeEdit();
+        }
         this.parent.notify(viewInfo.event, {
             requestType: 'virtualscroll', virtualInfo: viewInfo,
             focusElement: scrollArgs.focusElement
@@ -384,7 +391,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         } else {
             target = newChild as HTMLElement;
         }
-        if (this.parent.frozenRows && e.requestType === 'virtualscroll' && this.parent.pageSettings.currentPage === 1) {
+        if (this.parent.frozenRows && e.requestType === 'virtualscroll' && (this.parent.pageSettings.currentPage === 1
+            || this.isInfiniteColumnvirtualization())) {
             for (let i: number = 0; i < this.parent.frozenRows; i++) {
                 target.children[0].remove();
             }
@@ -499,7 +507,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 const content: Element = this.content;
                 const keys: string[] = Object.keys(this.virtualData);
                 const isXaxis: boolean = e && e.virtualInfo && e.virtualInfo.sentinelInfo.axis === 'X';
-                if (keys.length && row && !content.querySelector('.' + literals.editedRow)) {
+                if (keys.length && row && !content.querySelector('.' + literals.editedRow) &&
+                    ['sorting', 'filtering', 'grouping', 'refresh', 'searching', 'ungrouping', 'reorder'].indexOf(e.requestType) === -1) {
                     const top: number = row.getBoundingClientRect().top;
                     if (isXaxis || (top < this.content.offsetHeight && top > this.parent.getRowHeight())) {
                         this.parent.isEdit = false;
@@ -508,7 +517,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 }
                 if (row && this.content.querySelector('.' + literals.editedRow) && !keys.length) {
                     const rowData: Object = (!this.parent.enableVirtualization && this.parent.enableColumnVirtualization) ?
-                        extend({}, this.parent.getCurrentViewRecords()[this.editedRowIndex]) :
+                        this.enableCacheOnInfiniteColumnVirtual() ? this.virtualInfiniteData :
+                            extend({}, this.parent.getCurrentViewRecords()[this.editedRowIndex]) :
                         extend({}, this.getRowObjectByIndex(this.editedRowIndex));
                     this.virtualData = this.getVirtualEditedData(rowData);
                 }
@@ -701,7 +711,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
     }
 
-    private resetStickyLeftPos(valueX?: number, newChild?: DocumentFragment | HTMLElement): void {
+    /**
+     * To calculate the position of frozen cells
+     *
+     * @param {number} valueX - specifies the transform X value
+     * @param {DocumentFragment | HTMLElement} newChild - specifies the element to transform
+     * @returns {void}
+     * @hidden
+     */
+    public resetStickyLeftPos(valueX?: number, newChild?: DocumentFragment | HTMLElement): void {
         const cells: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll(
             '.e-leftfreeze,.e-rightfreeze,.e-fixedfreeze')).concat([].slice.call(
             (newChild ? newChild : this.parent.getContent()).querySelectorAll('.e-leftfreeze,.e-rightfreeze,.e-fixedfreeze')));
@@ -933,7 +951,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.virtualData = keys.length ? this.virtualData : data.virtualData;
             this.getVirtualEditedData(this.virtualData);
             data.virtualData = this.virtualData;
-            data.isAdd = this.isAdd;
+            data.isAdd = this.isAdd || this.parent.editSettings.showAddNewRow;
             data.isCancel = this.isCancel;
         }
     }
@@ -1023,7 +1041,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const rowData: Object = (!this.parent.enableVirtualization && this.parent.enableColumnVirtualization) ?
             extend({}, this.parent.getCurrentViewRecords()[e.index]) : extend({}, this.getRowObjectByIndex(e.index));
         const keys: string[] = Object.keys(this.virtualData);
-        e.data = keys.length ? this.virtualData : rowData;
+        e.data = keys.length && !this.parent.editSettings.showAddNewRow ? this.virtualData : this.isInfiniteColumnvirtualization() ?
+            e.data : rowData;
+        if (this.enableCacheOnInfiniteColumnVirtual()) {
+            this.virtualInfiniteData = e.data;
+        }
         e.isScroll = keys.length !== 0 && this.currentInfo.sentinelInfo && this.currentInfo.sentinelInfo.axis === 'X';
     }
 
@@ -1039,6 +1061,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private refreshCache(args: { data: Object }): void {
+        if (this.isInfiniteColumnvirtualization()) {
+            return;
+        }
         let block: number = Math.ceil((this.editedRowIndex + 1) / this.getBlockSize());
         if (this.parent.allowPaging && this.parent.enableColumnVirtualization) {
             block = Math.ceil((this.editedRowIndex + 1 + ((this.parent.pageSettings.currentPage - 1) *
@@ -1069,9 +1094,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.isNormaledit && (dataActionRequestTypes.some((value: string) => value === args.requestType)
             || editRequestTypes.some((value: string) => value === args.requestType))) {
             this.isCancel = true;
-            this.isAdd = false;
+            this.isAdd = false || this.parent.editSettings.showAddNewRow;
             this.editedRowIndex = this.empty as number;
             this.virtualData = {};
+            this.virtualInfiniteData = {};
             if (this.parent.editModule) {
                 this.parent.editModule.editModule.previousData = undefined;
             }
@@ -1191,7 +1217,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     public getRows(): Row<Column>[] {
-        return this.vgenerator.getRows();
+        return this.isInfiniteColumnvirtualization() ? this.getInfiniteRows() : this.vgenerator.getRows();
     }
 
     public getRowByIndex(index: number): Element {
@@ -1208,7 +1234,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             }
         }
         else if (!this.parent.enableVirtualization && this.parent.enableColumnVirtualization) {
-            row = !isNullOrUndefined(index) ? this.parent.getDataRows()[parseInt(index.toString(), 10)] : undefined;
+            row = !isNullOrUndefined(index) ? this.enableCacheOnInfiniteColumnVirtual() ?
+                this.parent.getDataRows().find((element: Element) => parseInt(element.getAttribute(literals.dataRowIndex), 10) === index) :
+                this.parent.getDataRows()[parseInt(index.toString(), 10)] : undefined;
         }
         else if (this.prevInfo) {
             row = this.getRowCollection(index, false) as Element;
@@ -1407,7 +1435,8 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
         this.virtualEle.content = <HTMLElement>this.getPanel().querySelector('.' + literals.headerContent);
         this.virtualEle.content.style.position = 'relative';
         this.virtualEle.renderWrapper();
-        (!this.parent.enableVirtualization && this.parent.enableColumnVirtualization) ? this.virtualEle.renderPlaceHolder() : this.virtualEle.renderPlaceHolder('absolute');
+        (!(this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) && this.parent.enableColumnVirtualization) ?
+            this.virtualEle.renderPlaceHolder() : this.virtualEle.renderPlaceHolder('absolute');
     }
 
     public appendContent(table: Element): void {

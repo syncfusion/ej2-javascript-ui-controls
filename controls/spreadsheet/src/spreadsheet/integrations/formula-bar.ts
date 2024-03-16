@@ -6,7 +6,7 @@ import { CellModel, getSheetName, getSheet, SheetModel, checkIsFormula, Workbook
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel, isLocked, getColumn } from '../../workbook/index';
 import { ComboBox, DropDownList, SelectEventArgs as DdlSelectArgs, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, select } from '@syncfusion/ej2-base';
+import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, select, Browser } from '@syncfusion/ej2-base';
 import { isUndefined, getNumericObject, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert, editValue, renderInsertDlg } from '../common/event';
 import { intToDate, isNumber } from '../../workbook/common/math';
@@ -611,6 +611,7 @@ export class FormulaBar {
             removeAllChildren(formulaPanel);
             detach(formulaPanel);
         }
+        this.parent = null;
     }
 
     private removeEventListener(): void {

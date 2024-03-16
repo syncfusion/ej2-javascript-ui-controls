@@ -4,6 +4,7 @@ import { itemProps, Ribbon, getItem, getItemElement, setCustomAttributes } from 
 import { RibbonItemModel, RibbonColorPickerSettingsModel } from '../models/index';
 import { RIBBON_CONTROL, RIBBON_HOVER, RIBBON_POPUP_CONTROL, RIBBON_POPUP_OPEN, SPACE } from '../base/constant';
 import { BeforeOpenCloseMenuEventArgs, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 
 /**
  * Defines the items of Ribbon.
@@ -58,7 +59,12 @@ export class RibbonColorPicker {
             beforeOpen: colorPickerSettings.beforeOpen,
             beforeTileRender: colorPickerSettings.beforeTileRender,
             created: colorPickerSettings.created,
-            change: colorPickerSettings.change,
+            change: (e: ChangeEventArgs) => {
+                colorPickerSettings.value = e.value.toString();
+                if (colorPickerSettings.change) {
+                    colorPickerSettings.change.call(this, e);
+                }
+            },
             open: () => {
                 colorPicker.element.parentElement.classList.add(RIBBON_POPUP_OPEN);
                 if (colorPickerSettings.open) {

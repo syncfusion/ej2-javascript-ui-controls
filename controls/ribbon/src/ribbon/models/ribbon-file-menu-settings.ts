@@ -130,6 +130,14 @@ export class FileMenuSettings extends ChildProperty<FileMenuSettings>  {
     public select: EmitType<FileMenuEventArgs>;
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    @Property('')
+    public keyTip: string;
+
+    /**
      * @param {Object} prop - Gets the property of FileMenu.
      * @param {boolean} muteOnChange - Gets the boolean value of muteOnChange.
      * @returns {void}

@@ -1,12 +1,10 @@
 import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
-import { FloatLabelType, Input, InputObject } from '../input/input';
+import { FloatLabelType, Input, InputObject, containerAttributes, TEXTBOX_FOCUS } from '../input/input';
 import { TextBoxModel} from './textbox-model';
 
 const HIDE_CLEAR: string = 'e-clear-icon-hide';
-const TEXTBOX_FOCUS: string = 'e-input-focus';
-const containerAttr: string[] = ['title', 'style', 'class'];
 
 export interface FocusInEventArgs {
     /** Returns the TextBox container element */
@@ -71,6 +69,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private textboxOptions: TextBoxModel;
     private inputPreviousValue: string = null;
     private isVue: boolean = false;
+    private clearButton: HTMLElement;
 
     /**
      * Specifies the behavior of the TextBox such as text, password, email, etc.
@@ -272,7 +271,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             case 'value': {
                 const prevOnChange: boolean = this.isProtectedOnChange;
                 this.isProtectedOnChange = true;
-                if (!this.isBlank(this.value)) {
+                if (!Input.isBlank(this.value)) {
                     this.value = this.value.toString();
                 }
                 this.isProtectedOnChange = prevOnChange;
@@ -292,8 +291,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             }
                 break;
             case 'htmlAttributes': {
-                this.updateHTMLAttrToElement();
-                this.updateHTMLAttrToWrapper();
+                this.updateHTMLAttributesToElement();
+                this.updateHTMLAttributesToWrapper();
                 this.checkAttributes(true);
                 this.multiline && !isNullOrUndefined(this.textarea) ? Input.validateInputType(this.textboxWrapper.container, this.textarea) : Input.validateInputType(this.textboxWrapper.container, this.element);
             }
@@ -327,7 +326,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 }
                 break;
             case 'cssClass':
-                this.updateCssClass(newProp.cssClass, oldProp.cssClass);
+                Input.updateCssClass(newProp.cssClass, oldProp.cssClass, this.textboxWrapper.container);
                 break;
             case 'locale':
                 this.globalize = new Internationalization(this.locale);
@@ -347,10 +346,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      */
     public getModuleName(): string {
         return 'textbox';
-    }
-
-    private isBlank(str: string): boolean {
-        return (!str || /^\s*$/.test(str));
     }
 
     protected preRender(): void {
@@ -382,7 +377,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             this.element = inputElement;
             setValue('ej2_instances', ejInstance, this.element);
         }
-        this.updateHTMLAttrToElement();
+        this.updateHTMLAttributesToElement();
         this.checkAttributes(false);
         if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) && this.element.value !== '') {
             this.setProperties({value: this.element.value}, true);
@@ -418,7 +413,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             const apiAttributes : string[] = ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
             for (let index: number = 0; index < this.element.attributes.length; index++) {
                 const attributeName: string = this.element.attributes[index as number].nodeName;
-                if (this.element.hasAttribute(attributeName) && containerAttr.indexOf(attributeName) < 0 &&
+                if (this.element.hasAttribute(attributeName) && containerAttributes.indexOf(attributeName) < 0 &&
                     !(attributeName === 'id' || attributeName === 'type' || attributeName === 'e-mappinguid')) {
                     // e-mappinguid attribute is handled for Grid component.
                     this.textarea.setAttribute(attributeName, this.element.attributes[index as number].nodeValue);
@@ -486,7 +481,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     public render(): void {
         let updatedCssClassValue: string = this.cssClass;
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
-            updatedCssClassValue = this.getInputValidClassList(this.cssClass);
+            updatedCssClassValue = Input.getInputValidClassList(this.cssClass);
         }
         this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
         this.textboxWrapper = Input.createInput({
@@ -501,7 +496,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 showClearButton: this.showClearButton
             }
         });
-        this.updateHTMLAttrToWrapper();
+        this.updateHTMLAttributesToWrapper();
         if (this.isHiddenInput) {
             this.respectiveElement.parentNode.insertBefore(this.element, this.respectiveElement);
         }
@@ -531,47 +526,14 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         this.renderComplete();
     }
 
-    private updateHTMLAttrToWrapper(): void {
-        if ( !isNullOrUndefined(this.htmlAttributes)) {
-            for (const key of Object.keys(this.htmlAttributes)) {
-                if (containerAttr.indexOf(key) > -1 ) {
-                    if (key === 'class') {
-                        const updatedClassValues : string = this.getInputValidClassList(this.htmlAttributes[`${key}`]);
-                        if (updatedClassValues !== '') {
-                            addClass([this.textboxWrapper.container], updatedClassValues.split(' '));
-                        }
-                    } else if (key === 'style') {
-                        let setStyle: string = this.textboxWrapper.container.getAttribute(key);
-                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[`${key}`]) :
-                            this.htmlAttributes[`${key}`];
-                        this.textboxWrapper.container.setAttribute(key, setStyle);
-                    } else {
-                        this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[`${key}`]);
-                    }
-                }
-            }
-        }
+    private updateHTMLAttributesToWrapper(): void {
+        Input.updateHTMLAttributesToWrapper(this.htmlAttributes, this.textboxWrapper.container);
     }
 
-    private updateHTMLAttrToElement(): void {
-        if ( !isNullOrUndefined(this.htmlAttributes)) {
-            for (const key of Object.keys(this.htmlAttributes)) {
-                if (containerAttr.indexOf(key) < 0 ) {
-                    this.multiline && !isNullOrUndefined(this.textarea) ? this.textarea.setAttribute(key, this.htmlAttributes[`${key}`]) : this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
-                }
-            }
-        }
+    private updateHTMLAttributesToElement(): void {
+        Input.updateHTMLAttributesToElement(this.htmlAttributes, this.respectiveElement ? this.respectiveElement : (this.multiline && !isNullOrUndefined(this.textarea) ? this.textarea : this.element));
     }
-    private updateCssClass(newClass : string, oldClass : string) : void {
-        Input.setCssClass(this.getInputValidClassList(newClass), [this.textboxWrapper.container], this.getInputValidClassList(oldClass));
-    }
-    private getInputValidClassList(inputClassName: string): string {
-        let result: string = inputClassName;
-        if (!isNullOrUndefined(inputClassName) && inputClassName !== '') {
-            result = (inputClassName.replace(/\s+/g, ' ')).trim();
-        }
-        return result;
-    }
+
     private setInitialValue() : void {
         if (!this.isAngular) {
             this.respectiveElement.setAttribute('value', this.initialValue);
@@ -773,6 +735,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     public destroy(): void {
         this.unWireEvents();
+        if (this.showClearButton) {
+            this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
+        }
         if (this.element.tagName === 'INPUT' && this.multiline) {
             detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
             this.respectiveElement = this.element;
@@ -786,7 +751,11 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             detach(this.textboxWrapper.container);
         }
         this.textboxWrapper = null;
-        Input.destroy();
+        Input.destroy({
+            element: this.respectiveElement,
+            floatLabelType: this.floatLabelType,
+            properties: this.properties
+        }, this.clearButton);
         super.destroy();
     }
 

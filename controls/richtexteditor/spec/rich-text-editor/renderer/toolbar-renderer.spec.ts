@@ -176,4 +176,24 @@ describe('Toolbar - Renderer', () => {
             destroy(rteObj);
         });
     });
+
+    describe('870342 - Need to remove "e-control" class added to the body when using RichTextEditor', () => {
+        let rteObj: any;
+        beforeAll((done) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize', 'Formats', 'OrderedList', 'UnorderedList']
+                },
+                value: "Rich Text Editor"
+            });
+            done();
+        });
+        it('Checking the e-control class is removed in the body element', (done: Function) => {
+            expect(document.body.classList.contains('.e-control')).toBe(false);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

@@ -102,7 +102,7 @@ export class ColumnWidthService {
             if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
                 this.setMinwidthBycalculation(tgridWidth);
             }
-            if ((this.parent.allowResizing && module === 'resize') || (this.parent.getFrozenColumns() && this.parent.allowResizing)) {
+            if ((this.parent.allowResizing && module === 'resize')) {
                 this.setWidthToTable();
             }
             this.parent.notify(columnWidthChanged, { index: columnIndex, width: cWidth, column: column, module: module });
@@ -140,7 +140,7 @@ export class ColumnWidthService {
                     }
                 }
             }
-            if (edit.length && editTableCol.length) {
+            if (edit.length && editTableCol.length && editTableCol[parseInt(index.toString(), 10)]) {
                 editTableCol[parseInt(index.toString(), 10)].style.width = fWidth;
             }
         }

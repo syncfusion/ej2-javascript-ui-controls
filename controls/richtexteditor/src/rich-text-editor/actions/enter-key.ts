@@ -56,7 +56,8 @@ export class EnterKeyAction {
             isTableEnter = blockElement.tagName === 'TD' || blockElement.tagName === 'TBODY' ? false : true;
         }
         if ((e.args as KeyboardEventArgs).which === 13 && !(e.args as KeyboardEventArgs).ctrlKey && (!Browser.isDevice ? (e.args as KeyboardEventArgs).code === 'Enter' : (e.args as KeyboardEventArgs).key === 'Enter' )) {
-            if (isNOU(this.startNode.closest('LI, UL, OL')) && isNOU(this.endNode.closest('LI, UL, OL')) && isTableEnter &&
+            if (isNOU(this.startNode.closest('LI, UL, OL')) && isNOU(this.endNode.closest('LI, UL, OL')) &&
+            isNOU(this.startNode.closest('.e-img-inner')) && isTableEnter &&
             isNOU(this.startNode.closest('PRE')) && isNOU(this.endNode.closest('PRE'))) {
                 const shiftKey: boolean = (e.args as KeyboardEventArgs).shiftKey;
                 const actionBeginArgs: ActionBeginEventArgs = {
@@ -508,10 +509,10 @@ export class EnterKeyAction {
         }
         const previousBlockNode: Element = this.parent.formatter.editorManager.domNode.blockNodes()[0].previousSibling as Element;
         const nextBlockNode: Element = this.parent.formatter.editorManager.domNode.blockNodes()[0].nextSibling as Element;
-        if (!isNOU(previousBlockNode) && previousBlockNode.hasAttribute('style') && previousBlockNode.nodeName !== 'TABLE') {
+        if (!isNOU(previousBlockNode) && previousBlockNode.nodeName !== '#text' && previousBlockNode.hasAttribute('style') && previousBlockNode.nodeName !== 'TABLE') {
             insertElem.setAttribute('style', previousBlockNode.getAttribute('style'));
         }
-        if (isNOU(previousBlockNode) && !isNOU(nextBlockNode) && nextBlockNode.hasAttribute('style') && nextBlockNode.nodeName !== 'TABLE') {
+        if (isNOU(previousBlockNode) && !isNOU(nextBlockNode) && nextBlockNode.nodeName !== '#text' && nextBlockNode.hasAttribute('style') && nextBlockNode.nodeName !== 'TABLE') {
             insertElem.setAttribute('style', nextBlockNode.getAttribute('style'));
         }
         return insertElem;

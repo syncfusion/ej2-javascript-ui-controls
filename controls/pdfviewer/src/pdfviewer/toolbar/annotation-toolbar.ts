@@ -391,7 +391,7 @@ export class AnnotationToolbar {
                 // eslint-disable-next-line max-len
                 items: this.createPropertyToolbarForMobile(shapeType), width: '', height: '', overflowMode: 'Scrollable',
                 created: () => {
-                    if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                    if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                         id = this.pdfViewer.element.id + '_underlineIcon';
                     }
                     else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
@@ -1593,7 +1593,7 @@ export class AnnotationToolbar {
                 items.push({ separator: true });
             }
             items.push({ text: this.pdfViewer.localeObj.getConstant('Custom Stamp'), label: 'Custom Stamp', items: [] });
-            this.pdfViewerBase.customStampCollection = this.pdfViewer.customStampSettings.customStamps as any ? this.pdfViewer.customStampSettings.customStamps as any : []; 
+            this.pdfViewerBase.customStampCollection = this.pdfViewer.customStampSettings.customStamps as any ? this.pdfViewer.customStampSettings.customStamps as any : [];
         }
         this.stampMenu = [
             {
@@ -3134,6 +3134,7 @@ export class AnnotationToolbar {
     }
 
     private afterMobileToolbarCreation(): void {
+        const isMac: boolean = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false;
         // eslint-disable-next-line max-len
         this.highlightItem = this.primaryToolbar.addClassToolbarItem('_highlight', 'e-pv-highlight', this.pdfViewer.localeObj.getConstant('Highlight'));
         this.underlineItem = this.primaryToolbar.addClassToolbarItem('_underline', 'e-pv-underline', this.pdfViewer.localeObj.getConstant('Underline'));
@@ -3147,7 +3148,7 @@ export class AnnotationToolbar {
         // eslint-disable-next-line max-len
         this.commentItem = this.primaryToolbar.addClassToolbarItem('_comment', 'e-pv-comment', this.pdfViewer.localeObj.getConstant('Add Comments'));
         // eslint-disable-next-line max-len
-        this.commentItem = this.primaryToolbar.addClassToolbarItem('_annotation_commentPanel', 'e-pv-annotation-comment-panel', this.pdfViewer.localeObj.getConstant('Comment Panel'));
+        this.commentItem = this.primaryToolbar.addClassToolbarItem('_annotation_commentPanel', 'e-pv-annotation-comment-panel', this.pdfViewer.localeObj.getConstant('Comment Panel')+ (isMac ? " (⌘+⌥+0)" : " (Ctrl+Alt+0)"));
         // eslint-disable-next-line max-len
         this.inkAnnotationItem = this.primaryToolbar.addClassToolbarItem('_annotation_ink', 'e-pv-annotation-ink', this.pdfViewer.localeObj.getConstant('Draw Ink'));
         this.selectAnnotationDeleteItem(false);
@@ -3386,7 +3387,12 @@ export class AnnotationToolbar {
      * @private
      */
     public updateFontSizeInIcon(size: number): void {
-        this.fontSize.value = size + 'px';
+        if (isNullOrUndefined(this.fontSize) && this.pdfViewer.annotationModule) {
+            this.pdfViewer.annotationModule.handleFontSizeUpdate(size);
+        }
+        else {
+            this.fontSize.value = size + 'px';
+        }
     }
 
     private updateOpacityIndicator(): void {
@@ -3452,12 +3458,13 @@ export class AnnotationToolbar {
     }
 
     private afterToolbarCreation(): void {
+        const isMac: boolean = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false;
         // eslint-disable-next-line max-len
         this.highlightItem = this.primaryToolbar.addClassToolbarItem('_highlight', 'e-pv-highlight', this.pdfViewer.localeObj.getConstant('Highlight'));
         this.underlineItem = this.primaryToolbar.addClassToolbarItem('_underline', 'e-pv-underline', this.pdfViewer.localeObj.getConstant('Underline'));
         // eslint-disable-next-line max-len
         this.strikethroughItem = this.primaryToolbar.addClassToolbarItem('_strikethrough', 'e-pv-strikethrough', this.pdfViewer.localeObj.getConstant('Strikethrough'));
-        this.deleteItem = this.primaryToolbar.addClassToolbarItem('_annotation_delete', 'e-pv-annotation-delete', this.pdfViewer.localeObj.getConstant('Delete'));
+        this.deleteItem = this.primaryToolbar.addClassToolbarItem('_annotation_delete', 'e-pv-annotation-delete', this.pdfViewer.localeObj.getConstant('Delete')+ (" (delete)"));
         // eslint-disable-next-line max-len
         this.freeTextEditItem = this.primaryToolbar.addClassToolbarItem('_annotation_freeTextEdit', 'e-pv-annotation-freeTextEdit', this.pdfViewer.localeObj.getConstant('Free Text'));
         // eslint-disable-next-line max-len
@@ -3469,7 +3476,7 @@ export class AnnotationToolbar {
         // eslint-disable-next-line max-len
         this.pdfViewerBase.getElement('_comment').setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Add Comments'));
         // eslint-disable-next-line max-len
-        this.commentItem = this.primaryToolbar.addClassToolbarItem('_annotation_commentPanel', 'e-pv-annotation-comment-panel', this.pdfViewer.localeObj.getConstant('Comment Panel'));
+        this.commentItem = this.primaryToolbar.addClassToolbarItem('_annotation_commentPanel', 'e-pv-annotation-comment-panel', this.pdfViewer.localeObj.getConstant('Comment Panel')+ (isMac ? " (⌘+⌥+0)" : " (Ctrl+Alt+0)"));
         this.closeItem = this.primaryToolbar.addClassToolbarItem('_annotation_close', 'e-pv-annotation-tools-close', null);
         this.pdfViewerBase.getElement('_annotation_close').setAttribute('aria-label', "Close Annotation Toolbar");
         this.selectAnnotationDeleteItem(false);
@@ -4751,7 +4758,7 @@ export class AnnotationToolbar {
      */
     public enableCommentPanelTool(isEnable: boolean): void {
         if (this.toolbar) {
-        this.enableItems(this.commentItem.parentElement, isEnable);
+            this.enableItems(this.commentItem.parentElement, isEnable);
         }
     }
 

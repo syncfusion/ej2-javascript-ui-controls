@@ -66,7 +66,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
             let preCaption: Row<Column>;
             const captionRow: Row<Column> = this.generateCaptionRow(data, index, parentid, childId, tIndex, parentUid);
             if (this.isInfiniteScroll) {
-                preCaption = this.getPreCaption(index, (<{ key?: string }>captionRow.data).key);
+                preCaption = this.getPreCaption(index, (<{ key?: string | Date }>captionRow.data).key);
             }
             if (!preCaption) {
                 this.rows = this.rows.concat(captionRow);
@@ -102,14 +102,16 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         return !this.parent.enableInfiniteScrolling;
     }
 
-    private getPreCaption(indent: number, key: string): Row<Column> {
+    private getPreCaption(indent: number, key: string | Date): Row<Column> {
         const rowObj: Row<Column>[] = [...this.parent.getRowsObject(), ...this.rows];
         let preCap: Row<Column>; this.infiniteChildCount = 0;
         let i: number = rowObj.length;
         while (i--) {
-            if (rowObj[parseInt(i.toString(), 10)].isCaptionRow && rowObj[parseInt(i.toString(), 10)].indent === indent
-                && (<{ key?: string }>rowObj[parseInt(i.toString(), 10)].data).key === key) {
-                preCap = rowObj[parseInt(i.toString(), 10)];
+            if (rowObj[parseInt(i.toString(), 10)].isCaptionRow && rowObj[parseInt(i.toString(), 10)].indent === indent) {
+                const groupKey: string | Date = (<{ key?: string | Date }>rowObj[parseInt(i.toString(), 10)].data).key;
+                if ((groupKey instanceof Date && groupKey.toString() === key.toString()) || groupKey === key) {
+                    preCap = rowObj[parseInt(i.toString(), 10)];
+                }
             }
             if (rowObj[parseInt(i.toString(), 10)].indent === indent || rowObj[parseInt(i.toString(), 10)].indent < indent) {
                 break;

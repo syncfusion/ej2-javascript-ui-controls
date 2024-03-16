@@ -273,6 +273,7 @@ export function checkParentAsContainer(diagram: Diagram, obj: NodeModel | Connec
  */
 export function checkChildNodeInContainer(diagram: Diagram, obj: NodeModel): void {
     const parentNode: NodeModel = diagram.nameTable[(obj as Node).parentId];
+    (obj as any).laneMargin = {left:obj.margin.left,right:obj.margin.right,top:obj.margin.top,bottom:obj.margin.bottom};
     if (parentNode.container.type === 'Canvas') {
         obj.margin.left = (obj.offsetX - parentNode.wrapper.bounds.x - (obj.width / 2));
         obj.margin.top = (obj.offsetY - parentNode.wrapper.bounds.y - (obj.height / 2));
@@ -362,10 +363,6 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
             node = diagram.getObject(node.id);
             if ((container as Node).isLane && (container as Node).parentId) {
                 swimlane = diagram.nameTable[(container as Node).parentId];
-                // EJ2-63939 - Check whether the lane child is BPMN text node or not
-                if (node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations && (node.shape as BpmnShapeModel).annotations.length > 0) {
-                    (swimlane as Node).isTextNode = true;
-                }
                 const lanes: LaneModel[] = (swimlane.shape as SwimLaneModel).lanes;
                 const canvasId: string = (container.id.slice(swimlane.id.length));
                 const currentParentId: string = canvasId.substring(0, canvasId.length - 1);

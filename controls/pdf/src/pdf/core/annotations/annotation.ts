@@ -2,7 +2,7 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage, PdfDestination } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfDestinationMode, PdfBlendMode, PdfDashStyle, PdfLineCap } from './../enumerator';
-import { _checkField, _removeDuplicateReference, _updateVisibility, _getPageIndex, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints } from './../utils';
+import { _checkField, _removeDuplicateReference, _updateVisibility, _getPageIndex, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds } from './../utils';
 import { PdfField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField } from './../form/field';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { _TextRenderingMode, PdfBrush, PdfGraphics, PdfPen, PdfGraphicsState, _PdfTransformationMatrix, _PdfUnitConvertor } from './../graphics/pdf-graphics';
@@ -73,6 +73,7 @@ export abstract class PdfAnnotation {
     _authorBoldFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 10.5, PdfFontStyle.bold);
     _lineCaptionFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
     _circleCaptionFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 8, PdfFontStyle.regular);
+    _isTransparentColor: boolean = false;
     /**
      * Gets the author of the annotation.
      *
@@ -1247,7 +1248,7 @@ export abstract class PdfAnnotation {
                                     }
                                     point.x -= box[0];
                                     point.y += box[1];
-                                    graphics._drawTemplate(template, point);
+                                    graphics.drawTemplate(template, point);
                                     graphics.restore(state);
                                     this._removeAnnotationFromPage(this._page, this);
                                     isValidMatrix = false;
@@ -1264,13 +1265,17 @@ export abstract class PdfAnnotation {
         const graphics: PdfGraphics = this._page.graphics;
         let currentBounds: {x: number, y: number, width: number, height: number} = this.bounds;
         if (this._type === _PdfAnnotationType.lineAnnotation && !this._dictionary.has('AP')) {
-            currentBounds = _toRectangle([this.bounds.x, this.bounds.y,
-                this.bounds.width, this.bounds.height]);
+            if (this._isLoaded) {
+                currentBounds = this._bounds;
+            } else {
+                currentBounds = _toRectangle([this.bounds.x, this.bounds.y,
+                    this.bounds.width, this.bounds.height]);
+            }
             if (this._page) {
                 const size: number[] = this._page.size;
                 const mBox: number[] = this._page.mediaBox;
                 const cropBox: number[] = this._page.cropBox;
-                if (cropBox && Array.isArray(cropBox) && cropBox.length === 4 && this._page._pageDictionary.has('CropBox')) {
+                if (cropBox && Array.isArray(cropBox) && cropBox.length === 4 && this._page._pageDictionary.has('CropBox') && !this._isLoaded) {
                     if ((cropBox[0] !== 0 || cropBox[1] !== 0 || size[0] === cropBox[2] ||
                         size[1] === cropBox[3]) && (currentBounds.x !== cropBox[0])) {
                         currentBounds.x -= cropBox[0];
@@ -1278,14 +1283,14 @@ export abstract class PdfAnnotation {
                     } else {
                         currentBounds.y = size[1] - (currentBounds.y + currentBounds.height);
                     }
-                } else if (mBox && Array.isArray(mBox) && mBox.length === 4 && this._page._pageDictionary.has('MediaBox')) {
+                } else if (mBox && Array.isArray(mBox) && mBox.length === 4 && this._page._pageDictionary.has('MediaBox') && !this._isLoaded) {
                     if (mBox[0] > 0 || mBox[1] > 0 || size[0] === mBox[2] || size[1] === mBox[3]) {
                         currentBounds.x -= mBox[0];
                         currentBounds.y = mBox[3] - (currentBounds.y + currentBounds.height);
                     } else {
                         currentBounds.y = size[1] - (currentBounds.y + currentBounds.height);
                     }
-                } else {
+                } else if (!this._isLoaded) {
                     currentBounds.y = size[1] - (currentBounds.y + currentBounds.height);
                 }
             } else {
@@ -1382,7 +1387,7 @@ export abstract class PdfAnnotation {
                     }
                 }
             }
-            graphics._drawTemplate(template, bounds);
+            graphics.drawTemplate(template, bounds);
             graphics.restore(state);
         }
         this._removeAnnotationFromPage(this._page, this);
@@ -1808,6 +1813,9 @@ export abstract class PdfAnnotation {
         _setMatrix(template, this._getRotationAngle());
         if (this._dictionary.has('BE')) {
             template._writeTransformation = false;
+        }
+        if (typeof this.color === 'undefined') {
+            this._isTransparentColor = true;
         }
         const graphics: PdfGraphics = template.graphics;
         const width: number = this.border.width;
@@ -2315,7 +2323,11 @@ export abstract class PdfAnnotation {
         } else if (typeof subject !== 'undefined' && subject !== null && subject !== '') {
             const titleRect: number[] = [bounds[0] + borderWidth, bounds[1] + borderWidth, bounds[2] - border.width, 40];
             this._saveGraphics(_page, PdfBlendMode.hardLight);
-            _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen, backBrush);
+            if (this._isTransparentColor) {
+                _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen);
+            } else {
+                _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen, backBrush);
+            }
             _page.graphics.restore();
             let contentRect: number[] = [titleRect[0] + 11, titleRect[1], titleRect[2], titleRect[3] / 2];
             contentRect = [contentRect[0], (contentRect[1] + contentRect[3] - 2), contentRect[2], titleRect[3] / 2];
@@ -2326,7 +2338,11 @@ export abstract class PdfAnnotation {
         } else {
             this._saveGraphics(_page, PdfBlendMode.hardLight);
             const titleRect: number[] = [bounds[0] + borderWidth, bounds[1] + borderWidth, bounds[2] - border.width, 20];
-            _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen, backBrush);
+            if (this._isTransparentColor) {
+                _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen);
+            } else {
+                _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen, backBrush);
+            }
             track = 20;
             _page.graphics.restore();
         }
@@ -2453,7 +2469,11 @@ export abstract class PdfAnnotation {
             titleRect[3] += 20;
             trackingHeight = titleRect[3];
             this._saveGraphics(_page, PdfBlendMode.hardLight);
-            _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen, backBrush);
+            if (this._isTransparentColor) {
+                _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen);
+            } else {
+                _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen, backBrush);
+            }
             _page.graphics.restore();
             let contentRect: number[] = [titleRect[0] + 11, titleRect[1], titleRect[2], titleRect[3] / 2];
             this._saveGraphics(this._page, PdfBlendMode.normal);
@@ -2463,7 +2483,11 @@ export abstract class PdfAnnotation {
             _page.graphics.restore();
         } else {
             this._saveGraphics(_page, PdfBlendMode.hardLight);
-            _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen, backBrush);
+            if (this._isTransparentColor) {
+                _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen);
+            } else {
+                _page.graphics.drawRectangle(titleRect[0], titleRect[1], titleRect[2], titleRect[3], pen, backBrush);
+            }
             _page.graphics.restore();
             const contentRect: number[] = [titleRect[0] + 11, titleRect[1], titleRect[2], titleRect[3]];
             this._saveGraphics(_page, PdfBlendMode.normal);
@@ -3071,7 +3095,7 @@ export class PdfLineAnnotation extends PdfComment {
      * ```
      */
     get unit(): PdfMeasurementUnit {
-        if (typeof this._unit === 'undefined') {
+        if (typeof this._unit === 'undefined' || this._isLoaded) {
             this._unit = PdfMeasurementUnit.centimeter;
             if (this._dictionary.has('Contents')) {
                 const text: string = this._dictionary.get('Contents');
@@ -3135,6 +3159,7 @@ export class PdfLineAnnotation extends PdfComment {
         }
         if (!this._dictionary.has('C')) {
             this.color = [0, 0, 0];
+            this._isTransparentColor = true;
         }
         let borderWidth: number;
         if (this._dictionary.has('BS')) {
@@ -3157,10 +3182,15 @@ export class PdfLineAnnotation extends PdfComment {
             const bounds: {x: number, y: number, width: number, height: number} = {x: boundsArray[0],
                 y: boundsArray[1], width: boundsArray[2], height: boundsArray[3]};
             this._bounds = bounds;
-            const updatedBounds: number[] = [this._bounds.x,
-                this._bounds.y,
-                this._bounds.x + this._bounds.width,
-                this._bounds.y + this._bounds.height];
+            let updatedBounds: number[];
+            if (this._page && this._page._isNew && this._page._pageSettings && !this._setAppearance && !this.flatten) {
+                updatedBounds = _updateBounds(this);
+            } else {
+                updatedBounds = [this._bounds.x,
+                    this._bounds.y,
+                    this._bounds.x + this._bounds.width,
+                    this._bounds.y + this._bounds.height];
+            }
             this._dictionary.update('Rect', updatedBounds);
         }
     }
@@ -3208,16 +3238,33 @@ export class PdfLineAnnotation extends PdfComment {
                 }
             }
         }
-        if (typeof this.flattenPopups !== 'undefined' && this.flattenPopups && !this.measure) {
-            if (this._isLoaded && !this._dictionary.has('Measure')) {
+        if (typeof this.flattenPopups !== 'undefined' && this.flattenPopups && isFlatten) {
+            if (this._isLoaded) {
                 this._flattenLoadedPopUp();
             } else {
                 this._flattenPopUp();
             }
         }
         if (isFlatten && this._appearanceTemplate) {
-            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            const appearanceDictionary: _PdfDictionary = this._appearanceTemplate._content.dictionary;
+            const isValid: boolean = appearanceDictionary && appearanceDictionary.has('BBox') && !appearanceDictionary.has('CropBox') && !appearanceDictionary.has('MediaBox') && !appearanceDictionary.has('Matrix');
+            if (this._isLoaded && isValid && this.measure && !this._setAppearance) {
+                const graphics: PdfGraphics = this._page.graphics;
+                const state: PdfGraphicsState = graphics.save();
+                if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                    graphics.setTransparency(this._opacity);
+                }
+                const point: { x: number, y: number, width: number, height: number } = this.bounds;
+                const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
+                point.x -= box[0];
+                point.y += box[1];
+                graphics.drawTemplate(this._appearanceTemplate, point);
+                graphics.restore(state);
+                this._removeAnnotationFromPage(this._page, this);
+            } else {
+                const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+                this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            }
         }
         if (!isFlatten && this._setAppearance && !this.measure) {
             let appearance: _PdfDictionary;
@@ -3677,8 +3724,14 @@ export class PdfLineAnnotation extends PdfComment {
             }
             graphics.restore();
             const bounds: number[] = this._obtainLineBounds();
-            const rectangleBounds: number[] = _fromRectangle({ x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3] });
+            let rectangleBounds: number[] = _fromRectangle({ x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3] });
+            if (this._page._isNew && this._page._pageSettings && this._setAppearance && !this.flatten) {
+                rectangleBounds = _updateBounds(this, bounds);
+            }
             this.bounds = { x: rectangleBounds[0], y: rectangleBounds[1], width: rectangleBounds[2], height: rectangleBounds[3] };
+            if ((!this.measure) && (!this._dictionary.has('Measure'))) {
+                this._dictionary.update('Rect', [rectangleBounds[0], rectangleBounds[1], rectangleBounds[2], rectangleBounds[3]]);
+            }
         }
         return template;
     }
@@ -3702,7 +3755,7 @@ export class PdfLineAnnotation extends PdfComment {
             count++;
         }
         const distance: number = Math.sqrt(Math.pow((data[1][0] - data[0][0]), 2) + Math.pow((data[1][1] - data[0][1]), 2));
-        const value: {graphicsUnit: _PdfGraphicsUnit, unitString: string} = this._getEqualPdfGraphicsUnit(this._unit, this._unitString);
+        const value: {graphicsUnit: _PdfGraphicsUnit, unitString: string} = this._getEqualPdfGraphicsUnit(this.unit, this._unitString);
         this._unitString = value.unitString;
         return (new _PdfUnitConvertor())._convertUnits(distance, _PdfGraphicsUnit.point, value.graphicsUnit);
     }
@@ -3838,7 +3891,7 @@ export class PdfCircleAnnotation extends PdfComment {
      * ```
      */
     get unit(): PdfMeasurementUnit {
-        if (typeof this._unit === 'undefined') {
+        if (typeof this._unit === 'undefined' || this._isLoaded) {
             this._unit = PdfMeasurementUnit.centimeter;
             if (this._dictionary.has('Contents')) {
                 const text: string = this._dictionary.get('Contents');
@@ -3954,6 +4007,7 @@ export class PdfCircleAnnotation extends PdfComment {
         }
         if (!this._dictionary.has('C')) {
             this.color = [0, 0, 0];
+            this._isTransparentColor = true;
         }
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
@@ -3964,12 +4018,7 @@ export class PdfCircleAnnotation extends PdfComment {
             if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
                 this._appearanceTemplate = this._createCircleAppearance();
             }
-            const size: number[] = this._page.size;
-            const rect: number[] = [this.bounds.x,
-                size[1] - (this.bounds.y + this.bounds.height),
-                this.bounds.width,
-                this.bounds.height];
-            this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+            this._dictionary.update('Rect', _updateBounds(this));
         }
     }
     _doPostProcess(isFlatten: boolean = false): void {
@@ -4014,16 +4063,33 @@ export class PdfCircleAnnotation extends PdfComment {
                 }
             }
         }
-        if (typeof this.flattenPopups !== 'undefined' && this.flattenPopups && !this.measure) {
-            if (this._isLoaded && !this._dictionary.has('Measure')) {
+        if (typeof this.flattenPopups !== 'undefined' && this.flattenPopups && isFlatten) {
+            if (this._isLoaded) {
                 this._flattenLoadedPopUp();
             } else {
                 this._flattenPopUp();
             }
         }
         if (isFlatten && this._appearanceTemplate) {
-            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            const appearanceDictionary: _PdfDictionary = this._appearanceTemplate._content.dictionary;
+            const isValid: boolean = appearanceDictionary && appearanceDictionary.has('BBox') && !appearanceDictionary.has('CropBox') && !appearanceDictionary.has('MediaBox');
+            if (isValid && this.measure) {
+                const graphics: PdfGraphics = this._page.graphics;
+                const state: PdfGraphicsState = graphics.save();
+                if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                    graphics.setTransparency(this._opacity);
+                }
+                const point: { x: number, y: number, width: number, height: number } = this.bounds;
+                const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
+                point.x -= box[0];
+                point.y += box[1];
+                graphics.drawTemplate(this._appearanceTemplate, point);
+                graphics.restore(state);
+                this._removeAnnotationFromPage(this._page, this);
+            } else {
+                const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+                this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            }
         }
         if (!isFlatten && this._setAppearance && !this.measure) {
             let appearance: _PdfDictionary;
@@ -4052,8 +4118,9 @@ export class PdfCircleAnnotation extends PdfComment {
         const format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
         const str: string = area.toFixed(2) + ' ' + this._unitString;
         const fontsize: number[] = font.measureString(str, [0, 0], format, 0, 0);
-        const borderPen: PdfPen = new PdfPen(this.color, borderWidth);
-        let nativeRectangle: number[] = [this.bounds.x,
+        const color: number[] = this.color ? this.color : [0, 0, 0];
+        const borderPen: PdfPen = new PdfPen(color, borderWidth);
+        const nativeRectangle: number[] = [this.bounds.x,
             (this.bounds.y + this.bounds.height),
             this.bounds.width,
             this.bounds.height];
@@ -4067,7 +4134,7 @@ export class PdfCircleAnnotation extends PdfComment {
         if (this.innerColor) {
             parameter.backBrush = new PdfBrush(this._innerColor);
         }
-        parameter.foreBrush = new PdfBrush(this.color);
+        parameter.foreBrush = new PdfBrush(color);
         const rect: number[] = [nativeRectangle[0],
             -nativeRectangle[1] - nativeRectangle[3],
             nativeRectangle[2],
@@ -4077,7 +4144,7 @@ export class PdfCircleAnnotation extends PdfComment {
                              rect[1] + width,
                              rect[2] - borderWidth,
                              rect[3] - borderWidth,
-                             new PdfPen(this.color, this.border.width));
+                             new PdfPen(color, this.border.width));
         if (this._measureType === PdfCircleMeasurementType.diameter) {
             graphics.save();
             graphics.translateTransform(nativeRectangle[0], -nativeRectangle[1]);
@@ -4116,15 +4183,7 @@ export class PdfCircleAnnotation extends PdfComment {
             dic.set('N', ref);
             dic._updated = true;
             this._dictionary.set('AP', dic);
-            const size: number[] = this._page.size;
-            const rect1: number[] = [this.bounds.x,
-                size[1] - (this.bounds.y + this.bounds.height),
-                this.bounds.width,
-                this.bounds.height];
-            if (this._isBounds) {
-                nativeRectangle =  rect1;
-            }
-            this._dictionary.update('Rect', [rect1[0], rect1[1], rect1[0] + rect1[2], rect1[1] + rect1[3]]);
+            this._dictionary.update('Rect', _updateBounds(this));
             if (this._dictionary.has('Measure')) {
                 _removeDuplicateReference(this._dictionary, this._crossReference, 'Measure');
             }
@@ -4151,7 +4210,7 @@ export class PdfCircleAnnotation extends PdfComment {
     }
     _convertToUnit(): number {
         const converter: _PdfUnitConvertor = new _PdfUnitConvertor();
-        const value: {graphicsUnit: _PdfGraphicsUnit, unitString: string} = this._getEqualPdfGraphicsUnit(this._unit, this._unitString);
+        const value: {graphicsUnit: _PdfGraphicsUnit, unitString: string} = this._getEqualPdfGraphicsUnit(this.unit, this._unitString);
         this._unitString = value.unitString;
         let radius: number = converter._convertUnits(this.bounds.width / 2, _PdfGraphicsUnit.point, value.graphicsUnit);
         if (this._measureType === PdfCircleMeasurementType.diameter) {
@@ -4237,6 +4296,7 @@ export class PdfEllipseAnnotation extends PdfComment {
         }
         if (!this._dictionary.has('C')) {
             this.color = [0, 0, 0];
+            this._isTransparentColor = true;
         }
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
@@ -4244,12 +4304,7 @@ export class PdfEllipseAnnotation extends PdfComment {
         if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
             this._appearanceTemplate = this._createCircleAppearance();
         }
-        const size: number[] = this._page.size;
-        const rect: number[] = [this.bounds.x,
-            size[1] - (this.bounds.y + this.bounds.height),
-            this.bounds.width,
-            this.bounds.height];
-        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
     }
     _doPostProcess(isFlatten: boolean = false): void {
         if (this._isLoaded) {
@@ -4550,6 +4605,7 @@ export class PdfSquareAnnotation extends PdfComment {
         }
         if (!this._dictionary.has('C')) {
             this.color = [0, 0, 0];
+            this._isTransparentColor = true;
         }
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
@@ -4560,12 +4616,7 @@ export class PdfSquareAnnotation extends PdfComment {
             if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
                 this._appearanceTemplate = this._createRectangleAppearance(this.borderEffect);
             }
-            const size: number[] = this._page.size;
-            const rect: number[] = [this.bounds.x,
-                size[1] - (this.bounds.y + this.bounds.height),
-                this.bounds.width,
-                this.bounds.height];
-            this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+            this._dictionary.update('Rect', _updateBounds(this));
             if (typeof this._intensity === 'undefined' &&
                 typeof this._borderEffect !== 'undefined' &&
                 this._borderEffect.style === PdfBorderEffectStyle.cloudy) {
@@ -4708,13 +4759,16 @@ export class PdfSquareAnnotation extends PdfComment {
             dic.set('N', ref);
             dic._updated = true;
             this._dictionary.set('AP', dic);
-            const nativeRectangle1: number[] = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
+            let nativeRectangle1: number[] = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
             const size: number[] = this._page.size;
             nativeRectangle1[1] = size[1] - (this.bounds.y + this.bounds.height);
             nativeRectangle1[2] = (this.bounds.x + this.bounds.width);
             nativeRectangle1[3] = size[1] - this.bounds.y;
             if (this._isBounds) {
                 nativeRectangle =  nativeRectangle1;
+            }
+            if (this._page._isNew && this._page._pageSettings) {
+                nativeRectangle1 = _updateBounds(this);
             }
             this._dictionary.update('Rect', [nativeRectangle1[0], nativeRectangle1[1], nativeRectangle1[2], nativeRectangle1[3]]);
             if (this._dictionary.has('Measure')) {
@@ -4910,6 +4964,7 @@ export class PdfRectangleAnnotation extends PdfComment {
         }
         if (!this._dictionary.has('C')) {
             this.color = [0, 0, 0];
+            this._isTransparentColor = true;
         }
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
@@ -4917,12 +4972,7 @@ export class PdfRectangleAnnotation extends PdfComment {
         if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
             this._appearanceTemplate = this._createRectangleAppearance(this.borderEffect);
         }
-        const size: number[] = this._page.size;
-        const rect: number[] = [this.bounds.x,
-            size[1] - (this.bounds.y + this.bounds.height),
-            this.bounds.width,
-            this.bounds.height];
-        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
         if (typeof this._intensity === 'undefined' &&
             typeof this._borderEffect !== 'undefined' &&
             this._borderEffect.style === PdfBorderEffectStyle.cloudy) {
@@ -5029,7 +5079,7 @@ export class PdfRectangleAnnotation extends PdfComment {
                                 }
                                 pointF.x -= box[0];
                                 pointF.y += box[1];
-                                graphics._drawTemplate(appearanceTemplate, pointF);
+                                graphics.drawTemplate(appearanceTemplate, pointF);
                                 graphics.restore(state);
                                 this._removeAnnotationFromPage(this._page, this);
                                 isValidMatrix = false;
@@ -5223,6 +5273,7 @@ export class PdfPolygonAnnotation extends PdfComment {
         }
         if (!this._dictionary.has('C')) {
             this.color = [0, 0, 0];
+            this._isTransparentColor = true;
         }
         let borderWidth: number;
         if (this._dictionary.has('BS')) {
@@ -5268,6 +5319,7 @@ export class PdfPolygonAnnotation extends PdfComment {
         }
     }
     _doPostProcess(isFlatten: boolean = false): void {
+        this._flatten = isFlatten;
         if (this._isLoaded) {
             if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
                 this._appearanceTemplate = this._createPolygonAppearance(isFlatten);
@@ -5288,9 +5340,7 @@ export class PdfPolygonAnnotation extends PdfComment {
         } else {
             this._postProcess(isFlatten);
             if (!this._appearanceTemplate && isFlatten) {
-                if (!this._dictionary.has('AP')) {
-                    this._appearanceTemplate = this._createPolygonAppearance(isFlatten);
-                } else {
+                if (this._dictionary.has('AP')) {
                     const dictionary: _PdfDictionary = this._dictionary.get('AP');
                     if (dictionary && dictionary.has('N')) {
                         const appearanceStream: _PdfBaseStream = dictionary.get('N');
@@ -5462,7 +5512,11 @@ export class PdfPolygonAnnotation extends PdfComment {
                 });
                 polygonPoints = [];
                 for (let j: number = 0; j < points.length; j = j + 2) {
-                    polygonPoints.push([points[Number.parseInt(j.toString(), 10)], (pageHeight - points[j + 1])]);
+                    if (this.flatten) {
+                        polygonPoints.push([points[Number.parseInt(j.toString(), 10)], (pageHeight - points[j + 1])]);
+                    } else {
+                        polygonPoints.push([points[Number.parseInt(j.toString(), 10)], -points[j + 1]]);
+                    }
                 }
                 if (rotation) {
                     if (rotation === 270) {
@@ -5751,6 +5805,7 @@ export class PdfPolyLineAnnotation extends PdfComment {
         }
         if (!this._dictionary.has('C')) {
             this.color = [0, 0, 0];
+            this._isTransparentColor = true;
         }
         let borderWidth: number;
         if (this._dictionary.has('BS')) {
@@ -5791,6 +5846,7 @@ export class PdfPolyLineAnnotation extends PdfComment {
         }
     }
     _doPostProcess(isFlatten: boolean = false): void {
+        this._flatten = isFlatten;
         if (this._isLoaded) {
             if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
                 this._appearanceTemplate = this._createPolyLineAppearance(isFlatten);
@@ -5864,10 +5920,11 @@ export class PdfPolyLineAnnotation extends PdfComment {
         }
     }
     _createPolyLineAppearance(flatten: boolean): PdfTemplate {
+        const color: number[] = this.color ? this.color : [0, 0, 0];
         if (typeof flatten !== 'undefined' && flatten) {
             let borderPen: PdfPen;
-            if (this.color && this.border.width > 0) {
-                borderPen = new PdfPen(this.color, this.border.width);
+            if (this.border.width > 0) {
+                borderPen = new PdfPen(color, this.border.width);
             }
             const graphics: PdfGraphics = this._page.graphics;
             if (borderPen) {
@@ -5916,11 +5973,11 @@ export class PdfPolyLineAnnotation extends PdfComment {
             if (this.innerColor) {
                 parameter.backBrush = new PdfBrush(this._innerColor);
             }
-            if (this.border.width > 0 && this.color) {
-                parameter.borderPen = new PdfPen(this._color, this.border.width);
+            if (this.border.width > 0 && color) {
+                parameter.borderPen = new PdfPen(color, this.border.width);
             }
-            if (this.color) {
-                parameter.foreBrush = new PdfBrush(this._color);
+            if (color) {
+                parameter.foreBrush = new PdfBrush(color);
             }
             if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
                 graphics.save();
@@ -5966,7 +6023,7 @@ export class PdfPolyLineAnnotation extends PdfComment {
         const pageSize: number[] = this._page.size;
         const pageHeight: number = pageSize[1];
         let points: Array<number[]>;
-        if (this._dictionary.has('Vertices') && !this._isBounds) {
+        if (this._dictionary.has('Vertices') && !this._isBounds && (!this._setAppearance || (this._setAppearance && this.flatten))) {
             const linePoints: number[] = this._dictionary.getArray('Vertices');
             if (linePoints) {
                 points = [];
@@ -6127,6 +6184,7 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
         }
         if (!this._dictionary.has('C')) {
             this.color = [0, 0, 0];
+            this._isTransparentColor = true;
         }
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
@@ -6675,6 +6733,7 @@ export class PdfInkAnnotation extends PdfComment {
         }
         if (!this._dictionary.has('C')) {
             this.color = [0, 0, 0];
+            this._isTransparentColor = true;
         }
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
@@ -7430,12 +7489,7 @@ export class PdfPopupAnnotation extends PdfComment {
                 this._dictionary.set('AP', dictionary);
             }
         }
-        const size: number[] = this._page.size;
-        const rect: number[] = [this.bounds.x,
-            size[1] - (this.bounds.y + this.bounds.height),
-            this.bounds.width,
-            this.bounds.height];
-        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
     }
     _doPostProcess(isFlatten: boolean = false): void {
         if (this._isLoaded) {
@@ -7455,7 +7509,7 @@ export class PdfPopupAnnotation extends PdfComment {
                         if (this.opacity < 1) {
                             this._page.graphics.setTransparency(this.opacity);
                         }
-                        this._page.graphics._drawTemplate(this._appearanceTemplate, this.bounds);
+                        this._page.graphics.drawTemplate(this._appearanceTemplate, this.bounds);
                         this._page.graphics.restore(state);
                     }
                 }
@@ -7523,7 +7577,7 @@ export class PdfPopupAnnotation extends PdfComment {
                         template.graphics._drawPath(path, pen, new PdfBrush([255, 255, 255]));
                         template.graphics.drawArc(2, 2, 11, 8, 108, 12.7, pen1);
                         template.graphics.drawLine(pen, 4, 12, 6.5, 10);
-                        graphics._drawTemplate(template, { x: 0, y: 0, width: this.bounds.width, height: this.bounds.height });
+                        graphics.drawTemplate(template, { x: 0, y: 0, width: this.bounds.width, height: this.bounds.height });
                         graphics.restore();
                     }
                 }
@@ -7724,12 +7778,7 @@ export class PdfFileLinkAnnotation extends PdfAnnotation {
             borderWidth = 1;
         }
         this._addAction();
-        const size: number[] = this._page.size;
-        const rect: number[] = [this.bounds.x,
-            size[1] - (this.bounds.y + this.bounds.height),
-            this.bounds.width,
-            this.bounds.height];
-        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
     }
     _addAction(): void {
         if (this._dictionary.has('A')) {
@@ -7965,12 +8014,7 @@ export class PdfUriAnnotation extends PdfAnnotation {
             borderWidth = 1;
         }
         this._addAction();
-        const size: number[] = this._page.size;
-        const rect: number[] = [this.bounds.x,
-            size[1] - (this.bounds.y + this.bounds.height),
-            this.bounds.width,
-            this.bounds.height];
-        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
     }
     _addAction(): void {
         const dictionary: _PdfDictionary = new _PdfDictionary();
@@ -8136,12 +8180,7 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
             throw new Error('Bounds cannot be null or undefined');
         }
         this._addDocument();
-        const size: number[] = this._page.size;
-        const rect: number[] = [this.bounds.x,
-            size[1] - (this.bounds.y + this.bounds.height),
-            this.bounds.width,
-            this.bounds.height];
-        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
     }
     _obtainDestination(): PdfDestination {
         if (this._dictionary.has('Dest')) {
@@ -8557,9 +8596,7 @@ export class PdfTextWebLinkAnnotation extends PdfAnnotation {
             this._addAction();
             this._isActionAdded = true;
         }
-        const size: number[] = this._page.size;
-        const rect: number[] = [this.bounds.x, size[1] - (this.bounds.y + this.bounds.height), this.bounds.width, this.bounds.height];
-        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
     }
     _addAction(): void {
         const rect: number[] = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
@@ -8757,12 +8794,7 @@ export class PdfAttachmentAnnotation extends PdfComment {
         if (typeof this.bounds === 'undefined' || this.bounds === null) {
             throw new Error('Bounds cannot be null or undefined');
         }
-        const size: number[] = this._page.size;
-        const rect: number[] = [this.bounds.x,
-            size[1] - (this.bounds.y + this.bounds.height),
-            this.bounds.width,
-            this.bounds.height];
-        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
         this._addAttachment();
     }
     _addAttachment(): void {
@@ -9214,6 +9246,9 @@ export class PdfTextMarkupAnnotation extends PdfComment {
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
         }
+        if (!this._dictionary.has('C')) {
+            this._isTransparentColor = true;
+        }
         const size: number[] = this._page.size;
         this._setQuadPoints(size);
         const rect: number[] = [this.bounds.x,
@@ -9503,7 +9538,7 @@ export class PdfTextMarkupAnnotation extends PdfComment {
  * ```
  */
 export class PdfWatermarkAnnotation extends PdfAnnotation {
-    _rotateAngle: PdfRotationAngle;
+    _rotateAngle: number;
     _watermarkText: string = '';
     /**
      * Initializes a new instance of the `PdfWatermarkAnnotation` class.
@@ -9579,12 +9614,7 @@ export class PdfWatermarkAnnotation extends PdfAnnotation {
             this.color = [0, 0, 0];
         }
         this._appearanceTemplate = this._createWatermarkAppearance();
-        const size: number[] = this._page.size;
-        const rect: number[] = [this.bounds.x,
-            size[1] - (this.bounds.y + this.bounds.height),
-            this.bounds.width,
-            this.bounds.height];
-        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
         if (typeof this.opacity !== 'undefined' && this._opacity !== 1.0) {
             this._dictionary.set('CA', this._opacity);
         }
@@ -9764,7 +9794,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
      * // Get the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Get the first annotation of the page
-     * let annotation: PdfRubberStampAnnotationIcon = page.annotations.at(0) as PdfRubberStampAnnotationIcon;
+     * let annotation: PdfRubberStampAnnotation = page.annotations.at(0) as PdfRubberStampAnnotation;
      * // Gets the icon type of the rubber stamp annotation.
      * let icon: PdfRubberStampAnnotationIcon = annotation.icon;
      * // Destroy the document
@@ -9787,7 +9817,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
      * // Get the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Get the first annotation of the page
-     * let annotation: PdfRubberStampAnnotationIcon = page.annotations.at(0) as PdfRubberStampAnnotationIcon;
+     * let annotation: PdfRubberStampAnnotation = page.annotations.at(0) as PdfRubberStampAnnotation;
      * // Sets the icon type of the rubber stamp annotation.
      * annotation.icon = PdfRubberStampAnnotationIcon.completed;
      * // Save the document
@@ -9840,6 +9870,61 @@ export class PdfRubberStampAnnotation extends PdfComment {
         }
         return this._appearance;
     }
+    /**
+     * Create an appearance template for a rubber stamp annotation.
+     *
+     * @returns {PdfTemplate} Returns the appearance template of the annotation.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfRubberStampAnnotation = page.annotations.at(0) as PdfRubberStampAnnotation;
+     * // Gets the appearance template of the annotation.
+     * let template: PdfTemplate = annotation.createTemplate();
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    createTemplate(): PdfTemplate {
+        let template: PdfTemplate;
+        if (this._isLoaded) {
+            if (this._dictionary.has('AP')) {
+                const dictionary: _PdfDictionary = this._dictionary.get('AP');
+                if (dictionary && dictionary.has('N')) {
+                    const appearanceStream: _PdfBaseStream = dictionary.get('N');
+                    if (appearanceStream) {
+                        template = new PdfTemplate();
+                        template._isExported = true;
+                        const templateDictionary: _PdfDictionary = appearanceStream.dictionary;
+                        const matrix: number[] = templateDictionary.getArray('Matrix');
+                        const bounds: number[] = templateDictionary.getArray('BBox');
+                        if (matrix) {
+                            const mMatrix: number[] = [];
+                            for (let i: number = 0; i < matrix.length; i++) {
+                                const value: number = matrix[Number.parseInt(i.toString(), 10)];
+                                mMatrix[Number.parseInt(i.toString(), 10)] = value;
+                            }
+                            if (bounds && bounds.length > 3) {
+                                const rect: { x: number, y: number, width: number, height: number } = _toRectangle(bounds);
+                                const rectangle: number[] = this._transformBBox(rect, mMatrix);
+                                template._size = [rectangle[2], rectangle[3]];
+                            }
+                        } else if (bounds) {
+                            templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
+                        }
+                        template._exportStream(dictionary, this._crossReference);
+                    }
+                }
+            } else {
+                template = this._createRubberStampAppearance();
+            }
+        }
+        return template;
+    }
     get _innerTemplateBounds(): {x: number, y: number, width: number, height: number} {
         let innerBounds: {x: number, y: number, width: number, height: number};
         if (this._isLoaded) {
@@ -9869,6 +9954,9 @@ export class PdfRubberStampAnnotation extends PdfComment {
         }
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
+        }
+        if (!this._dictionary.has('C')) {
+            this._isTransparentColor = true;
         }
         this._appearanceTemplate = this._createRubberStampAppearance();
     }
@@ -10027,7 +10115,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
                 this._dictionary.update('Name', _PdfName.get('#23CustomStamp'));
             }
         } else {
-            this._iconString = this._obtainIconName(this._icon);
+            this._iconString = this._obtainIconName(this.icon);
             this._dictionary.update('Name', _PdfName.get('#23' + this._iconString));
             appearance = new PdfAppearance(this, nativeRectangle);
             appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
@@ -10056,10 +10144,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
         dictionary._updated = true;
         this._dictionary.set('AP', dictionary);
         this._dictionary.set('Border', [this.border.hRadius, this.border.vRadius, this.border.width]);
-        const size: number[] = this._page.size;
-        const rectangle: number[] = [this.bounds.x, this.bounds.y + this.bounds.height, this.bounds.width, this.bounds.height];
-        rectangle[1] = size[1] - (this.bounds.y + this.bounds.height);
-        this._dictionary.set('Rect', [rectangle[0], rectangle[1], rectangle[0] + rectangle[2], rectangle[1] + rectangle[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
         return template;
     }
     _drawStampAppearance(template: PdfTemplate): void {
@@ -10788,17 +10873,15 @@ export class PdfFreeTextAnnotation extends PdfComment {
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
         }
+        if (!this._dictionary.has('C')) {
+            this._isTransparentColor = true;
+        }
         this._updateCropBoxValues();
         if (isFlatten || this._setAppearance) {
             this._appearanceTemplate = this._createAppearance();
         }
         if (!isFlatten) {
-            const size: number[] = this._page.size;
-            const rect: number[] = [this.bounds.x,
-                size[1] - (this.bounds.y + this.bounds.height),
-                this.bounds.width,
-                this.bounds.height];
-            this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+            this._dictionary.update('Rect', _updateBounds(this));
             this._saveFreeTextDictionary();
         }
     }
@@ -10921,7 +11004,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
                                 }
                                 pointF.x -= box[0];
                                 pointF.y += box[1];
-                                graphics._drawTemplate(appearanceTemplate, pointF);
+                                graphics.drawTemplate(appearanceTemplate, pointF);
                                 graphics.restore(state);
                                 this._removeAnnotationFromPage(this._page, this);
                                 isValidMatrix = false;
@@ -11817,12 +11900,7 @@ export class PdfRedactionAnnotation extends PdfAnnotation {
         if (this._setAppearance) {
             this._appearanceTemplate = this._createRedactionAppearance(isFlatten);
         }
-        const size: number[] = this._page.size;
-        const rect: number[] = [this.bounds.x,
-            size[1] - (this.bounds.y + this.bounds.height),
-            this.bounds.width,
-            this.bounds.height];
-        this._dictionary.update('Rect', [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]]);
+        this._dictionary.update('Rect', _updateBounds(this));
     }
     _doPostProcess(isFlatten: boolean = false): void {
         if (!this._isImported) {
@@ -12459,7 +12537,11 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
             throw new Error('Cannot set empty bounds');
         }
         this._bounds = value;
-        this._dictionary.update('Rect', _getUpdatedBounds([value.x, value.y, value.width, value.height], this._getPage()));
+        if (this._page && this._page._isNew && this._page._pageSettings) {
+            this._dictionary.update('Rect', _updateBounds(this));
+        } else {
+            this._dictionary.update('Rect', _getUpdatedBounds([value.x, value.y, value.width, value.height], this._getPage()));
+        }
     }
     /**
      * Gets the text alignment of the annotation.
@@ -12757,7 +12839,7 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
                             graphics.rotateTransform(270);
                         }
                         bounds = {x: this.bounds.x, y: this.bounds.y, width: template._size[0], height: template._size[1]};
-                        graphics._drawTemplate(template, bounds);
+                        graphics.drawTemplate(template, bounds);
                         graphics.restore();
                     }
                 } else {
@@ -12860,7 +12942,7 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
         return this._page;
     }
     _beginSave(): void {
-        if (!this._isLoaded) {
+        if (!this._isLoaded && !this._page._isNew) {
             const value: {x: number, y: number, width: number, height: number} = this._bounds;
             this._dictionary.update('Rect', _getUpdatedBounds([value.x, value.y, value.width, value.height], this._page));
         }
@@ -13086,7 +13168,7 @@ export class PdfStateItem extends PdfWidgetAnnotation {
                     graphics.rotateTransform(270);
                 }
                 graphics._sw._setTextRenderingMode(_TextRenderingMode.fill);
-                graphics._drawTemplate(template, this.bounds);
+                graphics.drawTemplate(template, this.bounds);
                 graphics.restore();
             }
         }

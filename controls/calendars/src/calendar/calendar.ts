@@ -33,7 +33,7 @@ const DEVICE: string = 'e-device';
 const HEADER: string = 'e-header';
 const RTL: string = 'e-rtl';
 const CONTENT: string = 'e-content';
-const CONTENTTABLE: string = 'e-calandar-content-table';
+const CONTENTTABLE: string = 'e-calendar-content-table';
 const YEAR: string = 'e-year';
 const MONTH: string = 'e-month';
 const DECADE: string = 'e-decade';
@@ -1545,8 +1545,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      */
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
-        if (this) {
-            modules.push({ args: [this], member: 'islamic' });
+        if (this.calendarMode === 'Islamic') {
+            modules.push({ args: [this], member: 'islamic', name: 'Islamic' });
         }
 
         return modules;

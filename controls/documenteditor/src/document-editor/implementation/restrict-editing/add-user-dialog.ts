@@ -141,16 +141,25 @@ export class AddUserDialog {
      */
     public addButtonClick = (): void => {
         if (this.validateUserName(this.textBoxInput.value)) {
-            if (this.documentHelper.userCollection.indexOf(this.textBoxInput.value) === -1) {
-                this.documentHelper.userCollection.push(this.textBoxInput.value);
-            }
-            this.userList.dataSource = this.documentHelper.userCollection.slice();
-            this.userList.dataBind();
+            this.bindListData(this.textBoxInput.value);
             this.textBoxInput.value = '';
         } else {
             DialogUtility.alert('Invalid user name');
         }
     };
+    /**
+     * @private
+     * @returns {void}
+     */
+    public bindListData(data: string): void {
+        if (this.documentHelper.userCollection.indexOf(data) === -1) {
+            this.documentHelper.userCollection.push(data);
+        }
+        if (this.userList) {
+            this.userList.dataSource = this.documentHelper.userCollection.slice();
+            this.userList.dataBind();
+        }
+    }
 
     public validateUserName(value: string): boolean {
         if (value.indexOf('@') === -1) {

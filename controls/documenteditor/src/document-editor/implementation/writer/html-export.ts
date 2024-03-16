@@ -4,7 +4,7 @@ import { CellVerticalAlignment, LineStyle } from '../../base/types';
 import { WCharacterFormat } from '../format/character-format';
 import { WParagraphFormat } from '../format/paragraph-format';
 import { HelperMethods } from '../editor/editor-helper';
-import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty, characterSpacingProperty, scalingProperty, DocumentEditor,imagesProperty, Dictionary, isMetaFileProperty} from '../../index';
+import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty, characterSpacingProperty, scalingProperty, DocumentEditor,imagesProperty, Dictionary, isMetaFileProperty, isCreatedUsingHtmlSpanTagProperty} from '../../index';
 
 /**
  * @private
@@ -122,7 +122,9 @@ export class HtmlExport {
         } else {
             blockStyle += this.endTag(this.getStyleName(paragraph[paragraphFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]]));
         }
-
+        if (paragraph[isCreatedUsingHtmlSpanTagProperty[this.keywordIndex]]) {
+            blockStyle += '<p class="iscreatedusinghtmlspantag"><span>iscreatedusinghtmlspantag</span></p>';
+        }
         return blockStyle;
     }
     private closeList(): string {

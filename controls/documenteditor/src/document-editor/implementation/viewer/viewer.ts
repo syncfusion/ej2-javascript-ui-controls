@@ -43,6 +43,7 @@ import { TrackChangesPane } from '../track-changes/track-changes-pane';
 import { Themes } from '../themes/themes';
 import { beforeAutoResize, internalAutoResize } from '../../base/constants';
 import { incrementalOps } from '../../base/index';
+import { ColorPicker } from '@syncfusion/ej2-inputs';
 /**
  * @private
  */
@@ -51,6 +52,34 @@ export class DocumentHelper {
      * @private
      */
     public isCompleted: boolean = true;
+    /**
+     * @private
+     */
+    public fontColorInputElement: ColorPicker;
+    /**
+     * @private
+     */
+    public shadingBtn: ColorPicker;
+    /**
+     * @private
+     */
+    public borderBtn: ColorPicker;
+    /**
+     * @private
+     */
+    public fontColor: ColorPicker;
+    /**
+     * @private
+     */
+    public colorPicker: ColorPicker;
+    /**
+     * @private
+     */
+    public borderColorPicker: ColorPicker;
+    /**
+     * @private
+     */
+    public shadingColorPicker: ColorPicker;
     /**
      * @private
      */
@@ -143,6 +172,10 @@ export class DocumentHelper {
      * @private
      */
     public preDifference: number = -1;
+    /**
+     * @private
+     */
+    public isDragging: boolean = false;
     /**
      * @private
      */
@@ -604,6 +637,7 @@ export class DocumentHelper {
     private L10n: L10n;
 
     private isAutoResizeCanStart: boolean = false;
+    private isRestartNumbering: boolean = false;
 
     /**
      * Gets visible bounds.
@@ -700,7 +734,7 @@ export class DocumentHelper {
             paragraph.containerWidget = bodyWidget;
             bodyWidget.childWidgets.push(paragraph);
         }
-        this.onDocumentChanged([bodyWidget],{});
+        this.onDocumentChanged([bodyWidget]);
         this.layout.isTextFormat = false;
     }
     /**
@@ -774,7 +808,7 @@ export class DocumentHelper {
      * @returns {Selection} - Returns selection module.
      */
     public get selection(): Selection {
-        return this.owner.selection;
+        return this.owner.selectionModule;
     }
     /**
      * Gets or sets selection start page.
@@ -931,6 +965,9 @@ export class DocumentHelper {
         this.preDefinedStyles.add('Heading 4', '{"type":"Paragraph","name":"Heading 4","basedOn":"Normal","next":"Normal","link":"Heading 4 Char","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level4"}}');
         this.preDefinedStyles.add('Heading 5', '{"type":"Paragraph","name":"Heading 5","basedOn":"Normal","next":"Normal","link":"Heading 5 Char","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level5"}}');
         this.preDefinedStyles.add('Heading 6', '{"type":"Paragraph","name":"Heading 6","basedOn":"Normal","next":"Normal","link":"Heading 6 Char","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level6"}}');
+        this.preDefinedStyles.add('Heading 7', '{"type":"Paragraph","name":"Heading 7","basedOn":"Normal","next":"Normal","link":"Heading 7 Char","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#1F3763"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level7"}}');
+        this.preDefinedStyles.add('Heading 8', '{"type":"Paragraph","name":"Heading 8","basedOn":"Normal","next":"Normal","link":"Heading 8 Char","characterFormat":{"fontSize":10.5,"fontFamily":"Calibri Light","fontColor":"#333333"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level8"}}');
+        this.preDefinedStyles.add('Heading 9', '{"type":"Paragraph","name":"Heading 9","basedOn":"Normal","next":"Normal","link":"Heading 9 Char","characterFormat":{"fontSize":10.5,"italic":true,"fontFamily":"Calibri Light","fontColor":"#333333"},"paragraphFormat":{"leftIndent":0.0,"rightIndent":0.0,"firstLineIndent":0.0,"beforeSpacing":2.0,"afterSpacing":0.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left","outlineLevel":"Level9"}}');
         this.preDefinedStyles.add('Default Paragraph Font', '{"type":"Character","name":"Default Paragraph Font"}');
         this.preDefinedStyles.add('Heading 1 Char', '{"type":"Character","name":"Heading 1 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontSize":16.0,"fontFamily":"Calibri Light","fontColor":"#2F5496"}}');
         this.preDefinedStyles.add('Heading 2 Char', '{"type":"Character","name":"Heading 2 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontSize":13.0,"fontFamily":"Calibri Light","fontColor":"#2F5496"}}');
@@ -938,6 +975,9 @@ export class DocumentHelper {
         this.preDefinedStyles.add('Heading 4 Char', '{"type":"Character","name":"Heading 4 Char","basedOn":"Default Paragraph Font","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"}}');
         this.preDefinedStyles.add('Heading 5 Char', '{"type":"Character","name":"Heading 5 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"}}');
         this.preDefinedStyles.add('Heading 6 Char', '{"type":"Character","name":"Heading 6 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"}}');
+        this.preDefinedStyles.add('Heading 7 Char', '{"type":"Character","name":"Heading 7 Char","basedOn":"Default Paragraph Font","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#1F3763"}}');
+        this.preDefinedStyles.add('Heading 8 Char', '{"type":"Character","name":"Heading 8 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontSize":10.5,"fontFamily":"Calibri Light","fontColor":"#333333"}}');
+        this.preDefinedStyles.add('Heading 9 Char', '{"type":"Character","name":"Heading 9 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontSize":10.5,"italic":true,"fontFamily":"Calibri Light","fontColor":"#333333"}}');
         this.preDefinedStyles.add('Hyperlink', '{"type":"Character","name":"Hyperlink","basedOn":"Default Paragraph Font","next":"Normal","characterFormat":{"fontColor":"#0563C1","underline": "Single"}}');
         this.preDefinedStyles.add('TOC 1', '{"type":"Paragraph","name":"TOC 1","basedOn":"Normal","next":"Normal","paragraphFormat":{"afterSpacing":5.0}}');
         this.preDefinedStyles.add('TOC 2', '{"type":"Paragraph","name":"TOC 2","basedOn":"Normal","next":"Normal","paragraphFormat":{"leftIndent" :11.0,"afterSpacing":5.0}}');
@@ -956,14 +996,14 @@ export class DocumentHelper {
      * @returns {void}
      */
     public clearDocumentItems(): void {
-        if (this.owner.editor) {
-            this.owner.editor.clear();
+        if (this.owner.editorModule) {
+            this.owner.editorModule.clear();
         }
-        if(this.owner.search) {
-            this.owner.search.clearSearchHighlight();
+        if(this.owner.searchModule) {
+            this.owner.searchModule.clearSearchHighlight();
         }
-        if (this.owner.selection) {
-            this.owner.selection.clear();
+        if (this.owner.selectionModule) {
+            this.owner.selectionModule.clear();
         }
         this.editRanges.clear();
         this.headersFooters = [];
@@ -1032,6 +1072,7 @@ export class DocumentHelper {
         this.abstractLists = [];
         this.themes = new Themes();
         this.hasThemes = false;
+        this.isRestartNumbering = false;
     }
     /**
      * @private
@@ -1197,11 +1238,11 @@ export class DocumentHelper {
         return bookmarks;
     }
     public selectComment(comment: CommentElementBox): void {
-        if (this.owner.selection && this.owner.commentReviewPane) {
+        if (this.owner.selectionModule && this.owner.commentReviewPane) {
             this.owner.showComments = true;
             setTimeout(() => {
-                if (this.owner && this.owner.selection) {
-                    this.owner.selection.selectComment(comment);
+                if (this.owner && this.owner.selectionModule) {
+                    this.owner.selectionModule.selectComment(comment);
                 }
             });
         }
@@ -1344,7 +1385,7 @@ export class DocumentHelper {
      * @returns {void}
      */
     private wireEvent(): void {
-        if (!isNullOrUndefined(this.selection)) {
+        if (!isNullOrUndefined(this.owner.selectionModule)) {
             this.selection.initCaret();
         }
         this.wireInputEvents();
@@ -1407,7 +1448,7 @@ export class DocumentHelper {
         if (!this.isComposingIME) {
             event.preventDefault();
             const text: string = event.data;
-            this.owner.editor.handleTextInput(text);
+            this.owner.editorModule.handleTextInput(text);
         }
     };
     //#region Composition Event
@@ -1421,8 +1462,8 @@ export class DocumentHelper {
         if (!Browser.isDevice && !this.owner.isReadOnlyMode) {
             this.isComposingIME = true;
             this.positionEditableTarget();
-            if (this.owner.editorHistory) {
-                this.owner.editor.initComplexHistory('IMEInput');
+            if (this.owner.editorHistoryModule) {
+                this.owner.editorModule.initComplexHistory('IMEInput');
             }
         }
         this.isCompositionStart = true;
@@ -1436,7 +1477,7 @@ export class DocumentHelper {
     private compositionUpdated = (): void => {
         if (this.isComposingIME && !this.owner.isReadOnlyMode) {
             setTimeout(() => {
-                this.owner.editor.insertIMEText(this.getEditableDivTextContent(), true);
+                this.owner.editorModule.insertIMEText(this.getEditableDivTextContent(), true);
             }, 0);
         }
         this.isCompositionUpdated = true;
@@ -1452,25 +1493,25 @@ export class DocumentHelper {
         if (this.isComposingIME && !this.owner.isReadOnlyMode) {
             const text: string = this.getEditableDivTextContent();
             if (text !== '') {
-                this.owner.editor.insertIMEText(text, false);
+                this.owner.editorModule.insertIMEText(text, false);
             }
             this.isComposingIME = false;
             this.lastComposedText = '';
             this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + this.owner.viewer.containerLeft + 'px;top:' + this.owner.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
             this.editableDiv.innerHTML = '';
-            if (this.owner.editorHistory) {
+            if (this.owner.editorHistoryModule) {
                 if (text !== '') {
-                    this.owner.editor.isSkipOperationsBuild = true;
+                    this.owner.editorModule.isSkipOperationsBuild = true;
                 }
-                this.owner.editorHistory.updateComplexHistory();
+                this.owner.editorHistoryModule.updateComplexHistory();
                 if (text === '') {
                     //When the composition in live. The Undo operation will terminate the composition and empty text will be return from text box.
                     //At that time the the history should be updated. Undo the operation and clear the redo stack. This undo operation will not be saved for redo operation.
-                    this.owner.editor.isSkipOperationsBuild = true;
-                    this.owner.editorHistory.undo();
-                    this.owner.editorHistory.redoStack.pop();
+                    this.owner.editorModule.isSkipOperationsBuild = true;
+                    this.owner.editorHistoryModule.undo();
+                    this.owner.editorHistoryModule.redoStack.pop();
                 }
-                this.owner.editor.isSkipOperationsBuild = false;
+                this.owner.editorModule.isSkipOperationsBuild = false;
             }
         }
         event.preventDefault();
@@ -1652,7 +1693,7 @@ export class DocumentHelper {
      * @returns {void}
      */
     public onPaste = (event: ClipboardEvent): void => {
-        if ((!this.owner.isReadOnlyMode && this.owner.editor.canEditContentControl) || this.selection.isInlineFormFillMode()) {
+        if ((!this.owner.isReadOnlyMode && this.owner.editorModule.canEditContentControl) || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.pasteInternal(event);
         }
         this.editableDiv.innerText = '';
@@ -1744,7 +1785,7 @@ export class DocumentHelper {
      * @returns {void}
      */
     public updateFocus = (): void => {
-        if (this.owner.enableCollaborativeEditing && this.owner.editor.isRemoteAction) {
+        if (this.owner.enableCollaborativeEditing && this.owner.editorModule.isRemoteAction) {
             return;
         }
         if (!isNullOrUndefined(this.currentSelectedComment) && !this.owner.commentReviewPane.commentPane.isEditMode) {
@@ -1859,40 +1900,43 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.renderedLevelOverrides)) {
             this.renderedLevelOverrides = [];
         }
-        if (!isNullOrUndefined(this.owner.editorHistory)) {
-            this.owner.editorHistory.destroy();
+        if (!isNullOrUndefined(this.owner.editorHistoryModule)) {
+            this.owner.editorHistoryModule.destroy();
         }
         this.owner.isDocumentLoaded = true;
         this.layout.isInitialLoad = true;
         this.layout.footHeight = 0;
         this.layout.footnoteHeight = 0;
         this.layout.layoutItems(sections, false);
-        if (this.owner.selection) {
+        if (this.owner.selectionModule) {
             this.selection.previousSelectedFormField = undefined;
             if (this.formFields.length > 0) {
-                this.owner.selection.highlightFormFields();
+                this.owner.selectionModule.highlightFormFields();
             }
-            this.owner.selection.editRangeCollection = [];
-            this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
+            this.owner.selectionModule.editRangeCollection = [];
+            this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
             if(this.isDocumentProtected && this.protectionType == 'FormFieldsOnly'){
-                this.owner.selection.navigateToNextFormField();
+                this.owner.selectionModule.navigateToNextFormField();
             }
             if (this.isDocumentProtected) {
                 this.restrictEditingPane.showHideRestrictPane(true);
             }
         }
+        if(!isNullOrUndefined(iOps) && this.owner.editorModule) {
+            this.owner.editorModule.intializeDefaultStyles();
+        }
         if (this.owner.enableCollaborativeEditing && this.owner.collaborativeEditingHandlerModule && this.owner.enableEditor) {
-            this.owner.editor.isRemoteAction = true;
-            this.owner.editor.isIncrementalSave = true;
+            this.owner.editorModule.isRemoteAction = true;
+            this.owner.editorModule.isIncrementalSave = true;
             if (iOps && !isNullOrUndefined(iOps[incrementalOps[0]]) 
             && !isNullOrUndefined(iOps[incrementalOps[0]].length > 0)) {
                 for (let k: number = 0; k < iOps[incrementalOps[0]].length; k++) {
                     this.owner.collaborativeEditingHandlerModule.applyRemoteAction('action', iOps[incrementalOps[0]][k]);
                 }
             }
-            this.owner.editor.isRemoteAction = false;
-            this.owner.editor.isIncrementalSave = false;
-            this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
+            this.owner.editorModule.isRemoteAction = false;
+            this.owner.editorModule.isIncrementalSave = false;
+            this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
         }
         if (this.owner.optionsPaneModule) {
             this.owner.optionsPaneModule.showHideOptionsPane(false);
@@ -1900,11 +1944,12 @@ export class DocumentHelper {
         if (this.restrictEditingPane.restrictPane && !this.isDocumentProtected) {
             this.restrictEditingPane.showHideRestrictPane(false);
         }
-        if (!isNullOrUndefined(this.owner.selection) && this.owner.selection.isViewPasteOptions) {
-            this.owner.selection.isViewPasteOptions = false;
-            this.owner.selection.showHidePasteOptions(undefined, undefined);
+        if (!isNullOrUndefined(this.owner.selectionModule) && this.owner.selectionModule.isViewPasteOptions) {
+            this.owner.selectionModule.isViewPasteOptions = false;
+            this.owner.selectionModule.showHidePasteOptions(undefined, undefined);
         }
         this.owner.fireDocumentChange();
+        this.owner.showHideRulers();
         setTimeout((): void => {
             if (!isNullOrUndefined(this.owner) && this.owner.showRevisions) {
                 this.showRevisions(true);
@@ -1976,6 +2021,9 @@ export class DocumentHelper {
                 this.updateViewerSize();
                 if (this.owner.rulerHelper && this.owner.documentEditorSettings && this.owner.documentEditorSettings.showRuler) {
                     this.owner.rulerHelper.updateRuler(this.owner, true);
+                }
+                if (this.owner.enableCollaborativeEditing && this.owner.collaborativeEditingHandlerModule) {
+                    this.owner.collaborativeEditingHandlerModule.updateCaretPosition();
                 }
                 this.clearContent();
                 this.owner.viewer.updateScrollBars();
@@ -2073,7 +2121,7 @@ export class DocumentHelper {
             }
             if (this.isLeftButtonPressed(event) && !this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !isNullOrUndefined(this.owner.imageResizerModule.selectedResizeElement)) {
                 if (this.selection.isInShape) {
-                    const textFram: TextFrame = this.owner.selection.getCurrentTextFrame();
+                    const textFram: TextFrame = this.owner.selectionModule.getCurrentTextFrame();
                     const shape: ShapeElementBox = textFram.containerShape as ShapeElementBox;
                     this.selection.selectShape(shape);
                 }
@@ -2104,17 +2152,17 @@ export class DocumentHelper {
             if (event.ctrlKey) {
                 this.isControlPressed = true;
             }
-            if (this.owner.selection.isEmpty) {
+            if (this.owner.selectionModule.isEmpty) {
                 this.useTouchSelectionMark = false;
             }
             const widget: IWidget = this.getLineWidget(touchPoint);
-            if (event.which === 3 && !this.owner.selection.isEmpty
+            if (event.which === 3 && !this.owner.selectionModule.isEmpty
                 && this.selection.checkCursorIsInSelection(widget, touchPoint)) {
                 event.preventDefault();
                 return;
             }
             if (this.owner && this.owner.documentEditorSettings && this.owner.documentEditorSettings.allowDragAndDrop &&
-                !this.owner.selection.isEmpty
+                !this.owner.selectionModule.isEmpty
                 && this.selection.checkCursorIsInSelection(widget, touchPoint)) {
                 this.isMouseDownInSelection = true;
             }
@@ -2174,8 +2222,8 @@ export class DocumentHelper {
                         if ((!this.isDragStarted
                             && this.isMouseDownInSelection
                             && this.isLeftButtonPressed(event)
-                            && !this.owner.selection.isEmpty
-                            && this.selection.checkCursorIsInSelection(widget, touchPoint)) || (!this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !this.isDragStarted && this.isLeftButtonPressed(event) && !this.owner.selection.isEmpty && !isNullOrUndefined(widget) && this.owner.imageResizerModule.selectedImageWidget.containsKey(widget) && !this.owner.imageResizerModule.isImageResizing)) {
+                            && !this.owner.selectionModule.isEmpty
+                            && this.selection.checkCursorIsInSelection(widget, touchPoint)) || (!this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !this.isDragStarted && this.isLeftButtonPressed(event) && !this.owner.selectionModule.isEmpty && !isNullOrUndefined(widget) && this.owner.imageResizerModule.selectedImageWidget.containsKey(widget) && !this.owner.imageResizerModule.isImageResizing)) {
                             this.isDragStarted = true;
                             this.isMouseDownInSelection = false;
                             if (this.selection.isForward) {
@@ -2194,12 +2242,12 @@ export class DocumentHelper {
                         if (this.isLeftButtonPressed(event) && !this.isDragStarted) {
                             event.preventDefault();
                             const touchY: number = yPosition;
-                            const textPosition: TextPosition = this.owner.selection.end;
+                            const textPosition: TextPosition = this.owner.selectionModule.end;
                             const touchPoint: Point = new Point(xPosition, touchY);
                             if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
                                 || this.owner.imageResizerModule.isShapeResize) {
                                 this.isCompleted = false;
-                                this.owner.selection.moveTextPosition(touchPoint, textPosition);
+                                this.owner.selectionModule.moveTextPosition(touchPoint, textPosition);
                             }
                             this.isSelectionChangedOnMouseMoved = true;
                         }
@@ -2284,11 +2332,11 @@ export class DocumentHelper {
         if (this.viewerContainer) {
             this.viewerContainer.scrollTop = this.viewerContainer.scrollTop + 200;
             const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
-            const textPosition: TextPosition = this.owner.selection.end;
+            const textPosition: TextPosition = this.owner.selectionModule.end;
             if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
                 || this.owner.imageResizerModule.isShapeResize) {
                 this.skipScrollToPosition = true;
-                this.owner.selection.moveTextPosition(touchPoint, textPosition, true);
+                this.owner.selectionModule.moveTextPosition(touchPoint, textPosition, true);
             }
         }
     }
@@ -2296,11 +2344,11 @@ export class DocumentHelper {
     private scrollBackwardOnSelection(cursorPoint: Point): void {
         this.viewerContainer.scrollTop = this.viewerContainer.scrollTop - 200;
         const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
-        const textPosition: TextPosition = this.owner.selection.end;
+        const textPosition: TextPosition = this.owner.selectionModule.end;
         if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
             || this.owner.imageResizerModule.isShapeResize) {
             this.skipScrollToPosition = true;
-            this.owner.selection.moveTextPosition(touchPoint, textPosition, true);
+            this.owner.selectionModule.moveTextPosition(touchPoint, textPosition, true);
         }
     }
     /**
@@ -2413,8 +2461,8 @@ export class DocumentHelper {
                     }
                 }
             }
-            if (this.selection.isEmpty && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
-                this.owner.selection.selectCurrentWord();
+            if (this.selection.isEmpty && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selectionModule.start)) {
+                this.owner.selectionModule.selectCurrentWord();
                 this.selection.checkForCursorVisibility();
                 this.tapCount = 2;
             }
@@ -2449,14 +2497,14 @@ export class DocumentHelper {
                 this.owner.editorModule.tableResize.updateResizingHistory(touchPoint);
             }
             if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved
-                && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)
+                && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selectionModule.start)
                 && (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizing)) {
                 if (this.touchDownOnSelectionMark === 0 && !this.isRowOrCellResizing) {
                     let isShiftKeyPressed: boolean = event.shiftKey;
                     if(isShiftKeyPressed)
                     {
-                        const textPosition: TextPosition = this.owner.selection.end;
-                        this.owner.selection.moveTextPosition(touchPoint,textPosition); 
+                        const textPosition: TextPosition = this.owner.selectionModule.end;
+                        this.owner.selectionModule.moveTextPosition(touchPoint,textPosition); 
                     }
                     else
                     {
@@ -2473,8 +2521,8 @@ export class DocumentHelper {
                 }
             }
             let isCtrlkeyPressed: boolean = this.isIosDevice ? event.metaKey : event.ctrlKey;
-            if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)
-                && (this.owner.selection.isEmpty || this.owner.selection.isImageSelected) &&
+            if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selectionModule.start)
+                && (this.owner.selectionModule.isEmpty || this.owner.selectionModule.isImageSelected) &&
                 (((isCtrlkeyPressed && this.owner.useCtrlClickToFollowHyperlink ||
                     !this.owner.useCtrlClickToFollowHyperlink) && this.isLeftButtonPressed(event) === true))) {
                 this.selection.navigateHyperLinkOnEvent(touchPoint, false);
@@ -2507,7 +2555,7 @@ export class DocumentHelper {
                             || formField.formFieldData instanceof DropDownFormField) {
                             this.formFillPopup.showPopUp(formField);
                         } else {
-                            this.owner.editor.toggleCheckBoxFormField(formField);
+                            this.owner.editorModule.toggleCheckBoxFormField(formField);
                             data.value = (formField.formFieldData as CheckBoxFormField).checked;
                             data.isCanceled = false;
                             this.owner.trigger(afterFormFieldFillEvent, data);
@@ -2537,14 +2585,16 @@ export class DocumentHelper {
             }
             if (!this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizing) {
                 this.owner.imageResizerModule.mouseUpInternal();
-                this.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
+                this.scrollToPosition(this.owner.selectionModule.start, this.owner.selectionModule.end);
                 this.owner.imageResizerModule.isImageResizing = false;
             }
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !isNullOrUndefined(this.selection.caret)) {
                 this.selection.caret.style.display = 'none';
             }
             if (this.isDragStarted) {
+                this.isDragging = true;
                 this.moveSelectedContent();
+                this.isDragging = false;
             }
             if(this.isMouseDown) {
                 this.updateFocus();
@@ -2586,7 +2636,7 @@ export class DocumentHelper {
         let dragOnSelectionEndPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(dragOnSelectionEndParaIndex);
         if (dropSelectionStartPos.isExistBefore(dragOnSelectionStartPos)
             || dropSelectionEndPos.isExistAfter(dragOnSelectionEndPos)) {
-            this.owner.editor.initComplexHistory('DragAndDropContent');
+            this.owner.editorModule.initComplexHistory('DragAndDropContent');
             this.selection.start = dragOnSelectionStartPos;
             this.selection.end = dragOnSelectionEndPos;
             let isEnableLocalPasteTrue: boolean = this.owner.enableLocalPaste;
@@ -2599,7 +2649,7 @@ export class DocumentHelper {
                 || !this.dragStartParaInfo.paragraph.equals(this.dragEndParaInfo.paragraph)) {
                 hasNewLineChar = true;
             }
-            this.owner.editor.cut();
+            this.owner.editorModule.cut();
             if (this.dragEndParaInfo.paragraph.equals(dropSelectionStartParaInfo.paragraph)
                 && this.dragEndParaInfo.offset < dropSelectionStartParaInfo.offset
                 && !this.owner.enableTrackChanges) {
@@ -2617,14 +2667,14 @@ export class DocumentHelper {
             dropSelectionEndPos = this.selection.getTextPosBasedOnLogicalIndex(dropSelectionEndParaIndex);
             this.selection.start = dropSelectionStartPos;
             this.selection.end = dropSelectionEndPos;
-            this.owner.editor.copiedTextContent = '';
-            this.owner.editor.paste();
+            this.owner.editorModule.copiedTextContent = '';
+            this.owner.editorModule.paste();
             if (!isEnableLocalPasteTrue) {
                 this.owner.enableLocalPaste = false;
             }
-            this.owner.editorHistory.updateComplexHistory();
+            this.owner.editorHistoryModule.updateComplexHistory();
         } else {
-            this.owner.selection.selectPosition(dragOnSelectionStartPos, dragOnSelectionEndPos);
+            this.owner.selectionModule.selectPosition(dragOnSelectionStartPos, dragOnSelectionEndPos);
         }
         this.dragStartParaInfo = undefined;
         this.dragEndParaInfo = undefined;
@@ -2736,7 +2786,7 @@ export class DocumentHelper {
             if ((event as TouchEvent).touches.length === 1) {
                 this.zoomX = (event as TouchEvent).touches[0].clientX;
                 this.zoomY = (event as TouchEvent).touches[0].clientY;
-                if (this.owner.selection.isEmpty) {
+                if (this.owner.selectionModule.isEmpty) {
                     this.useTouchSelectionMark = false;
                 }
                 this.isMouseDown = true;
@@ -2756,14 +2806,14 @@ export class DocumentHelper {
                 if (Browser.isDevice) {
                     this.editableDiv.contentEditable = this.owner.isReadOnlyMode ? 'false' : 'true';
                 }
-                let x: number = this.owner.selection.end.location.x;
-                let y: number = this.selection.getCaretBottom(this.owner.selection.end, this.owner.selection.isEmpty) + 9;
+                let x: number = this.owner.selectionModule.end.location.x;
+                let y: number = this.selection.getCaretBottom(this.owner.selectionModule.end, this.owner.selectionModule.isEmpty) + 9;
                 //TouchDownOnSelectionMark will be 2 when touch end is pressed
                 this.touchDownOnSelectionMark = ((point.y <= y && point.y >= y - 20 || point.y >= y && point.y <= y + 20)
                     && (point.x <= x && point.x >= x - 20 || point.x >= x && point.x <= x + 20)) ? 1 : 0;
-                if (!this.owner.selection.isEmpty && this.touchDownOnSelectionMark === 0) {
-                    x = this.owner.selection.start.location.x;
-                    y = this.selection.getCaretBottom(this.owner.selection.start, false) + 9;
+                if (!this.owner.selectionModule.isEmpty && this.touchDownOnSelectionMark === 0) {
+                    x = this.owner.selectionModule.start.location.x;
+                    y = this.selection.getCaretBottom(this.owner.selectionModule.start, false) + 9;
                     //TouchDownOnSelectionMark will be 1 when touch start is pressed
                     this.touchDownOnSelectionMark = ((point.y <= y && point.y >= y - 20 || point.y >= y && point.y <= y + 20)
                         && (point.x <= x && point.x >= x - 20 || point.x >= x && point.x <= x + 20)) ? 2 : 0;
@@ -2851,7 +2901,7 @@ export class DocumentHelper {
                     this.isCompleted = false;
                     event.preventDefault();
                     let touchY: number = touchPoint.y;
-                    let textPosition: TextPosition = this.owner.selection.end;
+                    let textPosition: TextPosition = this.owner.selectionModule.end;
                     let touchPointer: Point;
                     if (touchPoint.y <= 26) {
                         touchY -= touchPoint.y < 0 ? 0 : touchPoint.y + 0.5;
@@ -2860,7 +2910,7 @@ export class DocumentHelper {
                     }
                     textPosition = this.touchDownOnSelectionMark === 2 ? this.selection.start : this.selection.end;
                     touchPoint = new Point(touchPoint.x, touchY);
-                    this.owner.selection.moveTextPosition(touchPoint, textPosition);
+                    this.owner.selectionModule.moveTextPosition(touchPoint, textPosition);
                     this.isSelectionChangedOnMouseMoved = true;
                 }
                 this.selection.checkForCursorVisibility();
@@ -2932,7 +2982,7 @@ export class DocumentHelper {
                 this.owner.imageResizerModule.mouseUpInternal();
                 this.owner.imageResizerModule.isImageResizing = false;
                 this.owner.imageResizerModule.isImageMoveToNextPage = false;
-                this.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
+                this.scrollToPosition(this.owner.selectionModule.start, this.owner.selectionModule.end);
             }
 
             if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && this.isTouchInput) {
@@ -2962,7 +3012,7 @@ export class DocumentHelper {
     private updateSelectionOnTouch(point: Point, touchPoint: Point): void {
         this.zoomX = undefined;
         this.zoomY = undefined;
-        if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
+        if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selectionModule.start)) {
             if (!isNullOrUndefined(this.currentSelectedComment) && this.owner.commentReviewPane
                 && !this.owner.commentReviewPane.commentPane.isEditMode) {
                 this.currentSelectedComment = undefined;
@@ -2973,7 +3023,7 @@ export class DocumentHelper {
                     this.selection.checkAndEnableHeaderFooter(point, touchPoint);
                 }
             }
-            if (this.owner.selection.isEmpty) {
+            if (this.owner.selectionModule.isEmpty) {
                 this.selection.updateCaretPosition();
             }
             this.selection.checkForCursorVisibility();
@@ -3249,17 +3299,17 @@ export class DocumentHelper {
                 return;
             }
             //Double tap/triple tap selection
-            if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
+            if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selectionModule.start)) {
                 if (tapCount % 2 === 0) {
-                    this.owner.selection.selectCurrentWord();
+                    this.owner.selectionModule.selectCurrentWord();
                 } else if (!this.isDragStarted) {
-                    this.owner.selection.selectParagraph();
+                    this.owner.selectionModule.selectParagraph();
                 }
             }
         }
     }
     public scrollToPosition(startPosition: TextPosition, endPosition: TextPosition, skipCursorUpdate?: boolean, isBookmark?: boolean): void {
-        if (this.skipScrollToPosition || this.isWebPrinting || (this.owner.editor && this.owner.editor.isRemoteAction)) {
+        if (this.skipScrollToPosition || this.isWebPrinting || (this.owner.editorModule && this.owner.editorModule.isRemoteAction)) {
             this.skipScrollToPosition = false;
             return;
         }
@@ -3300,7 +3350,7 @@ export class DocumentHelper {
         let scrollTop: number = this.owner.viewer.containerTop;
         let scrollLeft: number = this.owner.viewer.containerLeft;
         let pageHeight: number = this.visibleBounds.height;
-        let caretInfo: CaretHeightInfo = this.selection.updateCaretSize(this.owner.selection.end, true);
+        let caretInfo: CaretHeightInfo = this.selection.updateCaretSize(this.owner.selectionModule.end, true);
         let topMargin: number = caretInfo.topMargin;
         let caretHeight: number = caretInfo.height;
         x += (endPosition.location.x) * this.zoomFactor;
@@ -3482,7 +3532,7 @@ export class DocumentHelper {
         let isMouseDraggedInShape: boolean = isMouseDragged && selectionInShape;
         if (!isNullOrUndefined(widget) && widget.children.length > 0) {
             if (isMouseDraggedInShape) {
-                let textFrame: TextFrame = this.owner.selection.getCurrentTextFrame();
+                let textFrame: TextFrame = this.owner.selectionModule.getCurrentTextFrame();
                 if (textFrame) {
                     floatingElement = textFrame.containerShape as ShapeElementBox;
                     isInShape = true;
@@ -3566,7 +3616,7 @@ export class DocumentHelper {
                 }
             });
             if (isMouseDraggedInShape) {
-                let textFrame: TextFrame = this.owner.selection.getCurrentTextFrame();
+                let textFrame: TextFrame = this.owner.selectionModule.getCurrentTextFrame();
                 if (textFrame) {
                     floatElement = textFrame.containerShape as ShapeElementBox;
                     isInShape = true;
@@ -3616,7 +3666,7 @@ export class DocumentHelper {
         let canClear: boolean = true;
         canClear = (!this.isControlPressed || !this.isMouseDown);
         // if (this.owner.selection.selectionRanges.length > 0 && canClear) {
-        if (this.owner.selection.clearSelectionHighlightInSelectedWidgets()) {
+        if (this.owner.selectionModule.clearSelectionHighlightInSelectedWidgets()) {
             this.selectionContext.clearRect(0, 0, this.selectionCanvas.width, this.selectionCanvas.height);
         }
         // } else if (!isNullOrUndefined(this.owner.selection.currentSelectionRange) && this.isMouseDown) {
@@ -3763,6 +3813,7 @@ export class DocumentHelper {
                     if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex !== 0) {
                         let currentSectionIndex: number = page.sectionIndex;
                         let previousPage: Page = page.previousPage;
+                        this.isRestartNumbering = true;
                         if (currentSectionIndex !== previousPage.sectionIndex && previousPage.bodyWidgets[previousPage.bodyWidgets.length - 1].sectionIndex !== currentSectionIndex) {
                             page.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
                             return this.getFieldText(fieldPattern, page.currentPageNum);
@@ -3776,7 +3827,11 @@ export class DocumentHelper {
                         page.currentPageNum = page.bodyWidgets[0].sectionFormat.pageStartingNumber + page.index;
                         return this.getFieldText(fieldPattern, page.currentPageNum);
                     }
-                    if (!isNullOrUndefined(page.previousPage) && page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && page.previousPage.bodyWidgets[page.previousPage.bodyWidgets.length - 1].sectionIndex !== page.sectionIndex) {
+                    if (!isNullOrUndefined(page.previousPage) && ((page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && page.previousPage.currentPageNum === 1)
+                        || (this.isRestartNumbering && page.previousPage.currentPageNum !== 1))) {
+                        if (page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering) {
+                            this.isRestartNumbering = true;
+                        }
                         page.currentPageNum = page.previousPage.currentPageNum + 1;
                     } else {
                         page.currentPageNum = page.index + 1;
@@ -4087,6 +4142,7 @@ export class DocumentHelper {
         this.currentSelectedRevisionInternal = undefined;
         this.owner = undefined;
         this.heightInfoCollection = undefined;
+        this.isRestartNumbering = false;
     }
     /**
      * Un-Wires events and methods
@@ -4706,14 +4762,14 @@ export abstract class LayoutViewer {
                 width = 0;
             }
             let clientArea: Rect = new Rect(HelperMethods.convertPointToPixel(sectionFormat.leftMargin), top, width, pageHeight - top - bottom);
-            if (page.footnoteWidget && isReLayout && !this.documentHelper.owner.editor.isFootNote) {
+            if (page.footnoteWidget && isReLayout && !this.documentHelper.owner.editorModule.isFootNote) {
                 if (page.footnoteWidget.y !== 0 && this.clientArea.y + this.clientArea.height > page.footnoteWidget.y) {
                     let sub: number = (this.clientArea.y + this.clientArea.height - page.footnoteWidget.y);
                     this.clientArea.height -= sub / 2;
                 }
             }
             if (bodyWidget.page.bodyWidgets[0].columnIndex !== 0) {
-                this.owner.editor.updateColumnIndex(bodyWidget, false);
+                this.owner.editorModule.updateColumnIndex(bodyWidget, false);
             }
             this.setClientArea(bodyWidget, clientArea);
             this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
@@ -4828,7 +4884,7 @@ export abstract class LayoutViewer {
         widget.y = area.y;
         widget.width = area.width;
     }
-    public updateClientAreaForBlock(block: BlockWidget, beforeLayout: boolean, tableCollection?: TableWidget[], updateYPosition?: boolean): void {
+    public updateClientAreaForBlock(block: BlockWidget, beforeLayout: boolean, tableCollection?: TableWidget[], updateYPosition?: boolean, updateXPosition?: boolean): void {
         let leftIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).leftIndent);
         let rightIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).rightIndent);
         let bidi: boolean = block.bidi;
@@ -4860,8 +4916,8 @@ export abstract class LayoutViewer {
                             block.getTableClientWidth(block.getOwnerWidth(false)) : block.tableHolder.tableWidth : tableWidth;
                         // Fore resizing table, the tableholder table width taken for updated width. 
                         // Since, the columns will be cleared if we performed resizing.
-                        if (this.owner.editor && this.owner.editor.tableResize.currentResizingTable === block
-                            && this.owner.editor.tableResize.resizerPosition === 0) {
+                        if (this.owner.editorModule && this.owner.editorModule.tableResize.currentResizingTable === block
+                            && this.owner.editorModule.tableResize.resizerPosition === 0) {
                             tableWidth = HelperMethods.convertPointToPixel(block.tableHolder.tableWidth);
                         }
                         if (tableAlignment === 'Center') {
@@ -4890,6 +4946,13 @@ export abstract class LayoutViewer {
                 this.clientActiveArea.width = this.clientArea.width = width;
                 if(updateYPosition){
                     this.updateParagraphYPositionBasedonTextWrap(block as ParagraphWidget, new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height));
+                }
+                if (updateXPosition) {
+                    if (block instanceof ParagraphWidget) {
+                        this.updateParagraphXPositionBasedOnTextWrap(block as ParagraphWidget);
+                    } else {
+                        this.updateTableXPositionBasedOnTextWrap(block as TableWidget);
+                    }
                 }
             }
         } else {
@@ -5088,6 +5151,365 @@ export abstract class LayoutViewer {
                 // }
             }
         }
+    }
+    private updateParagraphXPositionBasedOnTextWrap(block: BlockWidget): void {
+        // #region textwrap
+        let yValue: number = 0;
+        let isFirstItem: boolean = false;
+        let isWord2013: boolean = this.documentHelper.compatibilityMode === 'Word2013';
+        let bodyWidget: BlockContainer = block.containerWidget as BlockContainer;
+        let clientLayoutArea: Rect = this.clientActiveArea;
+        // if (!(m_lcOperator as Layouter).IsLayoutingHeaderFooter &&
+        //     (m_lcOperator as Layouter).WrappingDifference === Number.MIN_VALUE &&
+        //     Math.round(yPosition, 2) === Math.round((m_lcOperator as Layouter).PageTopMargin, 2)) {
+        //     yValue = yPosition;
+        //     isFirstItem = true;
+        // }
+        if (this instanceof PageLayoutViewer && !isNullOrUndefined(bodyWidget) && block instanceof ParagraphWidget && !isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.headerWidget)) {
+            let floatingItems: (ShapeBase | TableWidget)[] = bodyWidget.page.headerWidget.floatingElements;
+            if (floatingItems.length > 0 &&
+                (!block.isInHeaderFooter || block.isInsideTable ||
+                    isWord2013) &&
+                !(block.containerWidget instanceof FootNoteWidget) && !(block.bodyWidget instanceof TextFrame)) {
+
+                // const clientLayoutArea: RectangleF = (m_lcOperator as Layouter).ClientLayoutArea;
+                // clientLayoutArea.X = xPosition;
+                // clientLayoutArea.Y = yPosition;
+                //let cellPadings: number = 0;
+                let paragraph: ParagraphWidget = block as ParagraphWidget;
+                //if (paragraph.isInsideTable) {
+                    //const cellLayoutInfo: CellLayoutInfo = ((paragraph.GetOwnerEntity() as WTableCell) as IWidget).LayoutInfo as CellLayoutInfo;
+                    //cellPadings = cellLayoutInfo.Paddings.Left + cellLayoutInfo.Paddings.Right;
+                // }
+
+                // let defMinWidth: number = minimumWidthRequired - cellPadings;
+                // const size: SizeF = (paragraph as IWidget).LayoutInfo.Size;
+
+                for (let i: number = 0; i < floatingItems.length; i++) {
+                    let floatingItem: ShapeBase | TableWidget = floatingItems[i];
+                    // if (paragraph.IsInCell && floatingItems[i].allowOverlap &&
+                    //     (paragraph.associatedCell.ownerRow.ownerTable.tableFormat.positioning.allowOverlap) {
+                        if (paragraph.isInsideTable) {
+                            if (floatingItem instanceof TableWidget && !floatingItem.isInsideTable) {
+                                continue;
+                            }
+                        }
+                    // }
+
+                    let textWrappingBounds: Rect = (this as LayoutViewer).getTextWrappingBound(floatingItem);
+                    let textWrappingStyle: TextWrappingStyle = floatingItem instanceof TableWidget ? 'Square' : floatingItem.textWrappingStyle;
+                    let textWrappingType: string = floatingItem instanceof TableWidget ? 'Both' : floatingItem.textWrappingType;
+                    //let ownerBody: BodyWidget = undefined;
+                    //As per Microsoft Word behavior, when floating item and paragraph in cell means,
+                    //then, wrap the bounds for the items in same cell only.                 
+                    //Skip, if it is in different cell.
+                    // let ownerBody: BodyWidget = undefined
+                    // if (!this.isInSameTextBody(paragraph, floatingItem, ownerBody) &&
+                    //     paragraph.isInsideTable && bodyWidget instanceof TableCellWidget) {
+                    //     continue;
+                    // }
+
+                    // if (this.IsInFrame((m_lcOperator as Layouter).FloatingItems[i].FloatingEntity as WParagraph) &&
+                    //     this.IsOwnerCellInFrame(paragraph)) {
+                    //     continue;
+                    // }
+
+                    // if (paragraph.ParagraphFormat.Bidi &&
+                    //     (this.IsInSameTextBody(paragraph, (m_lcOperator as Layouter).FloatingItems[i], ownerBody) &&
+                    //         paragraph.IsInCell && ownerBody instanceof WTableCell)) {
+                    //     this.ModifyXPositionForRTLLayouting(i, textWrappingBounds, (m_layoutArea as any).ClientArea);
+                    // } else if (paragraph.ParagraphFormat.Bidi) {
+                    //     this.ModifyXPositionForRTLLayouting(i, textWrappingBounds, (m_lcOperator as Layouter).ClientLayoutArea);
+                    // }
+
+                    let minimumWidthRequired: number = 24;
+
+                    // if (textWrappingStyle === TextWrappingStyle.Tight || textWrappingStyle === TextWrappingStyle.Through) {
+                    //     minimumWidthRequired = paragraph.Document.Settings.CompatibilityMode === CompatibilityMode.Word2013 ?
+                    //         DEF_MIN_WIDTH_2013_TIGHTANDTHROW : DEF_MIN_WIDTH_TIGHTANDTHROW;
+                    // }
+
+                    // minimumWidthRequired -= cellPadings;
+                    // defMinWidth = minimumWidthRequired;
+
+                    // if (textWrappingStyle === TextWrappingStyle.Tight || textWrappingStyle === TextWrappingStyle.Through &&
+                    //     (m_lcOperator as Layouter).FloatingItems[i].IsDoesNotDenotesRectangle) {
+                    //     const temp: RectangleF = this.AdjustTightAndThroughBounds(
+                    //         (m_lcOperator as Layouter).FloatingItems[i], clientLayoutArea, size.Height);
+
+                    //     if (temp.X !== 0) {
+                    //         textWrappingBounds = temp;
+                    //         defMinWidth = size.Width;
+                    //     }
+                    // }
+
+                    if (!paragraph.isInsideTable &&
+                        (!(clientLayoutArea.x > textWrappingBounds.right + minimumWidthRequired ||
+                            clientLayoutArea.right < textWrappingBounds.x - minimumWidthRequired))) {
+
+                        if (floatingItems.length > 0 &&
+                            (clientLayoutArea.y + paragraph.height > textWrappingBounds.y && clientLayoutArea.y < textWrappingBounds.bottom) &&
+                            textWrappingStyle !== "Inline" &&
+                            textWrappingStyle !== "TopAndBottom" &&
+                            textWrappingStyle !== "InFrontOfText" &&
+                            textWrappingStyle !== "Behind") {
+
+                            const rightIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.rightIndent);
+                            if (paragraph.paragraphFormat.textAlignment != "Left" && (clientLayoutArea.x < textWrappingBounds.x && clientLayoutArea.x + paragraph.width > textWrappingBounds.x)) {
+                                paragraph.x = clientLayoutArea.x;
+                            } else if (clientLayoutArea.x >= textWrappingBounds.x && clientLayoutArea.x < textWrappingBounds.right && !paragraph.paragraphFormat.bidi) {
+                                clientLayoutArea.width = clientLayoutArea.width - (textWrappingBounds.right - clientLayoutArea.x) - rightIndent;
+
+                                if (clientLayoutArea.width < minimumWidthRequired) {
+                                    clientLayoutArea.width = this.clientActiveArea.right - textWrappingBounds.right - rightIndent;
+
+                                    if (clientLayoutArea.width < minimumWidthRequired) {
+                                        paragraph.x = clientLayoutArea.x;
+                                        clientLayoutArea.width = clientLayoutArea.width;
+                                        clientLayoutArea.height = textWrappingBounds.bottom - clientLayoutArea.x;
+                                        clientLayoutArea.y = textWrappingBounds.bottom;
+                                    } else {
+                                        clientLayoutArea.x = textWrappingBounds.right;
+                                    }
+                                } else if (this.documentHelper.compatibilityMode === "Word2007" ||
+                                    clientLayoutArea.y <= textWrappingBounds.bottom) {
+
+                                    // if (this.IsNeedToUpdateParagraphYPosition(clientLayoutArea.Y, textWrappingStyle,
+                                    //     paragraph, clientLayoutArea.Y + size.Height + paragraph.ParagraphFormat.AfterSpacing, textWrappingBounds.Bottom)) {
+                                    //     paragraph.x = clientLayoutArea.x;
+                                    //     clientLayoutArea.width = clientLayoutArea.width;
+                                    //     clientLayoutArea.y = textWrappingBounds.bottom;
+                                    //     clientLayoutArea.height = clientLayoutArea.height -
+                                    //         (textWrappingBounds.bottom - clientLayoutArea.y);
+                                    //     this.updateBoundsBasedOnTextWrap(textWrappingBounds.bottom);
+                                    // } else {
+                                        //const paraInfo: ParagraphLayoutInfo = paragraph.m_layoutInfo as ParagraphLayoutInfo;
+                                        const leftIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
+                                        const firstLineIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
+
+                                        if (leftIndent + firstLineIndent + clientLayoutArea.x < textWrappingBounds.right) {
+                                            //paragraph.x = textWrappingBounds.right;
+                                            clientLayoutArea.x = textWrappingBounds.right;
+
+                                            if (isWord2013) {
+                                                //this.documentHelper.layout.IsXpositionUpated = true;
+                                            }
+                                        }
+                                    // }
+                                }
+                            } 
+                            else if ((textWrappingBounds.x - minimumWidthRequired > clientLayoutArea.x && clientLayoutArea.right > textWrappingBounds.x) ||
+                                (clientLayoutArea.x > textWrappingBounds.x && clientLayoutArea.x > textWrappingBounds.right)) {
+                                paragraph.x = clientLayoutArea.x;
+                            } 
+                            // else if (clientLayoutArea.x > textWrappingBounds.x - minimumWidthRequired && clientLayoutArea.x < textWrappingBounds.right) {
+                            //     const width: number = clientLayoutArea.width + (clientLayoutArea.x - textWrappingBounds.right);
+
+                            //     if (width < minimumWidthRequired) {
+                            //         clientLayoutArea.y = textWrappingBounds.bottom;
+                            //     } else {
+                            //         paragraph.x = textWrappingBounds.right;
+                            //     }
+                            // } 
+                            // else if (this.IsNeedToUpdateParagraphYPosition(clientLayoutArea.Y, textWrappingStyle,
+                            //     paragraph, clientLayoutArea.Y + size.Height + paragraph.ParagraphFormat.AfterSpacing, textWrappingBounds.Bottom)) {
+                            //     (paragraph.m_layoutInfo as ParagraphLayoutInfo).XPosition = clientLayoutArea.X;
+                            //     clientLayoutArea.Width = (m_lcOperator as Layouter).ClientLayoutArea.Width;
+                            //     clientLayoutArea.Y = textWrappingBounds.Bottom;
+                            //     clientLayoutArea.Height = (m_lcOperator as Layouter).ClientLayoutArea.Height -
+                            //         (textWrappingBounds.Bottom - (m_lcOperator as Layouter).ClientLayoutArea.Y);
+                            //     (m_layoutArea as any).UpdateBoundsBasedOnTextWrap(textWrappingBounds.Bottom);
+                            // }
+                        }
+                    }
+
+                    //this.ResetXPositionForRTLLayouting(i, textWrappingBounds, floatingItemXPosition);
+                }
+            }
+
+            // if (m_widget instanceof WParagraph) {
+            //     const sortYPosition: FloatingItem[] = (m_lcOperator as Layouter).FloatingItems.slice(0);
+            //     FloatingItem.SortFloatingItems(sortYPosition, SortPosition.Y);
+            //     this.UpdateXYPositionBasedOnAdjacentFloatingItems(sortYPosition, clientLayoutArea, size,
+            //         m_widget as WParagraph, false);
+            // }
+
+            // if (isFirstItem && yValue < yPosition) {
+            //     (m_lcOperator as Layouter).WrappingDifference = yPosition - (m_lcOperator as Layouter).PageTopMargin;
+            // }
+        }
+    }
+    private updateTableXPositionBasedOnTextWrap(block: TableWidget): void {
+        // Get the first row width
+        let firstRowWidth: number = HelperMethods.convertPointToPixel((block.childWidgets[0] as TableRowWidget).getFirstRowWidth());
+        let bodyWidget: BlockContainer = block.bodyWidget as BlockContainer;
+        if (this instanceof PageLayoutViewer && !isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.headerWidget)) {
+            let floatingItems: (ShapeBase | TableWidget)[] = bodyWidget.page.headerWidget.floatingElements;
+            // textwrap
+            // Update Layout area based on text wrap and ignore the yposition update while 
+            // wrapping bounds already added to the collection
+            if (floatingItems.length > 0 && (!block.isInHeaderFooter || !block.isInsideTable || this.documentHelper.compatibilityMode === 'Word2013')
+            && !(block.containerWidget instanceof TextFrame)) {
+                let rect: Rect = this.clientActiveArea;
+                //let wrapItemIndex: number = -1;
+                // sort the list items based on y position,
+                // Call Sort on the list. This will use the  
+                // default comparer, which is the Compare method  
+                // implemented on FloatingItem.
+                //FloatingItem.sortFloatingItems(this.m_lcOperator.floatingItems, SortPosition.Y);
+                for (let i = 0; i < floatingItems.length; i++) {
+                    let floatingItem: ShapeBase | TableWidget = floatingItems[i];
+                    let textWrappingBounds: Rect = (this as LayoutViewer).getTextWrappingBound(floatingItem);
+                    let textWrappingStyle: TextWrappingStyle = floatingItem instanceof TableWidget ? 'Square' : floatingItem.textWrappingStyle;
+                    let allowOverlap: boolean = floatingItem instanceof TableWidget ? floatingItem.positioning.allowOverlap : floatingItem.allowOverlap;
+                    // if (this.isAdjustTightAndThroughBounds(textWrappingStyle, i)) {
+                    //     let temp: RectangleF = this.adjustTightAndThroughBounds(this.m_lcOperator.floatingItems[i], rect, size.height);
+                    //     textWrappingBounds = temp;
+                    // }
+                    // let ownerBody: WTextBody = null;
+                    // // As per Microsoft Word behavior, when floating item and table in cell means,
+                    // // then, wrap the bounds for the items in same cell only.                 
+                    // // Skip, if it is in different cell.
+                    // if (!this.isInSameTextBody(this.m_table, this.m_lcOperator.floatingItems[i], ownerBody)
+                    //     && this.m_table.isInCell && ownerBody instanceof WTableCell)
+                    //     continue;
+
+                    // // Skip if the current table is in different frame
+                    // if (this.isInFrame(this.m_lcOperator.floatingItems[i].floatingEntity as WParagraph) && this.m_table.isFrame)
+                    //     continue;
+                    // // Adjusts the text wrapping bounds based on distance from text values when floating table intersects with another floating item.
+                    // textWrappingBounds = this.adjustTextWrappingBounds(this.m_lcOperator.floatingItems[i], clientLayoutArea, size,
+                    //     wrapItemIndex, i, rect, textWrappingBounds, textWrappingStyle, allowOverlap);
+                    let minimumWidthRequired: number = 24;
+                    let paragarph: ParagraphWidget = this.documentHelper.getFirstParagraphInFirstCell(block);
+                    let height: number = this.documentHelper.textHelper.getParagraphMarkSize(paragarph.characterFormat).Height;
+                    let rowHeight: number = block.childWidgets[0] instanceof TableRowWidget ? (block.childWidgets[0] as TableRowWidget).height : 0;
+                    if (rowHeight > height) {
+                        height = rowHeight;
+                    }
+                    let width: number = HelperMethods.convertPointToPixel(block.getTableClientWidth(block.getContainerWidth()));
+                    if (!(this.clientArea.x > textWrappingBounds.right + minimumWidthRequired || this.clientArea.right < textWrappingBounds.x - minimumWidthRequired)) {
+                        if (this.isFloatingItemIntersect(block, rect, textWrappingBounds, textWrappingStyle, allowOverlap, height, width)) {
+                            if (rect.x >= textWrappingBounds.x && rect.x < textWrappingBounds.right) {
+                                rect.width = rect.width - (textWrappingBounds.right - rect.x);
+                                //checks minimum width
+                                if (rect.width < minimumWidthRequired || (rect.width < firstRowWidth && firstRowWidth > 0)) {
+                                    rect.width = this.clientActiveArea.right - textWrappingBounds.right;
+                                    //Check if the client active area width is lesser than table width to update the y position
+                                    if (rect.width < minimumWidthRequired || ((rect.width < firstRowWidth && firstRowWidth > 0) &&
+                                        this.clientArea.right <= firstRowWidth + textWrappingBounds.right)) {
+                                        //When the table y position is lesser than the text wrapping bottom position then 
+                                        //difference of these two should be subtracted from the table client height instead of the floating item height.
+                                        let remainingHeightOfFloatingItem = (textWrappingBounds.bottom > rect.y) ? textWrappingBounds.bottom - rect.y : 0;
+                                        rect.y = textWrappingBounds.bottom;
+                                        rect.width = this.clientArea.width;
+                                        rect.height = rect.height - remainingHeightOfFloatingItem;
+                                        this.updateClientAreaForTextWrap(rect);
+                                    } else {
+                                        rect.x = textWrappingBounds.right;
+                                        // if (textWrappingStyle == TextWrappingStyle.Through
+                                        //     && this.m_lcOperator.floatingItems[i].isDoesNotDenotesRectangle) {
+                                        //     textWrappingBounds = this.adjustTightAndThroughBounds(this.m_lcOperator.floatingItems[i], rect, size.height);
+                                        //     if (textWrappingBounds.x != 0)
+                                        //         rect.width = textWrappingBounds.x - rect.x;
+                                        // }
+                                        this.updateClientAreaForTextWrap(rect);
+                                    }
+                                } else {
+                                    rect.x = textWrappingBounds.right;
+                                    // if (textWrappingStyle == TextWrappingStyle.Through
+                                    //     && this.m_lcOperator.floatingItems[i].isDoesNotDenotesRectangle) {
+                                    //     textWrappingBounds = this.adjustTightAndThroughBounds(this.m_lcOperator.floatingItems[i], rect, size.height);
+                                    //     if (textWrappingBounds.x != 0)
+                                    //         rect.width = textWrappingBounds.x - rect.x;
+                                    // }
+                                    this.updateClientAreaForTextWrap(rect);
+                                }
+                            }
+                            // else if ((rect.right - textWrappingBounds.right) > 0
+                            //     && (rect.right - textWrappingBounds.right) < rect.width
+                            //     && (rect.y >= textWrappingBounds.y
+                            //         || (rect.y + size.height) >= textWrappingBounds.y)) {
+                            //     //If the table is intersect with  another floating item from the top ,then we need to consider distance from text with respect to relative margin position.
+                            //     if (rect.x < textWrappingBounds.x && rect.right > textWrappingBounds.x) {
+                            //         if (this.m_table.tableFormat.positioning.horizPositionAbs == HorizontalPosition.Left)
+                            //             rect.x += this.m_table.tableFormat.positioning.distanceFromLeft;
+                            //         else if (this.m_table.tableFormat.positioning.horizPositionAbs == HorizontalPosition.Right)
+                            //             rect.x -= this.m_table.tableFormat.positioning.distanceFromRight;
+                            //     }
+                            //     //When the table y position is lesser than the text wrapping bottom position then 
+                            //     //difference of these two should be subtracted from the table client height instead of the floating item height.
+                            //     let remainingHeightOfFloatingItem = (textWrappingBounds.bottom > rect.y) ? textWrappingBounds.bottom - rect.y : 0;
+                            //     rect.y = textWrappingBounds.bottom;
+                            //     rect.height = rect.height - remainingHeightOfFloatingItem;
+                            //     this.createLayoutArea(rect);
+                            // }
+                            // else if (textWrappingBounds.x > rect.x && rect.right > textWrappingBounds.x) {
+                            //     rect.width = textWrappingBounds.x - rect.x;
+                            //     //checks minimum width
+                            //     if (rect.width < DEF_MIN_WIDTH || (rect.width < firstRowWidth && firstRowWidth > 0)) {
+                            //         rect.width = this.m_layoutArea.clientActiveArea.right - textWrappingBounds.right;
+                            //         if (rect.width < DEF_MIN_WIDTH || (rect.width < firstRowWidth && firstRowWidth > 0)) {
+                            //             //Check if the client active area width is greater than table width to update the x position
+                            //             if (this.m_layoutArea.clientArea.right < this.m_lcOperator.clientLayoutArea.right
+                            //                 && textWrappingBounds.right < this.m_lcOperator.clientLayoutArea.right
+                            //                 && this.m_lcOperator.clientLayoutArea.right - textWrappingBounds.right > DEF_MIN_WIDTH
+                            //                 && Math.round(this.m_layoutArea.clientActiveArea.width, 2) > Math.round(firstRowWidth, 2)) {
+                            //                 rect.width = this.m_lcOperator.clientLayoutArea.right - textWrappingBounds.right;
+                            //                 rect.x = textWrappingBounds.right;
+                            //                 if (textWrappingStyle == TextWrappingStyle.Through
+                            //                     && this.m_lcOperator.floatingItems[i].isDoesNotDenotesRectangle) {
+                            //                     textWrappingBounds = this.adjustTightAndThroughBounds(this.m_lcOperator.floatingItems[i], rect, size.height);
+                            //                     if (textWrappingBounds.x != 0)
+                            //                         rect.width = textWrappingBounds.x - rect.x;
+                            //                 }
+                            //             }
+                            //             else {
+                            //                 //When the table y position is lesser than the text wrapping bottom position then 
+                            //                 //difference of these two should be subtracted from the table client height instead of the floating item height.
+                            //                 let remainingHeightOfFloatingItem = (textWrappingBounds.bottom > rect.y) ? textWrappingBounds.bottom - rect.y : 0;
+                            //                 rect.y = textWrappingBounds.bottom;
+                            //                 rect.height = rect.height - remainingHeightOfFloatingItem;
+                            //             }
+                            //             this.createLayoutArea(rect);
+                            //         }
+                            //     }
+                            //     else
+                            //         this.createLayoutArea(rect);
+                            // }
+                            // else if (rect.x > textWrappingBounds.x && rect.x > textWrappingBounds.right) {
+                            //     rect.width = this.m_layoutArea.clientArea.width;
+                            //     this.createLayoutArea(rect);
+                            // }
+                            // else if (rect.x > textWrappingBounds.x && rect.x < textWrappingBounds.right) {
+                            //     rect.width = rect.width - (textWrappingBounds.right - rect.x);
+                            //     rect.x = textWrappingBounds.right;
+                            //     if (textWrappingStyle == TextWrappingStyle.Through
+                            //         && this.m_lcOperator.floatingItems[i].isDoesNotDenotesRectangle) {
+                            //         textWrappingBounds = this.adjustTightAndThroughBounds(this.m_lcOperator.floatingItems[i], rect, size.height);
+                            //         if (textWrappingBounds.x != 0)
+                            //             rect.width = textWrappingBounds.x - rect.x;
+                            //     }
+                            //     this.createLayoutArea(rect);
+                            // }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private isFloatingItemIntersect(table: TableWidget, rect: Rect, textWrappingBounds: Rect, textWrappingStyle: TextWrappingStyle, allowOverlap: boolean, height: number, width: number): boolean {
+        return ((Math.round(rect.y + height) >= Math.round(textWrappingBounds.y)
+            && Math.round(rect.y) < Math.round(textWrappingBounds.bottom))
+            //Checks whether the bottom of the table intersects with floating item.
+            || Math.round(rect.y + height) <= Math.round(textWrappingBounds.bottom)
+            && Math.round(rect.y + height) >= Math.round(textWrappingBounds.y))
+            && textWrappingStyle !== "Inline"
+            && textWrappingStyle !== "TopAndBottom"
+            && textWrappingStyle !== "InFrontOfText"
+            && textWrappingStyle !== "Behind"
+            && !(allowOverlap && (table.tableFormat !== null && table.wrapTextAround && table.positioning.allowOverlap));
     }
     private getIntersectingItemBounds(floatingElements: (ShapeBase | TableWidget)[], intersectedfloatingItem: ShapeBase | TableWidget, yPosition: number): Rect {
         let floatingItem: ShapeBase | TableWidget = this.getMinBottomFloatingItem(floatingElements, this.getIntersectingFloatingItems(floatingElements, intersectedfloatingItem, yPosition));
@@ -5296,7 +5718,7 @@ export abstract class LayoutViewer {
                 x = 30;
             }
             y = endPage.boundingRectangle.y * prevScaleFactor + (this.documentHelper.pages.indexOf(endPage) + 1) * this.pageGap * (1 - prevScaleFactor);
-            let caretInfo: CaretHeightInfo = this.documentHelper.selection.updateCaretSize(this.owner.selection.end, true);
+            let caretInfo: CaretHeightInfo = this.documentHelper.selection.updateCaretSize(this.owner.selectionModule.end, true);
             let topMargin: number = caretInfo.topMargin;
             let caretHeight: number = caretInfo.height;
             x += (this.documentHelper.selection.end.location.x) * prevScaleFactor;
@@ -5542,9 +5964,9 @@ export class PageLayoutViewer extends LayoutViewer {
                 if (height > 0 && pageHeight > 0) {
                     let zoomFactor: number = (this.documentHelper.visibleBounds.height - 2 * this.pageGap - (this.pageGap - 2)) / pageHeight;
                     if (zoomFactor === this.documentHelper.zoomFactor) {
-                        if (!isNullOrUndefined(this.owner.selection) && !isNullOrUndefined(this.owner.selection.start) &&
-                            !isNullOrUndefined(this.owner.selection.end)) {
-                            this.documentHelper.scrollToPosition(this.owner.selection.start, this.owner.selection.end);
+                        if (!isNullOrUndefined(this.owner.selectionModule) && !isNullOrUndefined(this.owner.selectionModule.start) &&
+                            !isNullOrUndefined(this.owner.selectionModule.end)) {
+                            this.documentHelper.scrollToPosition(this.owner.selectionModule.start, this.owner.selectionModule.end);
                         }
                     } else {
                         this.documentHelper.zoomFactor = zoomFactor;
@@ -5716,25 +6138,25 @@ export class PageLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && (this.documentHelper.cachedPages.indexOf(page.index) < 0 || this.owner.editor.isPasteContentCheck)) {
+        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellCheckerModule.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && (this.documentHelper.cachedPages.indexOf(page.index) < 0 || this.owner.editorModule.isPasteContentCheck)) {
             this.owner.documentHelper.cachedPages.push(page.index);
             let content: string;
-            if (this.owner.editor.isPasteContentCheck) {
-                content = !isNullOrUndefined(this.owner.editor.copiedTextContent) ? this.owner.editor.copiedTextContent : '';
+            if (this.owner.editorModule.isPasteContentCheck) {
+                content = !isNullOrUndefined(this.owner.editorModule.copiedTextContent) ? this.owner.editorModule.copiedTextContent : '';
             } else {
-                content = this.documentHelper.owner.spellChecker.getPageContent(page);
+                content = this.documentHelper.owner.spellCheckerModule.getPageContent(page);
             }
             if (content.trim().length > 0) {
                 page.allowNextPageRendering = false;
-                if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellChecker)) {
-                    this.owner.spellChecker.updateUniqueWords(HelperMethods.getSpellCheckData(content));
+                if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellCheckerModule)) {
+                    this.owner.spellCheckerModule.updateUniqueWords(HelperMethods.getSpellCheckData(content));
                 }
                 /* eslint-disable @typescript-eslint/no-explicit-any */
-                this.owner.spellChecker.callSpellChecker(this.owner.spellChecker.languageID, content, true, false, false, true).then((data: any) => {
+                this.owner.spellCheckerModule.callSpellChecker(this.owner.spellCheckerModule.languageID, content, true, false, false, true).then((data: any) => {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     let jsonObject: any = JSON.parse(data);
-                    if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellChecker)) {
-                        this.owner.spellChecker.updateUniqueWords(jsonObject.SpellCollection);
+                    if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellCheckerModule)) {
+                        this.owner.spellCheckerModule.updateUniqueWords(jsonObject.SpellCollection);
                     }
                     page.allowNextPageRendering = true;
                     this.documentHelper.triggerElementsOnLoading = true;
@@ -5891,25 +6313,25 @@ export class WebLayoutViewer extends LayoutViewer {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
         this.visiblePages.push(page);
-        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && (this.documentHelper.cachedPages.indexOf(page.index) < 0 || this.owner.editor.isPasteContentCheck)) {
+        if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellCheckerModule.enableOptimizedSpellCheck && (this.owner.documentHelper.triggerElementsOnLoading || this.owner.documentHelper.isScrollHandler) && (this.documentHelper.cachedPages.indexOf(page.index) < 0 || this.owner.editorModule.isPasteContentCheck)) {
             this.owner.documentHelper.cachedPages.push(page.index);
             let contentlen: string;
-            if (this.owner.editor.isPasteContentCheck) {
-                contentlen = !isNullOrUndefined(this.owner.editor.copiedTextContent) ? this.owner.editor.copiedTextContent : '';
+            if (this.owner.editorModule.isPasteContentCheck) {
+                contentlen = !isNullOrUndefined(this.owner.editorModule.copiedTextContent) ? this.owner.editorModule.copiedTextContent : '';
             } else {
-                contentlen = this.documentHelper.owner.spellChecker.getPageContent(page);
+                contentlen = this.documentHelper.owner.spellCheckerModule.getPageContent(page);
             }
             if (contentlen.trim().length > 0) {
                 page.allowNextPageRendering = false;
-                if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellChecker)) {
-                    this.owner.spellChecker.updateUniqueWords(HelperMethods.getSpellCheckData(contentlen));
+                if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellCheckerModule)) {
+                    this.owner.spellCheckerModule.updateUniqueWords(HelperMethods.getSpellCheckData(contentlen));
                 }
                 /* eslint-disable @typescript-eslint/no-explicit-any */
-                this.owner.spellChecker.callSpellChecker(this.owner.spellChecker.languageID, contentlen, true, false, false, true).then((data: any) => {
+                this.owner.spellCheckerModule.callSpellChecker(this.owner.spellCheckerModule.languageID, contentlen, true, false, false, true).then((data: any) => {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     let jsonObj: any = JSON.parse(data);
-                    if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellChecker)) {
-                        this.owner.spellChecker.updateUniqueWords(jsonObj.SpellCollection);
+                    if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.spellCheckerModule)) {
+                        this.owner.spellCheckerModule.updateUniqueWords(jsonObj.SpellCollection);
                     }
                     page.allowNextPageRendering = true;
                     this.owner.documentHelper.triggerSpellCheck = true;

@@ -12,11 +12,11 @@ import { seriesRender } from '../../common/model/constants';
 import { EmptyPointMode, LegendShape, SeriesCategories, ShapeType } from '../../common/utils/enum';
 import { setRange } from '../../common/utils/helper';
 import { Chart3D } from '../chart3D';
-import { Chart3DSeriesRenderEventArgs, Chart3DStyleOptions, Chart3DLocation, Chart3DRangeValues, Chart3DRectPosition, Chart3DDepthInfoType, Chart3DFont } from '../model/chart3d-Interface';
+import { Chart3DSeriesRenderEventArgs, Chart3DStyleOptions, Chart3DLocation, Chart3DRangeValues, Chart3DRectPosition, Chart3DDepthInfoType, Chart3DTextFont } from '../model/chart3d-Interface';
 import { Chart3DSeriesType, Chart3DDataLabelPosition } from '../utils/enum';
 import { Chart3DEmptyPointSettingsModel, Chart3DDataLabelSettingsModel } from './chart-series-model';
 import { getMinPointsDeltaValue } from '../utils/chart3dRender';
-import { Chart3DFontModel } from '../model/chart3d-Interface-model';
+import { Chart3DTextFontModel } from '../model/chart3d-Interface-model';
 
 /**
  * Configures the data label in the series.
@@ -106,8 +106,8 @@ export class Chart3DDataLabelSettings extends ChildProperty<Chart3DDataLabelSett
     /**
      * Option for customizing the data label text.
      */
-    @Complex<Chart3DFontModel>({ size: '12px', color: null, fontStyle: 'Normal', fontWeight: '400', fontFamily: null }, Chart3DFont)
-    public font: Chart3DFontModel;
+    @Complex<Chart3DTextFontModel>({ size: '12px', color: null, fontStyle: 'Normal', fontWeight: '400', fontFamily: null }, Chart3DTextFont)
+    public font: Chart3DTextFontModel;
 
     /**
      * Custom template to show the data label. Use ${point.x} and ${point.y} as a placeholder

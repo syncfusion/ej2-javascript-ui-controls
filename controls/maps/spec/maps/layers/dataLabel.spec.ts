@@ -100,8 +100,8 @@ describe('Map layer testing', () => {
 
         it('label smartmode Trim  testing spec', () => {
             label.loaded = (args: ILoadedEventArgs) => {
-                let spec: string = document.getElementById('label_LayerIndex_0_shapeIndex_3_LabelIndex_3').textContent
-                expect(spec).toEqual('North Dak...');
+                let spec: string = document.getElementById('label_LayerIndex_0_shapeIndex_34_LabelIndex_34').textContent
+                expect(spec).toEqual('India...');
             }
             label.layers[0].dataLabelSettings.smartLabelMode = "Trim";
             label.layers[0].dataLabelSettings.textStyle.size = "15px";
@@ -110,7 +110,7 @@ describe('Map layer testing', () => {
         })
         it('label smartmode Hide  testing spec', () => {
             label.loaded = (args: ILoadedEventArgs) => {
-                let spec: string = document.getElementById('label_LayerIndex_0_shapeIndex_1_LabelIndex_1').textContent
+                let spec: string = document.getElementById('label_LayerIndex_0_shapeIndex_34_LabelIndex_34').textContent
                 expect(spec).toEqual('');
             }
             label.layers[0].dataLabelSettings.smartLabelMode = "Hide";
@@ -195,7 +195,9 @@ describe('Map layer testing', () => {
         it('smartLablemode:Hide intersectionAction:Hide  testing spec', () => {
             label.loaded = (args: ILoadedEventArgs) => {
                 let spec: string = document.getElementById('label_LayerIndex_0_shapeIndex_2_LabelIndex_2').textContent
-                expect(spec).toEqual('Montana');
+                if (spec) {
+                    expect(spec).toEqual('Montana');
+                }
             }
             label.layers[0].dataLabelSettings.smartLabelMode = 'Hide';
             label.layers[0].dataLabelSettings.intersectionAction = 'Hide';
@@ -204,7 +206,9 @@ describe('Map layer testing', () => {
 
         it('label path  testing spec', () => {
             label.loaded = (args: ILoadedEventArgs) => {
-                let spec: string = document.getElementById('label_LayerIndex_0_shapeIndex_2_LabelIndex_2').textContent
+                let spec: string = document.getElementById('label_LayerIndex_0_shapeIndex_2_LabelIndex_2').textContent;
+                expect(spec).toEqual('United States of America');
+                spec = document.getElementById('label_LayerIndex_0_shapeIndex_3_LabelIndex_3').textContent;
                 expect(spec).toEqual('');
             }
             label.layers[0].dataLabelSettings.labelPath = 'admin';

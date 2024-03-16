@@ -10,6 +10,7 @@ import { PdfForm } from './../form/form';
 import { PdfField } from './../form/field';
 import { PdfAnnotationFlag } from './../enumerator';
 export class _JsonDocument extends _ExportHelper {
+    _isImport: boolean = false;
     constructor(fileName?: string) {
         super();
         if (fileName !== null && typeof fileName !== 'undefined') {
@@ -100,14 +101,16 @@ export class _JsonDocument extends _ExportHelper {
                                     105, 111, 110, this._doubleQuotes, this._colon, this._openingBracket);
                 isAnnotationAdded = true;
             }
+            let count: number = 0;
             for (let k: number = 0; k < page.annotations.count; k++) {
                 const annotation: PdfAnnotation = page.annotations.at(k);
                 if (annotation) {
-                    this._exportAnnotation(annotation, i);
-                    this._jsonData = _convertStringToBytes(this._convertToJson(this._table), this._jsonData);
-                    if (k < page.annotations.count - 1) {
+                    if (count !== 0) {
                         this._jsonData.push(this._comma);
                     }
+                    count++;
+                    this._exportAnnotation(annotation, i);
+                    this._jsonData = _convertStringToBytes(this._convertToJson(this._table), this._jsonData);
                     this._table.clear();
                 }
             }
@@ -466,15 +469,12 @@ export class _JsonDocument extends _ExportHelper {
         case 'ca':
             this._writeAttributeString(key.toLowerCase(), primitive);
             break;
-        case 'CustomData':
-            if (primitive && primitive.length > 2 && primitive.startsWith('{') && primitive.endsWith('}')) {
+        default:
+            if (typeof primitive === 'string' && primitive.startsWith('{') && primitive.endsWith('}')) {
                 this._table.set(key, primitive);
             } else {
                 this._writeAttributeString(key, primitive);
             }
-            break;
-        default:
-            this._writeAttributeString(key, primitive);
             break;
         }
     }
@@ -593,9 +593,9 @@ export class _JsonDocument extends _ExportHelper {
         if (value instanceof _PdfName) {
             this._writeTable('name', value.name, table, key, array);
         } else if (Array.isArray(value)) {
-            const array: Map<string, string>[] = [];
-            this._writeArray(array, value, dictionary);
-            this._writeTable('array', this._convertToJsonArray(array), table, key, array);
+            const list: Map<string, string>[] = [];
+            this._writeArray(list, value, dictionary);
+            this._writeTable('array', this._convertToJsonArray(list), table, key, array);
         } else if (typeof value === 'string') {
             this._writeTable('string', value, table, key, array);
         } else if (typeof value === 'number') {
@@ -634,7 +634,7 @@ export class _JsonDocument extends _ExportHelper {
             streamTable.set('data', this._convertToJson(dataTable));
             this._writeTable('stream', this._convertToJson(streamTable), table, key, array);
         } else if (value instanceof _PdfReference && this._crossReference) {
-            this._writeObject(table, this._crossReference._fetch(value), dictionary, key);
+            this._writeObject(table, this._crossReference._fetch(value), dictionary, key, array);
         } else if (value === null || typeof value === 'undefined') {
             this._writeTable('null', 'null', table, key, array);
         }
@@ -1101,9 +1101,6 @@ export class _JsonDocument extends _ExportHelper {
                     }
                 }
                 break;
-            case 'customdata':
-                this._addString(dictionary, 'CustomData', typeof value === 'string' ? value : JSON.stringify(value));
-                break;
             case 'appearance':
                 this._addAppearanceData(dictionary, value);
                 break;
@@ -1112,7 +1109,7 @@ export class _JsonDocument extends _ExportHelper {
                 break;
             default:
                 if (this._document._allowImportCustomData && key !== 'type' && key !== 'page') {
-                    this._addString(dictionary, key, value);
+                    this._addString(dictionary, key, typeof value === 'string' ? value : JSON.stringify(value));
                 }
                 break;
             }
@@ -1463,6 +1460,20 @@ export class _JsonDocument extends _ExportHelper {
                 bytes = [];
             }
             const stream: _PdfContentStream = new _PdfContentStream(bytes);
+            if (this._crossReference) {
+                this._parseStreamElements(stream, element);
+            } else {
+                stream._pendingResources = JSON.stringify(element);
+            }
+            result = stream;
+        }
+        return result;
+    }
+    _parseStreamElements(stream: _PdfContentStream, element?: any): void { // eslint-disable-line
+        if (typeof element === 'undefined' && stream._pendingResources) {
+            element = JSON.parse(stream._pendingResources);
+        }
+        if (element) {
             const dictionary: _PdfDictionary = this._parseDictionary(element);
             let isImage: boolean = false;
             if (dictionary && dictionary.has('Subtype')) {
@@ -1480,9 +1491,7 @@ export class _JsonDocument extends _ExportHelper {
                 }
             }
             stream.dictionary = dictionary;
-            result = stream;
         }
-        return result;
     }
     _getValidString(value: string): string {
         if (value.indexOf('\\') !== -1) {

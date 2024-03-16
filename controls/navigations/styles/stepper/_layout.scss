@@ -89,6 +89,7 @@
     }
 
     &.e-horizontal {
+      display: block;
       .e-stepper-steps {
         flex-direction: row;
       }

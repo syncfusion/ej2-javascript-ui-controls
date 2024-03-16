@@ -1,6 +1,6 @@
 import { PdfStringFormat } from './pdf-string-format';
 import { _PdfFontMetrics, _WidthTable, _CjkWidthTable, _StandardWidthTable, _CjkSameWidth, _CjkDifferentWidth } from './pdf-font-metrics';
-import { _PdfDictionary, _PdfName } from './../pdf-primitives';
+import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _PdfStringLayouter, _PdfStringLayoutResult } from './string-layouter';
 import { _UnicodeTrueTypeFont } from './unicode-true-type-font';
 import { _fromRectangle } from './../utils';
@@ -32,6 +32,7 @@ export abstract class PdfFont {
     _dictionary: _PdfDictionary;
     _pdfFontInternals: _PdfDictionary;
     _fontMetrics: _PdfFontMetrics;
+    _reference: _PdfReference;
     /**
      * Gets the size of the PDF font.
      *
@@ -217,7 +218,7 @@ export abstract class PdfFont {
         }
     }
     _setInternals(internals: _PdfDictionary): void {
-        if (internals == null) {
+        if (!internals) {
             throw new Error('ArgumentNullException:internals');
         }
         this._pdfFontInternals = internals;
@@ -483,18 +484,18 @@ export abstract class PdfFont {
                          arg3 ?: number|PdfStringFormat, arg4 ?: number, arg5 ?: number): number[] {
         if (typeof text === 'string' && typeof arg2 === 'undefined') {
             return this.measureString(text, null);
-        } else if (typeof text === 'string' && (arg2 instanceof PdfStringFormat || arg2 == null) &&
+        } else if (typeof text === 'string' && (arg2 instanceof PdfStringFormat || arg2 === null) &&
                   typeof arg3 === 'undefined' && typeof arg4 === 'undefined') {
             const temparg2: PdfStringFormat = arg2 as PdfStringFormat;
             const charactersFitted: number = 0;
             const linesFilled: number = 0;
             return this.measureString(text, temparg2, charactersFitted, linesFilled);
-        } else if (typeof text === 'string' && (arg2 instanceof PdfStringFormat || arg2 == null)
+        } else if (typeof text === 'string' && (arg2 instanceof PdfStringFormat || arg2 === null)
                   && typeof arg3 === 'number' && typeof arg4 === 'number') {
             const temparg2: PdfStringFormat = arg2 as PdfStringFormat;
             return this.measureString(text, 0, temparg2, arg3, arg4);
         } else if (typeof text === 'string' && typeof arg2 === 'number'
-                  && (arg3 instanceof PdfStringFormat || arg3 == null) && typeof arg4 === 'number' && typeof arg5 === 'number') {
+                  && (arg3 instanceof PdfStringFormat || arg3 === null) && typeof arg4 === 'number' && typeof arg5 === 'number') {
             const layoutArea: number[] = [arg2, 0];
             const temparg3: PdfStringFormat = arg3 as PdfStringFormat;
             return this.measureString(text, layoutArea, temparg3, arg4, arg5);

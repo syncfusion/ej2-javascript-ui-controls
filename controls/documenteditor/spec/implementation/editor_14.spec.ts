@@ -220,7 +220,7 @@ console.log('on backspace before splitted paragraph');
         editor.selection.handleDownKey();
         editor.editor.onBackSpace();
         editor.editor.onBackSpace();
-        expect(editor.documentHelper.bookmarks.keys.length).toBe(0);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(1);
     });
     it('undo after on backspace before splitted paragraph', () => {
 console.log('undo after on backspace before splitted paragraph');
@@ -230,7 +230,18 @@ console.log('undo after on backspace before splitted paragraph');
     it('redo after on backspace before splitted paragraph', () => {
 console.log('redo after on backspace before splitted paragraph');
         editor.editorHistory.redo();
-        expect(editor.documentHelper.bookmarks.keys.length).toBe(0);
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(1);
+    });
+    it('backspace in start bookmark element box', () => {
+        console.log('backspace in start bookmark element box');
+        editor.openBlank();
+        editor.editor.insertText('Syncfusion');
+        editor.selection.select('0;0;2', '0;0;6');
+        editor.editor.insertBookmark('company');
+        editor.selection.select('0;0;3', '0;0;3');
+        editor.editor.onBackSpace();
+        expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('S')
+        expect(editor.documentHelper.bookmarks.keys.length).toBe(1);
     });
 });
 

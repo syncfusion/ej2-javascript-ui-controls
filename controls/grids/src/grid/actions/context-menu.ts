@@ -321,7 +321,9 @@ export class ContextMenu implements IAction {
             || closest(args.event.target as Element, '.' + menuClass.touchPop) ||
             closest(args.event.target as Element, '.e-summarycell') ||
             closest(args.event.target as Element, '.e-groupcaption') ||
-            closest(args.event.target as Element, '.e-filterbarcell'))) {
+            closest(args.event.target as Element, '.e-filterbarcell')) ||
+            (this.parent.editSettings.showAddNewRow && closest(args.event.target as Element, '.e-addedrow')
+            && this.parent.element.querySelector('.e-editedrow'))) {
             args.cancel = true;
         } else {
             this.targetColumn = this.getColumn(args.event);

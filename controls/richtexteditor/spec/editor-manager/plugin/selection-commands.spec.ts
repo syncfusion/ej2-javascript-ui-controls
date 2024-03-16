@@ -1615,3 +1615,81 @@ describe('850066 - Font color does not applied not properly', () => {
         expect(fourthLI.style.color === 'rgb(255, 0, 0)').toEqual(true);
     });
 });
+
+describe('872185 - Font family does not applied properly in nested list', () => {   
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value: `<ol><li class='li1'>material</li><li class='li2'>fluent<ol><li class='li3'>tailwind</li></ol></li><li class='li4'>bootstrap</li><li class='li5'>fabric</li><li class='li6'>highContrast</li></ol>`,
+            toolbarSettings: {
+                items: ['FontName']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it('Test for font name for select all text node', () => {
+        const range: Range = document.createRange();
+        range.setStart(rteObj.element.querySelector('.li1').childNodes[0], 0);
+        range.setEnd(rteObj.element.querySelector('.li6').childNodes[0], 12);
+        domSelection.setRange(document, range);
+        // Apply font name
+        SelectionCommands.applyFormat(document, 'fontname', rteObj.element.querySelector('.e-content'), 'P', 'Impact,Charcoal,sans-serif');
+        let fristLI: HTMLElement = rteObj.element.querySelector('.li1')
+        expect(fristLI.style.fontFamily === 'Impact, Charcoal, sans-serif').toEqual(true);
+    });
+});
+
+describe(' 873091 - Hyperlinks got removed when we apply font color to the link text in RichTextEditor', () => {   
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value: `<p id="parentP" style="text-align: center; margin: 0px;">You <strong id ="strongNode" style="color:red;">received</strong> this email at {{Contact.Email}}. You <em id="bgNode" style="background-color:red;">can</em> <a href="{{System.Link.Form.ProfileUpdate}}" style="color: inherit;" target="_blank" aria-label="Open in new window">change your preferences</a> or <a href="{{System.Link.Unsubscribe}}" id="anchorNode" style="color: inherit;" target="_blank" aria-label="Open in new window">unsubscribe</a>.  <br>  <br>  © {{System.CurrentYear}} {{Account.Company}} <strong style="fontsize:16pt;" id="fontSizeEle">All</strong> rights <em style="font-family: Impact, Charcoal, sans-serif;" id="fontFamNode">reserved</em>. {{Account.StreetAddress}}, {{Account.StreetAddress2}}, {{Account.AddressLocality}}, {{Account.AddressRegion}} {{Account.PostalCode}}  </p>`,
+            toolbarSettings: {
+                items: ['FontColor']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it('Test for font color applied anchor element', () => {
+        let anchorNode: Node = document.getElementById('anchorNode');
+        let parentP: Node = document.getElementById('parentP');
+        let text: Text = anchorNode.nextSibling as Text;
+        domSelection.setSelectionText(document, anchorNode, text, 0, 1);
+        SelectionCommands.applyFormat(document, 'fontcolor', parentP, 'P', 'rgb(102, 102, 0)');
+        expect((anchorNode as HTMLElement).style.color === 'rgb(102, 102, 0)').toEqual(true);
+    });
+    it('Test for backgroundColor applied strong element',()=>{
+        let strongNode: Node = document.getElementById('strongNode');
+        let parentP: Node = document.getElementById('parentP');
+        domSelection.setSelectionText(document, strongNode, strongNode, 0, 1);
+        SelectionCommands.applyFormat(document, 'fontcolor', parentP, 'P', 'rgb(102, 102, 0)');
+        expect((strongNode as HTMLElement).parentElement.style.color === 'rgb(102, 102, 0)').toEqual(true);
+    });
+    it('Test for background color applied italic element',()=>{
+        let bgNode: Node = document.getElementById('bgNode');
+        let parentP: Node = document.getElementById('parentP');
+        domSelection.setSelectionText(document, bgNode, bgNode, 0, 1);
+        SelectionCommands.applyFormat(document, 'backgroundcolor', parentP, 'P', 'rgb(102, 102, 0)');
+        expect((bgNode as HTMLElement).parentElement.style.backgroundColor === 'rgb(102, 102, 0)').toEqual(true);
+    });
+    it('Test for fontSize applied strong element',()=>{
+        let fontSizeNode: Node = document.getElementById('fontSizeEle');
+        let parentP: Node = document.getElementById('parentP');
+        domSelection.setSelectionText(document, fontSizeNode, fontSizeNode, 0, 1);
+        SelectionCommands.applyFormat(document, 'fontsize', parentP, 'P', '16pt');
+        expect((fontSizeNode as HTMLElement).parentElement.style.fontSize === '16pt').toEqual(true);
+    });
+    it('Test for fontFamily applied italic element',()=>{
+        let fontFamNode: Node = document.getElementById('fontFamNode');
+        let parentP: Node = document.getElementById('parentP');
+        domSelection.setSelectionText(document, fontFamNode, fontFamNode, 0, 1);
+        SelectionCommands.applyFormat(document, 'fontname', parentP, 'P', 'Tahoma,Geneva,sans-serif');
+        expect((fontFamNode as HTMLElement).parentElement.style.fontFamily === 'Tahoma, Geneva, sans-serif').toEqual(true);
+    });
+});

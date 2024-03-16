@@ -180,7 +180,7 @@ export class QuickToolbar {
      * @deprecated
      */
     public showInlineQTBar(x: number, y: number, target: HTMLElement): void {
-        if (isNOU(this.parent) || this.parent.readonly || target.tagName.toLowerCase() === 'img') {
+        if (isNOU(this.parent) || this.parent.readonly || target.tagName.toLowerCase() === 'img' || this.inlineQTBar.element.querySelector('.e-rte-color-content')) {
             return;
         }
         this.inlineQTBar.showPopup(x, y, target);
@@ -271,6 +271,9 @@ export class QuickToolbar {
             }
         }
         if (!isNOU(this.textQTBar) && !isNOU(this.parent.quickToolbarSettings.text) && !this.parent.inlineMode.enable ) {
+            if (!isNOU(e) && !isNOU(e.name) && e.name === 'sourceCodeMouseDown') {
+                return;
+            }
             const args: Touch | MouseEvent = (e.args as TouchEvent).touches ?
                 (e.args as TouchEvent).changedTouches[0] : e.args as MouseEvent;
             const target: HTMLElement = (e.args as MouseEvent).target as HTMLElement;
@@ -281,7 +284,7 @@ export class QuickToolbar {
             this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
             const range: Range = this.parent.getRange();
             if ((range.endContainer.parentElement.tagName === range.startContainer.parentElement.tagName && (range.startContainer.parentElement.tagName === 'A' && range.endContainer.parentElement.tagName === 'A')) ||
-             (target.tagName === 'IMG') || (target.tagName === 'VIDEO') || (target.tagName === 'AUDIO') || ( target.childNodes[0].nodeType === 1 && (target.childNodes[0 as number] as HTMLElement).classList.contains('e-rte-audio')) ||
+             (target.tagName === 'IMG') || (target.tagName === 'VIDEO') || (target.tagName === 'AUDIO') || (target.childNodes[0] && target.childNodes[0].nodeType === 1 && (target.childNodes[0 as number] as HTMLElement).classList.contains('e-rte-audio')) ||
              (this.parent.getRange().startOffset === this.parent.getRange().endOffset)) {
                 return;
             }
@@ -290,13 +293,16 @@ export class QuickToolbar {
         }
     }
 
-    private keyDownHandler(): void {
-        if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
-            && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
-            this.hideInlineQTBar();
-        }
-        if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close')) {
-            this.textQTBar.hidePopup();
+    private keyDownHandler(e: NotifyArgs): void {
+        const preventHide: boolean = (e.args as KeyboardEvent).altKey;
+        if (!preventHide) {
+            if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
+                && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+                this.hideInlineQTBar();
+            }
+            if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close')) {
+                this.textQTBar.hidePopup();
+            }
         }
     }
 
@@ -631,5 +637,15 @@ export class QuickToolbar {
      */
     private getModuleName(): string {
         return 'quickToolbar';
+    }
+
+    /**
+     *
+     * @returns {BaseQuickToolbar[]} - specifies the quick toolbar instance.
+     * @hidden
+     * @private
+     */
+    public getQuickToolbarInstance(): BaseQuickToolbar[] {
+        return [this.linkQTBar, this.imageQTBar, this.audioQTBar, this.videoQTBar, this.tableQTBar, this.textQTBar, this.inlineQTBar];
     }
 }

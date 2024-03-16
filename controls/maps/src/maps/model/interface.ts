@@ -210,6 +210,14 @@ export interface ITooltipRenderEventArgs extends IMapsEventArgs {
      * Defines the original mouse event arguments.
      */
     eventArgs?: PointerEvent;
+    /**
+     * Defines the latitude value of the position of the mouse pointer.
+     */
+    latitude?: number;
+    /**
+     * Defines the longitude value of the position of the mouse pointer.
+     */
+    longitude?: number;
 }
 /**
  * Specifies the event arguments for item selection event in maps.

@@ -48,6 +48,8 @@ export interface IThemes {
     tooltipFontFamily: string;
     /** Defines the datalabel font style. */
     dataLabelFont: FontModel;
+    /** Defines the tab color style. */
+    tabColor: string;
 
 }
 /**

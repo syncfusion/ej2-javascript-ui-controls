@@ -364,7 +364,7 @@ describe('Adaptive renderer', () => {
             gridObj = null;
         });
     });
-    
+
     describe('Ensure onproperty change', () => {
         let gridObj: any;
         beforeAll((done: Function) => {

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel } from '../index';
 import { DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pdfviewer-model';
@@ -252,13 +252,15 @@ export class TextSearch {
      * @private
      */
     public showSearchBox(isShow: boolean): void {
-        if (isShow) {
-            this.searchBox.style.display = 'block';
-        } else {
-            this.searchBox.style.display = 'none';
-            (this.searchInput as HTMLInputElement).value = '';
+        if(!isNullOrUndefined(this.searchBox)){
+            if (isShow) {
+                this.searchBox.style.display = 'block';
+            } else {
+                this.searchBox.style.display = 'none';
+                (this.searchInput as HTMLInputElement).value = '';
+            }
+            this.onTextSearchClose();
         }
-        this.onTextSearchClose();
     }
 
     /**
@@ -273,6 +275,9 @@ export class TextSearch {
 
     private initiateTextSearch(searchElement: HTMLElement): void {
         let inputString: string = (searchElement as HTMLInputElement).value;
+        if (this.pdfViewer.enableHtmlSanitizer && typeof inputString === 'string') {
+            inputString = SanitizeHtmlHelper.sanitize(inputString);
+        }
         if (inputString && inputString.length > 0 && inputString[inputString.length - 1] === ' ') {
             inputString = inputString.slice(0, inputString.length - 1);
         }
@@ -1224,7 +1229,7 @@ export class TextSearch {
         const viewPortHeight: number = this.pdfViewer.element.clientHeight;
         const pageWidth: number = this.pdfViewerBase.pageSize[pageIndex].width;
         const pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
-        const tileCount: number = this.pdfViewerBase.getTileCount(pageWidth);
+        const tileCount: number = this.pdfViewerBase.getTileCount(pageWidth, pageHeight);
         let noTileX: number = viewPortWidth >= pageWidth ? 1 : tileCount;
         let noTileY: number = viewPortWidth >= pageWidth ? 1 : tileCount;
         let isTileRendering: boolean = false;
@@ -1755,6 +1760,9 @@ export class TextSearch {
     public searchText(searchText: string, isMatchCase: boolean): void {
         if (searchText && searchText.length > 0 && searchText[searchText.length - 1] === ' ') {
             searchText = searchText.slice(0, searchText.length - 1);
+        }
+        if(this.pdfViewer.enableHtmlSanitizer && searchText){
+            searchText = SanitizeHtmlHelper.sanitize(searchText);
         }
         this.searchString = searchText;
         this.isMatchCase = isMatchCase;

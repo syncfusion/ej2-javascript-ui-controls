@@ -36,6 +36,8 @@ $de-ruler-indent-stroke: $gray-light !default;
 $de-ruler-indent-fill:  $grey-white !default;
 $de-ruler-indent-hover: $grey-e6 !default;
 $de-ruler-indent-active: $brand-primary !default;
+$de-custom-treeview-text-size: 13px !default;
+$de-custom-treeview-text-size-bg: 14px !default;
 
 // Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 115px) !default;

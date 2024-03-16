@@ -7,7 +7,7 @@ import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
 import {  BeforePopupOpenCloseEventArgs } from '../../../src/file-manager/base/interface';
-import { toolbarItems1, data1, data2, doubleClickRead2, data16, idData1, idData2, idData3, uploadData1, searchpng, ascendingData, descendingData, noSorting, multiCopySuccess1, multiItemCopyRead2, multiItemCopyRead3, multiCopySuccess2, singleSelectionDetails, getMultipleDetails } from '../data';
+import { toolbarItems1, data1, data2, doubleClickRead2, data16, idData1, idData2, idData3, uploadData1, searchpng, ascendingData, descendingData, noSorting, multiCopySuccess1, multiItemCopyRead2, multiItemCopyRead3, multiCopySuccess2, singleSelectionDetails, getMultipleDetails, dataForSanitization } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -374,6 +374,28 @@ describe('FileManager control Grid view', () => {
             expect(feObj.contextmenuModule.contextMenu.element.parentElement.classList.contains('e-rtl')).toEqual(false);
             feObj.destroy();
             expect(feObj.element.classList.contains('e-rtl')).toEqual(false);
+        });
+        it('for sanitization', (done) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                enableHtmlSanitizer: true
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(dataForSanitization)
+            });
+            setTimeout(function () {
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                let fileName: any = gridLi[0].querySelector('.e-fe-text');
+                expect(fileName.innerHTML).toBe(`'&gt;<img src="x">'txt`);
+                done();
+            }, 500);
         });
         it('for showFileExtension', (done) => {
             feObj = new FileManager({

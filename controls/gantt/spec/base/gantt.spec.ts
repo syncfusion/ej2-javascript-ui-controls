@@ -935,6 +935,7 @@ describe('Gantt - Base', () => {
                 baselineEndDate: 'BaselineEndDate'
             },
             columns: [
+                { field: 'TaskId', visible: false },
                 { field: 'TaskName', headerText: 'Service Name', width: '250', clipMode: 'EllipsisWithTooltip' },
                 { field: 'BaselineStartDate', headerText: 'Planned start time' },
                 { field: 'BaselineEndDate', headerText: 'Planned end time' },
@@ -1000,7 +1001,9 @@ describe('Gantt - Base', () => {
                         child: 'subtasks',
                         duration: 'Duration',
                     },
-                    columns:[ { field: 'TaskName', headerText: 'Service Name', width: '250' },
+                    columns:[ 
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Service Name', width: '250' },
                     { field: 'BaselineStartDate', headerText: 'Planned start time' },
                     { field: 'BaselineEndDate', headerText: 'Planned end time' },
                     { field: 'StartDate', headerText: 'Start time' },
@@ -1314,6 +1317,7 @@ describe('Milestone Baseline render', () => {
                   duration: 'Duration',
                 },
                 columns: [
+                  { field: 'TaskID', visible: false },
                   {
                     field: 'TaskName',
                     headerText: 'Task Name',
@@ -1350,7 +1354,7 @@ describe('Milestone Baseline render', () => {
             expect(ganttObj.columns.length).toBe(1);
         });
     });
-        describe('Split tasks progress value', () => {
+     describe('Split tasks progress value', () => {
          let ganttObj: Gantt;
          var splitTasksData = [
              {

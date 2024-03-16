@@ -2,7 +2,7 @@
  * Gantt Splitter spec
  */
 import { Gantt } from '../../src/index';
-import { baselineData } from '../base/data-source.spec';
+import { baselineData, projectData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { ISplitterResizedEventArgs } from '../../src/gantt/base/interface';
@@ -111,6 +111,68 @@ describe('Gantt splitter support', () => {
             expect(ganttObj.splitterModule.splitterObject['properties']['separatorSize']).toBe(4);
         });
     });
+    describe('Splitter setting columnIndex when column is not visible', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: [{
+                        taskID: 1,
+                        taskName: 'Project schedule',
+                        startDate: new Date('02/08/2019'),
+                        endDate: new Date('03/15/2019')
+                    }],
+                    taskFields: {
+                        id: 'taskID',
+                        name: 'taskName',
+                        startDate: 'startDate',
+                        endDate: 'endDate',
+                        duration: 'duration',
+                        progress: 'progress',
+                        dependency: 'predecessor',
+                        child: 'subtasks',
+                    },
+                    height: '503px',
+                    highlightWeekends: true,
+                    gridLines: "Both",
+                    projectStartDate: new Date('02/03/2019'),
+                    projectEndDate: new Date('03/23/2019'),
+                    timelineSettings: {
+                        topTier: {
+                            format: 'MMM dd, yyyy',
+                            unit: 'Week',
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                        }
+                    },
+                    splitterSettings: {
+                        columnIndex: 1
+                    },
+                    treeColumnIndex: 1,
+                    labelSettings: {
+                        rightLabel: 'taskName',
+                    },
+                    columns: [
+                        { field: 'taskID', visible: false },
+                        { field: 'taskName', headerText: 'Name', width: 400 },
+                        { field: 'StartDate', headerText: 'Start Date', type: 'date', format: 'yMd' },
+                        { field: 'endDate', headerText: 'End Date', type: 'date', format: 'yMd' },
+                        { field: 'duration', headerText: 'Duration' },
+                        { field: 'predecessor', headerText: 'Dependency' },
+                        { field: 'progress', headerText: 'Progress' }
+                    ]
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Column index position column visible is set to false', () => {
+            expect((document.getElementsByClassName('e-split-bar')[0] as HTMLElement).style.order).toBe('1');
+        });
+    });
     describe('Schedule mode', () => {
         let ganttObj: Gantt;
 
@@ -142,6 +204,38 @@ describe('Gantt splitter support', () => {
             ganttObj.splitterSettings.position = '50%';
             ganttObj.dataBind();
             expect(ganttObj.splitterModule.splitterObject.paneSettings[0].size).toBe('50%');
+        });
+    });
+    describe('bug-871577-updating spliter position', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: baselineData,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children'
+                },
+                projectStartDate: new Date('10/15/2017'),
+                projectEndDate: new Date('12/30/2017'),
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('bug-871577-updating spliter position', () => {
+            let splitterView = ganttObj.splitterSettings.view;
+            splitterView = 'Grid';
+            ganttObj.setSplitterPosition(splitterView, 'view');
+            ganttObj.dataBind();
+            expect(ganttObj.splitterSettings.view).toBe('Grid');
         });
     });
 });

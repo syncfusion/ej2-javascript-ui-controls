@@ -465,6 +465,37 @@ export interface TooltipSettingsModel {
 }
 
 /**
+ * Interface for a class PolygonTooltipSettings
+ */
+export interface PolygonTooltipSettingsModel {
+
+    /**
+     * Shows or hides the tooltip of the polygon shapes. When this property is set as false, the tooltip for all the polygon shapes in a layer will not be visible.
+     *
+     * @default false
+     */
+    visible?: boolean;
+
+    /**
+     * Gets or sets the fill color for the tooltip of the polygon shape.
+     *
+     * @default ''
+     */
+    fill?: string;
+
+    /**
+     * Gets or sets the attributes such as width, color and opacity of the border of the tooltip element of the polygon shape.
+     */
+    border?: BorderModel;
+
+    /**
+     * Gets or sets the font properties of the text content of the tooltip element of the polygon shape.
+     */
+    textStyle?: FontModel;
+
+}
+
+/**
  * Interface for a class Margin
  */
 export interface MarginModel {
@@ -861,6 +892,21 @@ export interface PolygonSettingModel {
      */
     points?: Coordinate[];
 
+    /**
+     * Specifies the tooltip text to be displayed for the polygon shape. If it is not set, the tooltip will not be displayed.
+     *
+     * @default ''
+     */
+    tooltipText?: string;
+
+    /**
+     * Specifies any HTML content as a tooltip on the polygon shape. If it is not set, the tooltip will not be displayed.
+     *
+     * @default ''
+     * @aspType string
+     */
+    tooltipTemplate?: string | Function;
+
 }
 
 /**
@@ -882,6 +928,11 @@ export interface PolygonSettingsModel {
      * Gets or sets the properties for highlighting polygon shapes in a map layer.
      */
     highlightSettings?: HighlightSettingsModel;
+
+    /**
+     * Specifies the properties such as visibility, fill, border and text style to customize the tooltip. 
+     */
+    tooltipSettings?: PolygonTooltipSettingsModel;
 
 }
 

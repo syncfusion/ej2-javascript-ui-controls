@@ -405,6 +405,22 @@ export interface DisplayOptionModel {
 }
 
 /**
+ * Interface for a class VirtualScrollSettings
+ */
+export interface VirtualScrollSettingsModel {
+
+    /**
+     * Allows to show only the current view page while performing virtual scrolling,
+     * or also show the previous and next page in the pivot table. By rendering only the rows and columns relevant to the current view port for display
+     * in the pivot table, it improves the pivot table's performance.
+     *
+     * @default false
+     */
+    allowSinglePage?: boolean;
+
+}
+
+/**
  * Interface for a class PivotView
  */
 export interface PivotViewModel extends ComponentModel{
@@ -637,6 +653,12 @@ export interface PivotViewModel extends ComponentModel{
      * * `primary`: Allows you to set the primary view to be either pivot table or pivot chart. To use this option, it requires the property `view` to be **Both**.
      */
     displayOption?: DisplayOptionModel;
+
+    /**
+     * Allow options for customizing the virtual scrolling experience in the pivot table.
+     *  > This feature is applicable only for the relational data source.
+     */
+    virtualScrollSettings?: VirtualScrollSettingsModel;
 
     /**
      * It holds the collection of cell information that has been populated from the engine on the basis of the given pivot report to render the component as table and chart.

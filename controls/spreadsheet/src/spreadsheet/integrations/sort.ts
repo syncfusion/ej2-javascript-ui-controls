@@ -1,4 +1,4 @@
-import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs } from '../index';
+import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs, refreshFilterRange } from '../index';
 import { applySort, completeAction, focus, FilterInfoArgs, getUpdateUsingRaf, isDiscontinuousRange, isImported } from '../index';
 import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookFormulaOperation } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel, getSheet, getSheetIndex } from '../../workbook/index';
@@ -544,7 +544,7 @@ export class Sort {
                 <= eventArgs.filterRange[3]) || (range[3] >= eventArgs.filterRange[1] && range[3] <= eventArgs.filterRange[3]))))) {
             range[0] = eventArgs.filterRange[0]; range[1] = eventArgs.filterRange[1];
             range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
-            sortOptions.containsHeader = !eventArgs.enableColumnHeaderFiltering; isSingle = false;
+            sortOptions.containsHeader = !eventArgs.allowHeaderFilter; isSingle = false;
         }
         address = getRangeAddress(range);
         const beforeArgs: BeforeSortEventArgs = { range: address, sortOptions: sortOptions, cancel: false };
@@ -603,5 +603,6 @@ export class Sort {
             this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: range });
         }
         this.parent.hideSpinner();
+        this.parent.notify(refreshFilterRange, null);
     }
 }

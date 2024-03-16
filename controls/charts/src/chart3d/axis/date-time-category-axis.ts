@@ -6,7 +6,7 @@ import { firstToLowerCase } from '../../common/utils/helper';
 import { Chart3D } from '../chart3D';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { IntervalType } from '../../common/utils/enum';
-import { Chart3DFont } from '../model/chart3d-Interface';
+import { Chart3DTextFont } from '../model/chart3d-Interface';
 
 /**
  * The DatetimeCategory module is used to render date time category axis.
@@ -48,7 +48,7 @@ export class DateTimeCategory3D extends Category3D {
     public calculateVisibleLabels(axis: Chart3DAxis): void {
         /*! Generate axis labels */
         axis.visibleLabels = [];
-        let labelStyle: Chart3DFont;
+        let labelStyle: Chart3DTextFont;
         const padding: number = 0;
         if (axis.intervalType === 'Auto') {
             this.calculateDateTimeNiceInterval(
@@ -64,7 +64,7 @@ export class DateTimeCategory3D extends Category3D {
         });
         let i: number = 0;
         for (; i < axis.labels.length; i++) {
-            labelStyle = <Chart3DFont>(extend({}, getValue('properties', axis.labelStyle), null, true));
+            labelStyle = <Chart3DTextFont>(extend({}, getValue('properties', axis.labelStyle), null, true));
             if (!this.sameInterval(axis.labels.map(Number)[i as number], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)
                 || axis.isIndexed) {
                 if (withIn(i - padding, axis.visibleRange)) {

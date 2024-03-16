@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty } from '../../index'
+import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty, ProtectionType } from '../../index'
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement } from '@syncfusion/ej2-base'
 
@@ -58,13 +58,71 @@ export class CollaborativeEditingHandler {
         if (!isNullOrUndefined(operations) && operations.length === 0) {
             return;
         }
-        this.pendingOps.push(operations as Operation[]);
+        const lastPendingOp = this.pendingOps[this.pendingOps.length - 1];
+        if (!lastPendingOp || !this.checkAndCombineOperation(lastPendingOp, operations)) {
+            this.pendingOps.push(operations);
+        }
         if (!this.isAcknowledgePending()) {
             this.sendLocalOperation()
         }
         this.transformRemoteCursor(this.connectionId, operations[0], (operations[0] as Operation).offset);
     }
 
+    private checkAndCombineOperation(lastAction: Operation[], currentAction: Operation[]) {
+        if (lastAction.length !== 1 || currentAction.length !== 1) {
+            return false;
+        }
+
+        let lastOperation: Operation = lastAction[0];
+        let currentOperation: Operation = currentAction[0];
+
+        if (this.isSameOperation(lastOperation, currentOperation) && this.canCombineOperation(lastOperation, currentOperation)) {
+            if ((lastOperation.action === 'Insert' && lastOperation.offset + lastOperation.length === currentOperation.offset) ||
+                (lastOperation.action === 'Delete' && (lastOperation.offset === currentOperation.offset))) {
+                lastOperation.length += currentOperation.length;
+                lastOperation.text += currentOperation.text;
+                return true;
+            } else if (lastOperation.action === 'Delete' && currentOperation.offset + currentOperation.length === lastOperation.offset) {
+                lastOperation.text = currentOperation.text + lastOperation.text;
+                lastOperation.offset = currentOperation.offset;
+                lastOperation.length += currentOperation.length;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private canCombineOperation(lastOperation: Operation, currentOperation: Operation): boolean {
+        return lastOperation.format === currentOperation.format &&
+            !this.isControlCharacter(lastOperation.text) &&
+            !this.isControlCharacter(currentOperation.text) &&
+            isNullOrUndefined(lastOperation.markerData) &&
+            isNullOrUndefined(currentOperation.markerData);
+    }
+
+    private isSameOperation(lastOperation: Operation, currentOperation: Operation): boolean {
+        return lastOperation.action === currentOperation.action;
+    }
+
+    private isControlCharacter(text: string): boolean {
+        const controlCharacters = [
+            CONTROL_CHARACTERS.Table,
+            CONTROL_CHARACTERS.Row,
+            CONTROL_CHARACTERS.Cell,
+            CONTROL_CHARACTERS.Image,
+            CONTROL_CHARACTERS.PageBreak,
+            CONTROL_CHARACTERS.ColumnBreak,
+            CONTROL_CHARACTERS.Section_Break,
+            CONTROL_CHARACTERS.Table,
+            CONTROL_CHARACTERS.Field_Separator,
+            CONTROL_CHARACTERS.Marker_Start,
+            CONTROL_CHARACTERS.Marker_End,
+            CONTROL_CHARACTERS.Tab,
+            CONTROL_CHARACTERS.LineBreak
+        ];
+
+        return controlCharacters.indexOf(text) !== -1;
+    }
     /**
      * Apply the remote operation to the current document.
      * @param action - Specifies the remote action type.
@@ -84,7 +142,7 @@ export class CollaborativeEditingHandler {
         }
     }
 
-    
+
     private isAcknowledgePending(): boolean {
         return !isNullOrUndefined(this.acknowledgmentPending);
     }
@@ -96,9 +154,11 @@ export class CollaborativeEditingHandler {
         } else {
             this.logMessage('Ack received: ' + action.version);
             this.logMessage('Ack version diff: ' + versionDiff);
-            this.updateVersion(action.version);
-            this.acknowledgementReceived();
-            this.sendLocalOperation();
+            if (action.version > this.version) {
+                this.updateVersion(action.version);
+                this.acknowledgementReceived();
+                this.sendLocalOperation();
+            }
         }
     }
     private updateVersion(version: number): void {
@@ -124,6 +184,7 @@ export class CollaborativeEditingHandler {
             var httpRequest = new XMLHttpRequest();
             httpRequest.open('Post', this.serviceUrl + 'UpdateAction', true);
             httpRequest.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+            this.setCustomAjaxHeaders(httpRequest);
             httpRequest.onreadystatechange = () => {
                 if (httpRequest.readyState === 4) {
                     if (httpRequest.status === 200 || httpRequest.status === 304) {
@@ -141,42 +202,42 @@ export class CollaborativeEditingHandler {
         }
     }
     private dataReceived(action: ActionInfo): void {
-        if (action.connectionId === this.connectionId || this.isSyncServerChanges) {
+        if ((action.connectionId === this.connectionId && !this.documentEditor.editorModule.isIncrementalSave ) || this.isSyncServerChanges) {
             this.logMessage(this.isSyncServerChanges ? 'SignalR Server sync' + action.version : 'SignalR Same user sync:' + action.version);
             return
         }
         let versionDiff = this.getVersionDifference(action);
-        if (versionDiff <= 0) {
+        if (versionDiff <= 0 && !this.documentEditor.editorModule.isIncrementalSave) {
             this.logMessage('SignalR return diff:<=0' + action.version);
             return;
         }
-        if (versionDiff > 1) {
+        if (versionDiff > 1 && !this.documentEditor.editorModule.isIncrementalSave) {
             this.logMessage('SignalR return diff:>=1' + action.version);
             this.checkAndRetriveChangesFromServer();
             return;
         }
         this.logMessage('SignalR ack: ' + action.version);
-        try {
-            this.logMessage('Received: ' + JSON.stringify(action));
-            this.handleRemoteOperation(action);
-        } catch (e) {
-            if (e instanceof Error) {
-                this.logMessage('Error while handling remote operation: ' + e);
-                this.logMessage('Error while handling remote operation: ' + e.stack);
-            } else {
-                this.logMessage('Error while handling remote operation: ' + e);
-            }
-        }
+        // try {
+        this.logMessage('Received: ' + JSON.stringify(action));
+        this.handleRemoteOperation(action);
+        // } catch (e) {
+        //     if (e instanceof Error) {
+        //         this.logMessage('Error while handling remote operation: ' + e);
+        //         this.logMessage('Error while handling remote operation: ' + e.stack);
+        //     } else {
+        //         this.logMessage('Error while handling remote operation: ' + e);
+        //     }
+        // }
     }
     private getVersionDifference(action: ActionInfo): number {
         return action.version - this.version;
     }
     private handleRemoteOperation(action: ActionInfo): void {
         //To Prevent the content change event while applying the remote operation
-        this.documentEditor.editor.isRemoteAction = true;
+        this.documentEditor.editorModule.isRemoteAction = true;
         //TODO: Need to handle backward selection.
-        let localStartOffset = this.documentEditor.selection.getAbsolutePositionFromRelativePosition(this.documentEditor.selection.start);
-        let selectionLength = this.documentEditor.selection.getAbsolutePositionFromRelativePosition(this.documentEditor.selection.end) - localStartOffset;
+        let localStartOffset = this.documentEditor.selectionModule.getAbsolutePositionFromRelativePosition(this.documentEditor.selectionModule.start);
+        let selectionLength = this.documentEditor.selectionModule.getAbsolutePositionFromRelativePosition(this.documentEditor.selectionModule.end) - localStartOffset;
         if (!isNullOrUndefined(this.acknowledgmentPending)) {
             this.logMessage('Acknowledge transform:' + this.acknowledgmentPending[0].text + 'version:' + action.version);
             this.transform([this.acknowledgmentPending], action.operations)
@@ -187,12 +248,12 @@ export class CollaborativeEditingHandler {
         this.transform(this.pendingOps, action.operations);
         this.applyRemoteOperation(action, localStartOffset, selectionLength);
         this.updateVersion(action.version);
-        this.documentEditor.editor.isRemoteAction = false;
-        if (this.documentEditor.editorHistory.canUndo()) {
-            this.documentEditor.editorHistory.undoStack.length = 0;
+        this.documentEditor.editorModule.isRemoteAction = false;
+        if (this.documentEditor.editorHistoryModule.canUndo()) {
+            this.documentEditor.editorHistoryModule.undoStack.length = 0;
         }
-        if (this.documentEditor.editorHistory.canRedo()) {
-            this.documentEditor.editorHistory.redoStack.length = 0;
+        if (this.documentEditor.editorHistoryModule.canRedo()) {
+            this.documentEditor.editorHistoryModule.redoStack.length = 0;
         }
     }
     private transform(operation: Operation[], remoteOperation: Operation[]): void {
@@ -222,21 +283,21 @@ export class CollaborativeEditingHandler {
         let currentUser: string = this.documentEditor.currentUser;
         let bookmarks: BookmarkElementBox[] = [];
         let currentEditMode: boolean = this.documentEditor.commentReviewPane.commentPane.isEditMode;
-        let currenteditorHistory = this.documentEditor.editorHistory.lastOperation;
+        let currenteditorHistory = this.documentEditor.editorHistoryModule.lastOperation;
         let currentTextArea: HTMLTextAreaElement;
         let isFieldOperation: boolean = false;
         if (!isNullOrUndefined(this.documentEditor.commentReviewPane.commentPane.currentEditingComment)) {
-            currentTextArea = this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea;
+            currentTextArea = this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea as HTMLTextAreaElement;
         }
         for (let i: number = 0; i < action.operations.length; i++) {
             let markerData: MarkerInfo = action.operations[i].markerData;
             let tableLength: number = undefined;
             let trackingCurrentValue: boolean = this.documentEditor.enableTrackChanges;
-
             if (!isNullOrUndefined(markerData) && !isNullOrUndefined(markerData.author)) {
                 this.documentEditor.currentUser = markerData.author;
             }
             if (!isNullOrUndefined(markerData) && !isNullOrUndefined(markerData.isSkipTracking) && markerData.isSkipTracking && this.documentEditor.enableTrackChanges) {
+                this.documentEditor.editorModule.isSkipOperationsBuild = true;
                 this.documentEditor.enableTrackChanges = false;
             }
             if (action.operations[i].skipOperation || (!isNullOrUndefined(action.operations[i].markerData) && action.operations[i].markerData.skipOperation)) {
@@ -268,16 +329,16 @@ export class CollaborativeEditingHandler {
                         if (!isNullOrUndefined(markerData.done) && isNullOrUndefined(markerData.date)) {
                             let comment: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.commentId);
                             if (markerData.done) {
-                                this.documentEditor.editor.resolveComment(comment);
+                                this.documentEditor.editorModule.resolveComment(comment);
                             } else {
-                                this.documentEditor.editor.reopenComment(comment);
+                                this.documentEditor.editorModule.reopenComment(comment);
                             }
                             continue;
                         }
                         if (markerData.commentAction === "remove") {
                             let commentView: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(!isNullOrUndefined(ownerComment) ? ownerComment : commentToDelete);
                             commentView.showDrawer();
-                            this.documentEditor.editor.deleteCommentWidget(commentToDelete);
+                            this.documentEditor.editorModule.deleteCommentWidget(commentToDelete);
                             this.deletedComments.push(commentToDelete);
                             commentView.hideDrawer();
                         }
@@ -288,7 +349,7 @@ export class CollaborativeEditingHandler {
                         let commentStart: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsStart, item.commentId);
                         let commentEnd: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsEnd, item.commentId);
                         if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentEnd)) {
-                            this.documentEditor.editor.updateCommentElement(item, commentStart, commentEnd, markerData);
+                            this.documentEditor.editorModule.updateCommentElement(item, commentStart, commentEnd, markerData);
                         }
                         if (markerData.isReply) {
                             let ownerComment: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.ownerCommentId);
@@ -296,7 +357,7 @@ export class CollaborativeEditingHandler {
                             ownerComment.replyComments.splice(markerData.commentIndex, 0, item);
                             this.documentEditor.commentReviewPane.addReply(item, false, false);
                         } else if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentEnd)) {
-                            this.documentEditor.editor.addCommentWidget(item, true, true, false);
+                            this.documentEditor.editorModule.addCommentWidget(item, true, true, false);
                             this.commentsStart.splice(this.commentsStart.indexOf(commentStart), 1);
                             this.commentsEnd.splice(this.commentsEnd.indexOf(commentEnd), 1);
                             const comment: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(item);
@@ -343,14 +404,13 @@ export class CollaborativeEditingHandler {
                 this.documentSettings(action.operations[i]);
                 continue;
             }
-
-            if (action.operations[i].action === 'Delete' || action.operations[i].action === 'Format') { 
+            if (action.operations[i].action === 'Delete' || action.operations[i].action === 'Format') {
                 //Update endOffset
                 if (action.operations[i].action === 'Delete') {
-                    this.documentEditor.selection.isEndOffset = true;
+                    this.documentEditor.selectionModule.isEndOffset = true;
                 }
                 endOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset + action.operations[i].length, false, false, false);
-                this.documentEditor.selection.isEndOffset = false;
+                this.documentEditor.selectionModule.isEndOffset = false;
                 // Code for Comparing the offset calculated using old approach and optimized approach
                 // this.documentEditor.selection.isNewApproach = true;
                 // let newEndOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset + action.operations[i].length, false, false, false);
@@ -358,107 +418,112 @@ export class CollaborativeEditingHandler {
                 // throwCustomError(endOffset !== newEndOffset, "New EndIndex " + newEndOffset + " and old EndIndex " + endOffset + " doesnot match");
             }
             if (op2.action === 'Insert' && (op2.text !== CONTROL_CHARACTERS.Row && op2.text !== CONTROL_CHARACTERS.Cell) && (isNullOrUndefined(op2.markerData) || isNullOrUndefined(op2.markerData.isAcceptOrReject))) {
-                this.documentEditor.selection.select(startOffset, endOffset);
+                this.documentEditor.selectionModule.select(startOffset, endOffset);
             } else if (op2.action === 'Delete' && op2.text !== CONTROL_CHARACTERS.Cell && (isNullOrUndefined(op2.markerData) || isNullOrUndefined(op2.markerData.isAcceptOrReject))) {
-                this.documentEditor.selection.select(startOffset, endOffset);
+                this.documentEditor.selectionModule.select(startOffset, endOffset);
             } else if (op2.action === 'Format' && (isNullOrUndefined(op2.markerData) || isNullOrUndefined(op2.markerData.isAcceptOrReject))) {
-                this.documentEditor.selection.select(startOffset, endOffset);
+                this.documentEditor.selectionModule.select(startOffset, endOffset);
             }
             if (!isNullOrUndefined(op2.markerData)) {
-                this.documentEditor.editor.revisionData = [];
+                this.documentEditor.editorModule.revisionData = [];
                 if (!isNullOrUndefined(op2.markerData.revisionForFootnoteEndnoteContent)) {
-                    this.documentEditor.editor.revisionData.push(op2.markerData.revisionForFootnoteEndnoteContent);
+                    this.documentEditor.editorModule.revisionData.push(op2.markerData.revisionForFootnoteEndnoteContent);
                 }
                 if (!isNullOrUndefined(op2.markerData.revisionId)) {
-                    this.documentEditor.editor.revisionData.push(op2.markerData);
+                    this.documentEditor.editorModule.revisionData.push(op2.markerData);
                 }
                 if (!isNullOrUndefined(op2.markerData.splittedRevisions) && op2.markerData.splittedRevisions.length > 0) {
-                    this.documentEditor.editor.revisionData = [...this.documentEditor.editor.revisionData, ...op2.markerData.splittedRevisions];
+                    this.documentEditor.editorModule.revisionData = [...this.documentEditor.editorModule.revisionData, ...op2.markerData.splittedRevisions];
                 }
             }
             if (!isNullOrUndefined(op2.markerData) && !isNullOrUndefined(op2.markerData.isAcceptOrReject) && op2.markerData.isAcceptOrReject !== '') {
-                let revision: Revision = this.documentEditor.editor.getRevision(op2.markerData.revisionId);
-                if (op2.markerData.isAcceptOrReject === 'Accept') {
-                    revision.accept();
-                } else if (op2.markerData.isAcceptOrReject === 'Reject') {
-                    revision.reject();
+                let revision: Revision = this.documentEditor.editorModule.getRevision(op2.markerData.revisionId);
+                if (revision) {
+                    if (op2.markerData.isAcceptOrReject === 'Accept') {
+                        revision.accept();
+                    } else if (op2.markerData.isAcceptOrReject === 'Reject') {
+                        revision.reject();
+                    }
                 }
                 continue;
             }
             if (op2.action === 'Insert') {
                 if (op2.type === 'Paste') {
-                    this.documentEditor.editor.isPasteListUpdated = false;
-                    this.documentEditor.editor.pasteContents(HelperMethods.getSfdtDocument(op2.pasteContent));
+                    this.documentEditor.editorModule.isPasteListUpdated = false;
+                    this.documentEditor.editorModule.pasteContents(HelperMethods.getSfdtDocument(op2.pasteContent));
                 } else if (op2.type === 'PasteToc') {
-                    this.documentEditor.editor.isInsertingTOC = true;
-                    this.documentEditor.editor.pasteContents(HelperMethods.getSfdtDocument(op2.pasteContent));
-                    this.documentEditor.editor.isInsertingTOC = false;
+                    this.documentEditor.editorModule.isInsertingTOC = true;
+                    this.documentEditor.editorModule.pasteContents(HelperMethods.getSfdtDocument(op2.pasteContent));
+                    this.documentEditor.editorModule.isInsertingTOC = false;
                 } else if (op2.text === CONTROL_CHARACTERS.Image.toString()) {
                     this.insertImage(op2.imageData);
                 } else if (op2.text === CONTROL_CHARACTERS.Section_Break.toString() && op2.type === 'NewPage') {
-                    this.documentEditor.editor.insertSectionBreak();
+                    this.documentEditor.editorModule.insertSectionBreak();
                 } else if (op2.text === CONTROL_CHARACTERS.Section_Break.toString() && op2.type === 'Continuous') {
-                    this.documentEditor.editor.insertSectionBreak(SectionBreakType.Continuous);
+                    this.documentEditor.editorModule.insertSectionBreak(SectionBreakType.Continuous);
                 } else if (markerData && (op2.text === CONTROL_CHARACTERS.Marker_Start || op2.text === CONTROL_CHARACTERS.Marker_End || op2.text === CONTROL_CHARACTERS.Field_Separator)) {
                     let element: ElementBox;
                     if (markerData.type && markerData.type === 'Bookmark') {
                         if (op2.text === CONTROL_CHARACTERS.Marker_Start) {
-                            bookmarks = this.documentEditor.editor.createBookmarkElements(markerData.bookmarkName);
+                            bookmarks = this.documentEditor.editorModule.createBookmarkElements(markerData.bookmarkName);
                             element = bookmarks[0];
                             this.documentEditor.documentHelper.isBookmarkInserted = false;
-                            this.documentEditor.editor.insertElementsInternal(this.documentEditor.selection.start, [element]);
+                            this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [element]);
                         } else {
                             const bookmark: BookmarkElementBox = bookmarks[0];
                             if (bookmark) {
                                 element = bookmark.reference;
                                 this.documentEditor.documentHelper.isBookmarkInserted = true;
-                                this.documentEditor.editor.insertElementsInternal(this.documentEditor.selection.start, [element]);
-                                this.documentEditor.selection.selectBookmark(markerData.bookmarkName);
-                                bookmark.properties = this.documentEditor.selection.getBookmarkProperties(bookmark);
-                                (element as BookmarkElementBox).properties = this.documentEditor.selection.getBookmarkProperties(element as BookmarkElementBox);
+                                this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [element]);
+                                this.documentEditor.selectionModule.selectBookmark(markerData.bookmarkName);
+                                bookmark.properties = this.documentEditor.selectionModule.getBookmarkProperties(bookmark);
+                                (element as BookmarkElementBox).properties = this.documentEditor.selectionModule.getBookmarkProperties(element as BookmarkElementBox);
                             }
                         }
                     } else if (markerData.type && markerData.type === 'EditRange') {
                         let user: string = markerData.user;
                         var id = markerData.editRangeId;
                         if (op2.text === CONTROL_CHARACTERS.Marker_Start) {
-                            element = this.documentEditor.editor.addEditElement(user, id) as EditRangeStartElementBox;
+                            if (this.documentEditor.documentHelper.restrictEditingPane) {
+                                this.documentEditor.documentHelper.restrictEditingPane.addUserDialog.bindListData(user);
+                            }
+                            element = this.documentEditor.editorModule.addEditElement(user, id) as EditRangeStartElementBox;
                             (element as EditRangeStartElementBox).columnFirst = parseInt(markerData.columnFirst);
                             (element as EditRangeStartElementBox).columnLast = parseInt(markerData.columnLast);
-                            element.line = this.documentEditor.selection.start.currentWidget;
+                            element.line = this.documentEditor.selectionModule.start.currentWidget;
                         }
                         else {
                             var editRanges = this.documentEditor.documentHelper.editRanges.get(user);
                             for (var editStart of editRanges) {
                                 if (editStart.editRangeId === id) {
                                     element = editStart.editRangeEnd;
-                                    element.line = this.documentEditor.selection.start.currentWidget;
+                                    element.line = this.documentEditor.selectionModule.start.currentWidget;
                                     break;
                                 }
                             }
                         }
-                        this.documentEditor.editor.insertElementsInternal(this.documentEditor.selection.start, [element]);
-                        this.documentEditor.editor.fireContentChange();
+                        this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [element]);
+                        this.documentEditor.editorModule.fireContentChange();
                     } else if (markerData.type && markerData.type === 'Field') {
                         isFieldOperation = true;
                         let type: number = op2.text === CONTROL_CHARACTERS.Marker_Start ? 0 : op2.text === CONTROL_CHARACTERS.Marker_End ? 1 : op2.text === CONTROL_CHARACTERS.Field_Separator ? 2 : undefined;
                         if (!isNullOrUndefined(type) && isNullOrUndefined(markerData.checkBoxValue)) {
                             var field = new FieldElementBox(type);
                             if (type === 0 && !isNullOrUndefined(markerData.formFieldData)) {
-                                let formFieldData: FormField = this.documentEditor.editor.getFormFieldData(op2.type as FormFieldType);
-                                this.documentEditor.parser.parseFormFieldData(0, markerData.formFieldData, formFieldData);
+                                let formFieldData: FormField = this.documentEditor.editorModule.getFormFieldData(op2.type as FormFieldType);
+                                this.documentEditor.parser.parseFormFieldData(0, JSON.parse(markerData.formFieldData), formFieldData);
                                 field.formFieldData = formFieldData;
                             }
                             let characterFormat: WCharacterFormat = new WCharacterFormat();
                             let data: object = JSON.parse(op2.format);
                             this.documentEditor.parser.parseCharacterFormat(0, data, characterFormat);
                             field.characterFormat.copyFormat(characterFormat);
-                            this.documentEditor.editor.initInsertInline(field);
+                            this.documentEditor.editorModule.initInsertInline(field);
                         } else {
-                            const inlineObj: ElementInfo = this.documentEditor.selection.start.currentWidget.getInline(this.documentEditor.selection.start.offset, 0);
+                            const inlineObj: ElementInfo = this.documentEditor.selectionModule.start.currentWidget.getInline(this.documentEditor.selectionModule.start.offset, 0);
                             const inline: ElementBox = inlineObj.element;
                             if (inline instanceof FieldElementBox) {
-                                this.documentEditor.editor.toggleCheckBoxFormField(inline, true, markerData.checkBoxValue);
+                                this.documentEditor.editorModule.toggleCheckBoxFormField(inline, true, markerData.checkBoxValue);
                             }
                         }
                     } else if (!isNullOrUndefined(markerData) && !isNullOrUndefined(markerData.commentId)) {
@@ -475,33 +540,33 @@ export class CollaborativeEditingHandler {
                         if (!isNullOrUndefined(deleteComment)) {
                             let item: CommentCharacterElementBox = new CommentCharacterElementBox(commentType);
                             item.commentId = markerData.commentId;
-                            this.documentEditor.editor.insertElementsInternal(this.documentEditor.selection.start, [item]);
+                            this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [item]);
                             item.comment = deleteComment;
-                            let index: number = this.documentEditor.selection.start.currentWidget.children.indexOf(item);
-                            deleteComment.commentStart = this.documentEditor.selection.start.currentWidget.children[index] as CommentCharacterElementBox;
+                            let index: number = this.documentEditor.selectionModule.start.currentWidget.children.indexOf(item);
+                            deleteComment.commentStart = this.documentEditor.selectionModule.start.currentWidget.children[index] as CommentCharacterElementBox;
                         } else {
                             let item: CommentCharacterElementBox = new CommentCharacterElementBox(commentType);
                             item.commentId = markerData.commentId;
-                            this.documentEditor.editor.insertElementsInternal(this.documentEditor.selection.start, [item]);
+                            this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [item]);
                             commentType === 0 ? this.commentsStart.push(item) : this.commentsEnd.push(item);
                         }
                     } else if (!isNullOrUndefined(op2.markerData.type) && (op2.markerData.type === 'Footnote' || op2.markerData.type === 'Endnote')) {
                         if (op2.markerData.type === 'Footnote') {
-                            this.documentEditor.editor.insertFootnote();
+                            this.documentEditor.editorModule.insertFootnote();
                         } else if (op2.markerData.type === 'Endnote') {
-                            this.documentEditor.editor.insertEndnote();
+                            this.documentEditor.editorModule.insertEndnote();
                         }
                     }
                 } else if (markerData && !isNullOrUndefined(markerData.dropDownIndex) && op2.type === 'DropDown') {
-                    const inlineObj: ElementInfo = this.documentEditor.selection.start.currentWidget.getInline(this.documentEditor.selection.start.offset, 0);
+                    const inlineObj: ElementInfo = this.documentEditor.selectionModule.start.currentWidget.getInline(this.documentEditor.selectionModule.start.offset, 0);
                     const inline: ElementBox = inlineObj.element;
                     if (inline instanceof FieldElementBox) {
-                        this.documentEditor.editor.updateFormField(inline, markerData.dropDownIndex, false);
+                        this.documentEditor.editorModule.updateFormField(inline, markerData.dropDownIndex, false);
                     }
                 } else if (op2.text === CONTROL_CHARACTERS.Section_Break.toString() && op2.type === 'NewPage') {
-                    this.documentEditor.editor.insertSectionBreak();
+                    this.documentEditor.editorModule.insertSectionBreak();
                 } else if (op2.text === CONTROL_CHARACTERS.Section_Break.toString() && op2.type === 'Continuous') {
-                    this.documentEditor.editor.insertSectionBreak(SectionBreakType.Continuous);
+                    this.documentEditor.editorModule.insertSectionBreak(SectionBreakType.Continuous);
                 } else if (op2.text === CONTROL_CHARACTERS.Table) {
                     i = action.operations.length;
                     this.buildTable(action.operations);
@@ -524,17 +589,17 @@ export class CollaborativeEditingHandler {
                         this.buildCell(op2, paraFormat, charFormat);
                     }
                 } else if (op2.text === CONTROL_CHARACTERS.PageBreak.toString()) {
-                    this.documentEditor.editor.insertPageBreak();
+                    this.documentEditor.editorModule.insertPageBreak();
                 } else if (op2.text === CONTROL_CHARACTERS.ColumnBreak.toString()) {
-                    this.documentEditor.editor.insertColumnBreak();
+                    this.documentEditor.editorModule.insertColumnBreak();
                 } else {
                     if (op2.format) {
                         let characterFormat: WCharacterFormat = new WCharacterFormat();
                         var data: object = JSON.parse(op2.format);
                         this.documentEditor.parser.parseCharacterFormat(0, data, characterFormat);
-                        this.documentEditor.selection.characterFormat.copyFormat(characterFormat);
+                        this.documentEditor.selectionModule.characterFormat.copyFormat(characterFormat);
                     }
-                    this.documentEditor.editor.insertText(op2.text);
+                    this.documentEditor.editorModule.insertText(op2.text);
                 }
             } else if (op2.action === 'Delete') {
                 // if (this.documentEditor.selection.isEmpty && this.documentEditor.selection.start.currentWidget.isLastLine()
@@ -555,29 +620,29 @@ export class CollaborativeEditingHandler {
                                 deleteComment = this.documentEditor.documentHelper.layout.getCommentById(ownerDeleteComment.replyComments, markerData.commentId);
                             }
                         }
-                        let selection = this.documentEditor.selection;
+                        let selection = this.documentEditor.selectionModule;
                         let commentType: number = op2.text === CONTROL_CHARACTERS.Marker_Start ? 0 : 1;
                         if (commentType === 1) {
                             const commentEnd: CommentCharacterElementBox = deleteComment.commentEnd;
                             if (commentEnd.indexInOwner !== -1) {
-                                this.documentEditor.editor.removeAtOffset(selection.start.currentWidget, this.documentEditor.selection, selection.start.offset);
+                                this.documentEditor.editorModule.removeAtOffset(selection.start.currentWidget, this.documentEditor.selectionModule, selection.start.offset);
                             }
                         } else {
                             const commentStart: CommentCharacterElementBox = deleteComment.commentStart;
                             if (commentStart.indexInOwner !== -1) {
-                                this.documentEditor.editor.removeAtOffset(selection.start.currentWidget, this.documentEditor.selection, selection.start.offset);
+                                this.documentEditor.editorModule.removeAtOffset(selection.start.currentWidget, this.documentEditor.selectionModule, selection.start.offset);
                             }
                             commentStart.removeCommentMark();
                         }
                     } else {
-                        let selection = this.documentEditor.selection;
+                        let selection = this.documentEditor.selectionModule;
                         let offset: number = selection.start.offset - 1;
-                        this.documentEditor.editor.removeAtOffset(selection.start.currentWidget, this.documentEditor.selection, offset);
+                        this.documentEditor.editorModule.removeAtOffset(selection.start.currentWidget, this.documentEditor.selectionModule, offset);
                     }
                 } else if (op2.text === CONTROL_CHARACTERS.Cell) {
                     this.buildDeleteCells(op2);
                 } else {
-                    this.documentEditor.editor.onBackSpace();
+                    this.documentEditor.editorModule.onBackSpace();
                 }
                 //}
             } else if (op2.action === 'Format') {
@@ -588,12 +653,12 @@ export class CollaborativeEditingHandler {
                                 let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, true, false);
                                 if (!isNullOrUndefined(data.rowWidget)) {
                                     let row: TableRowWidget = data.rowWidget;
-                                    this.documentEditor.editor.trackRowDeletion(row);
+                                    this.documentEditor.editorModule.trackRowDeletion(row);
                                     this.documentEditor.trackChangesPane.updateTrackChanges();
                                     continue;
                                 }
                             }
-                            this.documentEditor.editor.onBackSpace();
+                            this.documentEditor.editorModule.onBackSpace();
                         }
                     }
                 } else if (op2.text === CONTROL_CHARACTERS.Row) {
@@ -624,10 +689,10 @@ export class CollaborativeEditingHandler {
                         this.documentEditor.documentHelper.owner.parser.parseCellFormat(cell, cellData.cellWidget.cellFormat, 0);
                     }
                 } else if (op2.text === CONTROL_CHARACTERS.Image) {
-                    let inlineObj: ElementInfo = this.documentEditor.selection.start.currentWidget.getInline(this.documentEditor.selection.start.offset, 0);
+                    let inlineObj: ElementInfo = this.documentEditor.selectionModule.start.currentWidget.getInline(this.documentEditor.selectionModule.start.offset, 0);
                     let inline: ElementBox = inlineObj.element;
                     if (inline instanceof ImageElementBox) {
-                        this.documentEditor.editor.onImageFormat(inline, HelperMethods.convertPointToPixel(op2.imageData.width), HelperMethods.convertPointToPixel(op2.imageData.height), undefined);
+                        this.documentEditor.editorModule.onImageFormat(inline, HelperMethods.convertPointToPixel(op2.imageData.width), HelperMethods.convertPointToPixel(op2.imageData.height), op2.imageData.alternativeText);
                     }
                 } else if (op2.type === 'ListFormat') {
                     let paragraphFormat: any = JSON.parse(op2.format);
@@ -639,11 +704,11 @@ export class CollaborativeEditingHandler {
                         format.listFormat.listId = list.listId;
                         format.listFormat.list = list;
                     }
-                    this.documentEditor.editor.onApplyParagraphFormat(op2.text, format.listFormat, false, false);
+                    this.documentEditor.editorModule.onApplyParagraphFormat(op2.text, format.listFormat, false, false);
                 } else if (op2.type === 'RestartNumbering') {
                     let nsid: number = this.updateList(op2);
                     let list: WList = this.documentEditor.documentHelper.getListById(nsid, true);
-                    this.documentEditor.editor.restartListAtInternal(this.documentEditor.selection, list.listId, list.nsid);
+                    this.documentEditor.editorModule.restartListAtInternal(this.documentEditor.selectionModule, list.listId, list.nsid);
                 } else if (op2.type === 'ContinueNumbering') {
                     let paragraphFormat: any = JSON.parse(op2.format);
                     let format: WParagraphFormat = new WParagraphFormat(undefined);
@@ -653,11 +718,11 @@ export class CollaborativeEditingHandler {
                         format.listFormat.listId = list.listId;
                         format.listFormat.list = list;
                     }
-                    this.documentEditor.editor.applyContinueNumberingInternal(this.documentEditor.selection, format);
+                    this.documentEditor.editorModule.applyContinueNumberingInternal(this.documentEditor.selectionModule, format);
                 } else if (op2.type === 'CharacterFormat') {
                     this.insertCharaterFormat(op2.type, op2.format);
                 } else if (op2.type === 'ParagraphFormat') {
-                    this.insertParagraphFormat(op2.text, op2.format);
+                    this.insertParagraphFormat(op2, op2.format);
                 } else if (op2.type === 'TableFormat') {
                     this.insertTableFormat(op2.text, op2.format, op2.offset);
                 } else if (op2.type === 'SectionFormat') {
@@ -668,12 +733,15 @@ export class CollaborativeEditingHandler {
                     this.insertCellFormat(op2.format);
                 }
             }
-            this.documentEditor.editor.revisionData = [];
-            this.documentEditor.enableTrackChanges = trackingCurrentValue;
+            this.documentEditor.editorModule.revisionData = [];
+            if(this.documentEditor.enableTrackChanges != trackingCurrentValue) {
+                this.documentEditor.editorModule.isSkipOperationsBuild = true;
+                this.documentEditor.enableTrackChanges = trackingCurrentValue;
+            }
             this.documentEditor.currentUser = currentUser;
-            let newOffset = this.documentEditor.selection.startOffset;
+            let newOffset = this.documentEditor.selectionModule.startOffset;
             //op2.offset = newOffset;
-            this.updateRemoteSelection(action, this.documentEditor.selection.getAbsolutePositionFromRelativePosition(newOffset));
+            this.updateRemoteSelection(action, this.documentEditor.selectionModule.getAbsolutePositionFromRelativePosition(newOffset));
             if (!isNullOrUndefined(tableLength)) {
                 let temp: number = op2.length;
                 op2.length = tableLength;
@@ -684,17 +752,17 @@ export class CollaborativeEditingHandler {
             //TODO: Need to optimize the code. Need to transform selection end length based on remove content
             let tranformedEndOffset = this.transformSection(op2.action, op2, offset + selectionLength)[1];
             offset = tranformedOffset;
-            this.documentEditor.selection.select(this.getRelativePositionFromAbsolutePosition(tranformedOffset, false, false, false), this.getRelativePositionFromAbsolutePosition(tranformedEndOffset, false, false, false));
+            this.documentEditor.selectionModule.select(this.getRelativePositionFromAbsolutePosition(tranformedOffset, false, false, false), this.getRelativePositionFromAbsolutePosition(tranformedEndOffset, false, false, false));
             if (!isNullOrUndefined(tableLength)) {
                 op2.length = tableLength;
             }
             this.transformRemoteCursor(action.connectionId, op2, op2.offset);
-            if (!isNullOrUndefined(this.documentEditor.search) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.search.searchResults.length > 0 && this.documentEditor.optionsPaneModule.isOptionsPaneShow) {
+            if (!isNullOrUndefined(this.documentEditor.searchModule) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.searchModule.searchResults.length > 0 && this.documentEditor.optionsPaneModule.isOptionsPaneShow) {
                 this.documentEditor.optionsPaneModule.searchIconClickInternal();
             }
         }
         if (isFieldOperation) {
-            this.documentEditor.editor.layoutWholeDocument();
+            this.documentEditor.editorModule.layoutWholeDocument();
             isFieldOperation = false;
         }
         if (!isNullOrUndefined(this.rowWidget)) {
@@ -702,18 +770,18 @@ export class CollaborativeEditingHandler {
             ownerTable.updateRowIndex(0);
             ownerTable.calculateGrid(true);
             this.documentEditor.documentHelper.layout.reLayoutTable(ownerTable);
-            this.documentEditor.editor.reLayout(this.documentEditor.selection);
+            this.documentEditor.editorModule.reLayout(this.documentEditor.selectionModule);
             this.rowWidget = undefined;
         }
         if (!isNullOrUndefined(this.table)) {
             this.table.calculateGrid();
-            this.documentEditor.editor.updateTable(this.table);
-            this.documentEditor.editor.reLayout(this.documentEditor.selection, true);
+            this.documentEditor.editorModule.updateTable(this.table);
+            this.documentEditor.editorModule.reLayout(this.documentEditor.selectionModule, true);
             this.table = undefined;
         }
         this.documentEditor.currentUser = currentUser;
         this.documentEditor.commentReviewPane.commentPane.isEditMode = currentEditMode;
-        this.documentEditor.editorHistory.lastOperation = currenteditorHistory;
+        this.documentEditor.editorHistoryModule.lastOperation = currenteditorHistory;
         if (!isNullOrUndefined(this.documentEditor.commentReviewPane.commentPane.currentEditingComment)) {
             this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea = currentTextArea;
         }
@@ -759,8 +827,8 @@ export class CollaborativeEditingHandler {
         return length;
     }
     private updateListCollection(listData: any, keywordIndex: number): void {
-        let uniqueListId: number = this.documentEditor.editor.getUniqueListOrAbstractListId(true);
-        let uniqueAbsLstId: number = this.documentEditor.editor.getUniqueListOrAbstractListId(false);
+        let uniqueListId: number = this.documentEditor.editorModule.getUniqueListOrAbstractListId(true);
+        let uniqueAbsLstId: number = this.documentEditor.editorModule.getUniqueListOrAbstractListId(false);
         for (let k: number = 0; k < listData[listsProperty[keywordIndex]].length; k++) {
             let list: WList = listData[listsProperty[keywordIndex]][k];
             let abstractList: any = listData[abstractListsProperty[keywordIndex]].filter((obj: any) => {
@@ -795,16 +863,6 @@ export class CollaborativeEditingHandler {
                 operation1.offset = operation1.offset + operation2.length;
                 return [operation1, operation2,];
             }
-            // else {
-            //     return [
-            //         operation1,
-            //         {
-            //             action: 'Insert',
-            //             offset: operation1.offset,
-            //             text: operation2.text,
-            //         },
-            //     ];
-            // }
         } else if (operation1.action === 'Delete' && (operation2.action === 'Delete' || operation2.action === 'Format')) {
             if (operation1.offset < operation2.offset) {
                 operation2.offset = operation2.offset - operation1.length;
@@ -827,21 +885,6 @@ export class CollaborativeEditingHandler {
             else if (operation1.offset > operation2.offset && operation1.offset < (operation2.offset + operation2.length)) {
                 operation2.length += operation1.length;
             }
-            // else {
-            //     return [
-            //         // {
-            //         //     type: 'Insert',
-            //         //     position: operation2.position,
-            //         //     text: operation1.text.slice(0, operation2.position - operation1.position) +
-            //         //         operation1.text.slice(operation2.position + operation2.length - operation1.position),
-            //         // },
-            //         // {
-            //         //     type: 'Delete',
-            //         //     position: operation2.position,
-            //         //     length: operation1.length - (operation2.position - operation1.position) - operation2.length,
-            //         // },
-            //     ];
-            // }
         } else if (operation1.action === 'Delete' && (operation2.action === 'Insert' || operation2.action === 'Format')) {
             if (operation1.offset <= operation2.offset && (operation1.offset + operation1.length) <= operation2.offset) {
                 operation2.offset = operation2.offset - operation1.length;
@@ -861,7 +904,10 @@ export class CollaborativeEditingHandler {
                         this.skipAction(action);
                     }
                 }
-            } else if (operation1.offset > operation2.offset && operation2.action !== 'Format') {
+            } else if (operation1.offset <= operation2.offset && operation2.action == "Insert" && (operation1.offset + operation1.length) >= operation2.offset) {
+                this.skipAction(action);
+            }
+            else if (operation1.offset > operation2.offset && operation2.action !== 'Format') {
                 operation1.offset = operation1.offset + operation2.length;
             }
         }
@@ -889,24 +935,37 @@ export class CollaborativeEditingHandler {
         return [operation1.offset, operation2];
     }
     private transformRemoteCursor(connectionId: string, operation: Operation, offset: number) {
-        if (this.documentEditor.editor.isIncrementalSave) {
+        if (this.documentEditor.editorModule.isIncrementalSave) {
             return;
         }
+        this.updateCaretPosition(connectionId, operation);
+    }
+    /**
+     * @private
+     * @returns {void}
+    */
+    public updateCaretPosition(connectionId?: string, operation?: Operation): void {
         let keys: string[] = Object.keys(this.userMap);
+        let tranformedOffset: number;
         //For loop to iterate over the keys
         for (let i = 0; i < keys.length; i++) {
             let key: string = keys[i];
             if (key === connectionId) {
                 continue;
             }
-            let remoteOffset: number = this.userMap[key].offset;
-            let tranformedOffset = this.transformSection(operation.action, operation, remoteOffset)[1];
-            this.userMap[key].offset = tranformedOffset;
+            if (!isNullOrUndefined(operation)) {
+                let remoteOffset: number = this.userMap[key].offset;
+                tranformedOffset = this.transformSection(operation.action, operation, remoteOffset)[1];
+                this.userMap[key].offset = tranformedOffset;
+            } else {
+                tranformedOffset = this.userMap[key].offset;
+            }
             this.updateCaretPositionInteral(this.userMap[key].caret, tranformedOffset);
         }
     }
+
     private updateRemoteSelection(data: ActionInfo, removeOffset: number): void {
-        if (this.documentEditor.editor.isIncrementalSave) {
+        if (this.documentEditor.editorModule.isIncrementalSave) {
             return;
         }
         if (data.connectionId) {
@@ -936,7 +995,7 @@ export class CollaborativeEditingHandler {
     }
     private updateCaretPositionInteral(caret: HTMLElement, start: number): void {
         let zoomFactor: number = this.documentEditor.zoomFactor;
-        let selection: Selection = this.documentEditor.selection;
+        let selection: Selection = this.documentEditor.selectionModule;
         let startPos: TextPosition = selection.getTextPosBasedOnLogicalIndex(this.getRelativePositionFromAbsolutePosition(start, false, false, false));
         //let endPos: TextPosition = selection.getTextPosBasedOnLogicalIndex(end);
         let caretPosition: Point = startPos.location;
@@ -975,6 +1034,7 @@ export class CollaborativeEditingHandler {
             } else {
                 //Add paragraph mark length
                 currentLength = absoluteData.currentLength;
+                offset = absoluteData.offset;
                 paragraph = absoluteData.paragraph;
             }
             // }
@@ -982,7 +1042,7 @@ export class CollaborativeEditingHandler {
             // Table start mark length
             offset -= 1;
             if (offset === currentLength) {
-                if (isTableInserted || this.documentEditor.selection.isEndOffset) {
+                if (isTableInserted || this.documentEditor.selectionModule.isEndOffset) {
                     completed.done = true;
                     return { 'offset': offset, 'currentLength': currentLength, 'paragraph': paragraph, 'tableWidget': block };
                 }
@@ -992,7 +1052,7 @@ export class CollaborativeEditingHandler {
                 // Row mark length
                 offset -= 1;
                 if (offset === currentLength) {
-                    if (isRowInserted || this.documentEditor.selection.isEndOffset) {
+                    if (isRowInserted || this.documentEditor.selectionModule.isEndOffset) {
                         completed.done = true;
                         let index: number = row.index;
                         return { 'offset': offset, 'currentLength': currentLength, 'paragraph': paragraph, 'rowOrCellIndex': index, 'rowWidget': row };
@@ -1018,12 +1078,12 @@ export class CollaborativeEditingHandler {
                     while (childBlock) {
                         let data: any = this.getBlockPosition(offset, currentLength, childBlock as BlockWidget, completed, isTableInserted, isRowInserted, isCellInserted);
                         if (completed.done) {
-                            if (isRowInserted) {
+                            if (isRowInserted && isNullOrUndefined(data.rowWidget)) {
                                 completed.done = true;
                                 let rowWidget: TableRowWidget = cell.ownerRow as TableRowWidget;
                                 let index: number = rowWidget.index + 1;
                                 return { 'offset': offset, 'currentLength': currentLength, 'paragraph': paragraph, 'rowOrCellIndex': index, 'rowWidget': rowWidget };
-                            } else if (isCellInserted) {
+                            } else if (isCellInserted && isNullOrUndefined(data.cellWidget)) {
                                 completed.done = true;
                                 let cellWidget: TableCellWidget = cell as TableCellWidget;
                                 let index: number = cellWidget.cellIndex + 1;
@@ -1040,7 +1100,11 @@ export class CollaborativeEditingHandler {
                     }
                     cell = cell.nextWidget as TableCellWidget;
                 }
+                let tableIndex: number = row.ownerTable.index;
                 row = row.getSplitWidgets().pop().nextRenderedWidget as TableRowWidget;
+                if (row && row.ownerTable.index !== tableIndex) {
+                    row = undefined;
+                }
             }
         }
         return { 'offset': offset, 'currentLength': currentLength, 'paragraph': paragraph }
@@ -1067,14 +1131,18 @@ export class CollaborativeEditingHandler {
                         || element instanceof FootnoteElementBox) {
                         let absoluteData: AbsoluteParagraphInfo;
                         if (element instanceof ShapeElementBox) {
-                            if (element.textFrame.childWidgets.length > 0) {
-                                absoluteData = this.getBlockPosition(offset, currentLength + childBlockLength + length + paragraphStartLength, element.textFrame.childWidgets[0] as BlockWidget, completed, isTableInserted, isRowInserted, isCellInserted);
+                            let currentLengthValue: number = currentLength + childBlockLength + length + paragraphStartLength;
+                            for (let i: number = 0; i < element.textFrame.childWidgets.length; i++) {
+                                absoluteData = this.getBlockPosition(offset, currentLengthValue, element.textFrame.childWidgets[i] as BlockWidget, completed, isTableInserted, isRowInserted, isCellInserted);
+                                currentLengthValue = absoluteData.currentLength;
+                                offset = absoluteData.offset;
                             }
                         } else {
                             let currentLengthValue: number = currentLength + childBlockLength + length + paragraphStartLength;
                             for (let m: number = 0; m < element.bodyWidget.childWidgets.length && !completed.done; m++) {
                                 absoluteData = this.getBlockPosition(offset, currentLengthValue, element.bodyWidget.childWidgets[m] as BlockWidget, completed, isTableInserted, isRowInserted, isCellInserted);
                                 currentLengthValue = absoluteData.currentLength;
+                                offset = absoluteData.offset;
                             }
                         }
                         offset = absoluteData.offset;
@@ -1119,7 +1187,7 @@ export class CollaborativeEditingHandler {
             if (isTableInserted || isRowInserted || isCellInserted) {
                 return blockObj;
             } else {
-                return documentEditor.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+                return documentEditor.selectionModule.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
             }
         } else if (blockObj.offset === blockObj.currentLength + 1 && this.documentEditor.selection.isEndOffset) {
             let length: number = this.documentEditor.selection.getParagraphLength(blockObj.paragraph);
@@ -1139,7 +1207,7 @@ export class CollaborativeEditingHandler {
             if (isTableInserted || isRowInserted || isCellInserted) {
                 return blockObj1;
             } else {
-                return documentEditor.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+                return documentEditor.selectionModule.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
             }
         }
         return '';
@@ -1154,10 +1222,15 @@ export class CollaborativeEditingHandler {
                 if (currentHeaderFooter) {
                     blockObj = this.getBlockByIndex(currentHeaderFooter.childWidgets[0] as BlockWidget, offset, currentLength, positionInfo, isTableInserted, isRowInserted, isCellInserted);
                     currentLength = blockObj.currentLength;
+                    offset = blockObj.offset;
                     if (positionInfo.done) {
                         return blockObj;
                     }
                 } else {
+                    if (currentLength + 1 >= offset) {
+                        positionInfo.done = true;
+                        return blockObj;
+                    }
                     //Insert new header footer and paragraph to existing collection.
                     currentLength++;
                     blockObj.currentLength = currentLength;
@@ -1181,11 +1254,11 @@ export class CollaborativeEditingHandler {
     }
     private insertImage(imageData: ImageInfo): void {
         if (isNullOrUndefined(imageData.metaString)) {
-            this.documentEditor.editor.insertImageInternal(imageData.imageString, true, HelperMethods.convertPointToPixel(imageData.width), HelperMethods.convertPointToPixel(imageData.height));
+            this.documentEditor.editorModule.insertImageInternal(imageData.imageString, true, HelperMethods.convertPointToPixel(imageData.width), HelperMethods.convertPointToPixel(imageData.height), imageData.alternativeText);
         }
         else {
-            this.documentEditor.editor.isImageInsert = true;
-            this.documentEditor.editor.insertImageInternal(imageData.metaString, true, HelperMethods.convertPointToPixel(imageData.width), HelperMethods.convertPointToPixel(imageData.height));
+            this.documentEditor.editorModule.isImageInsert = true;
+            this.documentEditor.editorModule.insertImageInternal(imageData.metaString, true, HelperMethods.convertPointToPixel(imageData.width), HelperMethods.convertPointToPixel(imageData.height), imageData.alternativeText);
         }
     }
     private buildTable(operations: Operation[]): void {
@@ -1194,7 +1267,7 @@ export class CollaborativeEditingHandler {
         for (let i: number = 0; i < operations.length; i++) {
             if (operations[i].text === CONTROL_CHARACTERS.Row) {
                 if (!isNullOrUndefined(operations[i].markerData)) {
-                    this.documentEditor.editor.revisionData.push(operations[i].markerData);
+                    this.documentEditor.editorModule.revisionData.push(operations[i].markerData);
                 }
                 rows++;
             }
@@ -1208,8 +1281,8 @@ export class CollaborativeEditingHandler {
                 break;
             }
         }
-        this.documentEditor.editor.insertTable(rows, columns);
-        this.documentEditor.editor.revisionData = [];
+        this.documentEditor.editorModule.insertTable(rows, columns);
+        this.documentEditor.editorModule.revisionData = [];
     }
     private buildRow(operations: Operation[]): void {
         let rowData: any;
@@ -1246,23 +1319,23 @@ export class CollaborativeEditingHandler {
         for (let i: number = 0; i < operations.length; i++) {
             if (operations[i].text === CONTROL_CHARACTERS.Row) {
                 if (!isNullOrUndefined(operations[i].markerData)) {
-                    this.documentEditor.editor.revisionData.push(operations[i].markerData);
+                    this.documentEditor.editorModule.revisionData.push(operations[i].markerData);
                 }
                 insertRow++;
                 rowData = JSON.parse(operations[i].format);
             }
         }
-        this.documentEditor.editor.rowInsertionForCE(data.rowOrCellIndex, cellCount, insertRow, tableWidget, rowData, cellDatas, paragraphDatas, characterDatas);
+        this.documentEditor.editorModule.rowInsertionForCE(data.rowOrCellIndex, cellCount, insertRow, tableWidget, rowData, cellDatas, paragraphDatas, characterDatas);
         cellDatas = [];
         paragraphDatas = [];
         characterDatas = [];
-        this.documentEditor.editor.revisionData = [];
+        this.documentEditor.editorModule.revisionData = [];
     }
     private buildCell(operation: Operation, paraFormt: string, charFormat: string): void {
         let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(operation.offset, false, false, true);
         if (operation.length > 0) {
             this.rowWidget = data.cellWidget.ownerRow;
-            this.documentEditor.editor.cellInsertionForCE(data.rowOrCellIndex, this.rowWidget, JSON.parse(operation.format), JSON.parse(paraFormt), JSON.parse(charFormat));
+            this.documentEditor.editorModule.cellInsertionForCE(data.rowOrCellIndex, this.rowWidget, JSON.parse(operation.format), JSON.parse(paraFormt), JSON.parse(charFormat));
         } else {
             this.documentEditor.documentHelper.owner.parser.parseCellFormat(JSON.parse(operation.format), data.cellWidget.cellFormat, 0);
         }
@@ -1270,28 +1343,28 @@ export class CollaborativeEditingHandler {
     private buildDeleteCells(operation: Operation): void {
         let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(operation.offset, false, false, true);
         if (!isNullOrUndefined(data.cellWidget)) {
-            const firstPara: ParagraphWidget = this.documentEditor.selection.getFirstParagraph(data.cellWidget);
-            const lastPara: ParagraphWidget = this.documentEditor.selection.getLastParagraph(data.cellWidget);
+            const firstPara: ParagraphWidget = this.documentEditor.selectionModule.getFirstParagraph(data.cellWidget);
+            const lastPara: ParagraphWidget = this.documentEditor.selectionModule.getLastParagraph(data.cellWidget);
             if (!isNullOrUndefined(firstPara) && !isNullOrUndefined(lastPara)) {
-                this.documentEditor.selection.start.setPosition(firstPara.firstChild as LineWidget, true);
-                this.documentEditor.selection.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
+                this.documentEditor.selectionModule.start.setPosition(firstPara.firstChild as LineWidget, true);
+                this.documentEditor.selectionModule.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
             }
-            this.documentEditor.editor.checkAndRemoveComments();
+            this.documentEditor.editorModule.checkAndRemoveComments();
             this.table = data.cellWidget.ownerTable.combineWidget(this.documentEditor.viewer) as TableWidget;
             let paragraph: ParagraphWidget = undefined;
             if (data.cellWidget.nextWidget) {
                 let nextCell: TableCellWidget = data.cellWidget.nextWidget as TableCellWidget;
-                paragraph = this.documentEditor.selection.getFirstParagraph(nextCell);
+                paragraph = this.documentEditor.selectionModule.getFirstParagraph(nextCell);
             } else if (data.cellWidget.previousWidget) {
                 let previousCell: TableCellWidget = data.cellWidget.previousWidget as TableCellWidget;
-                paragraph = this.documentEditor.selection.getFirstParagraph(previousCell);
+                paragraph = this.documentEditor.selectionModule.getFirstParagraph(previousCell);
             }
             if (isNullOrUndefined(paragraph)) {
-                paragraph = this.documentEditor.editor.getParagraphForSelection(this.table);
+                paragraph = this.documentEditor.editorModule.getParagraphForSelection(this.table);
             }
-            operation.length += this.documentEditor.editor.onDeleteColumn(this.table, [data.cellWidget]);
+            operation.length += this.documentEditor.editorModule.onDeleteColumn(this.table, [data.cellWidget]);
             this.table.updateRowIndex(0);
-            this.documentEditor.selection.selectParagraphInternal(paragraph, true);
+            this.documentEditor.selectionModule.selectParagraphInternal(paragraph, true);
         }
     }
     private transformSelectionOperation(operation: Operation, conflictingOperation: Operation): void {
@@ -1343,18 +1416,18 @@ export class CollaborativeEditingHandler {
                 this.documentEditor.documentHelper.restrictEditingPane.showHideRestrictPane(true);
                 if (!isNullOrUndefined(operation.protectionData.saltValue)) {
                     if (operation.protectionData.hashValue === '' && operation.protectionData.saltValue === '') {
-                        this.documentEditor.editor.protectDocument(operation.protectionData.protectionType);
+                        this.documentEditor.editorModule.protectDocument(operation.protectionData.protectionType);
                     }
                     else {
-                        this.documentEditor.editor.enforceProtectionAssign(operation.protectionData.saltValue, operation.protectionData.hashValue, operation.protectionData.protectionType);
+                        this.documentEditor.editorModule.enforceProtectionAssign(operation.protectionData.saltValue, operation.protectionData.hashValue, operation.protectionData.protectionType);
                     }
                 }
                 else {
                     if (isNullOrUndefined(operation.protectionData.hashValue)) {
-                        this.documentEditor.editor.unProtectDocument();
+                        this.documentEditor.editorModule.unProtectDocument();
                     }
                     else {
-                        this.documentEditor.editor.validateHashValue(operation.protectionData.hashValue);
+                        this.documentEditor.editorModule.validateHashValue(operation.protectionData.hashValue);
                     }
                 }
                 break;
@@ -1370,6 +1443,7 @@ export class CollaborativeEditingHandler {
             var httpRequest = new XMLHttpRequest();
             httpRequest.open('Post', this.serviceUrl + 'GetActionsFromServer', true);
             httpRequest.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+            this.setCustomAjaxHeaders(httpRequest);
             httpRequest.onreadystatechange = () => {
                 if (httpRequest.readyState === 4) {
                     if (httpRequest.status === 200 || httpRequest.status === 304) {
@@ -1411,25 +1485,28 @@ export class CollaborativeEditingHandler {
         let keys = Object.keys(characterFormat);
         this.documentEditor.documentHelper.owner.parser.parseCharacterFormat(0, characterFormat, format);
         if (keys.length > 1) {
-            this.documentEditor.documentHelper.owner.fontDialogModule.onCharacterFormat(this.documentEditor.selection, format);
-            this.documentEditor.editor.onApplyCharacterFormat('CharacterFormat', format);
+            this.documentEditor.documentHelper.owner.fontDialogModule.onCharacterFormat(this.documentEditor.selectionModule, format);
+            this.documentEditor.editorModule.onApplyCharacterFormat('CharacterFormat', format);
         } else if (keys.length === 1) {
             if (keys.indexOf('styleName') !== -1) {
-                this.documentEditor.editor.applyStyle(characterFormat.styleName, true);
-            } else if (keys.indexOf('allCaps') !== -1) {
-                this.documentEditor.editor.changeCase('Uppercase');
+                this.documentEditor.editorModule.applyStyle(characterFormat.styleName, true);
+            }else if(keys.indexOf('allCaps') !== -1){
+                this.documentEditor.editorModule.changeCase('allCaps');
+            }else if (keys.indexOf('Uppercase') !== -1 || keys.indexOf('Lowercase') !== -1 || keys.indexOf('SentenceCase') !== -1 || keys.indexOf('ToggleCase') !== -1 || keys.indexOf('CapitalizeEachWord') !== -1) {
+                this.documentEditor.editorModule.changeCase(keys[0]);
             } else {
                 if (type === 'increment' || type === 'decrement') {
-                    this.documentEditor.editor.onApplyCharacterFormat(keys[0], type, true);
+                    this.documentEditor.editorModule.onApplyCharacterFormat(keys[0], type, true);
                 } else {
-                    this.documentEditor.editor.onApplyCharacterFormat(keys[0], characterFormat[keys[0]]);
+                    this.documentEditor.editorModule.onApplyCharacterFormat(keys[0], characterFormat[keys[0]]);
                 }
             }
         } else {
-            this.documentEditor.editor.clearFormatting();
+            this.documentEditor.editorModule.clearFormatting();
         }
     }
-    private insertParagraphFormat(property: string, paragraphData: string): void {
+
+    private insertParagraphFormat(operation: Operation, paragraphData: string): void {
         let format: WParagraphFormat = new WParagraphFormat(undefined);
         let paragraphFormat: any = JSON.parse(paragraphData);
         let update: boolean = false;
@@ -1438,19 +1515,27 @@ export class CollaborativeEditingHandler {
             update = true;
         }
         let keys = Object.keys(paragraphFormat);
-        this.documentEditor.documentHelper.owner.parser.parseParagraphFormat(0, JSON.parse(paragraphData), format);
+        this.documentEditor.documentHelper.owner.parser.parseParagraphFormat(0, paragraphFormat, format);
         if (keys.length === 1) {
             if (keys.indexOf('styleName') !== -1) {
-                this.documentEditor.editor.applyStyle(paragraphFormat.styleName, true);
+                this.documentEditor.editorModule.applyStyle(paragraphFormat.styleName, true);
             } else {
                 if (keys[0] === 'borders') {
-                    this.documentEditor.editor.onApplyParagraphFormat(keys[0], format.borders, false, false);
+                    this.documentEditor.editorModule.onApplyParagraphFormat(keys[0], format.borders, false, false);
+                } else if (keys[0] === 'listFormat') {
+                    this.updateList(operation, format);
+                    let list: WList = this.documentEditor.documentHelper.getListById(paragraphFormat.listFormat.nsid, true);
+                    if (!isNullOrUndefined(list)) {
+                        format.listFormat.listId = list.listId;
+                        format.listFormat.list = list;
+                    }
+                    this.documentEditor.editorModule.onApplyParagraphFormat('listFormat', format.listFormat, false, false);
                 } else {
-                    this.documentEditor.editor.onApplyParagraphFormat(keys[0], paragraphFormat[keys[0]], update, false);
+                    this.documentEditor.editorModule.onApplyParagraphFormat(keys[0], paragraphFormat[keys[0]], update, false);
                 }
             }
         } else {
-            this.documentEditor.editor.updateSelectionParagraphFormatting(null, format, false);
+            this.documentEditor.documentHelper.owner.paragraphDialogModule.onParagraphFormat(format);
         }
     }
     private insertTableFormat(type: string, tableData: string, offset: number) {
@@ -1462,20 +1547,20 @@ export class CollaborativeEditingHandler {
         let sourceTable: TableWidget = data.tableWidget;
         if (!isNullOrUndefined(type)) {
             let typeValue = type === 'TableAutoFitToContents' ? 'FitToContents' : type === 'TableAutoFitToWindow' ? 'FitToWindow' : 'FixedColumnWidth';
-            this.documentEditor.editor.insertAutoFitTable(typeValue as AutoFitType, sourceTable);
+            this.documentEditor.editorModule.insertAutoFitTable(typeValue as AutoFitType, sourceTable);
             return;
         }
         if (keys.length === 1) {
-            this.documentEditor.editor.onApplyTableFormat(keys[0], tableFormat[keys[0]], sourceTable);
+            this.documentEditor.editorModule.onApplyTableFormat(keys[0], tableFormat[keys[0]], sourceTable);
         } else {
             if (keys.indexOf('borders') !== -1 || keys.indexOf('shading') !== -1) {
-                this.documentEditor.editor.isBordersAndShadingDialog = true;
-                this.documentEditor.editor.onTableFormat(format, true, sourceTable);
-                this.documentEditor.editor.isBordersAndShadingDialog = false;
+                this.documentEditor.editorModule.isBordersAndShadingDialog = true;
+                this.documentEditor.editorModule.onTableFormat(format, true, sourceTable);
+                this.documentEditor.editorModule.isBordersAndShadingDialog = false;
             } else if (keys.indexOf('cellSpacing') !== -1 || keys.indexOf('leftMargin') !== -1 || keys.indexOf('topMargin') !== -1 || keys.indexOf('rightMargin') !== -1 || keys.indexOf('bottomMargin') !== -1) {
                 this.documentEditor.documentHelper.owner.tableOptionsDialogModule.applySubTableOptions(format, sourceTable);
             } else {
-                this.documentEditor.editor.onTableFormat(format, false, sourceTable);
+                this.documentEditor.editorModule.onTableFormat(format, false, sourceTable);
             }
         }
     }
@@ -1486,32 +1571,36 @@ export class CollaborativeEditingHandler {
         let keys = Object.keys(rowFormat);
         this.documentEditor.documentHelper.owner.parser.parseRowFormat(rowFormat, format, 0);
         if (keys.length === 1) {
-            this.documentEditor.editor.onApplyTableRowFormat(keys[0], rowFormat[keys[0]]);
+            this.documentEditor.editorModule.onApplyTableRowFormat(keys[0], rowFormat[keys[0]]);
         } else {
-            this.documentEditor.editor.onRowFormat(format);
+            this.documentEditor.editorModule.onRowFormat(format);
         }
     }
 
     private insertCellFormat(cellData: string): void {
+        if (!this.documentEditor.selectionModule.start.paragraph.isInsideTable) {
+            return;
+        }
         let format: WCellFormat = new WCellFormat(undefined);
-        let cellFormat: any = JSON.parse(cellData);
-        let keys = Object.keys(cellFormat);
-        this.documentEditor.documentHelper.owner.parser.parseCellFormat(cellFormat, format, 0);
+        let formatCell: any = JSON.parse(cellData);
+        let keys = Object.keys(formatCell);
+        this.documentEditor.documentHelper.owner.parser.parseCellFormat(formatCell, format, 0);
+        let cellFormat: WCellFormat = this.documentEditor.selectionModule.start.paragraph.associatedCell.cellFormat;
         if (keys.length === 1) {
             if (keys[0] === 'shading') {
-                this.documentEditor.editor.onApplyTableCellFormat(keys[0], format.shading);
+                this.documentEditor.editorModule.applyCellPropertyValue(this.documentEditor.selectionModule, keys[0], format.shading, cellFormat);
             } else if (keys[0] === 'borders') {
-                this.documentEditor.editor.onApplyTableCellFormat(keys[0], format.borders);
+                this.documentEditor.editorModule.applyCellPropertyValue(this.documentEditor.selectionModule, keys[0], format.borders, cellFormat);
             } else {
-                this.documentEditor.editor.onApplyTableCellFormat(keys[0], cellFormat[keys[0]]);
+                this.documentEditor.editorModule.applyCellPropertyValue(this.documentEditor.selectionModule, keys[0], cellFormat[keys[0]], cellFormat);
             }
         } else {
             if (keys.indexOf('preferredWidth') !== -1 || keys.indexOf('preferredWidthType') !== -1 || keys.indexOf('verticalAlignment') !== -1 || keys.indexOf('borders') !== -1 || keys.indexOf('shading') !== -1) {
                 if (keys.indexOf('borders') !== -1 || keys.indexOf('shading') !== -1) {
-                    this.documentEditor.editor.isBordersAndShadingDialog = true;
+                    this.documentEditor.editorModule.isBordersAndShadingDialog = true;
                 }
-                this.documentEditor.editor.onCellFormat(format);
-                this.documentEditor.editor.isBordersAndShadingDialog = false;
+                this.documentEditor.editorModule.applyCellPropertyValue(this.documentEditor.selectionModule, undefined, format, cellFormat);
+                this.documentEditor.editorModule.isBordersAndShadingDialog = false;
             } else {
                 this.documentEditor.documentHelper.owner.cellOptionsDialogModule.applySubCellOptions(format);
             }
@@ -1521,16 +1610,16 @@ export class CollaborativeEditingHandler {
         let data: object = JSON.parse(sectionData);
         let keys = Object.keys(data);
         if (keys[0] === 'linkToPrevious') {
-            const headerFooterWidget: HeaderFooterWidget = this.documentEditor.selection.start.paragraph.bodyWidget as HeaderFooterWidget;
+            const headerFooterWidget: HeaderFooterWidget = this.documentEditor.selectionModule.start.paragraph.bodyWidget as HeaderFooterWidget;
             let sectionIndex: number = headerFooterWidget.sectionIndex;
             let headerFooterType: HeaderFooterType = headerFooterWidget.headerFooterType;
-            this.documentEditor.editor.removeInlineHeaderFooterWidget(sectionIndex, headerFooterType, property, data['linkToPrevious']);
+            this.documentEditor.editorModule.removeInlineHeaderFooterWidget(sectionIndex, headerFooterType, property, data['linkToPrevious']);
         } else if (keys.length > 1) {
             let sectionFormat: WSectionFormat = new WSectionFormat();
             this.documentEditor.documentHelper.owner.parser.parseSectionFormat(0, data, sectionFormat);
-            this.documentEditor.editor.onApplySectionFormat(undefined, sectionFormat);
+            this.documentEditor.editorModule.onApplySectionFormat(undefined, sectionFormat);
         } else {
-            this.documentEditor.editor.onApplySectionFormat(Object.keys(data)[0], data[Object.keys(data)[0]]);
+            this.documentEditor.editorModule.onApplySectionFormat(Object.keys(data)[0], data[Object.keys(data)[0]]);
         }
     }
 
@@ -1539,12 +1628,19 @@ export class CollaborativeEditingHandler {
             this.message += event + ' ' + '\n';
         }
     }
-
+    private setCustomAjaxHeaders(xmlHttpRequest: XMLHttpRequest): void {
+        for (let i: number = 0; i < this.documentEditor.headers.length; i++) {
+            const header: Object = this.documentEditor.headers[i];
+            for (const key of Object.keys(header)) {
+                xmlHttpRequest.setRequestHeader(key, header[key]);
+            }
+        }
+    }
     /**
      * Destory collaborative editing module.
      * @private
      */
-    public destory(): void {
+    public destroy(): void {
         this.version = undefined;
         this.documentEditor = undefined;
         this.roomName = undefined;

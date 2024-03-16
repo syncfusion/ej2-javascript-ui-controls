@@ -6,7 +6,7 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { RenderType } from '../base/enum';
 import { setToolbarStatus, updateUndoRedoStatus, isIDevice } from '../base/util';
-import { IRichTextEditor, IToolbarRenderOptions, IDropDownRenderArgs, IToolbarItemModel, IColorPickerRenderArgs } from '../base/interface';
+import { IRichTextEditor, IToolbarRenderOptions, IDropDownRenderArgs, IToolbarItemModel, IColorPickerRenderArgs, IBaseQuickToolbar } from '../base/interface';
 import { IToolbarItems, IRenderer, IQuickToolbarOptions, IShowQuickTBarOptions, ISetToolbarStatusArgs } from '../base/interface';
 import { BeforeQuickToolbarOpenArgs, QuickToolbarEventArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
@@ -20,10 +20,10 @@ import { RichTextEditorModel } from '../base/rich-text-editor-model';
 /**
  * `Quick toolbar` module is used to handle Quick toolbar actions.
  */
-export class BaseQuickToolbar {
+export class BaseQuickToolbar implements IBaseQuickToolbar {
     public popupObj: Popup;
     public element: HTMLElement;
-    private isDOMElement: boolean;
+    public isRendered: boolean;
     public quickTBarObj: BaseToolbar;
     private stringItems: (string | IToolbarItems)[];
     private dropDownButtons: DropDownButtons;
@@ -39,7 +39,7 @@ export class BaseQuickToolbar {
     public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         this.parent = parent;
         this.locator = locator;
-        this.isDOMElement = false;
+        this.isRendered = false;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
         this.popupRenderer = this.renderFactory.getRenderer(RenderType.Popup);
@@ -104,7 +104,17 @@ export class BaseQuickToolbar {
             e.target.classList.contains('e-imgbreak')) ? false : true;
         let target: HTMLElement = !isNOU(imgWrapper) ? imgWrapper : e.target;
         addClass([this.toolbarElement], [classes.CLS_RM_WHITE_SPACE]);
-        const targetOffsetTop: number = (target.classList.contains("e-rte-audio")) ? target.parentElement.offsetTop : target.offsetTop;
+        let targetOffsetTop: number;
+        if (!isNOU(closest(target, 'table'))) {
+            targetOffsetTop = target.offsetTop;
+            let parentTable: Element = closest(target, 'table');
+            while (!isNOU(parentTable)) {
+                targetOffsetTop += (parentTable as HTMLElement).offsetTop;
+                parentTable = closest(parentTable.parentElement, 'table');
+            }
+        } else {
+            targetOffsetTop = (target.classList.contains("e-rte-audio")) ? target.parentElement.offsetTop : target.offsetTop;
+        }
         const parentOffsetTop: number = window.pageYOffset + e.parentData.top;
         if ((targetOffsetTop - e.editTop) > e.popHeight) {
             y = parentOffsetTop + e.tBarElementHeight + (targetOffsetTop - e.editTop) - e.popHeight - 5;
@@ -114,10 +124,28 @@ export class BaseQuickToolbar {
             y = e.y;
         }
         target = isAligned ? e.target : target;
-        if (target.offsetWidth > e.popWidth) {
-            x = (target.offsetWidth / 2) - (e.popWidth / 2) + e.parentData.left + ((target.classList.contains("e-rte-audio")) ? target.parentElement.offsetLeft : target.offsetLeft);
+        let targetOffsetLeft: number;
+        let currentOffsetWidth: number;
+        if (!isNOU(closest(target, 'table'))) {
+            targetOffsetLeft = target.offsetLeft;
+            let parentTable: Element = closest(target, 'table');
+            let checkOffSetParentWidth: boolean = false;
+            if (!isNOU(closest(parentTable, 'TD'))) {
+                checkOffSetParentWidth = true;
+            }
+            while (!isNOU(parentTable)) {
+                targetOffsetLeft += (parentTable as HTMLElement).offsetLeft;
+                currentOffsetWidth = checkOffSetParentWidth ? (parentTable as HTMLElement).offsetWidth : target.offsetWidth;
+                parentTable = closest(parentTable.parentElement, 'table');
+            }
         } else {
-            x = e.parentData.left + target.offsetLeft;
+            currentOffsetWidth = target.offsetWidth;
+            targetOffsetLeft = (target.classList.contains("e-rte-audio")) ? target.parentElement.offsetLeft : target.offsetLeft;
+        }
+        if (currentOffsetWidth > e.popWidth) {
+            x = (currentOffsetWidth / 2) - (e.popWidth / 2) + e.parentData.left + targetOffsetLeft;
+        } else {
+            x = e.parentData.left + targetOffsetLeft;
         }
         this.popupObj.position.X = ((x + e.popWidth) > e.parentData.right) ? e.parentData.right - e.popWidth : x;
         this.popupObj.position.Y = (y >= 0) ? y : e.y + 5;
@@ -237,6 +265,9 @@ export class BaseQuickToolbar {
                     this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
                     this.parent.enableToolbarItem(['Undo', 'Redo']);
                 }
+                else {
+                    this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
+                }
                 append([this.element], document.body);
                 if (this.parent.showTooltip) {
                     this.tooltip  = new Tooltip({
@@ -244,7 +275,8 @@ export class BaseQuickToolbar {
                         openDelay: 400,
                         showTipPointer: true,
                         windowCollision: true,
-                        position: 'BottomCenter'
+                        position: 'BottomCenter',
+                        cssClass: this.parent.getCssClass()
                     });
                     this.tooltip.appendTo(this.element);
                 }
@@ -278,9 +310,9 @@ export class BaseQuickToolbar {
                     parentData: parent.getBoundingClientRect(),
                     tBarElementHeight: tBarHeight
                 };
-                if (target.tagName === 'IMG' || target.tagName === 'AUDIO' || target.tagName === 'VIDEO' || target.tagName === 'IFRAME' || (target.classList &&
+                if ((closest(target, 'TABLE') || target.tagName === 'IMG' || target.tagName === 'AUDIO' || target.tagName === 'VIDEO' || target.tagName === 'IFRAME' || (target.classList &&
                     (target.classList.contains(classes.CLS_AUDIOWRAP) || target.classList.contains(classes.CLS_CLICKELEM) ||
-                    target.classList.contains(classes.CLS_VID_CLICK_ELEM)))) {
+                    target.classList.contains(classes.CLS_VID_CLICK_ELEM)))) && (x == beforeQuickToolbarArgs.positionX || y == beforeQuickToolbarArgs.positionY)) {
                     this.setPosition(showPopupData);
                 }
                 if (!this.parent.inlineMode.enable) {
@@ -298,7 +330,7 @@ export class BaseQuickToolbar {
                     maxWidth: window.outerWidth + 'px'
                 });
                 addClass([this.element], [classes.CLS_POP]);
-                this.isDOMElement = true;
+                this.isRendered = true;
             }
         });
     }
@@ -339,7 +371,7 @@ export class BaseQuickToolbar {
             this.parent.notify(events.destroyTooltip, {args: event});
         }
         this.removeEleFromDOM();
-        this.isDOMElement = false;
+        this.isRendered = false;
     }
     /**
      * @param {string} item - specifies the string value
@@ -363,7 +395,7 @@ export class BaseQuickToolbar {
 
     private removeEleFromDOM(): void {
         const element: Element = this.popupObj.element;
-        if (this.isDOMElement) {
+        if (this.isRendered) {
             this.dropDownButtons.destroyDropDowns();
             this.colorPickerObj.destroyColorPicker();
             removeClass([this.element], [classes.CLS_POP]);

@@ -2,37 +2,7 @@
 
 ## [Unreleased]
 
-## 24.2.4 (2024-02-06)
-
-### Uploader
-
-#### Bug Fixes
-
-- `#I526571` - Fixed the issue where the header in the Cancel Event was not returning in the header as expected. Instead, it was returning in the payload.
-
-### TextBox
-
-#### Bug Fixes
-
-- `#I548068` - Fixed the issue where a compilation error occurred while generating the CSS file from the `DataForm` related styles.
-
-## 24.1.47 (2024-01-23)
-
-### Signature
-
-#### Bug Fixes
-
-- `#F86282` - Issue with "The `getSignature` method data is not cleared after using clear method of signature" has been resolved.
-
-## 24.1.45 (2024-01-09)
-
-### Signature
-
-#### Bug Fixes
-
-- `#I510300` - Issue with "drawn points will be in a significantly different location than the cursor while zooming" has been resolved.
-
-## 24.1.41 (2023-12-18)
+## 25.1.35 (2024-03-15)
 
 ### Signature
 

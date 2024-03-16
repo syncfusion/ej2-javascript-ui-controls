@@ -10,7 +10,7 @@ import { colWidthChanged, protectSelection, editOperation, initiateFormulaRefere
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 import { addressHandle, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle } from '../common/index';
 import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell } from '../../workbook/index';
-import { getIndexesFromAddress, selectionComplete, skipHiddenIdx } from '../../workbook/common/index';
+import { getIndexesFromAddress, selectionComplete, skipHiddenIdx, parseFormulaArgument } from '../../workbook/common/index';
 
 
 /**
@@ -21,27 +21,11 @@ export class Selection {
     private startCell: number[];
     private isRowSelected: boolean;
     private isColSelected: boolean;
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    private scrollInterval: any;
+    private scrollInterval: number;
     private touchEvt: TouchEvent & MouseEvent;
     private mouseMoveEvt: EventListener;
-    private uniqueOBracket: string = String.fromCharCode(129);
-    private uniqueCBracket: string = String.fromCharCode(130);
-    private uniqueCSeparator: string = String.fromCharCode(131);
-    private uniqueCOperator: string = String.fromCharCode(132);
-    private uniquePOperator: string = String.fromCharCode(133);
-    private uniqueSOperator: string = String.fromCharCode(134);
-    private uniqueMOperator: string = String.fromCharCode(135);
-    private uniqueDOperator: string = String.fromCharCode(136);
-    private uniqueModOperator: string = String.fromCharCode(137);
-    private uniqueConcateOperator: string = String.fromCharCode(138);
-    private uniqueEqualOperator: string = String.fromCharCode(139);
-    private uniqueExpOperator: string = String.fromCharCode(140);
-    private uniqueGTOperator: string = String.fromCharCode(141);
-    private uniqueLTOperator: string = String.fromCharCode(142);
     private invalidOperators: string[] = ['%'];
     private formulaRange: string[] = [];
-    private tableRangesFormula: object = {};
     private dStartCell: { rowIndex: number, colIndex: number };
     private dEndCell: { rowIndex: number, colIndex: number };
     private touchSelectionStarted: boolean;
@@ -1126,7 +1110,9 @@ export class Selection {
         let str: string;
         let formulaSheetIdx: number = formulaStartSheetIdx;
         let i: number = 0;
-        const parsedVal: string[] = this.parseFormula(val);
+        const eventArgs: { formula?: string, formulaArr?: string[] } = { formula: val };
+        this.parent.notify(parseFormulaArgument, eventArgs);
+        const parsedVal: string[] = eventArgs.formulaArr;
         const len: number = parsedVal.length;
         let ctrlKeyCount: number = 0;
         const formulaBorder: string[][] = [['e-vborderright', 'e-vborderbottom'], ['e-pborderright', 'e-pborderbottom'],
@@ -1314,95 +1300,6 @@ export class Selection {
         // for (let idx: number = 0; idx < borderEleColl.length; idx++) {
         //     const td: HTMLElement = borderEleColl[idx] as HTMLElement;
         // }
-    }
-
-    private parseFormula(formulaStr: string): string[] {
-        let tempStr: string;
-        let str: string;
-        let i: number = 0;
-        const arr: string[] = [];
-        formulaStr = this.markSpecialChar(formulaStr.replace('=', ''));
-        const formula: string[] = formulaStr.split(/\(|\)|=|\^|>|<|,|:|\+|-|\*|\/|%|&/g);
-        const len: number = formula.length;
-        while (i < len) {
-            tempStr = formula[i as number];
-            if (!tempStr) {
-                i++;
-                continue;
-            }
-            if (tempStr.length === 1) {
-                arr.push(this.isUniqueChar(tempStr) ? this.getUniqueCharVal(tempStr) : tempStr);
-            } else {
-                str = tempStr[0];
-                if (tempStr.indexOf('!') > 0) {
-                    if (this.isUniqueChar(str)) {
-                        arr.push(this.getUniqueCharVal(str));
-                        tempStr = tempStr.substr(1);
-                    }
-                    const strVal: number = tempStr.indexOf('!') + 1;
-                    arr.push(tempStr.substr(0, strVal));
-                    arr.push(tempStr.substr(strVal));
-                } else if (this.isUniqueChar(str)) {
-                    arr.push(this.getUniqueCharVal(str));
-                    arr.push(tempStr.substr(1));
-                } else {
-                    arr.push(tempStr);
-                }
-            }
-            i++;
-        }
-        return arr;
-    }
-
-    private isUniqueChar(str: string): boolean {
-        const code: number = str.charCodeAt(str.charAt[0]);
-        return code >= 129 && code <= 142;
-    }
-
-    private getUniqueCharVal(tempStr: string): string {
-        switch (tempStr) {
-        case this.uniqueOBracket:
-            return '(';
-        case this.uniqueCBracket:
-            return ')';
-        case this.uniqueCOperator:
-            return ':';
-        case this.uniqueSOperator:
-            return '-';
-        case this.uniquePOperator:
-            return '+';
-        case this.uniqueMOperator:
-            return '*';
-        case this.uniqueDOperator:
-            return '/';
-        case this.uniqueModOperator:
-            return '%';
-        case this.uniqueCSeparator:
-            return ',';
-        case this.uniqueConcateOperator:
-            return '&';
-        case this.uniqueEqualOperator:
-            return '=';
-        case this.uniqueExpOperator:
-            return '^';
-        case this.uniqueLTOperator:
-            return '<';
-        case this.uniqueGTOperator:
-            return '>';
-        }
-        return '';
-    }
-
-    private markSpecialChar(formulaVal: string): string {
-        formulaVal = formulaVal.replace(/\(/g, '(' + this.uniqueOBracket).replace(/\)/g, ')' + this.uniqueCBracket);
-        formulaVal = formulaVal.replace(/,/g, ',' + this.uniqueCSeparator).replace(/:/g, ':' + this.uniqueCOperator);
-        formulaVal = formulaVal.replace(/\+/g, '+' + this.uniquePOperator).replace(/-/g, '-' + this.uniqueSOperator);
-        formulaVal = formulaVal.replace(/\*/g, '*' + this.uniqueMOperator).replace(/\//g, '/' + this.uniqueDOperator);
-        formulaVal = formulaVal.replace(/&/g, '&' + this.uniqueConcateOperator);
-        formulaVal = formulaVal.replace(/=/g, '=' + this.uniqueEqualOperator);
-        formulaVal = formulaVal.replace(/\^/g, '^' + this.uniqueExpOperator);
-        formulaVal = formulaVal.replace(/>/g, '>' + this.uniqueGTOperator).replace(/</g, '<' + this.uniqueLTOperator);
-        return formulaVal.replace(/%/g, '%' + this.uniqueModOperator);
     }
 
     /**

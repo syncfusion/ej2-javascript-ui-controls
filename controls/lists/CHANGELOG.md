@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 24.1.41 (2023-12-18)
+## 25.1.35 (2024-03-15)
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with "Script error thrown in list box while dragging the `svg` element" has been resolved.
 
 ### ListView
 

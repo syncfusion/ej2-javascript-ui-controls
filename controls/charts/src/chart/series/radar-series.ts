@@ -49,6 +49,9 @@ export class RadarSeries extends PolarSeries {
         vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[0].value, xAxis), this.startAngle);
         y1 = this.centerY + radius * vector.y;
         x1 = this.centerX + radius * vector.x;
+        if (isNaN(x1) || isNaN(y1)) {
+            return direction;
+        }
         direction += ' L ' + x1 + ' ' + y1 + ' ';
         for (let i: number = length - 1; i >= 0; i--) {
             vector = CoefficientToVector(valueToPolarCoefficient(xAxis.visibleLabels[i as number].value, xAxis), this.startAngle);

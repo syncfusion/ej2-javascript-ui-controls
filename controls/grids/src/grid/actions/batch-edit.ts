@@ -5,7 +5,7 @@ import { isNullOrUndefined, KeyboardEventArgs, isUndefined } from '@syncfusion/e
 import { IGrid, BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs } from '../base/interface';
 import { BatchAddArgs, CellEditArgs, CellSaveArgs, CellFocusArgs, BatchCancelArgs } from '../base/interface';
 import { CellType, freezeTable } from '../base/enum';
-import { parentsUntil, inArray, refreshForeignData, getObject, addRemoveEventListener, } from '../base/util';
+import { parentsUntil, inArray, refreshForeignData, getObject, addRemoveEventListener, getCellFromRow } from '../base/util';
 import { getCellByColAndRowIndex, addFixedColumnBorder } from '../base/util';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
@@ -315,9 +315,14 @@ export class BatchEdit {
         this.isAdded = false;
         this.bulkDelete(fieldname, data);
         if (this.parent.aggregates.length > 0) {
-            this.parent.notify(events.refreshFooterRenderer, {});
+            if (!(this.parent.isReact || this.parent.isVue)) {
+                this.parent.notify(events.refreshFooterRenderer, {});
+            }
             if (this.parent.groupSettings.columns.length > 0) {
                 this.parent.notify(events.groupAggregates, {});
+            }
+            if (this.parent.isReact || this.parent.isVue) {
+                this.parent.notify(events.refreshFooterRenderer, {});
             }
         }
     }
@@ -512,7 +517,7 @@ export class BatchEdit {
     private refreshRowIdx(): void {
         const gObj: IGrid = this.parent;
         const rows: Element[] = gObj.getAllDataRows(true);
-        const dataObjects: Row<Column>[]  = gObj.getRowsObject().filter((row: Row<Column>) => !row.isDetailRow);
+        const dataObjects: Row<Column>[] = gObj.getRowsObject().filter((row: Row<Column>) => !row.isDetailRow);
         for (let i: number = 0, j: number = 0, len: number = rows.length; i < len; i++) {
             if (rows[parseInt(i.toString(), 10)].classList.contains(literals.row) && !rows[parseInt(i.toString(), 10)].classList.contains('e-hiddenrow')) {
                 rows[parseInt(i.toString(), 10)].setAttribute(literals.dataRowIndex, j.toString());
@@ -750,7 +755,11 @@ export class BatchEdit {
         const col: Column = gObj.getColumnByField(field);
         const index: number = gObj.getColumnIndexByField(field);
         if (col && !col.isPrimaryKey && col.allowEditing) {
-            const td: Element = getCellByColAndRowIndex(this.parent, col, rowIndex, index);
+            let td: Element = this.parent.isSpan ? getCellFromRow(gObj, rowIndex, index) : 
+                getCellByColAndRowIndex(this.parent, col, rowIndex, index);
+            if (this.parent.isSpan && !td) {
+                return;
+            }
             const rowObj: Row<Column> = gObj.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             if (gObj.isEdit ||
                 (!rowObj.changes && ((!(value instanceof Date) && rowObj.data["" + field] !== value) ||

@@ -946,8 +946,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                         const selectedEle: HTMLElement = this.stepperItemElements[parseInt(this.activeStep.toString(), 10)].firstChild as HTMLElement;
                         let value: number = this.activeStep === 0 ? 0 :(selectedEle.offsetLeft - progressPos.offsetLeft + (selectedEle.offsetWidth / 2)) / progressPos.offsetWidth * 100;
                         if (this.element.classList.contains(RTL)) {
-                            const elementPos: HTMLElement = this.stepperItemElements[0].firstChild as HTMLElement;
-                            value = ((progressPos.offsetWidth - selectedEle.offsetLeft) + Math.abs((elementPos.offsetLeft + elementPos.offsetWidth) - this.stepperItemList.offsetWidth)) / progressPos.offsetWidth * 100;
+                            value = (progressPos.getBoundingClientRect().right - selectedEle.getBoundingClientRect().right + (selectedEle.offsetWidth / 2)) / progressPos.offsetWidth * 100;
                             this.progressbar.style.setProperty(PROGRESSVALUE, (value) + '%');
                         }
                         else { this.progressbar.style.setProperty(PROGRESSVALUE, (value) + '%'); }

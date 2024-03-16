@@ -318,7 +318,6 @@
         list-style: none;
         margin: $fe-bc-margin;
         padding: $fe-bc-padding;
-        visibility: visible;
 
         .e-breadcrumb-menu {
           display: inline;
@@ -475,7 +474,7 @@
           }
 
           @if $fm-skin-name == 'fabric' or $fm-skin-name == 'fabric-dark' {
-            padding: 10px 8px;
+            padding: 8px 12px;
             line-height: 16px;
           }
         }
@@ -882,7 +881,7 @@
           margin-left: -12px;
           width: 22px;
         }
-        position: absolute;
+        position: relative;
         text-align: center;
         top: 0;
       }

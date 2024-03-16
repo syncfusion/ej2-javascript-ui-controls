@@ -82,3 +82,16 @@ export interface IToolbarStatus {
     numberFormatList?: string | boolean
     bulletFormatList?: string | boolean
 }
+/**
+ * @deprecated
+ * @private
+ * 
+ * 
+ * */
+export interface IImageResizeFactor {
+    // [x multiplier, y multiplier]
+    topLeft     : [number, number];
+    topRight    : [number, number];
+    botLeft     : [number, number];
+    botRight    : [number, number];
+}

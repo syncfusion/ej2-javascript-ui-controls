@@ -1158,7 +1158,7 @@ describe('Datepicker', () => {
             datepicker.appendTo('#date');
             expect(document.querySelector('.e-input-group').classList.contains('e-error')).toEqual(true);
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
-            keyEventArgs.target = (document.querySelector('.e-calandar-content-table') as HTMLElement);
+            keyEventArgs.target = (document.querySelector('.e-calendar-content-table') as HTMLElement);
             datepicker.inputKeyActionHandle(keyEventArgs);
            // expect(document.querySelector('.e-focused-date').textContent).toBe('13');
             keyEventArgs.action = "moveRight";
@@ -1175,7 +1175,7 @@ describe('Datepicker', () => {
             datepicker.appendTo('#date');
             expect(document.querySelector('.e-input-group').classList.contains('e-error')).toEqual(false);
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
-            keyEventArgs.target = (document.querySelector('.e-calandar-content-table') as HTMLElement);
+            keyEventArgs.target = (document.querySelector('.e-calendar-content-table') as HTMLElement);
             keyEventArgs.action = 'moveDown';
             datepicker.inputKeyActionHandle(keyEventArgs);
             expect(document.querySelector('.e-focused-date').textContent).toBe('10');
@@ -2035,7 +2035,7 @@ describe('Datepicker', () => {
             datePicker.appendTo('#date');
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
             datePicker.value=new Date('12/12/2016');
-            keyEventArgs.target = (document.querySelector('.e-calandar-content-table') as HTMLElement);  
+            keyEventArgs.target = (document.querySelector('.e-calendar-content-table') as HTMLElement);  
             keyEventArgs.action = 'enter';
             datePicker.inputKeyActionHandle(keyEventArgs);
             expect(datePicker.value.valueOf()).toBe(new Date('12/12/2016').valueOf());

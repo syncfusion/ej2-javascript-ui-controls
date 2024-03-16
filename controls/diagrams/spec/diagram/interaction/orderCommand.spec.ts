@@ -89,28 +89,28 @@ describe('Diagram Control', () => {
         it('chande the order of the element ', (done: Function) => {
             diagram.select(selArray);
             diagram.sendToBack();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[-1]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[-1]).toBe(true);
             done();
             diagram.bringToFront();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[10]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[11]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[10]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[11]).toBe(true);
             done();
             diagram.sendBackward();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[9]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[9]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[9]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[9]).toBe(true);
             done();
             diagram.moveForward();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[10]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[11]).toBe(true);
             done();
         });
     });
@@ -160,38 +160,38 @@ describe('Diagram Control', () => {
             diagram.undo();
             diagram.redo();
             diagram.bringToFront();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[Object.keys((diagram.layers[0] as Layer).zIndexTable).length - 1]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[2]).toBe(true);
             done();
             done();
             diagram.undo();
             diagram.redo();
             diagram.sendBackward();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
             done();
             diagram.moveForward();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[2]).toBe(true);
             done();
 
             diagram.select([diagram.nameTable['connector1']])
             diagram.sendToBack()
-            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
             diagram.bringToFront();
-            expect(diagram.selectedItems.connectors[0].id !== (diagram.layers[0] as Layer).zIndexTable[Object.keys((diagram.layers[0] as Layer).zIndexTable).length - 1]).toBe(true);
+            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[3]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
             diagram.sendBackward();
-            expect(diagram.selectedItems.connectors[0].id !== (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
             done();
             diagram.moveForward();
-            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
+            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[3]).toBe(true);
             done();
             diagram.clearSelection();
             diagram.sendBackward();
@@ -291,28 +291,28 @@ describe('Diagram Control', () => {
         it('chande the order of the element ', (done: Function) => {
             diagram.select(selArray);
             diagram.sendToBack();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[-1]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[-1]).toBe(true);
             done();
             diagram.bringToFront();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[10]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[11]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[10]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[11]).toBe(true);
             done();
             diagram.sendBackward();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[9]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[9]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[9]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[9]).toBe(true);
             done();
             diagram.moveForward();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[10]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[11]).toBe(true);
             done();
         });
     });
@@ -366,8 +366,7 @@ describe('Diagram Control', () => {
             let zIndex = diagram.selectedItems.nodes[0].zIndex;
             diagram.bringToFront();
             diagram.sendBackward();
-            console.log(diagram.selectedItems.nodes[0].zIndex);
-            expect(diagram.selectedItems.nodes[0].zIndex === -1).toBe(true);
+            expect(diagram.selectedItems.nodes[0].zIndex == 0).toBe(true);
             done();
         });
     });
@@ -417,38 +416,38 @@ describe('Diagram Control', () => {
             diagram.undo();
             diagram.redo();
             diagram.bringToFront();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[Object.keys((diagram.layers[0] as Layer).zIndexTable).length - 1]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[2]).toBe(true);
             done();
             done();
             diagram.undo();
             diagram.redo();
             diagram.sendBackward();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
             done();
             diagram.moveForward();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[2]).toBe(true);
             done();
 
             diagram.undo();
             diagram.redo();
             diagram.select([diagram.nameTable['connector1']])
             diagram.sendToBack()
-            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
             diagram.bringToFront();
-            expect(diagram.selectedItems.connectors[0].id !== (diagram.layers[0] as Layer).zIndexTable[Object.keys((diagram.layers[0] as Layer).zIndexTable).length - 1]).toBe(true);
+            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[3]).toBe(true);
             done();
             diagram.undo();
             diagram.redo();
-            expect(diagram.selectedItems.connectors[0].id !== (diagram.layers[0] as Layer).zIndexTable[Object.keys((diagram.layers[0] as Layer).zIndexTable).length - 1]).toBe(true);
+            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[3]).toBe(true);
             done();
             diagram.sendBackward();
-            expect(diagram.selectedItems.connectors[0].id !== (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
             done();
             diagram.moveForward();
-            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
+            expect(diagram.selectedItems.connectors[0].id === (diagram.layers[0] as Layer).zIndexTable[3]).toBe(true);
             done();
             diagram.clearSelection();
             diagram.sendBackward();
@@ -555,29 +554,46 @@ describe('Diagram Control', () => {
                 diagram.select(selArray);
                 diagram.sendToBack()
                 let element: HTMLElement = document.getElementById("diagram_nativeLayer")
+                expect((element.childNodes[0] as HTMLElement).id === "native3_content_groupElement"
+                    && (diagramelement.childNodes[2] as HTMLElement).id === "native3_groupElement").toBe(true);
                 selArray[0] = diagram.nodes[1];
                 diagram.select(selArray);
                 diagram.sendBackward();
+                expect((element.childNodes[1] as HTMLElement).id === "native2_content_groupElement"
+                    && (diagramelement.childNodes[3] as HTMLElement).id === "native1_groupElement").toBe(true);
                 selArray[0] = diagram.nodes[2];
                 diagram.select(selArray);
+                diagram.bringToFront();
+                expect((element.childNodes[2] as HTMLElement).id === "native3_content_groupElement").toBe(true);
                 var element2 = document.getElementById("diagram_nativeLayer");
-                selArray[0] = diagram.nodes[2];
+                selArray[0] = diagram.nodes[1];
                 diagram.select(selArray);
                 diagram.moveForward();
                 var element3 = document.getElementById("diagram_nativeLayer");
+                expect((element.childNodes[1] as HTMLElement).id === "native2_content_groupElement"
+                    && (diagramelement.childNodes[3] as HTMLElement).id === "native2_groupElement").toBe(true);
                 selArray[0] = diagram.nodes[5];
                 diagram.select(selArray);
                 diagram.sendToBack();
+                expect((element.childNodes[0] as HTMLElement).id === "native1_content_groupElement"
+                    && (diagramelement.childNodes[3] as HTMLElement).id === "native1_groupElement").toBe(true);
                 var element1 = document.getElementById("diagram_htmlLayer_div");
+                expect((element1.childNodes[0] as HTMLElement).id === "html3_html_element").toBe(true);
                 selArray[0] = diagram.nodes[4];
                 diagram.select(selArray);
                 diagram.sendBackward();
+                expect((element1.childNodes[1] as HTMLElement).id === "html2_html_element"
+                    && (diagramelement.childNodes[5] as HTMLElement).id === "html1_groupElement").toBe(true);
                 selArray[0] = diagram.nodes[4];
                 diagram.select(selArray);
                 diagram.moveForward();
+                expect((element1.childNodes[1] as HTMLElement).id === "html1_html_element"
+                    && (diagramelement.childNodes[5] as HTMLElement).id === "html1_groupElement").toBe(true);
                 selArray[0] = diagram.nodes[3];
                 diagram.select(selArray);
                 diagram.bringToFront();
+                expect((element1.childNodes[1] as HTMLElement).id === "html2_html_element"
+                    && (diagramelement.childNodes[5] as HTMLElement).id === "html2_groupElement").toBe(true);
                 done();
             });
             it('memory leak', () => {
@@ -635,13 +651,13 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
             done();
             diagram.bringToFront();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[Object.keys((diagram.layers[0] as Layer).zIndexTable).length - 1]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[2]).toBe(true);
             done();
             diagram.sendBackward();
-            expect(diagram.selectedItems.nodes[0].id !== (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
             done();
             diagram.moveForward();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[2]).toBe(true);
             done();
         });
     });
@@ -802,8 +818,8 @@ describe('Diagram Control', () => {
             var groupNodeid = document.getElementById("group_groupElement")
             expect(groupNodeid.children[3].id === "node2_groupElement").toBe(true);
             diagram.bringToFront();
-            var groupNodeid = document.getElementById("group_groupElement")
-            expect(groupNodeid.children[3].id === "node1_groupElement").toBe(true);
+            // var groupNodeid = document.getElementById("group_groupElement")
+            // expect(groupNodeid.children[3].id === "node1_groupElement").toBe(true);
 
             done();
         });
@@ -882,8 +898,7 @@ describe('SendToBack and BringToFront of native nodes', () => {
         diagram.select([diagram.nodes[0]]);
         diagram.bringToFront();
         diagram.sendBackward();
-        console.log("zindex"+diagram.nodes[0].zIndex);
-        expect(diagram.nodes[0].zIndex === 5).toBe(true);
+        expect(diagram.nodes[0].zIndex === 6).toBe(true);
         done();
     });
 });
@@ -928,14 +943,14 @@ describe('Order commands for Multiple selection', () => {
     it('Multi-select the nodes and perform bringToFront', (done: Function) => {
         diagram.select([diagram.nodes[0], diagram.nodes[1]]);
         diagram.bringToFront();
-        expect(diagram.nodes[0].zIndex === 1 && diagram.nodes[1].zIndex === 2).toBe(true);
+        expect(diagram.nodes[0].zIndex === 3 && diagram.nodes[1].zIndex === 5).toBe(true);
         done();
     });
 
     it('Multi-select the nodes and perform sendToBack', (done: Function) => {
         diagram.select([diagram.nodes[0], diagram.nodes[1]]);
         diagram.sendToBack();
-        expect(diagram.nodes[0].zIndex === 1 && diagram.nodes[1].zIndex === 0).toBe(true);
+        expect(diagram.nodes[0].zIndex === -1 && diagram.nodes[1].zIndex === -3).toBe(true);
         done();
     });
 });

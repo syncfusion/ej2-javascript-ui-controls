@@ -188,6 +188,11 @@ export class DataSourceUpdate {
                                 }
                                 break;
                             }
+                            const fieldCount: number = droppedClass === 'columns' ? control.dataSourceSettings.columns.length :
+                                droppedClass === 'rows' ? control.dataSourceSettings.rows.length : 0;
+                            if (fieldCount !== 0 && control.dataSourceSettings.valueIndex === fieldCount) {
+                                this.control.setProperties({ dataSourceSettings: { valueIndex: -1 } }, true);
+                            }
                         }
                     });
                 }

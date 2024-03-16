@@ -1,6 +1,6 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
-import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI } from '../common/index';
+import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI, updateSortCollection } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, renderCFDlg, focus, freeze, toggleProtect } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat, protectWorkbook } from '../common/index';
 import { DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
@@ -19,7 +19,7 @@ import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFo
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
-import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, setMerge, unMerge } from '../../workbook/common/index';
+import { SortCollectionModel, applyNumberFormatting, getFormattedCellObject, getRangeIndexes, setMerge, unMerge } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs, exportDialog } from '../../workbook/common/index';
 import { SortOrder, NumberFormatType, SetCellFormatArgs, CFArgs, clearCFRule, NumberFormatArgs } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
@@ -1728,7 +1728,17 @@ export class Ribbon {
                     break;
                 default:
                     direction = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
-                    this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: direction } } });
+                    let prevSort: SortCollectionModel[] = [];
+                    if (this.parent.sortCollection) {
+                        for (let i: number = this.parent.sortCollection.length - 1; i >= 0; i--) {
+                            if (this.parent.sortCollection[i as number] && this.parent.sortCollection[i as number].sheetIndex === this.parent.activeSheetIndex) {
+                                prevSort.push(this.parent.sortCollection[i as number]);
+                                this.parent.sortCollection.splice(i, 1);
+                            }
+                        }
+                    }
+                    this.parent.notify(updateSortCollection, { sortOptions: { sortDescriptors: { order: direction } } });
+                    this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: direction } }, previousSort: prevSort });
                     break;
                 }
                 this.sortingDdb.element.setAttribute('aria-label', args.item.text);
@@ -2892,7 +2902,12 @@ export class Ribbon {
         }
         this.cPickerEle = null;
         if (this.datavalidationDdb) { this.datavalidationDdb.destroy(); } this.datavalidationDdb = null;
+        if (this.border) { this.border = ''; }
+        if (this.fontNameIndex) { this.fontNameIndex = null; }
+        if (this.preTabIdx) { this.preTabIdx = null; }
+        if (this.numPopupWidth) { this.numPopupWidth = null; }
         this.removeEventListener();
+        this.parent = null;
     }
     private destroyComponent(id: string | HTMLElement, moduleName: string): void {
         const ele: HTMLElement = typeof id === 'string' ? document.getElementById(id) : id;

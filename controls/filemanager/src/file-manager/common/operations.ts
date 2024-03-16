@@ -1,10 +1,10 @@
-import { Ajax, createElement, select, extend, Internationalization  } from '@syncfusion/ej2-base';
+import { Ajax, Fetch, createElement, select, extend, Internationalization } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, setValue, getValue } from '@syncfusion/ej2-base';
 import { IFileManager, ReadArgs, BeforeSendEventArgs, BeforeDownloadEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { createDialog, createExtDialog } from '../pop-up/dialog';
 import { FileDetails, FileDragEventArgs, FailureEventArgs, SuccessEventArgs } from '../../index';
-import { fileType, setNodeId, getLocaleText, setDateObject, doPasteUpdate, getParentPath, getPathObject } from '../common/utility';
+import { fileType, setNodeId, getLocaleText, setDateObject, doPasteUpdate, getPathObject } from '../common/utility';
 import { generatePath } from '../common/utility';
 import { ColumnModel } from '@syncfusion/ej2-grids';
 
@@ -435,9 +435,9 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
             parent.itemData = [getValue(parent.pathId[parent.pathId.length - 1], parent.feParent)];
             read(parent, events.renameEndParent, getValue('filterPath', parent.renamedItem).replace(/\\/g, '/'));
             parent.itemData[0] = parent.renamedItem;
-            read(parent, events.pathChanged, parent.path ==='/' ? parent.path: getValue('filterPath', parent.renamedItem).replace(/\\/g, '/')+parent.renamedItem.name+'/');
-            if (getValue('filterPath', parent.renamedItem) === getValue('filterPath', parent.itemData[0]) && parent.pathNames.length > 1){
-                parent.pathNames[parent.pathNames.length-1]=parent.renameText;
+            read(parent, events.pathChanged, parent.path === '/' ? parent.path : getValue('filterPath', parent.renamedItem).replace(/\\/g, '/') + parent.renamedItem.name + '/');
+            if (getValue('filterPath', parent.renamedItem) === getValue('filterPath', parent.itemData[0]) && parent.pathNames.length > 1) {
+                parent.pathNames[parent.pathNames.length - 1] = parent.renameText;
             }
         } else {
             parent.itemData = [getPathObject(parent)];
@@ -616,22 +616,78 @@ export function Download(parent: IFileManager, path: string, items: string[]): v
     const downloadUrl: string = parent.ajaxSettings.downloadUrl ? parent.ajaxSettings.downloadUrl : parent.ajaxSettings.url;
     // eslint-disable-next-line
     const data: Object = { 'action': 'download', 'path': path, 'names': items, 'data': parent.itemData };
-    const eventArgs: BeforeDownloadEventArgs = { data: data, cancel: false };
+    const ajaxSettings: Object = {
+        url: downloadUrl,
+        type: 'POST',
+        contentType: 'application/json',
+        responseType: 'blob',
+        data: JSON.stringify(data),
+        onSuccess: null,
+        onFailure: null,
+        beforeSend: null
+    };
+    const eventArgs: BeforeDownloadEventArgs = { data: data, cancel: false, useFormPost: true, ajaxSettings: ajaxSettings };
     parent.trigger('beforeDownload', eventArgs, (downloadArgs: BeforeDownloadEventArgs) => {
         if (!downloadArgs.cancel) {
-            const form: HTMLElement = createElement('form', {
-                id: parent.element.id + '_downloadForm',
-                attrs: { action: downloadUrl, method: 'post', name: 'downloadForm', 'download': '' }
-            });
-            const input: HTMLElement =
-                createElement('input', {
-                    id: parent.element.id + '_hiddenForm',
-                    attrs: { name: 'downloadInput', value: JSON.stringify(downloadArgs.data), type: 'hidden' }
+            if (downloadArgs.useFormPost) {
+                const form: HTMLElement = createElement('form', {
+                    id: parent.element.id + '_downloadForm',
+                    attrs: { action: downloadUrl, method: 'post', name: 'downloadForm', 'download': '' }
                 });
-            form.appendChild(input);
-            parent.element.appendChild(form);
-            document.forms.namedItem('downloadForm').submit();
-            parent.element.removeChild(form);
+                const input: HTMLElement =
+                    createElement('input', {
+                        id: parent.element.id + '_hiddenForm',
+                        attrs: { name: 'downloadInput', value: JSON.stringify(downloadArgs.data), type: 'hidden' }
+                    });
+                form.appendChild(input);
+                parent.element.appendChild(form);
+                document.forms.namedItem('downloadForm').submit();
+                parent.element.removeChild(form);
+            }
+            else {
+                let contentDisposition: string | null;
+                let fileName: string;
+                const fetch: Fetch = new Fetch({
+                    url: getValue('url', downloadArgs.ajaxSettings),
+                    type: getValue('type', downloadArgs.ajaxSettings),
+                    contentType: getValue('contentType', downloadArgs.ajaxSettings),
+                    responseType: getValue('responseType', downloadArgs.ajaxSettings),
+                    beforeSend: getValue('beforeSend', downloadArgs.ajaxSettings),
+                    onLoad: (e: Response) => {
+                        contentDisposition = e.headers.get('Content-Disposition');
+                        if (contentDisposition) {
+                            const filenameMatch: RegExpMatchArray | null = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                            const extractedFilename: string | null = filenameMatch && filenameMatch[1];
+                            fileName = extractedFilename ? extractedFilename.replace(/['"]/g, '') : fileName;
+                        }
+                        else {
+                            fileName = parent.itemData.length > 1 ? 'files.zip' : getValue('isFile', parent.itemData[0]) ? getValue('name', parent.itemData[0]) : getValue('name', parent.itemData[0]) + '.zip';
+                        }
+                    },
+                    onSuccess: (e: Blob) => {
+                        parent.trigger('success', downloadArgs);
+                        const blob: Blob = e;
+                        const blobUrl: string = URL.createObjectURL(blob);
+                        const link: HTMLAnchorElement = document.createElement('a');
+                        link.href = blobUrl;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    },
+                    onFailure: (e: Response) => {
+                        const result: ReadArgs = {
+                            error: {
+                                code: e.status.toString(),
+                                message: getLocaleText(parent, 'Network-Error') + ' ' + parent.ajaxSettings.downloadUrl,
+                            },
+                        };
+                        createDialog(parent, 'Error', result);
+                        parent.trigger('failure', downloadArgs);
+                    },
+                });
+                fetch.send(JSON.stringify(downloadArgs.data));
+            }
         }
     });
 }

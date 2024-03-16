@@ -2,7 +2,7 @@ import { Maps } from '../../index';
 import {
     findMidPointOfPolygon, Rect, filter, getTemplateFunction, getZoomTranslate,
     getTranslate, RectOption, convertElementFromLabel,
-    Point, TextOption, renderTextElement, MapLocation, textTrim, Size, measureText, Internalize
+    Point, TextOption, renderTextElement, MapLocation, textTrim, Size, Internalize, measureTextElement
 } from '../utils/helper';
 import { isNullOrUndefined, AnimationOptions, Animation, animationMode } from '@syncfusion/ej2-base';
 import { FontModel, DataLabelSettingsModel, ILabelRenderingEventArgs, LayerSettings } from '../index';
@@ -94,7 +94,7 @@ export class DataLabel {
         const shapes: any = layerData[index as number]; let locationX: any; let locationY: any;
         style.fontFamily = this.maps.theme.toLowerCase() !== 'material' ? this.maps.themeStyle.labelFontFamily : style.fontFamily;
         style.fontWeight =   style.fontWeight || this.maps.themeStyle.fontWeight || Theme.dataLabelFont.fontWeight;
-        shape = shapes['property'];
+        shape = !isNullOrUndefined(shapes) ? shapes['property'] : null;
         const properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
         let propertyPath: string; const isPoint : boolean = false;
@@ -123,7 +123,7 @@ export class DataLabel {
         datasrcObj = this.getDataLabel(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             layer.dataSource as any[], layer.shapeDataPath, shapeData['properties'][propertyPath as string], layer.shapeDataPath);
-        if (!isNullOrUndefined(shapes['property'])) {
+        if (!isNullOrUndefined(shapes) && !isNullOrUndefined(shapes['property'])) {
             shapePoint = [[]];
             if (!layerData[index as number]['_isMultiPolygon'] && layerData[index as number]['type'] !== 'Point' && layerData[index as number]['type'] !== 'MultiPoint') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -224,13 +224,13 @@ export class DataLabel {
                 if (eventargs.text !== text && !eventargs.cancel){
                     text = eventargs.text;
                 }
-                const textSize: Size = measureText(text, style);
+                const textSize: Size = measureTextElement(text, style);
                 let trimmedLable: string = text;
                 let elementSize: Size = textSize;
-                const startY: number = location['y'] - textSize['height'] / 4;
-                const endY: number = location['y'] + textSize['height'] / 4;
-                const start: number = ((location['y'] + transPoint['y']) * scale) - textSize['height'] / 4;
-                const end: number = ((location['y'] + transPoint['y']) * scale) + textSize['height'] / 4;
+                const startY: number = location['y'] - textSize['height'] / 2;
+                const endY: number = location['y'] + textSize['height'] / 2;
+                const start: number = ((location['y'] + transPoint['y']) * scale) - textSize['height'] / 2;
+                const end: number = ((location['y'] + transPoint['y']) * scale) + textSize['height'] / 2;
                 position = filter(shapePoint[midIndex as number], startY, endY);
                 if (!isPoint && position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
@@ -270,8 +270,8 @@ export class DataLabel {
                     if (dataLabelSettings.smartLabelMode === 'Trim') {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const textType: any = typeof text === 'number' ? (text as any).toString() : text;
-                        trimmedLable = textTrim(width, textType, style);
-                        elementSize = measureText(trimmedLable, style);
+                        trimmedLable = textTrim(width, textType, style, null, true);
+                        elementSize = measureTextElement(trimmedLable, style);
                         options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');
                     }
                     if (dataLabelSettings.smartLabelMode === 'None') {
@@ -311,19 +311,19 @@ export class DataLabel {
                                     if (this.value[index as number]['leftWidth'] > intersect[j as number]['leftWidth']) {
                                         width = intersect[j as number]['rightWidth'] - this.value[index as number]['leftWidth'];
                                         difference = width - (this.value[index as number]['rightWidth'] - this.value[index as number]['leftWidth']);
-                                        trimmedLable = textTrim(difference, text, style);
+                                        trimmedLable = textTrim(difference, text, style, null, true);
                                         break;
                                     }
                                     if (this.value[index as number]['leftWidth'] < intersect[j as number]['leftWidth']) {
                                         width = this.value[index as number]['rightWidth'] - intersect[j as number]['leftWidth'];
                                         difference = Math.abs(width - (this.value[index as number]['rightWidth'] - this.value[index as number]['leftWidth']));
-                                        trimmedLable = textTrim(difference, text, style);
+                                        trimmedLable = textTrim(difference, text, style, null, true);
                                         break;
                                     }
                                 }
                             }
                         }
-                        elementSize = measureText(trimmedLable, style);
+                        elementSize = measureTextElement(trimmedLable, style);
                         intersect.push(this.value[index as number]);
                         options = new TextOption(labelId, textLocation.x, (textLocation.y), 'middle', trimmedLable, '', '');
                     }
@@ -357,6 +357,8 @@ export class DataLabel {
                         }
                     }
                     element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
+                    element.setAttribute('aria-label', text);
+                    element.setAttribute('role', 'region');
                     element.setAttribute('visibility', layer.dataLabelSettings.animationDuration > 0 || animationMode === 'Enable' ? 'hidden' : 'visibile');
                     if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied){
                         element.setAttribute('transform', 'translate( ' + ((location['x'] + labelArgs.offsetX) ) + ' '
@@ -365,7 +367,7 @@ export class DataLabel {
                         location['y'] = locationY;
                     } else {
                         element.setAttribute('transform', 'translate( ' + (((location['x'] + transPoint.x) * scale) + labelArgs.offsetX) + ' '
-                        + ((((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + labelArgs.offsetY) + ' )');
+                        + ((((location['y'] + transPoint.y) * scale) + (elementSize.height / 2)) + labelArgs.offsetY) + ' )');
                     }
                     group.appendChild(element);
                 }
@@ -416,15 +418,15 @@ export class DataLabel {
     private getPoint(shapes: any[], points: MapLocation[]): MapLocation[] {
         if (shapes['type'] === 'MultiLineString') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            shapes.map((current: any) => {
+            Array.prototype.forEach.call(shapes, (current: any) => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                current.map((shape: any) => {
+                Array.prototype.forEach.call(current, (shape:any) => {
                     points.push(new Point(shape['point']['x'], shape['point']['y']));
                 });
             });
         } else {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            shapes.map((current: any) => {
+            Array.prototype.forEach.call(shapes, (current: any) => {
                 points.push(new Point(current['point']['x'], current['point']['y']));
             });
         }

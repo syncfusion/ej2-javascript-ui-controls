@@ -696,7 +696,7 @@ describe('TimePicker', () => {
             expect(timeObj.element.getAttribute('readonly')).toEqual('');
         });
         it('enabled false DISABLED attribute testing', () => {
-            expect(timeObj.element.getAttribute('disabled')).toEqual('disabled');
+            expect(timeObj.element.getAttribute('disabled')).toEqual('');
         });
         it('enabled false input element ARIA-DISABELD testing', () => {
             expect(timeObj.element.getAttribute('aria-disabled')).toEqual('true');
@@ -1051,7 +1051,7 @@ describe('TimePicker', () => {
         it('enabled false testing', () => {
             timeObj.enabled = false;
             timeObj.dataBind();
-            expect(timeObj.element.getAttribute('disabled')).toBe('disabled');
+            expect(timeObj.element.getAttribute('disabled')).toBe('');
             expect(timeObj.element.getAttribute('aria-disabled')).toBe('true');
         });
         it('enabled true testing', () => {

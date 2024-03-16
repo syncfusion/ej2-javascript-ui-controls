@@ -4,8 +4,9 @@
 import { Browser, select, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { RichTextEditor, IRenderer, QuickToolbar, ToolbarRenderer } from "../../../src/rich-text-editor/index";
 import { BaseToolbar, pageYOffset } from "../../../src/rich-text-editor/index";
-import { renderRTE, destroy, removeStyleElements, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
+import { renderRTE, destroy, removeStyleElements, androidUA, iPhoneUA, currentBrowserUA, clickImage,setCursorPoint } from "./../render.spec";
 import { CLS_RTE_RES_HANDLE } from "../../../src/rich-text-editor/base/classes";
+import { TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../constant.spec";
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -107,7 +108,7 @@ describe("Quick Toolbar - Actions Module", () => {
             expect((<HTMLElement>imgTBItems.item(2)).title).toBe('Caption');
             expect((<HTMLElement>imgTBItems.item(3)).title).toBe('Remove');
             expect((<HTMLElement>imgTBItems.item(4)).classList.contains("e-separator")).toBe(true);
-            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link (Ctrl+K)');
+            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link');
             expect((<HTMLElement>imgTBItems.item(6)).title).toBe('Open Link');
             expect((<HTMLElement>imgTBItems.item(7)).title).toBe('Edit Link');
             expect((<HTMLElement>imgTBItems.item(8)).title).toBe('Remove Link');
@@ -125,7 +126,7 @@ describe("Quick Toolbar - Actions Module", () => {
             expect((<HTMLElement>imgTBItems.item(2)).title).toBe('Caption');
             expect((<HTMLElement>imgTBItems.item(3)).title).toBe('Remove');
             expect((<HTMLElement>imgTBItems.item(4)).classList.contains("e-separator")).toBe(true);
-            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link (Ctrl+K)');
+            expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link');
             expect((<HTMLElement>imgTBItems.item(6)).title).toBe('Open Link');
             expect((<HTMLElement>imgTBItems.item(7)).title).toBe('Edit Link');
             expect((<HTMLElement>imgTBItems.item(8)).title).toBe('Remove Link');
@@ -351,7 +352,7 @@ describe("Quick Toolbar - Actions Module", () => {
             let imgTBItems: NodeList = imgPop.querySelectorAll('.e-toolbar-item');
             expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             expect(imgTBItems.length).toBe(2);
-            expect((<HTMLElement>imgTBItems.item(0)).title).toBe('Insert Link (Ctrl+K)');
+            expect((<HTMLElement>imgTBItems.item(0)).title).toBe('Insert Link');
             expect((<HTMLElement>imgTBItems.item(1)).title).toBe('Remove');
         });
     });
@@ -2648,6 +2649,73 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(document.querySelector('.e-rte-text-quicktoolbar').querySelectorAll('.e-toolbar-item').length).toBe(3);
                 done();
             }, 200);
+        });
+    });
+
+    describe('872942 - The ALT + F10  shortcut to focus the Quick Toolbar is not working properly.', () => {
+        let editorObj: RichTextEditor;
+        beforeAll((done: DoneFn) => {
+            editorObj = renderRTE({
+                value: '<img alt="image 1" src="/base/spec/content/image/RTEImage-Feather.png" style="width: 450px; height: 300px;" />'
+            });
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(editorObj);
+            done();
+        });
+        it('Should open the quick toolbar when the ALT + F10 shortcut is pressed.', (done: Function) => {
+            const image: HTMLImageElement = editorObj.element.querySelector('img');
+            clickImage(image);
+            const shortCutKeyDownEvent: KeyboardEvent =  new KeyboardEvent('keydown', TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT);
+            const shortCutKeyUpEvent: KeyboardEvent =  new KeyboardEvent('keyup', TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT);
+            editorObj.inputElement.dispatchEvent(shortCutKeyDownEvent);
+            editorObj.inputElement.dispatchEvent(shortCutKeyUpEvent);
+            setTimeout(() => {
+                expect(document.activeElement === editorObj.quickToolbarModule.imageQTBar.toolbarElement.querySelector('.e-toolbar-item'));
+                done();
+            }, 200);
+        });
+    });
+
+    describe('872307 - Tabel merge quick toolbar tooltip issues ', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                    'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="td1" style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table><p><br></p>`
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            if (document.querySelector('.e-quick-dropdown').id.indexOf('quick_TableRows-popup') > 0) {
+                document.querySelector('.e-quick-dropdown').remove();
+            }
+        });
+        it('check the tooltip text of table cell items', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            var clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            rteObj.inputElement.dispatchEvent(clickEvent);
+            let tdEle: HTMLElement = rteObj.element.querySelector(".td1");
+            tdEle.focus();
+            setCursorPoint(tdEle, 0);
+            var eventsArg = { pageX: 50, pageY: 300, target: tdEle };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            let tableQTBarEle: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            let tableCell: HTMLElement = (tableQTBarEle.querySelector('[title="Column"]').nextElementSibling as HTMLElement).childNodes[0] as HTMLElement;
+            tableCell.click();
+            tableCell.dispatchEvent(clickEvent);
+            const mergeCell = document.body.querySelector('li[title="Merge cells"]') as HTMLElement;
+            const horizSplit = document.body.querySelector('li[title="Horizontal split"]') as HTMLElement;
+            const verriSplit = document.body.querySelector('li[title="Vertical split"]') as HTMLElement;
+            expect(!isNullOrUndefined(mergeCell)).toBe(true);
+            expect(!isNullOrUndefined(horizSplit)).toBe(true);
+            expect(!isNullOrUndefined(verriSplit)).toBe(true);
+            done();
         });
     });
 });

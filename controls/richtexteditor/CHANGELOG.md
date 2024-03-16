@@ -2,6 +2,52 @@
 
 ## [Unreleased]
 
+## 25.1.35 (2024-03-15)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- The smoothness and performance of table cell resizing have improved.
+
+- Improved the image resize function to keep the aspect ratio when resizing.
+
+- When Quick Toolbar is active, press <kbd>Alt + F10</kbd> to focus on Quick Toolbar items.
+
+- `#I51118` - Now, the pasted content with the picture element will have proper source values.
+
+- `#I555698` - Now, the customized text is shown properly in the `numberFormatList` icon's tooltip in the Rich Text Editor.
+
+- `#I561056` - Now, the font color is applied properly to the hyperlink text when clicking the `fontcolor` icon in Rich Text Editor.
+
+## 24.2.9 (2024-03-05)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I550863` - Now the script error doesn't show when all content is selected and pasted into the Rich Text Editor.
+
+- `#I555677` - Now the list format is working properly when press the backspace key in a list in RichTextEditor.
+
+- `#I558397` - Now the Emoji Picker popup is shown properly within the inline Rich Text Editor.
+
+- `#I558168` - Now, the font color  toolbar works properly when using the inline toolbar of the Rich Text Editor.
+
+- `#I558398` - Now, after pasting an image, the inline editor toolbar items should show properly in RichTextEditor.
+
+## 24.2.8 (2024-02-27)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F186601` - Now, the `e-control` class name is removed properly from the body element in the Rich Text Editor.
+
+- `#I553157` - Now the numbered and bulleted list is removed properly when deleting the entire list using the backspace key in RichTextEditor.
+
+- `#I553375` - Now, the bullet or number list works properly when we try to remove a single line from the list in the RichTextEditor.
+
 ## 24.2.7 (2024-02-20)
 
 ### RichTextEditor

@@ -412,4 +412,10 @@ console.log('Open Paragraph dialog validation');
         paragraphDialog.closeParagraphDialog();
         styleDialog.closeStyleDialog();
     });
+    it('Apply Outline level to the paragraph', () => {
+        console.log('Apply Outline level to the paragraph');
+        editor.openBlank();
+        editor.editor.insertText('Hello World');
+        expect(editor.selection.paragraphFormat.outlineLevel).toBe('BodyText');
+        });
 });

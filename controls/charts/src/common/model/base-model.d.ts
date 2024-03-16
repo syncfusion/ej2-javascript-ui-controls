@@ -303,6 +303,13 @@ export interface BorderModel {
 
     width?: number;
 
+    /**
+     * Sets the length of dashes in the stroke of border.
+     *
+     * @default ''
+     */
+    dashArray?: string;
+
 }
 
 /**

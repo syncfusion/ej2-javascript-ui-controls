@@ -92,7 +92,7 @@ export class EnforceProtectionDialog {
             DialogUtility.alert(this.localeValue.getConstant('Password Mismatch'));
         } else {
             this.password = SanitizeHtmlHelper.sanitize(this.passwordTextBox.value);
-            this.viewer.owner.editor.addProtection(this.password, this.owner.protectionType);
+            this.viewer.owner.editorModule.addProtection(this.password, this.owner.protectionType);
         }
     };
     /**
@@ -181,7 +181,7 @@ export class UnProtectDocumentDialog {
             DialogUtility.alert(this.localObj.getConstant('The password is incorrect'));
             return;
         }
-        this.viewer.owner.editor.stopProtection(password);
+        this.viewer.owner.editorModule.stopProtection(password);
     };
     /**
      * @private

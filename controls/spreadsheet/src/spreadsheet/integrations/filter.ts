@@ -1,24 +1,28 @@
 /* eslint-disable no-useless-escape */
-import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent, duplicateSheetOption, focus, getChartsIndexes, refreshChartCellModel } from '../index';
-import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
-import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort } from '../index';
-import { filterRangeAlert, getFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler } from '../../workbook/common/event';
-import { FilterCollectionModel, getRangeIndexes, getCellAddress, updateFilter, ColumnModel, beforeInsert, parseLocaleNumber, ChartModel } from '../../workbook/index';
+import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent, duplicateSheetOption, focus, getChartsIndexes, refreshChartCellModel, ExtendedSpreadsheet } from '../index';
+import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs, ExtendedPredicateModel, refreshFilterRange } from '../index';
+import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, updateSortCollection } from '../index';
+import { SortOptions, SortDescriptor, LocaleNumericSettings } from '../../workbook/index';
+import { checkIsNumberAndGetNumber } from '../../workbook/common/internalization';
+import { filterRangeAlert, setFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler } from '../../workbook/common/event';
+import { FilterCollectionModel, getRangeIndexes, ColumnModel, beforeInsert, parseLocaleNumber, ChartModel } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, getColumnHeaderText, CellModel, getDataRange, isCustomDateTime } from '../../workbook/index';
 import { getData, Workbook, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet, inRange } from '../../workbook/index';
 import { SheetModel, sortImport, clear, getColIndex, SortCollectionModel, setRow, ExtendedRowModel, hideShow } from '../../workbook/index';
 import { beginAction, FilterOptions, BeforeFilterEventArgs, FilterEventArgs, ClearOptions, getValueFromFormat } from '../../workbook/index';
-import { isFilterHidden, isNumber } from '../../workbook/index';
+import { isFilterHidden, isNumber, DateFormatCheckArgs, checkDateFormat, isDateTime, dateToInt, getFormatFromType } from '../../workbook/index';
 import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
 import { L10n, detach, classList, getNumericObject, getNumberDependable, defaultCurrencyCode } from '@syncfusion/ej2-base';
+import { Internationalization } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { IFilterArgs, PredicateModel, ExcelFilterBase, beforeFltrcMenuOpen, CheckBoxFilterBase, getUid } from '@syncfusion/ej2-grids';
 import { filterCmenuSelect, filterCboxValue, filterDialogCreated, filterDialogClose, createCboxWithWrap } from '@syncfusion/ej2-grids';
-import { parentsUntil, toogleCheckbox, fltrPrevent } from '@syncfusion/ej2-grids';
+import { parentsUntil, toogleCheckbox, fltrPrevent, beforeCustomFilterOpen } from '@syncfusion/ej2-grids';
 import { Query, DataManager, Predicate, Deferred } from '@syncfusion/ej2-data';
 import { SortOrder, MenuItemModel, NodeKeyPressEventArgs, NodeClickEventArgs, NodeCheckEventArgs } from '@syncfusion/ej2-navigations';
 import { TreeView } from '@syncfusion/ej2-navigations';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
+import { TextBox } from '@syncfusion/ej2-inputs';
 import { completeAction, contentLoaded, beforeCheckboxRender, FilterCheckboxArgs, refreshCheckbox } from '../../spreadsheet/index';
 
 /**
@@ -26,9 +30,12 @@ import { completeAction, contentLoaded, beforeCheckboxRender, FilterCheckboxArgs
  */
 export class Filter {
     private parent: Spreadsheet;
-    private filterRange: Map<number, { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean }>;
+    private filterRange: Map<number, { useFilterRange: boolean, range: number[], allowHeaderFilter?: boolean }>;
     private filterCollection: Map<number, PredicateModel[]>;
     private filterBtn: HTMLElement;
+    private treeViewObj: TreeView;
+    private treeViewEle: HTMLElement;
+    private cBox: HTMLInputElement;
 
     /**
      * Constructor for filter module.
@@ -51,9 +58,20 @@ export class Filter {
      */
     protected destroy(): void {
         this.removeEventListener();
+        if ((this.parent as unknown as { refreshing?: boolean }).refreshing && this.filterRange.size) {
+            this.parent.filterCollection = [];
+            this.filterRange.forEach(
+                (_value: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean }, sheetIdx: number): void => {
+                    this.setFilteredCollection({ sheetIdx: sheetIdx, saveJson: { filterCollection: this.parent.filterCollection } });
+                }
+            );
+        }
         this.filterRange = null;
         this.filterCollection = null;
-        this.filterBtn = null;
+        if (this.filterBtn) { this.filterBtn.remove(); } this.filterBtn = null;
+        if (this.treeViewObj) { this.treeViewObj.destroy(); } this.treeViewObj = null;
+        if (this.treeViewEle) { this.treeViewEle.remove(); } this.treeViewEle = null;
+        if (this.cBox) { this.cBox.remove(); this.cBox = null; }
         this.parent = null;
     }
 
@@ -62,6 +80,8 @@ export class Filter {
         this.parent.on(initiateFilterUI, this.initiateFilterUIHandler, this);
         this.parent.on(mouseDown, this.filterMouseDownHandler, this);
         this.parent.on(renderFilterCell, this.renderFilterCellHandler, this);
+        this.parent.on(refreshFilterRange, this.refreshFilterRange, this);
+        this.parent.on(updateSortCollection, this.updateSortCollectionHandler, this);
         this.parent.on(beforeFltrcMenuOpen, this.beforeFilterMenuOpenHandler, this);
         this.parent.on(filterCmenuSelect, this.closeDialog, this);
         this.parent.on(reapplyFilter, this.reapplyFilterHandler, this);
@@ -72,9 +92,8 @@ export class Filter {
         this.parent.on(filterCboxValue, this.filterCboxValueHandler, this);
         this.parent.on(getFilterRange, this.getFilterRangeHandler, this);
         this.parent.on(filterCellKeyDown, this.filterCellKeyDownHandler, this);
-        this.parent.on(getFilteredCollection, this.getFilteredCollection, this);
+        this.parent.on(setFilteredCollection, this.setFilteredCollection, this);
         this.parent.on(contentLoaded, this.updateFilter, this);
-        this.parent.on(updateFilter, this.updateFilter, this);
         this.parent.on(beforeInsert, this.beforeInsertHandler, this);
         this.parent.on(beforeDelete, this.beforeDeleteHandler, this);
         this.parent.on(sheetsDestroyed, this.deleteSheetHandler, this);
@@ -83,6 +102,7 @@ export class Filter {
         this.parent.on(filterDialogClose, this.removeFilterClass, this);
         this.parent.on(duplicateSheetFilterHandler, this.duplicateSheetFilterHandler, this);
         this.parent.on(fltrPrevent, this.beforeFilteringHandler, this);
+        this.parent.on(beforeCustomFilterOpen, this.customFilterOpen, this);
     }
 
     private removeEventListener(): void {
@@ -91,6 +111,8 @@ export class Filter {
             this.parent.off(initiateFilterUI, this.initiateFilterUIHandler);
             this.parent.off(mouseDown, this.filterMouseDownHandler);
             this.parent.off(renderFilterCell, this.renderFilterCellHandler);
+            this.parent.off(refreshFilterRange, this.refreshFilterRange);
+            this.parent.off(updateSortCollection, this.updateSortCollectionHandler);
             this.parent.off(beforeFltrcMenuOpen, this.beforeFilterMenuOpenHandler);
             this.parent.off(filterCmenuSelect, this.closeDialog);
             this.parent.off(reapplyFilter, this.reapplyFilterHandler);
@@ -101,9 +123,8 @@ export class Filter {
             this.parent.on(filterCboxValue, this.filterCboxValueHandler);
             this.parent.off(getFilterRange, this.getFilterRangeHandler);
             this.parent.off(filterCellKeyDown, this.filterCellKeyDownHandler);
-            this.parent.off(getFilteredCollection, this.getFilteredCollection);
+            this.parent.off(setFilteredCollection, this.setFilteredCollection);
             this.parent.off(contentLoaded, this.updateFilter);
-            this.parent.off(updateFilter, this.updateFilter);
             this.parent.off(beforeInsert, this.beforeInsertHandler);
             this.parent.off(beforeDelete, this.beforeDeleteHandler);
             this.parent.off(sheetsDestroyed, this.deleteSheetHandler);
@@ -112,6 +133,7 @@ export class Filter {
             this.parent.off(filterDialogClose, this.removeFilterClass);
             this.parent.off(duplicateSheetFilterHandler, this.duplicateSheetFilterHandler);
             this.parent.off(fltrPrevent, this.beforeFilteringHandler);
+            this.parent.off(beforeCustomFilterOpen, this.customFilterOpen);
         }
     }
 
@@ -216,7 +238,7 @@ export class Filter {
      */
     private initiateFilterUIHandler(
         args: { predicates?: PredicateModel[], range?: string, promise?: Promise<FilterEventArgs>, sIdx?: number, isCut?: boolean,
-            isInternal?: boolean, useFilterRange?: boolean, isOpen?: boolean, enableColumnHeaderFiltering?: boolean }): void {
+            isInternal?: boolean, useFilterRange?: boolean, isOpen?: boolean, allowHeaderFilter?: boolean }): void {
         const predicates: PredicateModel[] = args ? args.predicates : null;
         let sheetIdx: number = args.sIdx;
         if (!sheetIdx && sheetIdx !== 0) {
@@ -246,10 +268,10 @@ export class Filter {
         }
         let selectedRange: string = args.range || sheet.selectedRange;
         let eventArgs: { range: string, filterOptions?: FilterOptions, predicates?: PredicateModel[], previousPredicates?: PredicateModel[],
-            cancel: boolean, useFilterRange?: boolean, sheetIndex: number, enableColumnHeaderFiltering?: boolean };
+            cancel: boolean, useFilterRange?: boolean, sheetIndex: number, allowHeaderFilter?: boolean };
         let actionArgs: { [key: string]: Object };
         if (!isInternal) {
-            eventArgs = { range: selectedRange, sheetIndex: sheetIdx, cancel: false, enableColumnHeaderFiltering: false };
+            eventArgs = { range: selectedRange, sheetIndex: sheetIdx, cancel: false, allowHeaderFilter: false };
             if (args.predicates) {
                 eventArgs.predicates = args.predicates;
                 eventArgs.previousPredicates = this.filterCollection.get(sheetIdx) && [].slice.call(this.filterCollection.get(sheetIdx));
@@ -265,7 +287,7 @@ export class Filter {
             }
             delete eventArgs.cancel;
             args.useFilterRange = eventArgs.useFilterRange;
-            args.enableColumnHeaderFiltering = eventArgs.enableColumnHeaderFiltering;
+            args.allowHeaderFilter = eventArgs.allowHeaderFilter;
         }
         if (!args.range && (isInternal || selectedRange === eventArgs.range)) {
             let rangeIdx: number[] = getRangeIndexes(selectedRange);
@@ -281,14 +303,15 @@ export class Filter {
         }
         if (predicates) {
             if (predicates.length) {
-                const filterRange: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
+                const filterRange: { useFilterRange: boolean, range: number[], allowHeaderFilter?: boolean } =
+                    this.filterRange.get(sheetIdx);
                 if (filterRange) {
                     args.useFilterRange = filterRange.useFilterRange;
-                    args.enableColumnHeaderFiltering = filterRange.enableColumnHeaderFiltering;
+                    args.allowHeaderFilter = filterRange.allowHeaderFilter;
                 }
-                this.processRange(sheet, sheetIdx, selectedRange, true, args.useFilterRange, args.enableColumnHeaderFiltering);
+                this.processRange(sheet, sheetIdx, selectedRange, true, args.useFilterRange, args.allowHeaderFilter);
                 const range: number[] = this.filterRange.get(sheetIdx).range.slice();
-                if (!args.enableColumnHeaderFiltering) {
+                if (!args.allowHeaderFilter) {
                     range[0] = range[0] + 1; // to skip first row.
                 }
                 if (!args.useFilterRange) {
@@ -312,7 +335,7 @@ export class Filter {
                 resolveFn();
             }
         } else {
-            this.processRange(sheet, sheetIdx, selectedRange, false, args.useFilterRange, args.enableColumnHeaderFiltering);
+            this.processRange(sheet, sheetIdx, selectedRange, false, args.useFilterRange, args.allowHeaderFilter);
             resolveFn();
         }
         if (!isInternal) {
@@ -329,21 +352,22 @@ export class Filter {
      * @param {string} filterRange - Specify the filterRange.
      * @param {boolean} preventRefresh - To prevent refreshing the filter buttons.
      * @param {boolean} useFilterRange - Specifies whether to consider filtering range or used range during filering.
-     * @param {boolean} enableColumnHeaderFiltering - Specifies whether to consider first row during filtering.
+     * @param {boolean} allowHeaderFilter - Specifies whether to consider first row during filtering.
      * @returns {void} - Processes the range if no filter applied.
      */
     private processRange(
         sheet: SheetModel, sheetIdx: number, filterRange?: string, preventRefresh?: boolean, useFilterRange?: boolean,
-        enableColumnHeaderFiltering?: boolean): void {
+        allowHeaderFilter?: boolean): void {
         const range: number[] = getSwapRange(getIndexesFromAddress(filterRange || sheet.selectedRange));
         if (range[0] === range[2] && range[1] === range[3]) { //if selected range is a single cell
             range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
         } else if (range[3] > sheet.usedRange.colIndex) {
             range[3] = sheet.usedRange.colIndex;
         }
-        const filterOption: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = { useFilterRange: useFilterRange, range: range };
-        if (enableColumnHeaderFiltering) {
-            filterOption.enableColumnHeaderFiltering = enableColumnHeaderFiltering;
+        const filterOption: { useFilterRange: boolean, range: number[], allowHeaderFilter?: boolean } = { useFilterRange: useFilterRange,
+            range: range };
+        if (allowHeaderFilter) {
+            filterOption.allowHeaderFilter = allowHeaderFilter;
         }
         this.filterRange.set(sheetIdx, filterOption);
         this.filterCollection.set(sheetIdx, []);
@@ -362,9 +386,9 @@ export class Filter {
      * @returns {void} - Removes all the filter related collections for the active sheet.
      */
     private removeFilter(sheetIdx: number, isCut?: boolean, preventRefresh?: boolean): void {
-        const filterOption: { range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
+        const filterOption: { range: number[], allowHeaderFilter?: boolean } = this.filterRange.get(sheetIdx);
         const range: number[] = filterOption.range.slice();
-        const enableColumnHeaderFiltering: boolean = filterOption.enableColumnHeaderFiltering;
+        const allowHeaderFilter: boolean = filterOption.allowHeaderFilter;
         const rangeAddr: string = getRangeAddress(range);
         let args: { [key: string]: Object };
         if (!isCut) {
@@ -380,18 +404,7 @@ export class Filter {
         }
         this.filterRange.delete(sheetIdx);
         this.filterCollection.delete(sheetIdx);
-        this.refreshFilterRange(range, true, sheetIdx, enableColumnHeaderFiltering);
-        if (this.parent.filterCollection) {
-            let count: number = 0; let filterColl: FilterCollectionModel;
-            for (let i: number = 0, len: number = this.parent.filterCollection.length; i < len; i++) {
-                filterColl = this.parent.filterCollection[count as number];
-                if (filterColl.sheetIndex === sheetIdx && filterColl.filterRange === rangeAddr) {
-                    this.parent.filterCollection.splice(count, 1);
-                } else {
-                    count++;
-                }
-            }
-        }
+        this.refreshFilterRange(range, true, sheetIdx, allowHeaderFilter);
         if (!isCut) {
             this.parent.notify(completeAction, args);
         }
@@ -414,7 +427,7 @@ export class Filter {
             isNotFilterRange = true;
             this.processRange(sheet, sheetIdx);
         }
-        const filterOption: { range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
+        const filterOption: { range: number[], allowHeaderFilter?: boolean } = this.filterRange.get(sheetIdx);
         const range: number[] = filterOption.range.slice();
         const filterRange: string = getRangeAddress(range);
         range[0] = range[0] + 1; // to skip first row.
@@ -422,19 +435,16 @@ export class Filter {
         range[1] = range[3] = cell[1];
         const field: string = getColumnHeaderText(cell[1] + 1);
         const selectedCell: CellModel = getCell(cell[0], cell[1], sheet);
-        let cellVal: string | number | Date = getValueFromFormat(this.parent, selectedCell, cell[0], cell[1]);
-        if (isNumber(<string>cellVal) && !(selectedCell.format && selectedCell.format === '@')) {
-            cellVal = parseFloat(<string>cellVal);
-        }
-        const predicates: PredicateModel[] = [{ field: field, operator: 'equal', type: this.getColumnType(sheet, cell[1], cell).type,
+        const cellVal: string | number | Date = getValueFromFormat(this.parent, selectedCell, cell[0], cell[1]);
+        const predicates: ExtendedPredicateModel[] = [{ field: field, operator: 'equal', type: this.getColumnType(sheet, cell[1], cell).type,
             matchCase: false, value: cellVal }];
         let prevPredicates: PredicateModel[] = [].slice.call(this.filterCollection.get(sheetIdx));
         if (!prevPredicates.length) {
             prevPredicates = undefined;
         }
         const eventArgs: { range: string, predicates: PredicateModel[], previousPredicates: PredicateModel[], sheetIndex: number,
-            cancel: boolean, enableColumnHeaderFiltering?: boolean } = { range: filterRange, predicates: predicates,
-                previousPredicates: prevPredicates, sheetIndex: sheetIdx, cancel: false, enableColumnHeaderFiltering: false };
+            cancel: boolean, allowHeaderFilter?: boolean } = { range: filterRange, predicates: predicates,
+            previousPredicates: prevPredicates, sheetIndex: sheetIdx, cancel: false, allowHeaderFilter: false };
         this.parent.notify(beginAction, { action: 'filter', eventArgs: eventArgs });
         if (eventArgs.cancel) {
             if (isNotFilterRange) {
@@ -442,8 +452,8 @@ export class Filter {
             }
             return;
         }
-        if (eventArgs.enableColumnHeaderFiltering) {
-            filterOption.enableColumnHeaderFiltering = eventArgs.enableColumnHeaderFiltering;
+        if (eventArgs.allowHeaderFilter) {
+            filterOption.allowHeaderFilter = eventArgs.allowHeaderFilter;
             range[0]--;
         }
         const addr: string = `${sheet.name}!${this.getPredicateRange(range, this.filterCollection.get(sheetIdx))}`;
@@ -467,12 +477,12 @@ export class Filter {
     private renderFilterCellHandler(args: { td: HTMLElement, rowIndex: number, colIndex: number, sIdx?: number }): void {
         const sheetIdx: number = !isNullOrUndefined(args.sIdx) ? args.sIdx : this.parent.activeSheetIndex;
         if (sheetIdx === this.parent.activeSheetIndex) {
-            const option: { range?: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx) &&
+            const option: { range?: number[], allowHeaderFilter?: boolean } = this.filterRange.get(sheetIdx) &&
                 this.filterRange.get(sheetIdx);
             const range: number[] = option && option.range;
-            if (range && (range[0] === args.rowIndex || option.enableColumnHeaderFiltering) && range[1] <= args.colIndex &&
+            if (range && (range[0] === args.rowIndex || option.allowHeaderFilter) && range[1] <= args.colIndex &&
                 range[3] >= args.colIndex) {
-                if (!args.td || args.td.classList.contains(option.enableColumnHeaderFiltering ? 'e-cell' : 'e-header-cell')) {
+                if (!args.td || args.td.classList.contains(option.allowHeaderFilter ? 'e-cell' : 'e-header-cell')) {
                     return;
                 }
                 let filterButton: HTMLElement = args.td.querySelector('.e-filter-icon');
@@ -512,28 +522,28 @@ export class Filter {
      * @param {number[]} filterRange - Specify the filterRange.
      * @param {boolean} remove - Specify the bool value
      * @param {number} sIdx - Specify the index.
-     * @param {boolean} enableColumnHeaderFiltering - Specifies whether to consider first row during filtering.
+     * @param {boolean} allowHeaderFilter - Specifies whether to consider first row during filtering.
      * @returns {void} - Refreshes the filter header range.
      */
-    private refreshFilterRange(filterRange?: number[], remove?: boolean, sIdx?: number, enableColumnHeaderFiltering?: boolean): void {
+    private refreshFilterRange(filterRange?: number[], remove?: boolean, sIdx?: number, allowHeaderFilter?: boolean): void {
         let sheetIdx: number = sIdx;
         if (!sheetIdx && sheetIdx !== 0) {
             sheetIdx = this.parent.activeSheetIndex;
         }
-        const filterOption: { range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange && this.filterRange.get(sheetIdx);
+        const filterOption: { range: number[], allowHeaderFilter?: boolean } = this.filterRange && this.filterRange.get(sheetIdx);
         if (!filterOption) {
             if (!filterRange) {
                 filterRange = [0, 0, 0, 0];
             }
         } else {
             filterRange = filterRange || filterOption.range.slice();
-            enableColumnHeaderFiltering = filterOption.enableColumnHeaderFiltering;
+            allowHeaderFilter = filterOption.allowHeaderFilter;
         }
         const range: number[] = filterRange;
         let cell: HTMLElement;
         const frozenCol: number = this.parent.frozenColCount(getSheet(this.parent, sheetIdx));
         for (let index: number = range[1]; index <= range[3]; index++) {
-            if (enableColumnHeaderFiltering) {
+            if (allowHeaderFilter) {
                 const table: HTMLTableElement = index < frozenCol ? this.parent.sheetModule.getSelectAllTable() :
                     this.parent.getColHeaderTable();
                 const headerRow: HTMLTableRowElement = table && this.parent.getRow(0, table);
@@ -769,10 +779,11 @@ export class Filter {
     }
 
     private initCboxList(args: FilterCheckboxArgs, excelFilter: ExcelFilterBase): void {
+        const field: string = args.column.field;
         const sortedData: { [key: string]: string }[] = new DataManager(
-            args.dataSource).executeLocal(new Query().sortBy('value', 'ascending')) as { [key: string]: string }[];
-        const listData: string[] = []; const field: string = args.column.field;
-        let isBlank: boolean; const sheet: SheetModel = this.parent.getActiveSheet();
+            args.dataSource).executeLocal(new Query().sortBy(field + '_value', 'ascending')) as { [key: string]: string }[];
+        const listData: string[] = [];
+        const sheet: SheetModel = this.parent.getActiveSheet();
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const cBoxFrag: DocumentFragment = document.createDocumentFragment();
         const selectAll: Element = this.createSelectAll(args, excelFilter);
@@ -785,23 +796,28 @@ export class Filter {
                 if (!idCol['isBlank']) {
                     idCol['isBlank'] = true;
                     const blankObj: { [key: string]: string } = {};
-                    blankObj[args.column.field] = l10n.getConstant('Blanks');
+                    blankObj[field as string] = l10n.getConstant('Blanks');
                     hidden = isFilterHidden(sheet, Number(data['__rowIndex']) - 1);
                     const blankCbox: Element = createCboxWithWrap(
-                        getUid('cbox'), (excelFilter as any).createCheckbox(blankObj[args.column.field], !hidden, blankObj), 'e-ftrchk');
-                    cBoxFrag.childElementCount === 1 ? cBoxFrag.appendChild(blankCbox) :
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        getUid('cbox'), (excelFilter as any).createCheckbox(blankObj[field as string], !hidden, blankObj), 'e-ftrchk');
+                    if (cBoxFrag.childElementCount === 1) {
+                        cBoxFrag.appendChild(blankCbox);
+                    } else {
                         cBoxFrag.insertBefore(blankCbox, cBoxFrag.children[1]);
-                    listData.splice(0, 0, blankObj[args.column.field]);
+                    }
+                    listData.splice(0, 0, blankObj[field as string]);
                     if (!hidden) {
-                        initSelectedList.push(blankObj[args.column.field]);
-                        selectedList.push(blankObj[args.column.field]);
+                        initSelectedList.push(blankObj[field as string]);
+                        selectedList.push(blankObj[field as string]);
                     }
                 }
             } else if (!idCol[data[field as string]]) {
                 idCol[data[field as string]] = true;
                 hidden = isFilterHidden(sheet, Number(data['__rowIndex']) - 1);
-                dataVal = data[field as string].toString();
+                dataVal = data[field as string];
                 cBoxFrag.appendChild(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     createCboxWithWrap(getUid('cbox'), (excelFilter as any).createCheckbox(dataVal, !hidden, data), 'e-ftrchk'));
                 listData.push(dataVal);
                 if (!hidden) {
@@ -840,6 +856,7 @@ export class Filter {
                         const obj: { [key: string]: string } = {};
                         obj[args.column.field] = data;
                         cBoxFrag.appendChild(
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             createCboxWithWrap(getUid('cbox'), (excelFilter as any).createCheckbox(data, true, obj), 'e-ftrchk'));
                         searchedSelectedList.push(data);
                     }
@@ -858,6 +875,7 @@ export class Filter {
                     const obj: { [key: string]: string } = {};
                     obj[args.column.field] = l10n.getConstant('AddCurrentSelection');
                     const addCurrentCbox: Element = createCboxWithWrap(
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         getUid('cbox'), (excelFilter as any).createCheckbox(obj[args.column.field], false, obj), 'e-ftrchk');
                     cBoxFrag.insertBefore(addCurrentCbox, cBoxFrag.children[1]);
                     addCurrentCbox.querySelector('.e-frame').classList.add('e-add-current');
@@ -902,7 +920,7 @@ export class Filter {
                 this.filterSuccessHandler(new DataManager(args.dataSource), { action: 'clear-filter', field: args.column.field });
             } else {
                 const predicates: PredicateModel[] = [];
-                const model: PredicateModel = { field: field, ignoreAccent: false, matchCase: false };
+                const model: ExtendedPredicateModel = { field: field, ignoreAccent: false, matchCase: false, isFilterByMenu: true };
                 const curSymbol: string = getNumberDependable(locale, defaultCurrencyCode);
                 const localeObj: { decimal: string, group: string } = getNumericObject(
                     this.parent.locale) as { decimal: string, group: string };
@@ -940,6 +958,7 @@ export class Filter {
         const selectAllObj: { [key: string]: Object } = {};
         selectAllObj[args.column.field] = this.parent.serviceLocator.getService<L10n>(locale).getConstant('SelectAll');
         const selectAll: Element = createCboxWithWrap(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             getUid('cbox'), (excelFilter as any).createCheckbox(selectAllObj[args.column.field], false, selectAllObj), 'e-ftrchk');
         return selectAll;
     }
@@ -966,13 +985,168 @@ export class Filter {
     }
 
     private beforeFilteringHandler(
-        evt: { instance: { options: { isFormatted: boolean } }, arg3: number | string, arg8: number | string }): void {
-        if (evt.instance && evt.instance.options && evt.instance.options.isFormatted) {
-            if (isNumber(evt.arg3)) {
-                evt.arg3 = evt.arg3.toString();
+        evt: { instance: { options: { type?: string, format?: string } }, arg3: number | string, arg8?: number | string,
+            arg2: string, arg7?: string, isOpen?: boolean }): void {
+        if (evt.instance && evt.instance.options) {
+            if (evt.isOpen && evt.instance.options.type === 'string') {
+                const localeObj: { decimal: string } = getNumericObject(this.parent.locale) as { decimal: string };
+                if (localeObj.decimal !== '.') {
+                    const valArr: string[] = evt.arg3.toString().split('.');
+                    if (valArr.length === 2) {
+                        const parsedNumVal: string = valArr.join(localeObj.decimal);
+                        if (isNumber(new Internationalization(this.parent.locale).parseNumber(parsedNumVal, { format: 'n' }))) {
+                            evt.arg3 = parsedNumVal;
+                        }
+                    }
+                }
             }
-            if (isNumber(evt.arg8)) {
-                evt.arg3 = evt.arg3.toString();
+            const parseValue: Function = (val?: string | number, operator?: string): string | number => {
+                if (operator && (operator === 'notequal' || this.isCustomNumFilter(operator))) {
+                    if (val) {
+                        if (isNumber(val)) {
+                            val = parseFloat(val.toString());
+                        } else if (typeof val === 'string') {
+                            const localeObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
+                            const intl: Internationalization = new Internationalization(this.parent.locale);
+                            let numArgs: { isNumber?: boolean, value?: string } = {};
+                            if (val.includes(localeObj.percentSign)) {
+                                const valArr: string[] = val.trim().split('%');
+                                if (valArr[0] !== '' && !valArr[1]) {
+                                    numArgs = checkIsNumberAndGetNumber(
+                                        { value: valArr[0] }, this.parent.locale, localeObj.group, localeObj.decimal);
+                                }
+                            }
+                            if (numArgs.isNumber) {
+                                val = Number(numArgs.value) / 100;
+                            } else {
+                                const parsedNumVal: number = intl.parseNumber(val.trim(), { format: 'n' });
+                                if (isNumber(parsedNumVal)) {
+                                    val = parsedNumVal;
+                                } else {
+                                    const checkVal: string = val.trim();
+                                    const dateEventArgs: DateFormatCheckArgs = { value: checkVal, cell: { value: checkVal } };
+                                    this.parent.notify(checkDateFormat, dateEventArgs);
+                                    if (dateEventArgs.isTime || dateEventArgs.isDate) {
+                                        val = parseFloat(dateEventArgs.updatedVal);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (operator === 'equal') {
+                    if (isNumber(val)) {
+                        val = val.toString();
+                    } else if (typeof val === 'string' && isNumber(parseValue(val, 'notequal'))) {
+                        val = val.trim();
+                    }
+                }
+                return val;
+            };
+            if (evt.instance.options.type !== 'date') {
+                evt.arg3 = parseValue(evt.arg3, evt.arg2);
+                evt.arg8 = parseValue(evt.arg8, evt.arg7);
+            } else if (evt.instance.options.format === 'yMd') {
+                const parseDateTime: Function = (val: Date | string | number, operator?: string): number => {
+                    if (val) {
+                        if (typeof val === 'string') {
+                            const checkVal: string = val.trim();
+                            const dateEventArgs: DateFormatCheckArgs = { value: checkVal, cell: { value: checkVal } };
+                            this.parent.notify(checkDateFormat, dateEventArgs);
+                            if (dateEventArgs.isDate) {
+                                val = operator === 'equal' ? dateEventArgs.dateObj : parseFloat(dateEventArgs.updatedVal);
+                            } else {
+                                if (operator === 'equal' || operator === 'notequal') {
+                                    const parsedNumVal: number = parseValue(val, 'notequal');
+                                    if (isNumber(parsedNumVal)) {
+                                        evt.instance.options.type = 'number';
+                                        if (operator === 'notequal') {
+                                            val = parsedNumVal;
+                                        }
+                                    } else {
+                                        evt.instance.options.type = 'string';
+                                    }
+                                }
+                            }
+                        } else if (isDateTime(val) && operator !== 'equal') {
+                            val = dateToInt(val, true);
+                        }
+                    }
+                    return <number>val;
+                };
+                const filterDateInputs: NodeListOf<HTMLElement> = document.querySelectorAll('.e-xlfl-valuediv input.e-datepicker');
+                if (filterDateInputs.length === 2) {
+                    evt.arg3 = parseDateTime(evt.arg3 || (filterDateInputs[0] as HTMLInputElement).value, evt.arg2);
+                    evt.arg8 = parseDateTime(evt.arg8 || (filterDateInputs[1] as HTMLInputElement).value, evt.arg7);
+                } else if (evt.arg3) {
+                    evt.arg3 = parseDateTime(evt.arg3, evt.arg2);
+                }
+            }
+        }
+    }
+
+    private customFilterOpen(args: { column: string }): void {
+        const filterOptDiv: NodeListOf<HTMLElement> = document.querySelectorAll('.e-xlfl-optrdiv input.e-dropdownlist');
+        const criterias: string[] = [];
+        for (let idx: number = 0; idx < filterOptDiv.length; idx++) {
+            const dropDownList: { value: string } = getComponent(filterOptDiv[idx as number], 'dropdownlist');
+            if (dropDownList) {
+                criterias.push(dropDownList.value);
+            }
+        }
+        const customFilterValues: string[] = [];
+        if (criterias.length === 2) {
+            const predicates: PredicateModel[] = this.filterCollection.get(this.parent.activeSheetIndex);
+            let criteriaIdx: number;
+            for (let idx: number = 0; idx < predicates.length; idx++) {
+                if (predicates[idx as number].field === args.column) {
+                    criteriaIdx = criterias.indexOf(predicates[idx as number].operator);
+                    if (criteriaIdx > -1) {
+                        if (predicates[idx as number].operator === 'equal' && isDateTime(predicates[idx as number].value)) {
+                            customFilterValues[criteriaIdx as number] = dateToInt(predicates[idx as number].value, true).toString();
+                        } else {
+                            customFilterValues[criteriaIdx as number] = predicates[idx as number].value.toString();
+                        }
+                        criterias[criteriaIdx as number] = '';
+                    }
+                }
+            }
+        }
+        const localeNumObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
+        const getParsedVal: Function = (val: string): string => {
+            if (localeNumObj.decimal !== '.' && isNumber(val)) {
+                const parsedVal: string = val.toString();
+                if (parsedVal.includes('.')) {
+                    return parsedVal.replace('.', localeNumObj.decimal);
+                }
+            }
+            return val;
+        };
+        const filterValInputs: NodeListOf<HTMLElement> = document.querySelectorAll('.e-xlfl-valuediv input.e-ss-filter-input');
+        if (filterValInputs.length) {
+            for (let idx: number = 0; idx < filterValInputs.length; idx++) {
+                const textObj: TextBox = new TextBox(
+                    { placeholder: this.parent.serviceLocator.getService<L10n>(locale).getConstant('CustomFilterPlaceHolder') });
+                if (customFilterValues[idx as number]) {
+                    textObj.value = getParsedVal(customFilterValues[idx as number]);
+                }
+                textObj.appendTo(filterValInputs[idx as number]);
+            }
+        } else {
+            const filterValInputs: NodeListOf<HTMLInputElement> = document.querySelectorAll('.e-xlfl-valuediv input.e-datepicker');
+            let datePickerObj: { value: string }; let val: string;
+            for (let idx: number = 0; idx < filterValInputs.length; idx++) {
+                if (isNumber(customFilterValues[idx as number])) {
+                    val = this.parent.getDisplayText(
+                        { value: customFilterValues[idx as number], format: getFormatFromType('ShortDate') +
+                        (customFilterValues[idx as number].includes('.') ? ` ${getFormatFromType('Time')}` : '') });
+                } else {
+                    val = getParsedVal(customFilterValues[idx as number]);
+                }
+                datePickerObj = getComponent(filterValInputs[idx as number], 'datepicker');
+                if (datePickerObj) {
+                    datePickerObj.value = val;
+                    filterValInputs[idx as number].value = val;
+                }
             }
         }
     }
@@ -984,7 +1158,7 @@ export class Filter {
                 applyBtnClickHandler();
             }
         });
-        const filterDlgCloseHandler: Function = (args: any): void => {
+        const filterDlgCloseHandler: Function = (): void => {
             this.parent.off(refreshCheckbox, refreshCheckboxes);
             this.parent.off(filterDialogClose, filterDlgCloseHandler);
             focus(this.parent.element);
@@ -1128,13 +1302,16 @@ export class Filter {
                     treeViewObj.checkedNodes.length > groupedData.length / 2);
             }
         };
+        this.treeViewObj = treeViewObj;
+        this.treeViewEle = treeViewEle;
+        this.cBox = cBox;
         this.wireFilterEvents(args, applyBtnClickHandler, this.refreshCheckbox.bind(this, groupedData, treeViewObj, checkedNodes));
     }
 
     private generatePredicate(
         checkedNodes: string[], type: string, field: string, excelFilter: ExcelFilterBase, allNodes: string[], isNotEqual: boolean): void {
         const predicates: PredicateModel[] = [];
-        let predicate: PredicateModel;
+        let predicate: ExtendedPredicateModel;
         const months: { [key: string]: number } = { 'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5, 'July': 6,
             'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11 };
         let valArr: string[]; let date: Date; let val: string | number; let otherType: string;
@@ -1142,7 +1319,7 @@ export class Filter {
             if (valArr[0] === 'blanks') {
                 predicates.push(Object.assign({ value: '', type: type }, predicate));
             } else if (valArr[0] === 'text') {
-                valArr.splice(0, 1)
+                valArr.splice(0, 1);
                 val = valArr.join(' ');
                 if (isNaN(Number(val))) {
                     otherType = 'string';
@@ -1162,7 +1339,8 @@ export class Filter {
             }
         };
         if (isNotEqual) {
-            predicate = { field: field, ignoreAccent: false, matchCase: false, predicate: 'and', operator: 'notequal' };
+            predicate = { field: field, ignoreAccent: false, matchCase: false, predicate: 'and', operator: 'notequal',
+                isFilterByMenu: true };
             for (let i: number = 0, len: number = allNodes.length; i < len; i++) {
                 if (checkedNodes.indexOf(allNodes[i as number]) === -1) {
                     valArr = allNodes[i as number].split(' ');
@@ -1170,7 +1348,7 @@ export class Filter {
                 }
             }
         } else {
-            predicate = { field: field, ignoreAccent: false, matchCase: false, predicate: 'or', operator: 'equal' };
+            predicate = { field: field, ignoreAccent: false, matchCase: false, predicate: 'or', operator: 'equal', isFilterByMenu: true };
             for (let i: number = 0, len: number = checkedNodes.length; i < len; i++) {
                 valArr = checkedNodes[i as number].split(' ');
                 if (valArr.length === 3) {
@@ -1283,12 +1461,12 @@ export class Filter {
         const field: string = getColumnHeaderText(colIndex);
         this.parent.showSpinner();
         const sheetIdx: number = this.parent.activeSheetIndex;
-        const filterRange: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
+        const filterRange: { useFilterRange: boolean, range: number[], allowHeaderFilter?: boolean } = this.filterRange.get(sheetIdx);
         const range: number[] = filterRange.range.slice();
         const sheet: SheetModel = this.parent.getActiveSheet();
         const filterCell: CellModel = getCell(range[0], colIndex - 1, sheet);
         const displayName: string = this.parent.getDisplayText(filterCell);
-        if (!filterRange.enableColumnHeaderFiltering) {
+        if (!filterRange.allowHeaderFilter) {
             range[0] = range[0] + 1; // to skip first row.
         }
         if (!filterRange.useFilterRange) {
@@ -1298,7 +1476,7 @@ export class Filter {
         const totalRange: { address: string, filteredCol: boolean, otherColPredicate: PredicateModel[], curPredicate: PredicateModel[] } =
             this.getPredicateRange(
                 fullRange, this.filterCollection.get(sheetIdx), colIndex - 1) as { address: string, filteredCol: boolean,
-                    otherColPredicate: PredicateModel[], curPredicate: PredicateModel[] };
+                otherColPredicate: PredicateModel[], curPredicate: PredicateModel[] };
         const otherColPredicate: PredicateModel[] = totalRange.otherColPredicate;
         let curColPredicates: { [key: string]: PredicateModel[] };
         if (totalRange.curPredicate.length) {
@@ -1307,16 +1485,18 @@ export class Filter {
         }
         const addr: string = `${sheet.name}!${totalRange.address}`;
         const fullAddr: string = getRangeAddress(fullRange);
-        const col: { type: string, isDateAvail: boolean, numFormatApplied: boolean } = this.getColumnType(sheet, colIndex - 1, range);
+        const col: { type: string, isDateAvail: boolean, isMultiFormattedCol?: boolean } = this.getColumnType(sheet, colIndex - 1, range);
         const type: string = col.type;
         let templateColData: { [key: string]: Object }[];
         const isDateCol: boolean = type === 'date' || col.isDateAvail;
-        const templateFilter: boolean = isDateCol || col.numFormatApplied;
+        const isNumCol: boolean = type === 'number';
+        const templateFilter: boolean = isDateCol || isNumCol;
+        const isMultiFormattedCol: boolean = col.isMultiFormattedCol;
         if (templateFilter && !totalRange.filteredCol) {
             templateColData = [];
         }
         getData(
-            this.parent, addr, true, true, null, true, null, null, false, fullAddr, null, templateColData, col.numFormatApplied && field).then((
+            this.parent, addr, true, true, null, true, null, null, false, fullAddr, null, templateColData).then((
             jsonData: { [key: string]: CellModel }[]) => {
             let checkBoxData: DataManager;
             this.parent.element.style.position = 'relative';
@@ -1326,7 +1506,7 @@ export class Filter {
                     checkBoxData = new DataManager(templateColData || jsonData);
                 } else {
                     const data: Object[] = new DataManager(jsonData).executeLocal(
-                        new Query().where(Predicate.and(this.getPredicates(otherColPredicate))));
+                        new Query().where(Predicate.and(this.getPredicates(this.getClonedPredicates(otherColPredicate)))));
                     checkBoxData = new DataManager(data);
                 }
                 const beforeCboxRender: Function = (args: FilterCheckboxArgs): void => {
@@ -1340,21 +1520,38 @@ export class Filter {
                 };
                 this.parent.on(beforeCheckboxRender, beforeCboxRender, this);
             } else {
-                //to avoid undefined array data
-                jsonData.some((value: { [key: string]: CellModel }, index: number) => {
-                    if (value) { checkBoxData = new DataManager(jsonData.slice(index)); }
-                    return !!value;
-                });
+                checkBoxData = new DataManager(jsonData);
             }
             const target: HTMLElement = cell.querySelector('.e-filter-btn');
-            const options: { isFormatted?: boolean } | IFilterArgs = {
-                type: type, field: field, format: (type === 'date' ? this.getDateFormatFromColumn(sheet, colIndex, range) : null),
-                displayName: displayName || 'Column ' + field,
+            const filterCol: { 'field': string, 'filter': object, filterTemplate?: string | Function, getFilterTemplate?: Function } = {
+                field: field, filter: {} };
+            if (isNumCol) {
+                const parent: ExtendedSpreadsheet = this.parent;
+                filterCol.filterTemplate = (element: HTMLElement): Element[] | void => {
+                    if (parent.isReact && element) {
+                        element.appendChild(parent.createElement('input', { className:  'e-ss-filter-input' }));
+                    } else {
+                        return [parent.createElement('input', { className:  'e-ss-filter-input' })];
+                    }
+                };
+                const filterTemplateCallback: Function = (template: Function): Function => {
+                    return (_data: object, _parent: object, _prop: string, _id: string, _isStringTemplate: boolean, _index: number,
+                            element: Element): Element[] => {
+                        return template(element);
+                    };
+                };
+                filterCol.getFilterTemplate = () => filterTemplateCallback(filterCol.filterTemplate);
+                if (parent.isReact && !parent.renderTemplates) {
+                    parent.renderTemplates = (callback: Function) => callback();
+                }
+            }
+            const options: { isFormatted?: boolean, isMultiFormattedCol?: boolean } | IFilterArgs = {
+                type: type, field: field, format: (type === 'date' ? 'yMd' : null), displayName: displayName || 'Column ' + field,
                 dataSource: checkBoxData || [], height: this.parent.element.classList.contains('e-bigger') ? 800 : 500, columns: [],
-                hideSearchbox: false, filteredColumns: this.filterCollection.get(sheetIdx), column: { 'field': field, 'filter': {} },
+                hideSearchbox: false, filteredColumns: this.getClonedPredicates(this.filterCollection.get(sheetIdx)), column: filterCol,
                 handler: this.filterSuccessHandler.bind(this, new DataManager(jsonData)), target: target,
                 position: { X: 0, Y: 0 }, localeObj: this.parent.serviceLocator.getService(locale), actualPredicate: curColPredicates,
-                isFormatted: templateFilter && !isDateCol
+                isFormatted: templateFilter && !isDateCol, isMultiFormattedCol: isMultiFormattedCol
             };
             const excelFilter: ExcelFilterBase = new ExcelFilterBase(this.parent, this.getLocalizedCustomOperators());
             excelFilter.openDialog(<IFilterArgs>options);
@@ -1440,7 +1637,7 @@ export class Filter {
      */
     private filterCboxValueHandler(args: { value: string | number, column: object, data: object }): void {
         if (args.column && args.data) {
-            const field: string = args.column['field'] as string;
+            const field: string = (args.column as { field: string }).field;
             if (args.value) {
                 const indexes: number[] = getCellIndexes(field + args.data['dataObj']['__rowIndex']);
                 const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
@@ -1458,7 +1655,7 @@ export class Filter {
      * @returns {void} - Triggers when sorting items are chosen on context menu of filter popup.
      */
     private selectSortItemHandler(target: HTMLElement): void {
-        const l10n: L10n = this.parent.serviceLocator.getService(locale); 
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const sortOrder: SortOrder = target.classList.contains('e-filter-sortasc') ? 'Ascending'
             : target.classList.contains('e-filter-sortdesc') ? 'Descending' : null;
         if (sortOrder === 'Ascending') {
@@ -1470,26 +1667,25 @@ export class Filter {
         if (!sortOrder) { return; }
         const sheet: SheetModel = this.parent.getActiveSheet();
         const sheetIdx: number = this.parent.activeSheetIndex;
-        const filterRange: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
+        const filterRange: { useFilterRange: boolean, range: number[], allowHeaderFilter?: boolean } = this.filterRange.get(sheetIdx);
         const range: number[] = filterRange.range.slice();
-        if (!filterRange.enableColumnHeaderFiltering) {
+        if (!filterRange.allowHeaderFilter) {
             range[0] = range[0] + 1; // to skip first row.
         }
         if (!filterRange.useFilterRange) {
             range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         }
         this.parent.sortCollection = this.parent.sortCollection ? this.parent.sortCollection : [];
-        let prevSort: SortCollectionModel;
-        for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
+        let prevSort: SortCollectionModel[] = [];
+        for (let i: number = this.parent.sortCollection.length - 1; i >= 0; i--) {
             if (this.parent.sortCollection[i as number] && this.parent.sortCollection[i as number].sheetIndex === sheetIdx) {
-                prevSort = this.parent.sortCollection[i as number];
+                prevSort.push(this.parent.sortCollection[i as number]);
                 this.parent.sortCollection.splice(i, 1);
             }
         }
         this.parent.sortCollection.push(
             { sortRange: getRangeAddress(range), columnIndex: getIndexesFromAddress(sheet.activeCell)[1], order: sortOrder,
                 sheetIndex: sheetIdx });
-        if (!prevSort) { prevSort = { order: '' }; }
         this.parent.notify(
             applySort, { sortOptions: { sortDescriptors: { order: sortOrder }, containsHeader: false }, previousSort: prevSort, range:
             getRangeAddress(range) });
@@ -1510,6 +1706,7 @@ export class Filter {
      * @param {boolean} args.isInternal - Specify the isInternal.
      * @param {boolean} args.isFilterByValue - Specify the isFilterByValue.
      * @param {PredicateModel[]} args.prevPredicates - Specify the prevPredicates.
+     * @param {boolean} args.isOpen - Specify the filtering action is after importing.
      * @returns {void} - Triggers when OK button or clear filter item is selected
      */
     private filterSuccessHandler(
@@ -1528,23 +1725,35 @@ export class Filter {
         }
         if (args.action === 'filtering') {
             predicates = predicates.concat(args.filterCollection);
-            if (predicates.length) {
-                for (let i: number = 0; i < predicates.length; i++) {
-                    args.field = predicates[i as number].field;
-                }
-            }
         }
         this.filterCollection.set(sheetIdx, predicates);
-        const filterOptions: FilterOptions = {
-            datasource: dataSource,
-            predicates: this.getPredicates(this.filterCollection.get(sheetIdx))
-        };
+        const filterOptions: FilterOptions = { datasource: dataSource,
+            predicates: this.getPredicates(this.getClonedPredicates(predicates)) };
         const filterRange: { useFilterRange: boolean, range: number[] } = this.filterRange.get(sheetIdx);
         if (!filterRange.useFilterRange) {
             filterRange.range[2] = getSheet(this.parent as Workbook, sheetIdx).usedRange.rowIndex; //extend the range if filtered
         }
         this.applyFilter(
             filterOptions, getRangeAddress(filterRange.range), sheetIdx, prevPredicates, false, args.isInternal, args.isFilterByValue);
+    }
+
+    private isCustomNumFilter(operator: string): boolean {
+        return operator.includes('greaterthan') || operator.includes('lessthan') || operator === 'between';
+    }
+
+    private getClonedPredicates(predicates: PredicateModel[]): PredicateModel[] {
+        const predicateCol: PredicateModel[] = [];
+        let predicate: ExtendedPredicateModel;
+        for (let i: number = 0; i < predicates.length; i++) {
+            predicate = predicates[i as number];
+            if ((this.isCustomNumFilter(predicate.operator) || (!predicate.isFilterByMenu && predicate.operator === 'notequal')) &&
+                isNumber(<string>predicate.value)) {
+                predicateCol.push(Object.assign({}, predicate, { field: `${predicate.field}_value`, type: 'number' }));
+            } else {
+                predicateCol.push(predicate);
+            }
+        }
+        return predicateCol;
     }
 
     private updatePredicate(predicates: PredicateModel[], field: string): void {
@@ -1580,8 +1789,9 @@ export class Filter {
     private applyFilter(
         filterOptions: FilterOptions, range: string, sheetIdx: number, prevPredicates?: PredicateModel[], refresh?: boolean,
         isInternal?: boolean, isFilterByValue?: boolean): void {
-        const eventArgs: { range: string, predicates: PredicateModel[], previousPredicates: PredicateModel[], sheetIndex: number, cancel: boolean } = { range:
-            range, predicates: [].slice.call(this.filterCollection.get(sheetIdx)), previousPredicates: prevPredicates, sheetIndex: sheetIdx, cancel: false };
+        const eventArgs: { range: string, predicates: PredicateModel[], previousPredicates: PredicateModel[], sheetIndex: number,
+            cancel: boolean } = { range: range, predicates: [].slice.call(this.filterCollection.get(sheetIdx)),
+            previousPredicates: prevPredicates, sheetIndex: sheetIdx, cancel: false };
         if (!isInternal && !isFilterByValue) {
             this.parent.notify(beginAction, { action: 'filter', eventArgs: eventArgs });
             if (eventArgs.cancel) {
@@ -1602,7 +1812,6 @@ export class Filter {
         this.parent.notify(refreshChartCellModel, { prevChartIndexes, currentChartIndexes });
         (filterArgs.promise as Promise<FilterEventArgs>).then((args: FilterEventArgs) => {
             this.refreshFilterRange();
-            this.parent.notify(getFilteredCollection, null);
             this.parent.hideSpinner();
             if (!isInternal) {
                 delete eventArgs.cancel;
@@ -1621,7 +1830,7 @@ export class Filter {
     /**
      * Gets the predicates for the sheet
      *
-     * @param {number} sheetIdx - Specify the sheetindex
+     * @param {PredicateModel[]} predicateModel - Specifies the predicate collection.
      * @returns {Predicate[]} - Gets the predicates for the sheet
      */
     private getPredicates(predicateModel: PredicateModel[]): Predicate[] {
@@ -1642,8 +1851,9 @@ export class Filter {
      * @returns {string} - Gets the column type to pass it into the excel filter options.
      */
     private getColumnType(
-        sheet: SheetModel, colIndex: number, range: number[]): { type: string, isDateAvail: boolean, numFormatApplied: boolean } {
-        let num: number = 0; let str: number = 0; let date: number = 0; const time: number = 0; let numFormat: boolean; let cell: CellModel;
+        sheet: SheetModel, colIndex: number, range: number[]): { type: string, isDateAvail: boolean, isMultiFormattedCol: boolean } {
+        let num: number = 0; let str: number = 0; let date: number = 0; const time: number = 0; let cell: CellModel;
+        let formatOption: { type?: string }; let format: string; let isMultiFormattedCol: boolean;
         for (let i: number = range[0]; i <= range[2]; i++) {
             cell = getCell(i, colIndex, sheet);
             if (cell) {
@@ -1654,7 +1864,6 @@ export class Filter {
                     case 'currency':
                     case 'accounting':
                     case 'percentage':
-                        numFormat = true;
                         num++;
                         break;
                     case 'shortdate':
@@ -1665,45 +1874,35 @@ export class Filter {
                         num++;
                         break;
                     default:
-                        const formatOption: { type?: string } = {};
+                        formatOption = {};
                         if (isCustomDateTime(cell.format, true, formatOption)) {
-                            formatOption.type === 'date' ? date++ : num++;
+                            if (formatOption.type === 'date') {
+                                date++;
+                            } else {
+                                num++;
+                            }
                         } else if (isNumber(cell.value)) {
-                            numFormat = true;
                             num++;
                         } else if (cell.value) {
                             str++;
                         }
                         break;
                     }
+                    if (!format) {
+                        format = cell.format;
+                    }
                 } else if (isNumber(cell.value)) {
                     num++;
                 } else if (cell.value) {
                     str++;
                 }
+                if (format && format !== cell.format) {
+                    isMultiFormattedCol = true;
+                }
             }
         }
         return { type: (num > str && num > date && num > time) ? 'number' : (str >= num && str >= date && str >= time) ? 'string'
-            : (date > num && date > str && date > time) ? 'date' : 'datetime', isDateAvail: !!date, numFormatApplied: numFormat };
-    }
-
-    private getDateFormatFromColumn(sheet: SheetModel, colIndex: number, range: number[]): string {
-        let format: string;
-        for (let i: number = range[0]; i <= range[2]; i++) {
-            const cell: CellModel = getCell(i, colIndex - 1, sheet);
-            if (cell && cell.format) {
-                const type: string = getTypeFromFormat(cell.format);
-                if (type === 'ShortDate') {
-                    format = cell.format.split('m').join('M');
-                } else if (type === 'LongDate') {
-                    format = 'EEEE, MMMM d, y';
-                } else {
-                    format = cell.format;
-                }
-                break;
-            }
-        }
-        return format;
+            : (date > num && date > str && date > time) ? 'date' : 'datetime', isDateAvail: !!date, isMultiFormattedCol: isMultiFormattedCol };
     }
 
     /**
@@ -1743,13 +1942,6 @@ export class Filter {
                     }
                 }
                 this.filterCollection.set(sheetIndex, []);
-                const filterColl: FilterCollectionModel[] = this.parent.filterCollection;
-                for (let i: number = 0, len: number = filterColl && filterColl.length; i < len; i++) {
-                    if (filterColl[i as number].sheetIndex === sheetIndex) {
-                        filterColl.splice(i, 1);
-                        break;
-                    }
-                }
                 const len: number = filterRange.useFilterRange ? range[2] : sheet.usedRange.rowIndex;
                 if (this.parent.scrollSettings.enableVirtualization && ((len - range[0]) + 1 > (this.parent.viewport.rowCount +
                     (this.parent.getThreshold('row') * 2)))) {
@@ -1790,10 +1982,10 @@ export class Filter {
             const predicates: PredicateModel[] = this.filterCollection.get(sheetIdx);
             if (predicates && predicates.length) {
                 const sheet: SheetModel = getSheet(this.parent, sheetIdx);
-                const filterRange: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(
-                    sheetIdx);
+                const filterRange: { useFilterRange: boolean, range: number[], allowHeaderFilter?: boolean } =
+                    this.filterRange.get(sheetIdx);
                 const range: number[] = filterRange.range.slice();
-                if (!filterRange.enableColumnHeaderFiltering) {
+                if (!filterRange.allowHeaderFilter) {
                     range[0] = range[0] + 1;
                 }
                 if (!filterRange.useFilterRange) {
@@ -1804,7 +1996,7 @@ export class Filter {
                 getData(
                     this.parent, addr, true, true, null, true, null, null, false, getRangeAddress(range)).then(
                     (jsonData: { [key: string]: CellModel }[]) => {
-                        const predicate: Predicate[] = this.getPredicates(this.filterCollection.get(sheetIdx));
+                        const predicate: Predicate[] = this.getPredicates(this.getClonedPredicates(this.filterCollection.get(sheetIdx)));
                         this.applyFilter(
                             { predicates: predicate, datasource: new DataManager(jsonData) },
                             getRangeAddress(filterRange.range), sheetIdx, [].slice.call(predicates), refresh, isInternal);
@@ -1821,11 +2013,13 @@ export class Filter {
      */
     private getFilterRangeHandler(args: FilterInfoArgs): void {
         const sheetIdx: number = args.sheetIdx;
-        const filterOption: { range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange && this.filterRange.get(sheetIdx);
+        const filterOption: { range: number[], allowHeaderFilter?: boolean } = this.filterRange && this.filterRange.get(sheetIdx);
         if (filterOption) {
             args.hasFilter = true;
             args.filterRange = filterOption.range;
-            args.enableColumnHeaderFiltering = filterOption.enableColumnHeaderFiltering;
+            args.allowHeaderFilter = filterOption.allowHeaderFilter;
+            args.isFiltered = this.filterCollection && this.filterCollection.get(sheetIdx) &&
+                this.filterCollection.get(sheetIdx).length > 0;
         } else {
             args.hasFilter = false;
             args.filterRange = null;
@@ -1872,72 +2066,171 @@ export class Filter {
     }
 
     /**
-     * To get filtered range and predicates collections
+     * To set the filtered range and predicates collections in the save JSON object.
      *
-     * @returns {void} - To get filtered range and predicates collections
+     * @returns {void}
      */
-    private getFilteredCollection(): void {
-        const sheetLen: number = this.parent.sheets.length;
-        const col: FilterCollectionModel[] = []; let fil: FilterCollectionModel;
-        for (let i: number = 0; i < sheetLen; i++) {
-            let range: number[]; let hasFilter: boolean;
-            const args: FilterInfoArgs = { sheetIdx: i, filterRange: range, hasFilter: hasFilter };
-            this.getFilterRangeHandler(args);
-            if (args.hasFilter) {
-                const colCollection: number[] = []; const condition: string[] = [];
-                const value: (string | number | boolean | Date)[] = []; const type: string[] = []; const predi: string[] = [];
-                const predicate: PredicateModel[] = this.filterCollection.get(args.sheetIdx);
-                for (let i: number = 0; i < predicate.length; i++) {
-                    if (predicate[i as number].field && predicate[i as number].operator) {
-                        const colIdx: number = getCellIndexes(predicate[i as number].field + '1')[1];
-                        colCollection.push(colIdx);
-                        condition.push(predicate[i as number].operator);
-                        value.push(isNullOrUndefined(predicate[i as number].value) ? '' : predicate[i as number].value);
-                        type.push(predicate[i as number].type);
-                        predi.push(predicate[i as number].predicate);
-                    }
+    private setFilteredCollection(
+        args: { sheetIdx: number, isSaveAction?: boolean, saveJson: { filterCollection: FilterCollectionModel[] } }): void {
+        const filterArgs: FilterInfoArgs = { sheetIdx: args.sheetIdx };
+        this.getFilterRangeHandler(filterArgs);
+        if (filterArgs.hasFilter) {
+            const filterModel: FilterCollectionModel = { sheetIndex: args.sheetIdx, filterRange: getRangeAddress(filterArgs.filterRange),
+                hasFilter: true, column: [], criteria: [], value: [], dataType: [], predicates: [] };
+            args.saveJson.filterCollection.push(filterModel);
+            const predicates: PredicateModel[] = this.filterCollection.get(args.sheetIdx);
+            const predicateMap: Map<string, PredicateModel[]> = new Map<string, PredicateModel[]>();
+            let predicate: ExtendedPredicateModel; let type: string;
+            const getPredicateValue: Function = (val: string | Date): string => {
+                if (isNullOrUndefined(val)) {
+                    return '';
+                } else if (args.isSaveAction && type === 'date') {
+                    const dateVal: Date = <Date>val;
+                    val = `${dateVal.getMonth() + 1}/${dateVal.getDate()}/${dateVal.getFullYear()} ${dateVal.getHours()}:${dateVal.getMinutes()}:${dateVal.getSeconds()}`;
                 }
-                const address: string  = getRangeAddress(args.filterRange);
-                fil = {
-                    sheetIndex: args.sheetIdx, filterRange: address, hasFilter: args.hasFilter, column: colCollection,
-                    criteria: condition, value: value, dataType: type, predicates: predi
-                };
-                col.push(fil);
+                return <string>val;
+            };
+            for (let idx: number = 0; idx < predicates.length; idx++) {
+                predicate = predicates[idx as number];
+                if (args.isSaveAction && predicate.operator === 'notequal' && predicate.isFilterByMenu) {
+                    if (predicateMap.has(predicate.field)) {
+                        predicateMap.get(predicate.field).push(predicate);
+                    } else {
+                        predicateMap.set(predicate.field, [predicate]);
+                    }
+                } else {
+                    filterModel.column.push(getColIndex(predicate.field));
+                    filterModel.criteria.push(predicate.operator);
+                    if (args.isSaveAction) {
+                        if (predicate.operator === 'equal') {
+                            type = isDateTime(predicate.value) ? 'date' : 'string';
+                            filterModel.value.push(getPredicateValue(predicate.value));
+                            filterModel.dataType.push(type);
+                        } else {
+                            filterModel.value.push(predicate.value);
+                            filterModel.dataType.push('custom');
+                        }
+                    } else {
+                        filterModel.value.push(predicate.value);
+                        filterModel.dataType.push(predicate.type);
+                    }
+                    filterModel.predicates.push(predicate.predicate);
+                }
             }
-        }
-        if (fil) {
-            this.parent.filterCollection = col;
+            const colDataMap: Map<string, { [key: string]: string | Date }[]> = new Map<string, { [key: string]: string | Date }[]>();
+            let colIdx: number;
+            predicateMap.forEach((predicate: PredicateModel[], field: string) => {
+                colIdx = getColIndex(field);
+                if (!colDataMap.has(field)) {
+                    colDataMap.set(field, this.getColData(colIdx, field, args.sheetIdx));
+                }
+                const colData: { [key: string]: string | Date }[] = colDataMap.get(field);
+                const predicateCol: Predicate[] = this.getPredicates(predicate);
+                const filteredData: { [key: string]: string | Date }[] = new DataManager(colData).executeLocal(
+                    new Query().where(Predicate.and(predicateCol))) as { [key: string]: Date }[];
+                for (let idx: number = 0; idx < filteredData.length; idx++) {
+                    filterModel.column.push(colIdx);
+                    filterModel.criteria.push('equal');
+                    type = isDateTime(filteredData[idx as number][field as string]) ? 'date' : 'string';
+                    filterModel.value.push(getPredicateValue(filteredData[idx as number][field as string]));
+                    filterModel.dataType.push(type);
+                    filterModel.predicates.push('or');
+                }
+            });
         }
     }
 
     private updateFilter(args?: { initLoad: boolean, isOpen: boolean }): void {
         if (this.parent.filterCollection && (args.initLoad || args.isOpen)) {
+            let datePredicate: Predicate[]; let predicates: PredicateModel[]; let filterCol: FilterCollectionModel;
+            const dateColData: { [key: string]: { [key: string]: Date | string }[] } = {}; let filteredData: { [key: string]: Date }[];
+            let predicateCol: PredicateModel; let filterOption: { instance: { options: { type?: string, format?: string } },
+                arg3: number | string, arg2: string, isOpen?: boolean };
             for (let i: number = 0; i < this.parent.filterCollection.length; i++) {
-                const filterCol: FilterCollectionModel = this.parent.filterCollection[i as number];
+                filterCol = this.parent.filterCollection[i as number];
                 let sIdx: number = filterCol.sheetIndex;
                 if (i === 0 && !this.parent.isOpen && !args.isOpen) {
                     sIdx = 0;
                 }
-                const predicates: PredicateModel[] = [];
+                predicates = [];
                 if (filterCol.column) {
                     for (let j: number = 0; j < filterCol.column.length; j++) {
-                        const predicateCol: PredicateModel = {
-                            field: getCellAddress(0, filterCol.column[j as number]).charAt(0),
+                        predicateCol = {
+                            field: getColumnHeaderText(filterCol.column[j as number] + 1),
                             operator: this.getFilterOperator(filterCol.criteria[j as number]), value: typeof filterCol.value[j as number]
                             === 'string' ? (<string>filterCol.value[j as number]).split('*').join('') : filterCol.value[j as number],
                             predicate: filterCol.predicates && filterCol.predicates[j as number],
                             type: filterCol.dataType && filterCol.dataType[j as number]
                         };
-                        predicates.push(predicateCol);
+                        if (['year', 'month', 'day'].indexOf(predicateCol.type) > -1) {
+                            const dateEventArgs: DateFormatCheckArgs = { value: <string>predicateCol.value,
+                                cell: { value: <string>predicateCol.value } };
+                            this.parent.notify(checkDateFormat, dateEventArgs);
+                            if (dateEventArgs.isDate) {
+                                const predicateVal: Date = dateEventArgs.dateObj;
+                                predicateCol.value = predicateVal;
+                                if (predicateCol.type === 'day') {
+                                    predicateCol.type = 'date';
+                                    predicateCol.predicate = 'or';
+                                    predicates.push(predicateCol);
+                                } else {
+                                    predicateCol.operator = 'greaterthanorequal';
+                                    predicateCol.predicate = 'and';
+                                    const type: string = predicateCol.type;
+                                    predicateCol.type = 'date';
+                                    datePredicate = this.getPredicates(
+                                        [predicateCol, { field: predicateCol.field, operator: 'lessthanorequal', predicate: 'and',
+                                            type: 'date', value: new Date(predicateVal.getFullYear(), type === 'year' ? 12 :
+                                                predicateVal.getMonth() + 1, 0, 0, 0, 0) }]);
+                                    if (!dateColData[predicateCol.field]) {
+                                        dateColData[predicateCol.field] = this.getColData(
+                                            filterCol.column[j as number], predicateCol.field, i);
+                                    }
+                                    filteredData = new DataManager(dateColData[predicateCol.field]).executeLocal(
+                                        new Query().where(Predicate.and(datePredicate))) as { [key: string]: Date }[];
+                                    for (let k: number = 0; k < filteredData.length; k++) {
+                                        predicates.push(
+                                            { field: predicateCol.field, operator: 'equal', predicate: 'or', type: 'date',
+                                                value: filteredData[k as number][predicateCol.field] });
+                                    }
+                                }
+                            }
+                        } else {
+                            filterOption = { isOpen: true, instance: { options: { type: predicateCol.type } },
+                                arg3: <string>predicateCol.value, arg2: predicateCol.operator };
+                            this.beforeFilteringHandler(filterOption);
+                            predicateCol.value = filterOption.arg3;
+                            if (predicateCol.type === 'string' || predicateCol.type === 'custom') {
+                                if (this.isCustomNumFilter(predicateCol.operator) && isNumber(predicateCol.value)) {
+                                    predicateCol.type = 'number';
+                                }
+                            } else if (predicateCol.type === 'date' && predicateCol.operator === 'equal' &&
+                                typeof predicateCol.value === 'string' && predicateCol.value.includes('/') &&
+                                predicateCol.value.includes(':')) {
+                                const dateTimeStr: string[] = predicateCol.value.split(' ');
+                                if (dateTimeStr.length === 2) {
+                                    const dateArr: string[] = dateTimeStr[0].split('/');
+                                    const timeArr: string[] = dateTimeStr[1].split(':');
+                                    if (dateArr.length === 3 && timeArr.length === 3) {
+                                        predicateCol.value = new Date(
+                                            Number(dateArr[2]), Number(dateArr[0]) - 1, Number(dateArr[1]), Number(timeArr[0]),
+                                            Number(timeArr[1]), Number(timeArr[2]));
+                                    }
+                                }
+                            }
+                            predicates.push(predicateCol);
+                        }
                     }
                 }
-                for (let i: number = 0; i < predicates.length - 1; i++) {
-                    if (predicates[i as number].field === predicates[i + 1].field) {
-                        if (!predicates[i as number].predicate) {
-                            predicates[i as number].predicate = 'or';
-                        }
-                        if (!predicates[i + 1].predicate) {
-                            predicates[i + 1].predicate = 'or';
+                if (!args.isOpen) {
+                    for (let i: number = 0; i < predicates.length - 1; i++) {
+                        if (predicates[i as number].field === predicates[i + 1].field) {
+                            if (!predicates[i as number].predicate) {
+                                predicates[i as number].predicate = 'or';
+                            }
+                            if (!predicates[i + 1].predicate) {
+                                predicates[i + 1].predicate = 'or';
+                            }
                         }
                     }
                 }
@@ -1947,7 +2240,28 @@ export class Filter {
             if (this.parent.sortCollection) {
                 this.parent.notify(sortImport, null);
             }
+            this.parent.filterCollection = null;
         }
+    }
+
+    private getColData(colIdx: number, field: string, sheetIdx: number): { [key: string]: Date | string }[] {
+        const sheet: SheetModel = getSheet(this.parent, sheetIdx);
+        if (!sheet.rows || !sheet.rows.length) {
+            return [];
+        }
+        const rows: { [key: string]: Date }[] = [];
+        let row: { [key: string]: Date }; let cell: CellModel;
+        for (let rowIdx: number = 1, rowLen: number = sheet.rows.length; rowIdx < rowLen; rowIdx++) {
+            if (sheet.rows[rowIdx as number]) {
+                cell = getCell(rowIdx, colIdx, sheet, false, true);
+                if (cell && cell.value) {
+                    row = {};
+                    row[field as string] = <Date>getValueFromFormat(this.parent, cell, rowIdx, colIdx);
+                    rows.push(row);
+                }
+            }
+        }
+        return rows;
     }
 
     private getFilterOperator(value: string): string {
@@ -2021,14 +2335,11 @@ export class Filter {
                             }
                         });
                     }
-                    this.getFilteredCollection();
                 }
             }
         } else if (args.modelType === 'Sheet') {
-            let isChanged: boolean = false;
             for (const key of Array.from(this.filterRange.keys()).sort().reverse()) {
                 if (args.index <= key) {
-                    isChanged = true;
                     this.filterRange.set(key + args.model.length, this.filterRange.get(key));
                     this.filterRange.delete(key);
                     this.filterCollection.set(key + args.model.length, this.filterCollection.get(key));
@@ -2041,9 +2352,6 @@ export class Filter {
                         sortCollection.sheetIndex += args.model.length;
                     }
                 });
-            }
-            if (isChanged) {
-                this.getFilteredCollection();
             }
         }
     }
@@ -2106,7 +2414,6 @@ export class Filter {
                             args.refreshSheet = true;
                         }
                     }
-                    this.getFilteredCollection();
                 }
             }
         }
@@ -2114,9 +2421,7 @@ export class Filter {
 
     private deleteSheetHandler(args: { sheetIndex: number }): void {
         if (!isUndefined(args.sheetIndex)) {
-            let isChanged: boolean;
             for (const key of Array.from(this.filterRange.keys()).sort().reverse()) {
-                isChanged = true;
                 if (args.sheetIndex === key) {
                     this.filterRange.delete(key);
                     this.filterCollection.delete(key);
@@ -2125,8 +2430,6 @@ export class Filter {
                     this.filterRange.delete(key);
                     this.filterCollection.set(key - 1, this.filterCollection.get(key));
                     this.filterCollection.delete(key);
-                } else {
-                    isChanged = false;
                 }
             }
             const sortColl: SortCollectionModel[] = this.parent.sortCollection;
@@ -2138,9 +2441,6 @@ export class Filter {
                         sortColl[i as number].sheetIndex -= 1;
                     }
                 }
-            }
-            if (isChanged) {
-                this.getFilteredCollection();
             }
         } else if (this.filterRange.get(this.parent.activeSheetIndex)) {
             this.filterRange.delete(this.parent.activeSheetIndex);
@@ -2164,6 +2464,36 @@ export class Filter {
         }
         if (this.filterRange.has(args.sheetIndex)) {
             this.filterRange.set(args.newSheetIndex, this.filterRange.get(args.sheetIndex));
+        }
+    }
+
+    private updateSortCollectionHandler(args: { sortOptions?: SortOptions }): void {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheetIdx: number = this.parent.activeSheetIndex;
+        const filterRange: { useFilterRange: boolean, range: number[], allowHeaderFilter?: boolean } = this.filterRange.get(sheetIdx);
+        if (filterRange) {
+            const range: number[] = filterRange.range.slice();
+            if (!filterRange.allowHeaderFilter) {
+                range[0] = range[0] + 1; // to skip first row.
+            }
+            if (!filterRange.useFilterRange) {
+                range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
+            }
+            let sortDescriptors: SortDescriptor | SortDescriptor[] = args.sortOptions.sortDescriptors;
+            this.parent.sortCollection = this.parent.sortCollection ? this.parent.sortCollection : [];
+            if (Array.isArray(sortDescriptors)) {
+                for (let i: number = 0; i < sortDescriptors.length; i++) {
+                    this.parent.sortCollection.push({
+                        sortRange: getRangeAddress(range), columnIndex: getColIndex(sortDescriptors[i as number].field),
+                        order: sortDescriptors[i as number].order, sheetIndex: sheetIdx
+                    });
+                }
+            } else {
+                this.parent.sortCollection.push({
+                    sortRange: getRangeAddress(range), columnIndex: getIndexesFromAddress(sheet.activeCell)[1],
+                    order: sortDescriptors.order, sheetIndex: sheetIdx
+                });
+            }
         }
     }
 }

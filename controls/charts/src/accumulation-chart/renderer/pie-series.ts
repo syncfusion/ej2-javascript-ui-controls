@@ -179,7 +179,7 @@ export class PieSeries extends PieBase {
             accumulation.svgObject.appendChild(clippath);
             // I263828 pie chart animation issue fixed for safari browser
             (slice as HTMLElement).style.cssText = 'clip-path:url(#' + clippath.id + '); -webkit-clip-path:url(#' + clippath.id + ');';
-            this.doAnimation(clipslice, series);
+            this.doAnimation(clipslice, series, slice);
         }
     }
 

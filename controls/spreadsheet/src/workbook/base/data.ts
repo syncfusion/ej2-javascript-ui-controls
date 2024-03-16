@@ -1,9 +1,9 @@
-import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet, getRangeIndexes, isFilterHidden } from '../index';
+import { Workbook, Cell, getSheetIndex, getSheet, getRangeIndexes, isFilterHidden, parseDecimalNumber } from '../index';
 import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource } from '../common/index';
 import { queryCellInfo, CellInfoEventArgs, CellStyleModel, getFormattedCellObject, NumberFormatArgs, isNumber } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
-import { isUndefined, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { setCell } from './../index';
+import { isUndefined, isNullOrUndefined, extend, getNumericObject, Internationalization } from '@syncfusion/ej2-base';
+import { setCell, AutoDetectGeneralFormatArgs } from './../index';
 
 /**
  * Update data source to Sheet and returns Sheet
@@ -25,7 +25,7 @@ import { setCell } from './../index';
 export function getData(
     context: Workbook, address: string, columnWiseData?: boolean, valueOnly?: boolean, frozenIndexes?: number[], filterDialog?: boolean,
     formulaCellRef?: string, idx?: number, skipHiddenRows: boolean = true, commonAddr?: string, dateValueForSpecificColIdx?: number,
-    dateColData?: { [key: string]: Object }[], field?: string): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
+    dateColData?: { [key: string]: Object }[]): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve: Function, reject: Function) => {
         resolve((() => {
@@ -58,13 +58,18 @@ export function getData(
                     data = [];
                     let index: number;
                     let cells: { [key: string]: CellModel | string | Date | number };
-                    let key: string; let cellProp: CellModel | string | Date | number;
+                    let key: string; let cellProp: CellModel | string | Date | number; let parsedNumVal: string;
+                    let localeObj: { decimal: string }; let intl: Internationalization;
+                    if (valueOnly) {
+                        localeObj = getNumericObject(context.locale) as { decimal: string };
+                        intl = new Internationalization(context.locale);
+                    }
                     address.split(',').forEach((addr: string, addrIdx: number): void => {
                         indexes = getRangeIndexes(addr);
                         index = 0;
                         sRow = indexes[0];
                         while (sRow <= indexes[2]) {
-                            cells = data[index as number] || {};
+                            cells = (<{ [key: string]: CellModel }[]>data)[index as number] || {};
                             row = getRow(sheet, sRow);
                             i = indexes[1];
                             while (i <= indexes[3]) {
@@ -75,16 +80,19 @@ export function getData(
                                 key = getColumnHeaderText(i + 1);
                                 const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
                                 if (valueOnly) {
-                                    cellProp = getValueFromFormat(context, cell, sRow, i);
-                                    if (typeof cellProp === 'string' && isNumber(<string>cellProp) && (!cell.format ||
-                                        (key === field ? cell.format === 'General' : cell.format !== '@'))) {
-                                        cellProp = parseFloat(<string>cellProp);
+                                    cells[key as string] = getValueFromFormat(context, cell, sRow, i, false, intl);
+                                    cellProp = cell && !isNullOrUndefined(cell.value) ? cell.value : '';
+                                    if (typeof cellProp === 'string') {
+                                        if (localeObj.decimal !== '.' && cellProp.includes(localeObj.decimal)) {
+                                            parsedNumVal = cellProp.replace(localeObj.decimal, '.');
+                                            if (isNumber(parsedNumVal)) {
+                                                cellProp = parseFloat(parsedNumVal);
+                                            }
+                                        } else if (isNumber(cellProp)) {
+                                            cellProp = parseFloat(cellProp);
+                                        }
                                     }
-                                    cells[`${key}`] = cellProp;
-                                    if (key === field) {
-                                        cells['value'] = cell && (cell.value || <unknown>cell.value === 0) ? (isNumber(cell.value) ?
-                                            parseFloat(cell.value) : cell.value) : '';
-                                    }
+                                    cells[key + '_value'] = cellProp;
                                 } else {
                                     if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
                                         if (i === dateValueForSpecificColIdx) {
@@ -94,9 +102,9 @@ export function getData(
                                                 !(cell.format && cell.format === '@')) {
                                                 (cellProp as unknown as { value?: number }).value = parseFloat(cellProp.value);
                                             }
-                                            cells[`${key}`] = cellProp;
+                                            cells[key as string] = cellProp;
                                         } else {
-                                            cells[`${key}`] = cell;
+                                            cells[key as string] = cell;
                                         }
                                     }
                                 }
@@ -195,16 +203,20 @@ export function getData(
 }
 
 /**
- * @hidden
+ * Used to get the formatted value of the cell.
+ *
  * @param {Workbook} context - Specifies the context.
  * @param {CellModel} cell - Specifies the cell model.
  * @param {number} rowIdx - Specifies the row index.
  * @param {number} colIdx - Specifies the column index.
  * @param {boolean} getIntValueFromDate - Specify the getIntValueFromDate.
- * @returns {string | Date} - To get the value format.
+ * @param {Internationalization} intl - Specifies the internationalization object.
+ * @returns {string | Date | number} - Returns the formatted cell value.
+ * @hidden
  */
 export function getValueFromFormat(
-    context: Workbook, cell: CellModel, rowIdx: number, colIdx: number, getIntValueFromDate?: boolean): string | Date {
+    context: Workbook, cell: CellModel, rowIdx: number, colIdx: number, getIntValueFromDate?: boolean,
+    intl?: Internationalization): string | Date | number {
     if (cell) {
         if (isNullOrUndefined(cell.value)) {
             return '';
@@ -214,9 +226,21 @@ export function getValueFromFormat(
                 checkDate: !getIntValueFromDate, rowIndex: rowIdx, colIndex: colIdx, dataUpdate: true };
             context.notify(getFormattedCellObject, args);
             return args.dateObj && args.dateObj.toString() !== 'Invalid Date' ? args.dateObj : (getIntValueFromDate ? <string>args.value :
-                args.formattedText);
-        } else {
+                args.formattedText.trim());
+        } else if (getIntValueFromDate) {
             return cell.value;
+        } else {
+            let cellVal: string = cell.value;
+            if (isNumber(cellVal)) {
+                cellVal = Number(cell.value).toString();
+                if (cellVal.includes('.') || cellVal.length > 11) {
+                    const options: AutoDetectGeneralFormatArgs = { args: { value: cellVal, updateValue: true }, fResult: cellVal,
+                        cellVal: cellVal, intl: intl };
+                    context.notify(parseDecimalNumber, options);
+                    cellVal = options.fResult;
+                }
+            }
+            return cellVal;
         }
     } else {
         return '';

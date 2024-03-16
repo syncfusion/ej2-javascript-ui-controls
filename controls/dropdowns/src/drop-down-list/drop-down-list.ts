@@ -21,7 +21,7 @@ export interface ChangeEventArgs extends SelectEventArgs {
      *
      * @isGenericType true
      */
-    value: number | string | boolean
+    value: number | string | boolean | object
     /**
      * Returns the previous selected list item
      */
@@ -105,9 +105,6 @@ export class DropDownList extends DropDownBase implements IInput {
     protected selectedLI: HTMLElement;
     protected previousSelectedLI: HTMLElement;
     protected previousItemData: { [key: string]: Object } | string | number | boolean;
-    private listHeight: string;
-    private listItemHeight: number;
-    protected skeletonCount: number = 32;
     protected hiddenElement: HTMLSelectElement;
     protected isPopupOpen: boolean;
     private isDocumentClick: boolean;
@@ -115,14 +112,12 @@ export class DropDownList extends DropDownBase implements IInput {
     private isFilterFocus: boolean;
     protected beforePopupOpen: boolean;
     protected initial: boolean;
-    private initRemoteRender: boolean;
     private searchBoxHeight: number;
     private popupObj: Popup;
-    private popupContentElement: HTMLElement;
     private backIconElement: Element;
     private clearIconElement: Element;
     private containerStyle: ClientRect;
-    protected previousValue: string | number | boolean;
+    protected previousValue: string | number | boolean | object;
     protected activeIndex: number;
     protected filterInput: HTMLInputElement;
     private searchKeyModule: KeyboardEvents;
@@ -145,7 +140,6 @@ export class DropDownList extends DropDownBase implements IInput {
     protected isDropDownClick: boolean;
     protected preventAltUp: boolean;
     private searchKeyEvent: KeyboardEventArgs;
-    private keyboardEvent: KeyboardEventArgs;
     private filterInputObj: InputObject;
     protected spinnerElement: HTMLElement;
     protected keyConfigure: { [key: string]: string };
@@ -155,57 +149,9 @@ export class DropDownList extends DropDownBase implements IInput {
     protected preventChange: boolean = false;
     protected isAngular: boolean = false;
     protected selectedElementID: string;
-    private virtualListHeight: number = 0;
-    private virtualItemCount: number;
-    private isVirtualScrolling: boolean = false;
-    private observer: VirtualScroll;
-    protected isPreventScrollAction: boolean = false;
-    private scrollPreStartIndex: number = 0;
-    private isScrollActionTriggered: boolean = false;
-    protected previousStartIndex: number = 0;
-    private isMouseScrollAction: boolean = false;
-    private isKeyBoardAction: boolean = false;
-    private isUpwardScrolling: boolean = false;
-    private containerElementRect: ClientRect;
-    protected previousEndIndex: number; 
-    private previousInfo: VirtualInfo;
-    protected startIndex: number = 0;
-    private currentPageNumber: number = 0;
-    private pageCount: number = 0;
-    private isPreventKeyAction: boolean = false;
-    protected virtualItemStartIndex: number;
-    private virtualItemEndIndex: number;
-    private generatedDataObject: GeneratedData = {};
     private preselectedIndex: number;
-    protected incrementalQueryString: string = '';  
-    protected incrementalEndIndex: number = 0;
-    protected incrementalStartIndex: number = 0;
-    protected incrementalPreQueryString: string = '';
     private isTouched: boolean = false;
-    protected virtualListInfo: VirtualInfo = {
-        currentPageNumber: null,
-        direction: null,
-        sentinelInfo: {},
-        offsets: {},
-        startIndex: 0,
-        endIndex: 0,
-    };
-    protected viewPortInfo: VirtualInfo = {
-        currentPageNumber: null,
-        direction: null,
-        sentinelInfo: {},
-        offsets: {},
-        startIndex: 0,
-        endIndex: 0,
-    };
-    private selectedValueInfo: VirtualInfo = {
-        currentPageNumber: null,
-        direction: null,
-        sentinelInfo: {},
-        offsets: {},
-        startIndex: 0,
-        endIndex: 0,
-    };
+    private clearButton: HTMLElement;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -363,6 +309,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * Gets or sets the display text of the selected item in the component.
      *
      * @default null
+     * @aspType string
      */
     @Property(null)
     public text: string | null;
@@ -373,7 +320,14 @@ export class DropDownList extends DropDownBase implements IInput {
      * @isGenericType true
      */
     @Property(null)
-    public value: number | string | boolean | null;
+    public value: number | string | boolean | object | null;
+    /**
+    * Defines whether the object binding is allowed or not in the component.
+    *
+    * @default false
+    */
+    @Property(false)
+    public allowObjectBinding: boolean; 
     /**
      * Gets or sets the index of the selected item in the component.
      *
@@ -382,6 +336,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * {% codeBlock src="dropdownlist/index-api/index.html" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType double
      */
     @Property(null)
     public index: number | null;
@@ -499,7 +454,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.isFilterFocus = false;
         this.beforePopupOpen = false;
         this.initial = true;
-        this.initRemoteRender = false;
+        this.initialRemoteRender = false;
         this.isNotSearchList = false;
         this.isTyped = false;
         this.isSelected = false;
@@ -564,6 +519,11 @@ export class DropDownList extends DropDownBase implements IInput {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.totalItemCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
         }
+        if (this.enableVirtualization && this.isFiltering() && this.getModuleName() === 'combobox'){
+            this.UpdateSkeleton();
+            this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+            this.ulElement = this.list.querySelector('ul');
+        }
         this.unWireListEvents();
         this.wireListEvents();
     }
@@ -614,8 +574,8 @@ export class DropDownList extends DropDownBase implements IInput {
             this.isActive = true;
             this.resetSelection(properties);
         }
-        const dataItem: { [key: string]: string } = this.getItemData();
-        if (this.previousValue === dataItem.value) {
+        let dataItem: { [key: string]: string } = this.getItemData();        
+        if ((!this.allowObjectBinding && (this.previousValue === dataItem.value)) || (this.allowObjectBinding && this.previousValue && this.isObjectInArray(this.previousValue, [(this as any).allowCustom ? this.value ? this.value : dataItem : dataItem.value ? this.getDataByValue(dataItem.value) : dataItem]))) {
             return;
         }
         this.onChangeEvent(e);
@@ -778,7 +738,7 @@ export class DropDownList extends DropDownBase implements IInput {
         return this.getElementByValue(this.getValueByText(text));
     }
 
-    protected getElementByValue(value: string | number | boolean): Element {
+    protected getElementByValue(value: string | number | boolean | object): Element {
         let item: Element;
         const listItems: Element[] = this.getItems();
         for (const liItem of listItems) {
@@ -795,7 +755,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.viewPortInfo.endIndex = this.virtualItemEndIndex = this.itemCount;
         this.renderList();
         if (this.dataSource instanceof DataManager) {
-            this.initRemoteRender = true;
+            this.initialRemoteRender = true;
         } else {
             this.updateValues();
         }
@@ -804,7 +764,8 @@ export class DropDownList extends DropDownBase implements IInput {
     protected updateValues(): void {
         this.selectedValueInfo = this.viewPortInfo;
         if (!isNullOrUndefined(this.value)) {
-            this.setSelection(this.getElementByValue(this.value), null);
+            const value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue(((this.fields.value) ? this.fields.value : ''), this.value) : this.value;
+            this.setSelection(this.getElementByValue(value), null);
         } else if (this.text && isNullOrUndefined(this.value)) {
             const element: Element = this.getElementByText(this.text);
             if (isNullOrUndefined(element)) {
@@ -1045,25 +1006,6 @@ export class DropDownList extends DropDownBase implements IInput {
         return (li && li.hasAttribute('role') && li.getAttribute('role') === 'option');
     }
 
-    protected updateIncrementalInfo(startIndex: number, endIndex: number) {
-        this.viewPortInfo.startIndex = startIndex;
-        this.viewPortInfo.endIndex = endIndex;
-        this.updateVirtualItemIndex();
-        this.isIncrementalRequest = true;
-        this.resetList(this.dataSource, this.fields, this.query);
-        this.isIncrementalRequest = false;
-    }
-
-    protected updateIncrementalView(startIndex: number, endIndex: number) {
-        this.viewPortInfo.startIndex = startIndex;
-        this.viewPortInfo.endIndex = endIndex;
-        this.updateVirtualItemIndex();
-        this.resetList(this.dataSource, this.fields, this.query);
-        this.UpdateSkeleton();
-        this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
-        this.ulElement = this.list.querySelector('ul');
-    }
-
     protected updateIncrementalItemIndex(startIndex: number, endIndex: number): void {
         this.incrementalStartIndex = startIndex;
         this.incrementalEndIndex = endIndex;
@@ -1230,10 +1172,12 @@ export class DropDownList extends DropDownBase implements IInput {
             const isTabAction: boolean = e.action === 'tab' || e.action === 'close';
             if (isNullOrUndefined(this.list) && !this.isRequested && !isTabAction && e.action !== 'escape') {
                 this.searchKeyEvent = e;
-                this.renderList(e);
-                this.UpdateSkeleton();
-                this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
-                this.ulElement = this.list.querySelector('ul');
+                if(!this.enableVirtualization || (this.enableVirtualization && this.getModuleName() !== 'autocomplete' && e.type !== 'mousedown' && (e.keyCode === 40 || e.keyCode === 38))) {
+                    this.renderList(e);
+                    this.UpdateSkeleton();
+                    this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
+                    this.ulElement = this.list.querySelector('ul');
+                }
             }
             if (isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&
                 isNavigation && this.liCollections.length === 0) || this.isRequested) {
@@ -1395,7 +1339,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.activeIndex = filterIndex;
             }
         }
-        if(this.allowFiltering && this.getModuleName() === 'dropdownlist'){
+        if(this.allowFiltering && this.getModuleName() === 'dropdownlist' && this.filterInput){
             if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-item-focus')[0])) {
                 attributes(this.filterInput, { 'aria-activedescendant': this.ulElement.getElementsByClassName('e-item-focus')[0].id });
             } else if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-active')[0])) {
@@ -1403,12 +1347,6 @@ export class DropDownList extends DropDownBase implements IInput {
             }
         }
         e.preventDefault();
-    }
-
-    private updateVirtualItemIndex(): void{
-        this.virtualItemStartIndex = this.viewPortInfo.startIndex;
-        this.virtualItemEndIndex = this.viewPortInfo.endIndex;
-        this.virtualListInfo = this.viewPortInfo;
     }
 
     private updateHomeEndAction(e: KeyboardEventArgs, isVirtualKeyAction?: boolean): void {
@@ -1561,11 +1499,15 @@ export class DropDownList extends DropDownBase implements IInput {
     private pageDownSelection(steps: number, event: KeyboardEventArgs, isVirtualKeyAction?: boolean): void {
         const list: Element[] = this.getItems();
         let previousItem: Element = steps <= list.length ? this.liCollections[steps - 1] : this.liCollections[list.length - 1];
+        if (this.enableVirtualization && this.skeletonCount > 0) {
+            steps = this.getModuleName() === 'dropdownlist' && this.allowFiltering ? steps + 1 : steps;
+            previousItem = steps < list.length ? this.liCollections[steps as number] : this.liCollections[list.length - 1];
+        }
         if ((this.enableVirtualization && this.activeIndex == null) || isVirtualKeyAction) {
             previousItem = steps <= list.length ? this.liCollections[steps + this.skeletonCount - 1] : this.liCollections[list.length - 1];
         }
         this.PageUpDownSelection(previousItem, event);
-        if(this.allowFiltering && this.getModuleName() === 'dropdownlist'){
+        if (this.allowFiltering && this.getModuleName() === 'dropdownlist') {
             if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-item-focus')[0])) {
                 attributes(this.filterInput, { 'aria-activedescendant': this.ulElement.getElementsByClassName('e-item-focus')[0].id });
             } else if (!isNullOrUndefined(this.ulElement) && !isNullOrUndefined(this.ulElement.getElementsByClassName('e-active')[0])) {
@@ -1734,7 +1676,7 @@ export class DropDownList extends DropDownBase implements IInput {
         value?: string | number | boolean): void {
         this.previousItemData = (!isNullOrUndefined(this.itemData)) ? this.itemData : null;
         if(this.itemData != selectedData){
-            this.previousValue = (!isNullOrUndefined(this.itemData))? typeof this.itemData == "object" ? this.checkFieldValue(this.itemData as any, this.fields.value.split('.')): this.itemData: null;
+            this.previousValue = (!isNullOrUndefined(this.itemData))? typeof this.itemData == "object" && !this.allowObjectBinding ? this.checkFieldValue(this.itemData as any, this.fields.value.split('.')): this.itemData: null;
         }
         this.item = li as HTMLLIElement;
         this.itemData = selectedData;
@@ -1792,7 +1734,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.isFiltering() && clearElement) {
             clearElement.style.removeProperty('visibility');
         }
-        if (this.previousValue === dataItem.value) {
+        if ((!this.allowObjectBinding && (this.previousValue === dataItem.value)) || (this.allowObjectBinding && (this.previousValue != null && this.isObjectInArray(this.previousValue, [(this as any).allowCustom && this.isObjectCustomValue ? this.value ? this.value : dataItem : dataItem.value ? this.getDataByValue(dataItem.value) : dataItem])))) {
             this.isSelected = false;
             return true;
         } else {
@@ -1811,28 +1753,30 @@ export class DropDownList extends DropDownBase implements IInput {
             this.updateSelectedItem(li, e, false, true);
         } else {
             this.setSelectOptions(li, e);
-            if (this.enableVirtualization) {
+            if (this.enableVirtualization && this.value) {
                 const fields: string = (this.fields.value) ? this.fields.value : '';
-                if (this.dataSource instanceof DataManager) {
-                    this.dataSource.executeQuery(new Query().where(new Predicate(fields, 'equal', this.value)))
-                        .then((e: Object) => {
-                            if ((e as ResultData).result.length > 0) {
-                                this.itemData = (e as ResultData).result[0];
-                                const dataItem: { [key: string]: string } = this.getItemData();
-                                if ((this.value === dataItem.value && this.text !== dataItem.text) || (this.value !== dataItem.value && this.text === dataItem.text)) {
-                                    this.setProperties({ 'text': dataItem.text, 'value': dataItem.value });
-                                } 
-                            }
-                        });
-                }
-                else{
+                let currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+                if (this.dataSource instanceof DataManager && this.virtualGroupDataSource) {
                     const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
-                        this.dataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', this.value)));
+                        this.virtualGroupDataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', currentValue)));
                     if (getItem && getItem.length > 0) {
                         this.itemData = getItem[0];
                         const dataItem: { [key: string]: string } = this.getItemData();
+                        let value: string | number | boolean | Object = this.allowObjectBinding ? this.getDataByValue(dataItem.value) : dataItem.value;
                         if((this.value === dataItem.value && this.text !== dataItem.text) || (this.value !== dataItem.value && this.text === dataItem.text)){
-                            this.setProperties({ 'text': dataItem.text, 'value': dataItem.value });
+                            this.setProperties({ 'text': dataItem.text, 'value': value });
+                        }
+                    }
+                }
+                else{
+                    const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
+                        this.dataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', currentValue)));
+                    if (getItem && getItem.length > 0) {
+                        this.itemData = getItem[0];
+                        const dataItem: { [key: string]: string } = this.getItemData();
+                        let value: string | number | boolean | Object = this.allowObjectBinding ? this.getDataByValue(dataItem.value) : dataItem.value;
+                        if((this.value === dataItem.value && this.text !== dataItem.text) || (this.value !== dataItem.value && this.text === dataItem.text)){
+                            this.setProperties({ 'text': dataItem.text, 'value': value });
                         } 
                     }
                 }
@@ -1950,10 +1894,22 @@ export class DropDownList extends DropDownBase implements IInput {
      * @param {MouseEvent | KeyboardEvent | TouchEvent} eve - Specifies the event arguments.
      * @returns {void}
      */
-    protected onChangeEvent(eve: MouseEvent | KeyboardEvent | TouchEvent): void {
+    protected onChangeEvent(eve: MouseEvent | KeyboardEvent | TouchEvent, isCustomValue?: boolean): void {
         const dataItem: { [key: string]: string } = this.getItemData();
-        const index: number = this.isSelectCustom ? null : this.activeIndex;
-        this.setProperties({ 'index': index, 'text': dataItem.text, 'value': dataItem.value }, true);
+        let index: number = this.isSelectCustom ? null : this.activeIndex;
+        if (this.enableVirtualization) {
+            let datas: any = this.dataSource instanceof DataManager ? this.virtualGroupDataSource : this.dataSource;
+            if (dataItem.value && datas && datas.length > 0) {
+                const foundIndex: number = datas.findIndex((data: any) => 
+                    !isNullOrUndefined(dataItem.value) && getValue(this.fields.value, data) === dataItem.value
+                );
+                if (foundIndex !== -1) {
+                    index = foundIndex; 
+                }
+            }
+        }
+        let value: string | number | boolean | Object = this.allowObjectBinding ? isCustomValue ? this.value : this.getDataByValue(dataItem.value) : dataItem.value;
+        this.setProperties({ 'index': index, 'text': dataItem.text, 'value': value }, true);
         this.detachChangeEvent(eve);
     }
 
@@ -1983,7 +1939,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected detachChangeEvent(eve: MouseEvent | KeyboardEvent | TouchEvent): void {
         this.isSelected = false;
         this.previousValue = this.value;
-        this.activeIndex = this.index;
+        this.activeIndex = this.enableVirtualization ? this.getIndexByValue(this.value) : this.index;
         this.typedString = !isNullOrUndefined(this.text) ? this.text : '';
         if (!this.initial) {
             const items: FieldSettingsModel = this.detachChanges(this.itemData);
@@ -2029,15 +1985,16 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected setHiddenValue(): void {
         if (!isNullOrUndefined(this.value)) {
+            let value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
             if (this.hiddenElement.querySelector('option')) {
                 const selectedElement: HTMLElement = this.hiddenElement.querySelector('option');
                 selectedElement.textContent = this.text;
-                selectedElement.setAttribute('value', this.value.toString());
+                selectedElement.setAttribute('value', value.toString());
             } else {
                 if (!isNullOrUndefined(this.hiddenElement)) {
                     this.hiddenElement.innerHTML = '<option selected>' + this.text + '</option>';
                     const selectedElement: HTMLElement = this.hiddenElement.querySelector('option');
-                    selectedElement.setAttribute('value', this.value.toString());
+                    selectedElement.setAttribute('value', value.toString());
                 }
             }
         } else {
@@ -2053,6 +2010,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected onFilterUp(e: KeyboardEventArgs): void {
         if (!(e.ctrlKey && e.keyCode === 86) && (this.isValidKey || e.keyCode === 40 || e.keyCode === 38)) {
             this.isValidKey = false;
+            this.firstItem = this.dataSource && (this.dataSource as any).length > 0 ? (this.dataSource as any)[0] : null;
             switch (e.keyCode) {
                 case 38:  //up arrow
                 case 40:  //down arrow
@@ -2105,45 +2063,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.isValidKey = false;
         }
     }
-    protected getFilteringSkeletonCount(): void {
-        const difference: number = this.dataCount - this.viewPortInfo.endIndex;
-        const currentSkeletonCount: number = this.skeletonCount;
-        this.getSkeletonCount(true);
-        this.skeletonCount = this.dataCount > this.itemCount * 2 ? this.skeletonCount : difference > this.skeletonCount ? this.skeletonCount : difference > 0 ? difference : 0;
-        let skeletonUpdated = true;
-        if(this.getModuleName() ==='autocomplete' && (this.totalItemCount != 0 && this.totalItemCount < (this.itemCount * 2))){
-            this.skeletonCount = 0;
-            skeletonUpdated = false;
-        }
-        if (!this.list.classList.contains(dropDownBaseClasses.noData)) {
-            const isSkeletonCountChange: boolean = currentSkeletonCount !== this.skeletonCount;
-            if(currentSkeletonCount !== this.skeletonCount && skeletonUpdated){
-                this.UpdateSkeleton(true,Math.abs(currentSkeletonCount - this.skeletonCount));
-            }
-            else{
-                this.UpdateSkeleton();
-            }
-            this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.e-list-item');
-            if ((this.list.getElementsByClassName('e-virtual-ddl').length > 0)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this.list.getElementsByClassName('e-virtual-ddl')[0] as any).style = this.GetVirtualTrackHeight();
-            }
-            if (this.list.getElementsByClassName('e-virtual-ddl-content').length > 0) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
-            }
-        }
-    }
-
-    protected getSkeletonCount(retainSkeleton?: boolean): void {
-        this.virtualListHeight = this.listHeight != null ? parseInt(this.listHeight, 10) : this.virtualListHeight;
-        const actualCount: number = this.virtualListHeight > 0 ? Math.floor(this.virtualListHeight / this.listItemHeight) : 0;
-        this.skeletonCount = actualCount * 2 < this.itemCount ? this.itemCount : actualCount * 2;
-        this.itemCount = retainSkeleton ? this.itemCount : this.skeletonCount;
-        this.skeletonCount = Math.floor(this.skeletonCount / 2) + 2;
-    }
-    
-    
+       
     protected onFilterDown(e: KeyboardEventArgs): void {
         switch (e.keyCode) {
             case 13:  //enter
@@ -2197,13 +2117,51 @@ export class DropDownList extends DropDownBase implements IInput {
                     }
                 }
             }
-            if (this.allowFiltering || !this.isPopupOpen || !alreadySkipAdded) {
-                filterQuery.skip(this.virtualItemStartIndex);
+            let queryTakeValue = 0;
+            let querySkipValue = 0;
+            if(this.query && this.query.queries.length > 0){
+                for (let queryElements: number = 0; queryElements < this.query.queries.length; queryElements++) {
+                    if (this.query.queries[queryElements as number].fn === 'onSkip') {
+                        querySkipValue = this.query.queries[queryElements as number].e.nos;
+                    }
+                    if (this.query.queries[queryElements as number].fn === 'onTake') {
+                        queryTakeValue = takeValue <= this.query.queries[queryElements as number].e.nos ? this.query.queries[queryElements as number].e.nos : takeValue;
+                    }
+
+                }
+            }
+            let skipExists = false;
+            let takeExists = false;
+            if (filterQuery && filterQuery.queries.length > 0) {
+                for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
+                    if (filterQuery.queries[queryElements as number].fn === 'onSkip') {
+                        skipExists = true;
+                    }
+                    if (filterQuery.queries[queryElements as number].fn === 'onTake') {   
+                        takeExists = true;
+                        filterQuery.queries[queryElements as number].e.nos = filterQuery.queries[queryElements as number].e.nos <= queryTakeValue  ? queryTakeValue : filterQuery.queries[queryElements as number].e.nos;
+                    }
+                }
+            }
+            if (!skipExists && (this.allowFiltering || !this.isPopupOpen || !alreadySkipAdded)) {
+                if (querySkipValue > 0) {
+                    filterQuery.skip(querySkipValue);
+                }
+                else {
+                    filterQuery.skip(this.virtualItemStartIndex);
+                }
             }
             if (this.isIncrementalRequest) {
                 filterQuery.take(this.incrementalEndIndex);
             } else {
-                filterQuery.take(takeValue);
+                if(!takeExists){
+                    if (queryTakeValue > 0) {
+                        filterQuery.take(queryTakeValue);
+                    }
+                    else {
+                        filterQuery.take(takeValue);
+                    }
+                }
             }
             filterQuery.requiresCount();
         }
@@ -2431,29 +2389,6 @@ export class DropDownList extends DropDownBase implements IInput {
             this.renderPopup();
         }
     }
-    private UpdateSkeleton(isSkeletonCountChange?: boolean, skeletonCount?: number): void {
-        let isContainSkeleton = this.list.querySelector('.e-virtual-ddl-content');
-        let isContainVirtualList = this.list.querySelector('.e-virtual-list');
-        if (isContainSkeleton && (!isContainVirtualList || isSkeletonCountChange) && this.enableVirtualization) {
-            const totalSkeletonCount: number = isSkeletonCountChange ? skeletonCount : this.skeletonCount;
-            for (let i = 0; i < totalSkeletonCount; i++) {
-                const liElement = this.createElement('li', { className: dropDownListClasses.virtualList, styles: 'overflow: inherit' });
-                if(this.enableVirtualization && this.itemTemplate){
-                    liElement.style.height = this.listItemHeight + 'px';
-                }
-                let skeleton: Skeleton = new Skeleton({
-                    shape: "Text",
-                    height: "10px",
-                    width: "95%",
-                    cssClass: "e-skeleton-text",
-                });
-                skeleton.appendTo(this.createElement('div'));
-                liElement.appendChild(skeleton.element);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                isContainSkeleton.firstChild.insertBefore(liElement, (isContainSkeleton.firstChild as any).children[0]);
-            }
-        }
-    }
 
     protected getTakeValue(): number {
         return this.allowFiltering && this.getModuleName() === 'dropdownlist' && Browser.isDevice ? Math.round(window.outerHeight / this.listItemHeight) : this.itemCount;
@@ -2490,18 +2425,24 @@ export class DropDownList extends DropDownBase implements IInput {
             if (!isNullOrUndefined(ulElement)) {
                 attributes(ulElement, { 'id': this.element.id + '_options', 'role': 'listbox', 'aria-hidden': 'false', 'aria-label': 'listbox' });
             }
-            if (this.initRemoteRender) {
+            if (this.initialRemoteRender) {
                 this.initial = true;
                 this.activeIndex = this.index;
-                this.initRemoteRender = false;
+                this.initialRemoteRender = false;
                 if (this.value && this.dataSource instanceof DataManager) {
                     const checkField: string = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
+                    let value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue(checkField, this.value) : this.value;
                     const fieldValue: string[] = this.fields.value.split('.');
-                    const checkVal: boolean = list.some((x: { [key: string]: boolean | string | number }) =>
+                    let checkVal: boolean = list.some((x: { [key: string]: boolean | string | number }) =>
                         isNullOrUndefined(x[checkField as string]) && fieldValue.length > 1 ?
-                            this.checkFieldValue(x, fieldValue) === this.value : x[checkField as string] === this.value);
+                            this.checkFieldValue(x, fieldValue) === value : x[checkField as string] === value);
+                    if(this.enableVirtualization && this.virtualGroupDataSource){
+                        checkVal = (this.virtualGroupDataSource as any).some((x: { [key: string]: boolean | string | number }) =>
+                        isNullOrUndefined(x[checkField as string]) && fieldValue.length > 1 ?
+                            this.checkFieldValue(x, fieldValue) === value : x[checkField as string] === value);
+                    }
                     if (!checkVal) {
-                        this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', this.value)))
+                        this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', value)))
                             .then((e: Object) => {
                                 if ((e as ResultData).result.length > 0) {
                                     this.addItem((e as ResultData).result, list.length);
@@ -2675,49 +2616,20 @@ export class DropDownList extends DropDownBase implements IInput {
     private updateSelectionList(): void {
         let selectedItem: HTMLElement = this.list && this.list.querySelector('.' + 'e-active');
         if (!selectedItem && !isNullOrUndefined(this.value)) {
-            var findEle = this.findListElement(this.list, 'li', 'data-value', this.value);
+            let value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ? this.fields.value : '', this.value) :  this.value;
+            var findEle = this.findListElement(this.list, 'li', 'data-value', value);
             if (findEle)
             {
                 findEle.classList.add('e-active');
             }
         }
-    }
-
-    protected checkAndResetCache(): void {
-        if (this.enableVirtualization) {
-            this.generatedDataObject = {};
-          this.virtualItemStartIndex = this.virtualItemEndIndex = 0;
-          this.viewPortInfo = { currentPageNumber: null,
-            direction: null,
-            sentinelInfo: {},
-            offsets: {},
-            startIndex: 0,
-            endIndex: this.itemCount, };
-          this.selectedValueInfo = null;
-        }
-      }
-      
+    }      
 
     protected removeFocus(): void {
         const highlightedItem: Element[] = <NodeListOf<Element> & Element[]>this.list.querySelectorAll('.' + dropDownListClasses.focus);
         if (highlightedItem && highlightedItem.length) {
             removeClass(highlightedItem, dropDownListClasses.focus);
         }
-    }
-    protected getTransformValues(): string {
-        let translateY: number = this.viewPortInfo.startIndex * this.listItemHeight;
-        translateY = translateY - (this.skeletonCount * this.listItemHeight);
-        translateY = this.viewPortInfo.startIndex === 0 && this.listData && this.listData.length === 0 ? 0 : translateY;
-        const styleText: string = `transform: translate(0px, ${translateY}px);`;
-        return styleText;
-    }
-    protected GetVirtualTrackHeight(): string {
-        const height: number = this.totalItemCount === this.viewPortInfo.endIndex ? this.totalItemCount * this.listItemHeight - this.itemCount * this.listItemHeight : this.totalItemCount * this.listItemHeight;
-        const heightDimension: string = `height: ${height - this.itemCount * this.listItemHeight}px;`;
-        if(this.getModuleName() === 'autocomplete' && this.skeletonCount === 0) {
-            return "height: 0px;";
-        }
-        return heightDimension;
     }
 
     protected renderPopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent | Object): void {
@@ -2734,7 +2646,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 popupEle.setAttribute( 'aria-label', this.element.id );
                 popupEle.setAttribute( 'role', 'dialog' );
                 const searchBox: InputObject = this.setSearchBox(popupEle);
-                this.listHeight = formatUnit(this.popupHeight);
+                this.listContainerHeight = formatUnit(this.popupHeight);
                 if (this.headerTemplate) {
                     this.setHeaderTemplate(popupEle);
                 }
@@ -2777,19 +2689,19 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.searchBoxHeight = 0;
                     if (!isNullOrUndefined(searchBox.container) && this.getModuleName() !== 'combobox' && this.getModuleName() !== 'autocomplete') {
                         this.searchBoxHeight = (searchBox.container.parentElement).getBoundingClientRect().height;
-                        this.listHeight = (parseInt(this.listHeight, 10) - (this.searchBoxHeight)).toString() + 'px';
+                        this.listContainerHeight = (parseInt(this.listContainerHeight, 10) - (this.searchBoxHeight)).toString() + 'px';
                     }
                     if (this.headerTemplate) {
                         this.header = this.header ? this.header : popupEle.querySelector('.e-ddl-header');
                         const height: number = Math.round(this.header.getBoundingClientRect().height);
-                        this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                        this.listContainerHeight = (parseInt(this.listContainerHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
                     }
                     if (this.footerTemplate) {
                         this.footer = this.footer ? this.footer : popupEle.querySelector('.e-ddl-footer');
                         const height: number = Math.round(this.footer.getBoundingClientRect().height);
-                        this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
+                        this.listContainerHeight = (parseInt(this.listContainerHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
                     }
-                    this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
+                    this.list.style.maxHeight = (parseInt(this.listContainerHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
                     popupEle.style.maxHeight = formatUnit(this.popupHeight);
                 } else {
                     popupEle.style.height = 'auto';
@@ -2819,6 +2731,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.getFocusElement();
                 this.checkCollision(popupEle);
                 if (Browser.isDevice) {
+                    if ((parseInt(this.popupWidth.toString(), 10) > window.outerWidth) && !(this.getModuleName() === 'dropdownlist' && this.allowFiltering)) {
+                        this.popupObj.element.classList.add('e-wide-popup');
+                    }
                     this.popupObj.element.classList.add(dropDownListClasses.device);
                     if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
                         && !this.allowFiltering && this.isDropDownClick)) {
@@ -2861,7 +2776,6 @@ export class DropDownList extends DropDownBase implements IInput {
                             } else {
                                 this.scrollBottom(true, true);
                             }
-
                         }
                     }, 5);
                 }
@@ -2988,9 +2902,9 @@ export class DropDownList extends DropDownBase implements IInput {
     private scrollHandler(): void {
         if (Browser.isDevice && ((this.getModuleName() === 'dropdownlist' &&
             !this.isFilterLayout()) || (this.getModuleName() === 'combobox' && !this.allowFiltering && this.isDropDownClick))) {
-                if (this.element && !(this.isElementInViewport(this.element))) {
-                    this.hidePopup();
-                }
+            if (this.element && !(this.isElementInViewport(this.element))) {
+                this.hidePopup();
+            }
         }
     }
 
@@ -3088,6 +3002,9 @@ export class DropDownList extends DropDownBase implements IInput {
                             this.list.scrollTop += nextOffset;
                         }
                         else{
+                            if (this.enableVirtualization) {
+                                liCount = keyAction == "pageDown" ? this.getPageCount() : liCount;
+                            }
                             this.list.scrollTop += this.selectedLI.offsetHeight * liCount;
                         }
                         this.isPreventKeyAction = this.IsScrollerAtEnd() ? false : this.isPreventKeyAction;
@@ -3141,6 +3058,9 @@ export class DropDownList extends DropDownBase implements IInput {
             } else if (nextOffset < 0 || isPageUpKeyAction) {
                 var currentElementValue = this.selectedLI ? this.selectedLI.getAttribute('data-value') : null;
                 var liCount = keyAction == "pageUp" ? this.getPageCount() - 2 : 1;
+                if (this.enableVirtualization) {
+                    liCount = keyAction == "pageUp" ? this.getPageCount() : liCount;
+                }
                 if (this.enableVirtualization && this.isKeyBoardAction && firstElementValue && currentElementValue === firstElementValue && keyAction != "home"  && !this.isVirtualScrolling) {
                     this.isUpwardScrolling = true;
                     this.isPreventKeyAction = true;
@@ -3245,6 +3165,7 @@ export class DropDownList extends DropDownBase implements IInput {
         let isFilterValue = !isNullOrUndefined(this.filterInput) && !isNullOrUndefined(this.filterInput.value) && this.filterInput.value !== '';
         const typedString: string = this.getModuleName() === 'combobox' ? this.typedString : null;
         this.isTyped = false;
+        this.isVirtualTrackHeight = false;
         if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
             return;
         }
@@ -3337,8 +3258,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
             }
         });
-        if((this as any).isReact && this.isFiltering() && this.itemTemplate != null){
-            (this as any).actionCompleteData.ulElement = this.ulElement.cloneNode(true);
+        if (Browser.isDevice && !eventArgs.cancel && this.popupObj.element.classList.contains('e-wide-popup')) {
+            this.popupObj.element.classList.remove('e-wide-popup');
         }
         let dataSourceCount: number;
         if (this.dataSource instanceof DataManager) {
@@ -3505,6 +3426,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.listItemHeight = this.getListHeight();
                 this.getSkeletonCount();
                 this.updateVirtualizationProperties(this.itemCount, this.allowFiltering);
+                if(this.index !== null){
+                    this.activeIndex = this.index + this.skeletonCount;
+                }
             }
             this.initValue();
             this.selectedValueInfo = this.viewPortInfo;
@@ -3513,7 +3437,7 @@ export class DropDownList extends DropDownBase implements IInput {
             }
         } else if (this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options[0]) {
             const selectElement: HTMLSelectElement = <HTMLSelectElement>this.element;
-            this.value = selectElement.options[selectElement.selectedIndex].value;
+            this.value = this.allowObjectBinding ? this.getDataByValue(selectElement.options[selectElement.selectedIndex].value) : selectElement.options[selectElement.selectedIndex].value;
             this.text = isNullOrUndefined(this.value) ? null : selectElement.options[selectElement.selectedIndex].textContent;
             this.initValue();
         }
@@ -3636,7 +3560,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.text = text;
     }
 
-    protected setOldValue(value: string | number | boolean): void {
+    protected setOldValue(value: string | number | boolean | object): void {
         this.value = value;
     }
 
@@ -3669,7 +3593,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.actionData = this.actionCompleteData;
         }
     }
-    protected updateDataSource(props?: DropDownListModel): void {
+    protected updateDataSource(props?: DropDownListModel, oldProps?: DropDownListModel): void {
         if (this.inputElement.value !== '' || (!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
             || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0)))) {
             this.clearAll(null, props);
@@ -3679,7 +3603,7 @@ export class DropDownList extends DropDownBase implements IInput {
             EventHandler.add(this.list, 'scroll', this.setFloatingHeader, this);
         }
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
-            || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0))) || !(Array.isArray(props.dataSource) && props.dataSource.length === 0)) {
+            || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0))) || ((props.dataSource instanceof DataManager) || (!isNullOrUndefined(props) && Array.isArray(props.dataSource) && !isNullOrUndefined(oldProps) && Array.isArray(oldProps.dataSource) && props.dataSource.length !== oldProps.dataSource.length))) {
             this.typedString = '';
             this.resetList(this.dataSource);
         }
@@ -3688,9 +3612,11 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
     protected checkCustomValue(): void {
-        this.itemData = this.getDataByValue(this.value);
+        const currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+        this.itemData = this.getDataByValue(currentValue);
         const dataItem: { [key: string]: string } = this.getItemData();
-        this.setProperties({ 'text': dataItem.text, 'value': dataItem.value });
+        let value: string | number | boolean | Object = this.allowObjectBinding ? this.itemData : dataItem.value;
+        this.setProperties({ 'text': dataItem.text, 'value': value });
     }
     private updateInputFields(): void {
         if (this.getModuleName() === 'dropdownlist') {
@@ -3755,11 +3681,11 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                     if (!this.list) {
                         if (this.dataSource instanceof DataManager) {
-                            this.initRemoteRender = true;
+                            this.initialRemoteRender = true;
                         }
                         this.renderList();
                     }
-                    if (!this.initRemoteRender) {
+                    if (!this.initialRemoteRender) {
                         const li: Element = this.getElementByText(newProp.text);
                         if (!this.checkValidLi(li)) {
                             if (this.liCollections && this.liCollections.length === 100 &&
@@ -3790,6 +3716,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 case 'value': if (newProp.value === null) {
                     this.clearAll(); break;
                 }
+                if(this.allowObjectBinding && !isNullOrUndefined(newProp.value) && !isNullOrUndefined(oldProp.value) && this.isObjectInArray(newProp.value , [oldProp.value])){
+                    return;
+                }
                 if(this.enableVirtualization){
                     this.updateValues();
                     this.updateInputFields();
@@ -3802,12 +3731,13 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.notify('beforeValueChange', { newProp: newProp }); // gird component value type change
                     if (!this.list) {
                         if (this.dataSource instanceof DataManager) {
-                            this.initRemoteRender = true;
+                            this.initialRemoteRender = true;
                         }
                         this.renderList();
                     }
-                    if (!this.initRemoteRender) {
-                        const item: Element = this.getElementByValue(newProp.value);
+                    if (!this.initialRemoteRender) {
+                        const value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(newProp.value) ? getValue((this.fields.value) ? this.fields.value : '', newProp.value) : newProp.value;
+                        const item: Element = this.getElementByValue(value);
                         if (!this.checkValidLi(item)) {
                             if (this.liCollections && this.liCollections.length === 100 &&
                                 this.getModuleName() === 'autocomplete' && this.listData.length > 100) {
@@ -3816,7 +3746,8 @@ export class DropDownList extends DropDownBase implements IInput {
                                 const listLength: number = this.getItems().length;
                                 const checkField: string = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
                                 this.typedString = '';
-                                this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', newProp.value)))
+                                let value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(newProp.value) ? getValue(checkField, newProp.value) : newProp.value;
+                                this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', value)))
                                     .then((e: Object) => {
                                         if ((e as ResultData).result.length > 0) {
                                             this.addItem((e as ResultData).result, listLength);
@@ -3840,11 +3771,11 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                     if (!this.list) {
                         if (this.dataSource instanceof DataManager) {
-                            this.initRemoteRender = true;
+                            this.initialRemoteRender = true;
                         }
                         this.renderList();
                     }
-                    if (!this.initRemoteRender && this.liCollections) {
+                    if (!this.initialRemoteRender && this.liCollections) {
                         const element: Element = this.liCollections[newProp.index] as Element;
                         if (!this.checkValidLi(element)) {
                             if (this.liCollections && this.liCollections.length === 100 &&
@@ -3909,8 +3840,8 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     private setSelectionData(
-        newProp: number | string | boolean,
-        oldProp: number | string | boolean,
+        newProp: number | string | boolean | object,
+        oldProp: number | string | boolean | object,
         prop: string
     ): void {
         let li: Element;
@@ -3921,6 +3852,8 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.setOldText(oldProp as string);
                 }
             } else if (prop === 'value') {
+                const fields: string = (this.fields.value) ? this.fields.value : '';
+                const value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(newProp) ? getValue(fields, newProp) : newProp;
                 li = this.getElementByValue(newProp);
                 if (!this.checkValidLi(li)) {
                     this.setOldValue(oldProp);
@@ -3985,6 +3918,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.enabled) {
             return;
         }
+        this.firstItem = this.dataSource && (this.dataSource as any).length > 0 ? (this.dataSource as any)[0] : null;
         if((this as any).isReact && this.getModuleName() === 'combobox' && this.itemTemplate && this.isCustomFilter && this.isAddNewItemTemplate){
             this.renderList();
             this.isAddNewItemTemplate = false;
@@ -4004,6 +3938,9 @@ export class DropDownList extends DropDownBase implements IInput {
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
         } else if (isNullOrUndefined(this.list) || !isUndefined(this.list) && (this.list.classList.contains(dropDownBaseClasses.noData) ||
             this.list.querySelectorAll('.' + dropDownBaseClasses.li).length <= 0)) {
+            if((this as any).isReact && this.isFiltering() && this.itemTemplate != null){
+                this.isSecondClick = false;
+            }
             this.renderList(e);
         }
         if (this.enableVirtualization && this.listData && this.listData.length) {
@@ -4061,7 +3998,8 @@ export class DropDownList extends DropDownBase implements IInput {
             }
             this.isEscapeKey = false;
             if (!isNullOrUndefined(this.index)) {
-                const element: HTMLElement = this.findListElement(this.ulElement, 'li', 'data-value', this.value);
+                const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ? this.fields.value : '', this.value) :  this.value;
+                const element: HTMLElement = this.findListElement(this.ulElement, 'li', 'data-value', value);
                 this.selectedLI = this.liCollections[this.index] || element;
                 if (this.selectedLI) {
                     this.updateSelectedItem(this.selectedLI, null, true);
@@ -4073,6 +4011,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.resetSelection();
             }
         }
+        this.isVirtualTrackHeight = false;
         this.closePopup(0, e);
         const dataItem: { [key: string]: string } = this.getItemData();
         let isSelectVal: boolean = !isNullOrUndefined(this.selectedLI);
@@ -4144,6 +4083,9 @@ export class DropDownList extends DropDownBase implements IInput {
      */
     public destroy(): void {
         this.isActive = false;
+        if (this.showClearButton) {
+		    this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
+		}
         resetIncrementalSearchValues(this.element.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
@@ -4198,6 +4140,14 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.inputElement && !isNullOrUndefined(this.inputElement.onchange)) {
             this.inputElement.onchange = null;
         }
+        if (this.inputElement && !isNullOrUndefined(this.inputElement.onselect)) {
+            this.inputElement.onselect = null;
+        }
+        Input.destroy({
+            element: this.inputElement,
+            floatLabelType: this.floatLabelType,
+            properties: this.properties
+        }, this.clearButton );
         if (this.isAngular) {
             this.inputElement = null;
         }
@@ -4212,7 +4162,7 @@ export class DropDownList extends DropDownBase implements IInput {
     public getItems(): Element[] {
         if (!this.list) {
             if (this.dataSource instanceof DataManager) {
-                this.initRemoteRender = true;
+                this.initialRemoteRender = true;
             }
             this.renderList();
         }

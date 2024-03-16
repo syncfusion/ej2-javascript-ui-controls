@@ -220,6 +220,28 @@ describe('ComboBox', () => {
             expect(comboBoxObj.index).toBe(3);
         });
 
+        it('value at dynamic changes with allowObjectBinding', (done) => {
+            let changeAction: EmitType<Object> = jasmine.createSpy('Change');
+            comboBoxObj = new ComboBox({
+                dataSource: languageData,
+                allowObjectBinding: true,
+                fields: { text: 'text', value: 'id' },
+                change: changeAction
+            });
+            comboBoxObj.appendTo(element);
+            comboBoxObj.value = { id: 'id1', text: 'HTML' };
+            comboBoxObj.dataBind();
+            setTimeout(() => { 
+                expect(comboBoxObj.isObjectInArray({ id: "id1", text: "HTML" }, [comboBoxObj.value])).toBe(true)
+                comboBoxObj.value = { id: 'list2', text: 'PYTHON' };
+                setTimeout(() => {
+                    expect(comboBoxObj.isObjectInArray({ id: 'list2', text: 'PYTHON' }, [comboBoxObj.value])).toBe(true)
+                    expect(isNullOrUndefined(comboBoxObj.popupObj)).toBe(true);
+                    done();
+                }, 800);
+            }, 800);
+        });
+
         it(' text property - not allowed the custom value when disabled the allowCustom property ', () => {
             comboBoxObj = new ComboBox({
                 dataSource: languageData,
@@ -332,7 +354,32 @@ describe('ComboBox', () => {
             }, 450)
         });
 
+        it('customvalue with allowObjectBinding', (done) => {
+            let changeAction: EmitType<Object> = jasmine.createSpy('Change');
+            comboBoxObj = new ComboBox({
+                dataSource: languageData,
+                allowObjectBinding: true,
+                allowCustom: true,
+                fields: { text: 'text', value: 'id' },
+            });
+            comboBoxObj.appendTo(element);
+            comboBoxObj.showPopup();
+            setTimeout(() => {
+                comboBoxObj.inputElement.value = 'ASP';
+                comboBoxObj.onInput(keyEventArgs);
+                comboBoxObj.onFilterUp(keyEventArgs);
+                comboBoxObj.hidePopup();
+                setTimeout(() => {
+                    expect(comboBoxObj.inputElement.value).toEqual('ASP');
+                    expect(comboBoxObj.isObjectInArray({ id: "ASP", text: "ASP" }, [comboBoxObj.value])).toBe(true)
+                    expect(comboBoxObj.text).toEqual('ASP');
+                    done();
+                }, 450)
+            }, 450)
+        });
+
         it('clear custom value', (done) => {
+            comboBoxObj.allowObjectBinding = false;
             comboBoxObj.showPopup();
             setTimeout(() => {
                 comboBoxObj.inputElement.value = 'abc';
@@ -2799,6 +2846,30 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
             clickEvent.initEvent('mousedown', true, true);
             comboBoxObj.inputWrapper.clearButton.dispatchEvent(clickEvent);
             expect(comboBoxObj.list.querySelectorAll('li')[9].textContent === 'Raveen Kumar').toBe(true);
+        });
+        it('mouse click on list with allowObjectBinding', (done) => {
+            comboBoxObj = new ComboBox({
+                dataSource: data,
+                fields: { text: 'Name', value: 'Eimg' },
+                placeholder: "Find a country",
+                popupHeight: '250px',
+                allowObjectBinding: true,
+                allowFiltering: true,
+                showClearButton: true,
+            });
+            comboBoxObj.appendTo(element);
+            comboBoxObj.showPopup();
+            setTimeout(() => {
+                let item: HTMLElement[] = comboBoxObj.popupObj.element.querySelectorAll('li')[3];
+                mouseEventArgs.target = item;
+                mouseEventArgs.type = 'click';
+                comboBoxObj.onMouseClick(mouseEventArgs);
+                setTimeout(function () {
+                    expect(comboBoxObj.isPopupOpen).toBe(false);
+                    comboBoxObj.clearAll();
+                    done();
+                }, 450);
+            }, 450)
         });
     });
     describe('EJ2-59155-Unable to type in the input when autofill is enabled with Contains filter', () => {

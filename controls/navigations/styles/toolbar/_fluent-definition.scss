@@ -45,7 +45,7 @@ $tbar-default-font-overlay: $content-text-color !default;
 $tbar-active-font-color: $tbar-press-font !default;
 $tbar-border-nav-type: $border-light !default;
 $tbar-border-nav-active-type: $border-light !default;
-$tbar-btn-border: none !default;
+$tbar-btn-border: 1px solid $transparent !default;
 
 $tbar-box-shadow: $shadow-sm !default;
 $tbar-border-type: $border-type !default;
@@ -142,8 +142,8 @@ $tbar-nrml-btn-focus-outline: none !default;
 
 $tbar-btn-icons-focus-color: $icon-color !default;
 $tbar-btn-text-focus-color: $content-text-color !default;
-$tbar-btn-focus-border-color: $tbar-focus-border-color !default;
-$tbar-btn-hover-border-size: $tbar-zero-value !default;
+$tbar-btn-focus-border-color: $transparent !default;
+$tbar-btn-hover-border-size: 1px !default;
 $tbar-btn-hover-active-icons-color: $icon-color !default;
 $tbar-btn-hover-active-text-color: $content-text-color !default;
 $tbar-btn-overlay-opacity: .5 !default;

@@ -80,7 +80,6 @@ export class WorkbookSave extends SaveWorker {
      */
     private initiateSave(args: { [key: string]: Object }): void {
         const saveSettings: BeforeSaveEventArgs = <BeforeSaveEventArgs>args.saveSettings;
-        this.parent.notify(events.getFilteredCollection, null);
         this.saveSettings = {
             saveType: saveSettings.saveType,
             url: saveSettings.url,
@@ -105,7 +104,7 @@ export class WorkbookSave extends SaveWorker {
     private updateBasicSettings(): void {
         const jsonStr: string = this.getStringifyObject(this.parent, ['sheets', '_isScalar', 'observers', 'closed', 'isStopped', 'hasError',
             '__isAsync', 'beforeCellFormat', 'beforeCellRender', 'beforeDataBound', 'beforeOpen', 'beforeSave', 'beforeSelect',
-            'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'beforeCellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
+            'beforeSort', 'cellEdit', 'cellEdited', 'cellEditing', 'cellSave', 'beforeCellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
             'contextMenuBeforeOpen', 'created', 'dataBound', 'fileMenuItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen',
             'saveComplete', 'sortComplete', 'select', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate',
             'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete', 'openFailure', 'queryCellInfo', 'dialogBeforeOpen',
@@ -116,6 +115,7 @@ export class WorkbookSave extends SaveWorker {
             basicSettings.sheets = [];
         }
         this.saveJSON = basicSettings;
+        this.saveJSON.filterCollection = [];
     }
 
     /**
@@ -148,7 +148,7 @@ export class WorkbookSave extends SaveWorker {
                 const loadCompleteHandler: Function = (idx: number): void => {
                     executeTaskAsync(
                         this, this.processSheet, this.updateSheet,
-                        [this.getStringifyObject(this.parent.sheets[idx as number], skipProps, idx), idx]);
+                        [this.getStringifyObject(this.parent.sheets[idx as number], skipProps, idx, false, true), idx]);
                 };
                 const context: { scrollSettings?: { isFinite: boolean } } = <{ scrollSettings?: { isFinite: boolean } }>this.parent;
                 this.parent.notify(
@@ -158,7 +158,7 @@ export class WorkbookSave extends SaveWorker {
             } else {
                 executeTaskAsync(
                     this, this.processSheet, this.updateSheet,
-                    [this.getStringifyObject(sheet, skipProps, sheetIdx, autoDetectFormat && isDataBinding), sheetIdx]);
+                    [this.getStringifyObject(sheet, skipProps, sheetIdx, autoDetectFormat && isDataBinding, true), sheetIdx]);
             }
         }
     }
@@ -310,11 +310,16 @@ export class WorkbookSave extends SaveWorker {
      * @param {string[]} skipProp - specifies the skipprop.
      * @param {number} sheetIdx - Specifies the sheet index.
      * @param {boolean} autoDetectFormat - Auto detect the format based on the cell value.
+     * @param {boolean} isSaveAction - Specifies whether the call is for sheet processing during save action.
      * @returns {string} - Get stringified workbook object.
      */
-    private getStringifyObject(model: object, skipProp: string[] = [], sheetIdx?: number, autoDetectFormat?: boolean): string {
+    private getStringifyObject(
+        model: object, skipProp: string[] = [], sheetIdx?: number, autoDetectFormat?: boolean, isSaveAction?: boolean): string {
         if (sheetIdx === 0) {
             this.parent.notify(removeUniquecol, { clearAll: true });
+        }
+        if (isSaveAction) {
+            this.parent.notify(events.setFilteredCollection, { sheetIdx: sheetIdx, isSaveAction: true, saveJson: this.saveJSON });
         }
         const chartColl: { index: number[], chart: ChartModel[] }[] = []; let chartModel: ChartModel[];
         const autoDetectFormatFn: (cell: CellModel) => void = autoDetectFormat && getAutoDetectFormatParser(this.parent);

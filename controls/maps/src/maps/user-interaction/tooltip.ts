@@ -1,4 +1,4 @@
-import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, ITooltipRenderCompleteEventArgs, FontModel } from '../index';
+import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, ITooltipRenderCompleteEventArgs, FontModel, PolygonTooltipSettingsModel, PolygonSettingModel, GeoPosition } from '../index';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
@@ -57,6 +57,7 @@ export class MapsTooltip {
             } 
         }
         let option: TooltipSettingsModel;
+        let polygonTooltipOption : PolygonTooltipSettingsModel;
         let currentData: string = '';
         const targetId: string = target.id;
         let tooltipEle: HTMLElement;
@@ -68,10 +69,29 @@ export class MapsTooltip {
         const tooltipContent: string[] = []; let markerFill: string;
         const location: MapLocation = getMousePosition(pageX, pageY, this.maps.svgObject);
         this.tooltipTargetID = targetId;
+        let polygonTextStyle: FontModel;
+        let polygonFill : string;
+        let polygon : PolygonSettingModel;
+        let latitude: number = null;
+        let longitude: number = null;
+        const latLongValue: GeoPosition = this.maps.getClickLocation(targetId, e.pageX, e.pageY, (target as HTMLElement), e['layerX'], e['layerY'], 'tooltip');
+        if (!isNullOrUndefined(latLongValue)) {
+            latitude = latLongValue.latitude;
+            longitude = latLongValue.longitude;
+        }
+        const isPolygon: boolean = targetId.indexOf('_PolygonIndex_') > -1;
         const istooltipRender: boolean = (targetId.indexOf('_shapeIndex_') > -1)
-            || (targetId.indexOf('_MarkerIndex_') > -1) || (targetId.indexOf('_BubbleIndex_') > -1);
+            || (targetId.indexOf('_MarkerIndex_') > -1) || (targetId.indexOf('_BubbleIndex_') > -1)
+            || (targetId.indexOf('_PolygonIndex_') > -1);
         if (istooltipRender && this.maps.markerDragArgument === null) {
-            if (targetId.indexOf('_shapeIndex_') > -1) {
+            if (targetId.indexOf('_PolygonIndex_') > -1) {
+                const polygonIndex: number = parseInt(targetId.split('_PolygonIndex_')[1].split('_')[0], 10);
+                polygonTooltipOption = layer.polygonSettings.tooltipSettings;
+                polygon = layer.polygonSettings.polygons[polygonIndex as number];
+                polygonTextStyle = polygonTooltipOption.textStyle;
+                polygonFill = polygonTooltipOption.fill;
+                tooltipContent.push(polygon.tooltipText);
+            } else if (targetId.indexOf('_shapeIndex_') > -1) {
                 option = layer.tooltipSettings;
                 const shape: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
                 if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape as number])) {
@@ -172,113 +192,129 @@ export class MapsTooltip {
                 }
                 //location.y = this.template(option, location);
             }
-            if (document.getElementById(this.tooltipId)) {
-                tooltipEle = document.getElementById(this.tooltipId);
-            } else {
-                tooltipEle = createElement('div', {
-                    id: this.maps.element.id + '_mapsTooltip',
-                    className: 'EJ2-maps-Tooltip'
-                });
-                if (isNullOrUndefined(option.template) || option.template === '' || this.maps.tooltipDisplayMode === 'MouseMove') {
-                    tooltipEle.style.cssText = 'position: absolute;pointer-events:none;';
+            if (isPolygon ? polygonTooltipOption.visible : option.visible) {
+                if (document.getElementById(this.tooltipId)) {
+                    tooltipEle = document.getElementById(this.tooltipId);
                 } else {
-                    tooltipEle.style.position = 'absolute';
-                }
-                document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(tooltipEle);
-            }
-            if (typeof option.template !== 'function' && option.template !== null && Object.keys(typeof option.template === 'object' ? option.template : {}).length === 1) {
-                option.template = option.template[Object.keys(option.template)[0]];
-            }
-            templateData = this.setTooltipContent(option, templateData);
-            const tooltipTextStyle: FontModel = {
-                color: option.textStyle.color, fontFamily: option.textStyle.fontFamily, fontStyle: option.textStyle.fontStyle,
-                fontWeight: option.textStyle.fontWeight, opacity: option.textStyle.opacity, size: option.textStyle.size
-            };
-            const tooltipOption : MapsTooltipOption = {
-                location: location, text: tooltipContent, data: templateData,
-                textStyle: tooltipTextStyle,
-                template: option.template
-            };
-            tooltipArgs = {
-                cancel: false, name: tooltipRender,
-                options: tooltipOption,
-                fill: option.fill,
-                maps: this.maps,
-                element: target, eventArgs: e, content: !isNullOrUndefined(currentData) ? currentData.toString() : ''
-            };
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            this.maps.trigger(tooltipRender, tooltipArgs, (args: ITooltipRenderEventArgs) => {
-                if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
-                    (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
-                    this.maps['isProtectedOnChange'] = true;
-                    tooltipArgs.options['textStyle']['size'] = tooltipArgs.options['textStyle']['size']
-                    || this.maps.themeStyle.fontSize;
-                    tooltipArgs.options['textStyle']['color'] = tooltipArgs.options['textStyle']['color']
-                        || this.maps.themeStyle.tooltipFontColor;
-                    tooltipArgs.options['textStyle']['fontFamily'] = tooltipArgs.options['textStyle']['fontFamily']
-                        || this.maps.themeStyle.fontFamily;
-                    tooltipArgs.options['textStyle']['fontWeight'] = tooltipArgs.options['textStyle']['fontWeight']
-                        || this.maps.themeStyle.fontWeight;
-                    tooltipArgs.options['textStyle']['opacity'] = tooltipArgs.options['textStyle']['opacity']
-                        || this.maps.themeStyle.tooltipTextOpacity;
-                    if (tooltipArgs.cancel) {
-                        this.svgTooltip = new Tooltip({
-                            enable: true,
-                            header: '',
-                            data: option['data'],
-                            template: option['template'],
-                            content: tooltipArgs.content.toString() !== currentData.toString() ? [tooltipArgs.content.toString()] :
-                                [currentData.toString()],
-                            shapes: [],
-                            location: option['location'],
-                            palette: [markerFill],
-                            areaBounds: this.maps.mapAreaRect,
-                            textStyle: option['textStyle'],
-                            availableSize: this.maps.availableSize,
-                            fill: option.fill || this.maps.themeStyle.tooltipFillColor,
-                            enableShadow: true
-                        });
+                    tooltipEle = createElement('div', {
+                        id: this.maps.element.id + '_mapsTooltip',
+                        className: 'EJ2-maps-Tooltip'
+                    });
+                    if (isNullOrUndefined(isPolygon ? polygon.tooltipTemplate : option.template) || (isPolygon ? polygon.tooltipTemplate === '' : option.template === '') || this.maps.tooltipDisplayMode === 'MouseMove') {
+                        tooltipEle.style.cssText = 'position: absolute;pointer-events:none;';
                     } else {
-                        this.svgTooltip = new Tooltip({
-                            enable: true,
-                            header: '',
-                            data: tooltipArgs.options['data'],
-                            template: tooltipArgs.options['template'],
-                            content: tooltipArgs.content.toString() !== currentData.toString() ? [tooltipArgs.content.toString()] :
-                                [currentData.toString()],
-                            shapes: [],
-                            location: tooltipArgs.options['location'],
-                            palette: [markerFill],
-                            areaBounds: this.maps.mapAreaRect,
-                            textStyle: tooltipArgs.options['textStyle'],
-                            availableSize: this.maps.availableSize,
-                            fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor,
-                            enableShadow: true
-                        });
+                        tooltipEle.style.position = 'absolute';
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    if ((this.maps as any).isVue || (this.maps as any).isVue3) {
-                        this.svgTooltip.controlInstance = this.maps;
+                    document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(tooltipEle);
+                }
+                if (typeof (isPolygon ? polygon.tooltipTemplate !== 'function' : option.template !== 'function') && (isPolygon ? polygon.tooltipTemplate !== null : option.template !== null) && Object.keys(typeof (isPolygon ? polygon.tooltipTemplate === 'object' : option.template === 'object') ? (isPolygon ? polygon.tooltipTemplate : option.template) : {}).length === 1) {
+                    if (isPolygon) {
+                        polygon.tooltipTemplate = polygon.tooltipTemplate[Object.keys(polygon.tooltipTemplate)[0]];
+                    } else {
+                        option.template = option.template[Object.keys(option.template)[0]];
                     }
-                    this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                    this.svgTooltip.appendTo(tooltipEle);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (this.maps as any).renderReactTemplates();
+                }
+                templateData = this.setTooltipContent(option, templateData);
+                const tooltipTextStyle: FontModel = {
+                    // eslint-disable-next-line max-len
+                    color: isPolygon ? polygonTextStyle.color : option.textStyle.color, fontFamily: isPolygon ? polygonTextStyle.fontFamily : option.textStyle.fontFamily, fontStyle: isPolygon ? polygonTextStyle.fontStyle : option.textStyle.fontStyle,
+                    // eslint-disable-next-line max-len
+                    fontWeight: isPolygon ? polygonTextStyle.fontWeight : option.textStyle.fontWeight, opacity: isPolygon ? polygonTextStyle.opacity : option.textStyle.opacity, size: isPolygon ? polygonTextStyle.size : option.textStyle.size
+                };
+                const tooltipOption : MapsTooltipOption = {
+                    location: location, text: tooltipContent, data: templateData,
+                    textStyle: tooltipTextStyle,
+                    template: isPolygon ? polygon.tooltipTemplate : option.template
+                };
+                tooltipArgs = {
+                    cancel: false, name: tooltipRender,
+                    options: tooltipOption,
+                    fill: isPolygon ? polygonFill : option.fill,
+                    maps: this.maps, latitude: latitude, longitude: longitude,
+                    element: target, eventArgs: e, content: isPolygon ? polygon.tooltipText : !isNullOrUndefined(currentData) ? currentData.toString() : ''
+                };
+                if (tooltipArgs.content !== '' || tooltipArgs.options['template'] !== '') {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    this.maps.trigger(tooltipRender, tooltipArgs, (args: ITooltipRenderEventArgs) => {
+                        if (!tooltipArgs.cancel && !isNullOrUndefined(currentData) &&
+                            (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
+                            this.maps['isProtectedOnChange'] = true;
+                            tooltipArgs.options['textStyle']['size'] = tooltipArgs.options['textStyle']['size']
+                            || this.maps.themeStyle.fontSize;
+                            tooltipArgs.options['textStyle']['color'] = tooltipArgs.options['textStyle']['color']
+                                || this.maps.themeStyle.tooltipFontColor;
+                            tooltipArgs.options['textStyle']['fontFamily'] = tooltipArgs.options['textStyle']['fontFamily']
+                                || this.maps.themeStyle.fontFamily;
+                            tooltipArgs.options['textStyle']['fontWeight'] = tooltipArgs.options['textStyle']['fontWeight']
+                                || this.maps.themeStyle.fontWeight;
+                            tooltipArgs.options['textStyle']['opacity'] = tooltipArgs.options['textStyle']['opacity']
+                                || this.maps.themeStyle.tooltipTextOpacity;
+                            if (tooltipArgs.cancel) {
+                                this.svgTooltip = new Tooltip({
+                                    enable: true,
+                                    header: '',
+                                    data: option['data'],
+                                    template: option['template'],
+                                    content: tooltipArgs.content.toString() !== currentData.toString() ? [tooltipArgs.content.toString()] :
+                                        [currentData.toString()],
+                                    shapes: [],
+                                    location: option['location'],
+                                    palette: [markerFill],
+                                    areaBounds: this.maps.mapAreaRect,
+                                    textStyle: option['textStyle'],
+                                    availableSize: this.maps.availableSize,
+                                    fill: option.fill || this.maps.themeStyle.tooltipFillColor,
+                                    enableShadow: true,
+                                    border: isPolygon ? polygonTooltipOption.border : option.border
+                                });
+                            } else {
+                                this.svgTooltip = new Tooltip({
+                                    enable: true,
+                                    header: '',
+                                    data: tooltipArgs.options['data'],
+                                    template: tooltipArgs.options['template'],
+                                    content: tooltipArgs.content.toString() !== currentData.toString() ? [tooltipArgs.content.toString()] :
+                                        [currentData.toString()],
+                                    shapes: [],
+                                    location: tooltipArgs.options['location'],
+                                    palette: [markerFill],
+                                    areaBounds: this.maps.mapAreaRect,
+                                    textStyle: tooltipArgs.options['textStyle'],
+                                    availableSize: this.maps.availableSize,
+                                    fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor,
+                                    enableShadow: true,
+                                    border: isPolygon ? polygonTooltipOption.border : option.border
+                                });
+                            }
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            if ((this.maps as any).isVue || (this.maps as any).isVue3) {
+                                this.svgTooltip.controlInstance = this.maps;
+                            }
+                            this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                            this.svgTooltip.appendTo(tooltipEle);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (this.maps as any).renderReactTemplates();
+                        } else {
+                            this.clearTooltip(<HTMLElement>e.target);
+                        }
+                    });
                 } else {
                     this.clearTooltip(<HTMLElement>e.target);
                 }
-            });
 
-            if (this.svgTooltip) {
-                this.maps.trigger('tooltipRenderComplete', {
-                    cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption,
-                    element: this.svgTooltip.element
-                } as ITooltipRenderCompleteEventArgs);
-            }
-            if (this.svgTooltip) {
-                this.maps.trigger('tooltipRenderComplete', {
-                    cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption, element: this.svgTooltip.element
-                } as ITooltipRenderCompleteEventArgs);
+                if (this.svgTooltip) {
+                    this.maps.trigger('tooltipRenderComplete', {
+                        cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption,
+                        element: this.svgTooltip.element
+                    } as ITooltipRenderCompleteEventArgs);
+                }
+                if (this.svgTooltip) {
+                    this.maps.trigger('tooltipRenderComplete', {
+                        cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption, element: this.svgTooltip.element
+                    } as ITooltipRenderCompleteEventArgs);
+                } else {
+                    this.clearTooltip(<HTMLElement>e.target);
+                }
             } else {
                 this.clearTooltip(<HTMLElement>e.target);
             }
@@ -326,10 +362,12 @@ export class MapsTooltip {
      * @private
      */
     public mouseUpHandler(e: PointerEvent): void {
-        this.renderTooltip(e);
-        if (this.maps.tooltipDisplayMode === 'MouseMove') {
-            clearTimeout(this.clearTimeout);
-            this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+        if (!isNullOrUndefined(this.maps)) {
+            this.renderTooltip(e);
+            if (this.maps.tooltipDisplayMode === 'MouseMove') {
+                clearTimeout(this.clearTimeout);
+                this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+            }
         }
     }
 
@@ -384,7 +422,7 @@ export class MapsTooltip {
                 return;
             }
             if (this.maps.tooltipDisplayMode === 'DoubleClick') {
-                this.maps.off('dblclick', this.removeTooltip);
+                this.maps.off('dblclick', this.renderTooltip);
             } else if (this.maps.tooltipDisplayMode === 'Click') {
                 this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
             } else {
@@ -413,7 +451,6 @@ export class MapsTooltip {
             this.svgTooltip.destroy();
         }
         this.svgTooltip = null;
-        //TODO: Calling the below code throws spec issue.
-        //this.maps = null;
+        this.maps = null;
     }
 }

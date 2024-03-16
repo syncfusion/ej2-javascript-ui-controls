@@ -4,6 +4,7 @@ import { VirtualInfo } from '../common/virtual-scroll';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { GeneratedData } from '../drop-down-list/drop-down-list';
+import { visualMode } from '../multi-select';
 /**
  * Specifies virtual scroll interfaces.
  *
@@ -54,13 +55,36 @@ export interface IDropdownlist extends Component<HTMLElement> {
     filterInput: HTMLInputElement;
     dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     listData: { [key: string]: Object }[] | string[] | boolean[] | number[];
+    hideSelectedItem: boolean;
+    closePopupOnSelect: boolean;
+    mode: visualMode;
+    isVirtualTrackHeight: boolean;
+    virtualCustomData: { [key: string]: string | Object };
+    virtualCustomSelectData: { [key: string]: Object }[] | string[] | number[] | boolean[];
+    allowCustomValue: boolean;
+    enableSelectionOrder: boolean;
+    popupWrapper: HTMLDivElement;
+    currentFocuedListElement: HTMLElement;
+    isScrollChanged: boolean;
+    appendUncheckList: boolean;
+    keyCode: number;
+    preventSetCurrentData: boolean;
+    virtualGroupDataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+    updatevirtualizationList(): void;
+    scrollTop(selectedLI: HTMLElement, activeIndex: number, keyCode: number | null): void;
+    renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel, isCheckBoxUpdate?: boolean): HTMLElement
+    updateVirtualReOrderList(isCheckBoxUpdate?: boolean): void;
+    getForQuery(valuecheck: string[] | number[] | boolean[]): Query;
     skeletonCount: number;
+    getElementByValue(value: string | number | boolean): Element
     getSkeletonCount(retainSkeleton?: boolean): void;
     getItems(): HTMLElement[];
     getQuery(query: Query): Query;
     getTransformValues(): string;
+    addListFocus(element: HTMLElement): void;
     UpdateSkeleton(): void;
     updateSelectionList(): void;
+    totalItemsCount(): void
     GetVirtualTrackHeight(): string;
     getPageCount(returnExactCount?: boolean): number;
     handleVirtualKeyboardActions(e: KeyboardEventArgs, pageCount: number): void;

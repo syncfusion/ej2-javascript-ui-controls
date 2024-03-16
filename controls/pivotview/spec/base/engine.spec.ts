@@ -241,7 +241,8 @@ describe('PivotView spec', () => {
                     enableVirtualization: true,
                     showFieldList: true,
                     showValuesButton: true,
-                    dataBound: dataBound
+                    dataBound: dataBound,
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
             });
@@ -485,7 +486,8 @@ describe('PivotView spec', () => {
                         showColumnPager: true,
                         showRowPager: true
                     },
-                    dataBound: dataBound
+                    dataBound: dataBound,
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
             });
@@ -648,7 +650,8 @@ describe('PivotView spec', () => {
                 enableValueSorting: undefined,
                 enableVirtualization: true,
                 isDrillThrough: undefined,
-                localeObj: undefined
+                localeObj: undefined,
+                enableOptimizedRendering: false
             };
             pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             it('Ensure the page data', () => {
@@ -749,7 +752,8 @@ describe('PivotView spec', () => {
                 enableValueSorting: undefined,
                 enableVirtualization: true,
                 isDrillThrough: undefined,
-                localeObj: undefined
+                localeObj: undefined,
+                enableOptimizedRendering: false
             };
             pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             it('Ensure the page data', () => {
@@ -841,7 +845,8 @@ describe('PivotView spec', () => {
                 enableValueSorting: undefined,
                 enableVirtualization: true,
                 isDrillThrough: undefined,
-                localeObj: undefined
+                localeObj: undefined,
+                enableOptimizedRendering: false
             };
             pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             it('Ensure the page data', () => {
@@ -930,7 +935,8 @@ describe('PivotView spec', () => {
                 enableValueSorting: undefined,
                 enableVirtualization: true,
                 isDrillThrough: undefined,
-                localeObj: undefined
+                localeObj: undefined,
+                enableOptimizedRendering: false
             };
             pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             it('Ensure the page data', () => {
@@ -1157,7 +1163,8 @@ describe('PivotView spec', () => {
                 enableValueSorting: undefined,
                 enableVirtualization: true,
                 isDrillThrough: undefined,
-                localeObj: undefined
+                localeObj: undefined,
+                enableOptimizedRendering: false
             };
             pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
             it('Calculated field with simple calculation', () => {
@@ -1281,7 +1288,8 @@ describe(' - VirtualScrolling', () => {
                     enableVirtualization: true,
                     dataBound: dataBound,
                     width: 600,
-                    height: 300
+                    height: 300,
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -1367,7 +1375,8 @@ describe(' - VirtualScrolling', () => {
                     enableVirtualization: true,
                     dataBound: dataBound,
                     width: 600,
-                    height: 300
+                    height: 300,
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -1532,7 +1541,8 @@ describe(' - VirtualScrolling', () => {
                     showValuesButton: true,
                     dataBound: dataBound,
                     width: 600,
-                    height: 300
+                    height: 300,
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -1744,7 +1754,8 @@ describe(' - VirtualScrolling', () => {
                     enableVirtualization: true,
                     dataBound: dataBound,
                     width: 600,
-                    height: 300
+                    height: 300,
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -1812,19 +1823,19 @@ describe(' - VirtualScrolling', () => {
                 expect(pivotGridObj.element.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
                 expect(document.querySelectorAll('.e-content-virtualtable td')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
                 done();
-            }, 100);
+            }, 300);
         });
         it('Collapse flight', (done: Function) => {
             (document.querySelectorAll('.e-content-virtualtable tr .e-icons')[0] as HTMLElement).click()
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
+                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft !== 0).toBeTruthy();
                 done();
             }, 100);
         });
         it('Collapse male', (done: Function) => {
             (document.querySelectorAll('.e-headercontent th .e-sortfilterdiv.e-icons')[0] as HTMLElement).click()
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft === 0).toBeTruthy();
+                expect(document.querySelectorAll('.e-headercontent')[0].scrollLeft !== 0).toBeTruthy();
                 expect(document.querySelectorAll('.e-headercontent th')[6].textContent).toBe('male Total');
                 done();
             }, 100);
@@ -1870,7 +1881,8 @@ describe(' - VirtualScrolling', () => {
                     enableVirtualization: true,
                     dataBound: dataBound,
                     width: 600,
-                    height: 300
+                    height: 300,
+                    virtualScrollSettings: { allowSinglePage: false }
                 });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -2122,7 +2134,8 @@ describe(' - VirtualScrolling', () => {
                     height: 300,
                     enableVirtualization: true,
                     showGroupingBar: true,
-                    dataBound: dataBound
+                    dataBound: dataBound,
+                    virtualScrollSettings: { allowSinglePage: false }
 
                 });
                 pivotGridObj.appendTo('#PivotGrid');

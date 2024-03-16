@@ -1342,6 +1342,7 @@ describe('Selection issue with large annotation content', () => {
     });
 
 })
+
 describe('Annotation Alignment Issue in virtualisation', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -1364,7 +1365,7 @@ describe('Annotation Alignment Issue in virtualisation', () => {
                 id: 'label1', content: 'New idea identified',verticalAlignment: "Bottom",horizontalAlignment: "Center"
             }]
         };
-      
+
         let node2: NodeModel = {
             id: 'node2', width: 150, height: 60, offsetX: 300, offsetY: 160,
             shape: { type: 'Flow', shape: 'Terminator' },
@@ -1374,7 +1375,7 @@ describe('Annotation Alignment Issue in virtualisation', () => {
         };
         diagram = new Diagram({ width: 1000, height: 1000, nodes: [node1, node2], mode: 'SVG',constraints: DiagramConstraints.Default|DiagramConstraints.Virtualization });
         diagram.appendTo('#diagramAnnotationVirtualisationIssue');
-        
+
     });
 
     afterAll((): void => {

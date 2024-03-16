@@ -1,7 +1,7 @@
 import { Grid, Resize, ContextMenu, Sort, VirtualScroll, RowSelectEventArgs, RowDeselectEventArgs, Column } from '@syncfusion/ej2-grids';
 import { select, KeyboardEvents, EventHandler, KeyboardEventArgs, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, Touch, TapEventArgs, setValue, addClass, removeClass } from '@syncfusion/ej2-base';
-import { Internationalization, closest, DragEventArgs, Draggable, initializeCSPTemplate, extend } from '@syncfusion/ej2-base';
+import { Internationalization, closest, DragEventArgs, Draggable, initializeCSPTemplate, extend, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { FileManager } from '../base/file-manager';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -223,12 +223,14 @@ export class DetailsView {
 
     private getColumns(): ColumnModel[] {
         let columns: ColumnModel[];
+        let enableHtmlSanitizer: boolean = this.parent.enableHtmlSanitizer;
         if (this.parent.isMobile) {
             columns = [
                 {
                     field: 'name', headerText: getLocaleText(this.parent, 'Name'), width: 'auto', minWidth: 120, headerTextAlign: 'Left',
                     template: initializeCSPTemplate(function(data: any) {
-                        return `<div class="e-fe-text">${data.name}</div><div class="e-fe-date">${data._fm_modified}</div>' +
+                        const name: string = enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(data.name) : data.name;
+                        return `<div class="e-fe-text">${name}</div><div class="e-fe-date">${data._fm_modified}</div>' +
                         '<span class="e-fe-size">${data.size}</span>`;
                     }) as any
                 }
@@ -238,6 +240,13 @@ export class DetailsView {
             this.adjustWidth(columns, 'name');
             for (let i: number = 0, len: number = columns.length; i < len; i++) {
                 columns[i as number].headerText = getLocaleText(this.parent, columns[i as number].headerText);
+                if (columns[i as number].field === 'name' && !isNOU(columns[i as number].template)) {
+                    const template: string | Function = columns[i as number].template;
+                    columns[i as number].template = initializeCSPTemplate(function (data: any) {
+                        const name: string = enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(data.name) : data.name;
+                        return (template as any).replace(/\${name}/g, name);
+                    });
+                }
             }
         }
         const iWidth: string = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
@@ -395,9 +404,12 @@ export class DetailsView {
 
     private onBeforeDataBound(args: BeforeDataBoundArgs): void {
         showSpinner(this.parent.element);
-        // eslint-disable-next-line
-        const items: Object[] = getSortedData(this.parent, (this.parent.enableVirtualization) ? args.result : this.gridObj.dataSource as Object[]);
-        args.result = items;
+        let nameColumn = this.parent.detailsViewSettings.columns.find((column: ColumnModel) => column.field === this.parent.sortBy);
+        if (nameColumn && !('sortComparer' in nameColumn)) {
+            // eslint-disable-next-line
+            const items: Object[] = getSortedData(this.parent, (this.parent.enableVirtualization) ? args.result : this.gridObj.dataSource as Object[]);
+            args.result = items;
+        }
     }
     /* istanbul ignore next */
     private onDataBound(): void {

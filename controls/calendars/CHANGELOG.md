@@ -2,46 +2,6 @@
 
 ## [Unreleased]
 
-## 24.2.5 (2024-02-13)
-
-### DatePicker
-
-#### Bug Fixes
-
-- `#I860067` - Resolved an issue where users were unable to focus on the Today button using the Tab key.
-
-## 24.2.3 (2024-01-31)
-
-### DateTimePicker
-
-#### Bug Fixes
-
-- `#I541657` - Fixed an issue where the change event in the DateTimePicker was firing after the first time losing focus when milliseconds were included.
-
-## 24.1.47 (2024-01-23)
-
-### DateRangePicker
-
-#### Bug Fixes
-
-- `#I528771` - Fixed an issue where the DateRangePicker in the `Malaysia` region was only returning a single value.
-
-## 24.1.44 (2024-01-03)
-
-### TimePicker
-
-#### Bug Fixes
-
-- `#I529252` - Fixed issue where changing the time in `EEE hh:mm a` format was affecting the day.
-
-## 24.1.43 (2023-12-27)
-
-### DateTimePicker
-
-#### Bug Fixes
-
-- `#I532039` -  Fixed the issue where the focus was not being added when using the tab key to navigate through the dynamically enabled datetimepicker.
-
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

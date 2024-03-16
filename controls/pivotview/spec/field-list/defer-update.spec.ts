@@ -91,6 +91,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                         { name: 'quantity' }],
                         filters: [{ name: 'gender' }]
                     },
+                    enableFieldSearching: true,
                     allowDeferLayoutUpdate: true,
                     allowCalculatedField: true,
                     showValuesButton: true,
@@ -171,17 +172,12 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
             expect(isRefresh).toBeTruthy();
         });
-
-
-
-
-
         it('Check node', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
             util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-            expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
+            expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
         });
         it('Cancel button', (done: Function) => {
             document.getElementById('PivotFieldList_DeferUpdateButton2').click();
@@ -196,14 +192,14 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 expect(checkEle.length).toBeGreaterThan(0);
                 util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
                 done();
             });
         });
         it('Apply button', (done: Function) => {
             setTimeout(() => {
                 document.getElementById('PivotFieldList_DeferUpdateButton1').click();
-                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
                 done();
             });
         });
@@ -220,7 +216,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
         it('Cancel button', (done: Function) => {
             document.getElementById('PivotFieldList_DeferUpdateButton2').click();
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
                 done();
             });
         });

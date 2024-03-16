@@ -1,11 +1,10 @@
-import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { DefineNameModel } from '../../../src';
 import { getRangeAddress } from "../../../src/index";
 import { getComponent } from '@syncfusion/ej2-base';
 
-Spreadsheet.Inject(BasicModule);
 
 /**
  *  Formula bar spec

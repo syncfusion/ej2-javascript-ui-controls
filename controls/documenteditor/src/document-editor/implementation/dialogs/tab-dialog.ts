@@ -63,7 +63,7 @@ export class TabDialog {
             for (let i = 0; i < this.removedItems.length; i++) {
                 values.push(this.removedItems[parseInt(i.toString(), 10)].value as WTabStop);
             }
-            this.documentHelper.owner.editor.removeTabStops(this.documentHelper.selection.getParagraphsInSelection(), values);
+            this.documentHelper.owner.editorModule.removeTabStops(this.documentHelper.selection.getParagraphsInSelection(), values);
         }
         const tab: WTabStop = !isNullOrUndefined(this.selectedTabStop) ? this.selectedTabStop.value as WTabStop: new WTabStop();
         tab.deletePosition = 0;
@@ -80,7 +80,7 @@ export class TabDialog {
                 values.push(tab);
             }
         }
-        this.documentHelper.owner.editor.onApplyParagraphFormat('tabStop', values, false, false);
+        this.documentHelper.owner.editorModule.onApplyParagraphFormat('tabStop', values, false, false);
         this.closeTabDialog();
     }
     private textBoxInputChange = (args: any) => {
@@ -120,7 +120,7 @@ export class TabDialog {
             for (let i = 0; i < this.tabStopList.length; i++) {
                 tempCollection.push(this.tabStopList[parseInt(i.toString(), 10)].value as WTabStop);
             }
-            let index: number = this.documentHelper.owner.editor.addTabStopToCollection(tempCollection, tabStop, true);
+            let index: number = this.documentHelper.owner.editorModule.addTabStopToCollection(tempCollection, tabStop, true);
             let tabStopListObj: TabStopListInfo = { 'displayText': parseFloat(value.toFixed(2)) + ' pt', 'value': tabStop};
             this.tabStopList.splice(index, 0, tabStopListObj);
             this.selectedTabStop = tabStopListObj;
@@ -608,7 +608,7 @@ export class TabDialog {
         const localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
         localObj.setLocale(this.documentHelper.owner.locale);
         this.localeValue = localObj;
-        let tabs: WTabStop[] = this.documentHelper.owner.editor.getTabsInSelection();
+        let tabs: WTabStop[] = this.documentHelper.owner.editorModule.getTabsInSelection();
         this.tabStopList = [];
         for (let i = 0; i < tabs.length; i++) {
             let value: string = parseFloat((tabs[i].position).toFixed(2)) + ' pt';

@@ -409,6 +409,15 @@ export class ChartRows extends DateProcessor {
                 return null;
             }
         })[0];
+        if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed']) {
+            let details: Object = {};
+            details['action'] = 'MergeTaskbar';
+            if (this.parent['isUndoRedoItemPresent']('Edit')) {
+                this.parent.undoRedoModule['createUndoCollection']();
+                details['modifiedRecords'] = extend([], [mergeData], [], true);
+                (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = details;
+            }
+        }
         const segments: ITaskSegment[] = mergeData.ganttProperties.segments;
         segmentIndexes = segmentIndexes.sort((a: { firstSegmentIndex: number, secondSegmentIndex: number },
                                               b: { firstSegmentIndex: number, secondSegmentIndex: number }): number => {
@@ -439,6 +448,23 @@ export class ChartRows extends DateProcessor {
                 this.parent.setRecordValue('endDate', segments[segments.length - 1].endDate, mergeData.ganttProperties, true);
             }
         }
+        let segmentFields = Object.keys(mergeData[taskFields.segments][0]);
+        let modifiedSegments: ITaskSegment[] = [];
+        for (let i: number = 0; i < segments.length; i++) {
+            if (!modifiedSegments[i as number]) {
+                modifiedSegments[i as number] = {};
+            }
+            if (segmentFields.indexOf('StartDate') != -1) {
+                modifiedSegments[i as number][taskFields.startDate] = segments[i as number].startDate;
+            }
+            if (segmentFields.indexOf('EndDate') != -1) {
+                modifiedSegments[i as number][taskFields.endDate] = segments[i as number].endDate;
+            }
+            if (segmentFields.indexOf('Duration') != -1) {
+                modifiedSegments[i as number][taskFields.duration] = segments[i as number].duration;
+            }
+        }
+        mergeData[taskFields.segments] = modifiedSegments;
         this.refreshChartAfterSegment(mergeData, 'mergeSegment');
     }
 
@@ -503,6 +529,15 @@ export class ChartRows extends DateProcessor {
                 return null;
             }
         })[0];
+        if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed']) {
+            let details: Object = {};
+            details['action'] = 'MergeTaskbar';
+            if (this.parent['isUndoRedoItemPresent']('Edit')) {
+                this.parent.undoRedoModule['createUndoCollection']();
+                details['modifiedRecords'] = extend([], [splitRecord], [], true);
+                (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = details;
+            }
+        }
         const ganttProp: ITaskData = splitRecord.ganttProperties;
         this.dropSplit = false;
         let segmentIndex: number = -1;
@@ -530,6 +565,16 @@ export class ChartRows extends DateProcessor {
                             ),
                             ganttProp, true
                         );
+                        let modifiedSegments: ITaskSegment[] = [];
+                        for (let i: number = 0; i < segments.length; i++) {
+                            if (!modifiedSegments[i as number]) {
+                                modifiedSegments[i as number] = {};
+                            }
+                            modifiedSegments[i as number][taskFields.startDate] = segments[i as number].startDate;
+                            modifiedSegments[i as number][taskFields.endDate] = segments[i as number].endDate;
+                            modifiedSegments[i as number][taskFields.duration] = segments[i as number].duration;
+                        }
+                        splitRecord[taskFields.segments] = modifiedSegments;
                         if (segmentIndex !== -1) {
                             this.incrementSegments(segments, segmentIndex + 1, splitRecord);
                         }
@@ -1354,7 +1399,7 @@ export class ChartRows extends DateProcessor {
     public refreshGanttRows(): void {
         this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords().slice();
         this.createTaskbarTemplate();
-        if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
+        if (this.parent.showOverAllocation) {
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
                 const data: IGanttData = this.parent.currentViewData[i as number];
                 if (data.childRecords.length > 0) {
@@ -1407,13 +1452,11 @@ export class ChartRows extends DateProcessor {
             });
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
                 const tempTemplateData: IGanttData = this.parent.currentViewData[i as number];
-                if (this.parent.viewType === 'ResourceView') {
-                    if (this.parent.editModule && this.parent.editModule.isResourceTaskDeleted || this.parent.isFromOnPropertyChange) {
-                        this.parent.editModule.isResourceTaskDeleted = false;
-                    }
-                    if (!tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
-                        collapsedResourceRecord.push(tempTemplateData);
-                    }
+                if (this.parent.editModule && this.parent.editModule.isResourceTaskDeleted || this.parent.isFromOnPropertyChange) {
+                    this.parent.editModule.isResourceTaskDeleted = false;
+                }
+                if (!tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
+                    collapsedResourceRecord.push(tempTemplateData);
                 }
                 const tRow: Node = this.getGanttChartRow(i, tempTemplateData);
                 dupChartBody.appendChild(tRow);
@@ -1438,7 +1481,7 @@ export class ChartRows extends DateProcessor {
         this.parent.renderTemplates();
         this.triggerQueryTaskbarInfo();
         this.parent.modifiedRecords = [];
-        if (this.parent.viewType == 'ResourceView' && this.parent.showOverAllocation) {
+        if (this.parent.showOverAllocation) {
             this.updateOverlapped();
         }
         if (collapsedResourceRecord.length) {
@@ -1548,7 +1591,7 @@ export class ChartRows extends DateProcessor {
                         segmentConnector = this.createDivElement(connector);
                         taskbarContainerNode[0].appendChild([].slice.call(segmentConnector)[0]);
                         for (let i: number = 0; i < length; i++) {
-                            taskbarContainerNode[0].appendChild([].slice.call(childTaskbarTemplateNode)[0]);
+                            append(childTaskbarTemplateNode, taskbarContainerNode[0] as Element);
                         }
                     } else {
                         append(childTaskbarTemplateNode, taskbarContainerNode[0] as Element);
@@ -1599,7 +1642,6 @@ export class ChartRows extends DateProcessor {
                     text.innerHTML = indicators[indicatorIndex as number].name;
                     if (this.parent.enableHtmlSanitizer && typeof (indicators[indicatorIndex as number].name) === 'string') {
                         indicators[indicatorIndex as number].name = SanitizeHtmlHelper.sanitize(indicators[indicatorIndex as number].name);
-                        text.innerText = indicators[indicatorIndex as number].name;
                     }
                     taskIndicatorTextNode = text.childNodes;
                 }
@@ -1945,11 +1987,12 @@ export class ChartRows extends DateProcessor {
                 for (let j: number = i + 1; j < childRecords.length; j++) {
                     let taskbarContainer: HTMLCollectionOf<HTMLElement> = (tr as HTMLElement).getElementsByClassName('e-taskbar-main-container') as HTMLCollectionOf<HTMLElement>;
                     for (let k: number = 0; k < taskbarContainer.length; k++) {
+                        const rowuniqueid = this.parent.viewType === 'ResourceView' ? childRecords[j as number]['rowUniqueID'] : childRecords[j as number].ganttProperties.rowUniqueID;
                         if (childRecords[i as number].ganttProperties.startDate.getTime() < childRecords[j as number].ganttProperties.endDate.getTime() &&
                             childRecords[i as number].ganttProperties.endDate.getTime() > childRecords[j as number].ganttProperties.startDate.getTime()) {
-                            if (taskbarContainer[k as number].getAttribute('rowuniqueid') === childRecords[j as number]['rowUniqueID'] &&
-                                rowIDs.indexOf(childRecords[j as number]['rowUniqueID']) == -1) {
-                                rowIDs.push(childRecords[j as number]['rowUniqueID']);
+                            if (taskbarContainer[k as number].getAttribute('rowuniqueid') === rowuniqueid &&
+                                rowIDs.indexOf(rowuniqueid) === -1) {
+                                rowIDs.push(rowuniqueid);
                                 rowCounts++;
                                 (tr as HTMLElement).children[0]['style'].verticalAlign = 'baseline';
                                 (tr as HTMLElement).getElementsByClassName('e-taskbar-main-container')[k as number]['style'].marginTop = ((rowCounts as number) * this.parent.rowHeight) + this.taskBarMarginTop + 'px';
@@ -1962,8 +2005,8 @@ export class ChartRows extends DateProcessor {
                             }
                         }
                         else {
-                            if (taskbarContainer[k as number].getAttribute('rowuniqueid') === childRecords[j as number]['rowUniqueID'] &&
-                                rowIDs.indexOf(childRecords[j as number]['rowUniqueID']) == -1 && this.parent.rowDragAndDropModule &&
+                            if (taskbarContainer[k as number].getAttribute('rowuniqueid') === rowuniqueid &&
+                                rowIDs.indexOf(rowuniqueid) === -1 && this.parent.rowDragAndDropModule &&
                                 this.parent.rowDragAndDropModule['draggedRecord'] && taskbarContainer[k as number].getAttribute('rowuniqueid') ===
                                 this.parent.rowDragAndDropModule['draggedRecord']['rowUniqueID'] && this.parent.rowDragAndDropModule['draggedRecord']['rowUniqueID'] === childRecords[j as number]['rowUniqueID']) {
                                 (tr as HTMLElement).getElementsByClassName('e-taskbar-main-container')[k as number]['style'].marginTop =
@@ -1986,12 +2029,18 @@ export class ChartRows extends DateProcessor {
      * @returns {void} .
      * @private
      */
-    public refreshRow(index: number, isValidateRange?: boolean): void {
+    public refreshRow(index: number, isValidateRange?: boolean, isUndoRedo?: boolean): void {
         const tr: Node = this.ganttChartTableBody.childNodes[index as number];
-        const selectedItem: IGanttData = this.parent.currentViewData[index as number];
+        let selectedItem: IGanttData;
+        if (isUndoRedo) {
+            selectedItem = this.parent.previousFlatData[index as number];
+        }
+        else {
+            selectedItem = this.parent.currentViewData[index as number];
+        }
         if (index !== -1 && selectedItem) {
             const data: IGanttData = selectedItem;
-            if (!this.parent.allowTaskbarOverlap && this.parent.viewType === 'ResourceView' && data.expanded) {
+            if (!this.parent.allowTaskbarOverlap && data.expanded) {
                 if (this.parent.ganttChartModule.isExpandAll || this.parent.ganttChartModule.isCollapseAll) {
                     tr['style'].height = this.parent.treeGrid.getRowByIndex(index as number)['style'].height = this.parent.rowHeight + 'px';
                 }
@@ -1999,10 +2048,10 @@ export class ChartRows extends DateProcessor {
                     tr['style'].height = this.parent.treeGrid.getRows()[index as number]['style'].height = this.parent.rowHeight + 'px';
                 }
             }
-            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar) {
+            if (data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar) {
                 tr.replaceChild(this.getResourceParent(data).childNodes[0], tr.childNodes[0]);
             } else {
-                if (this.parent.viewType === 'ResourceView' && this.parent.allowTaskbarDragAndDrop && !data.expanded) {
+                if (this.parent.allowTaskbarDragAndDrop && !data.expanded) {
                     (tr as Element).replaceWith(this.getGanttChartRow(index, data));
                 }
                 else {
@@ -2010,7 +2059,7 @@ export class ChartRows extends DateProcessor {
                 }
             }
             this.parent.renderTemplates();
-            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && this.parent.showOverAllocation && this.parent.allowTaskbarOverlap) {
+            if (data.hasChildRecords && this.parent.showOverAllocation && this.parent.allowTaskbarOverlap) {
                 if (isValidateRange) {
                     this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
                 } else {
@@ -2033,10 +2082,11 @@ export class ChartRows extends DateProcessor {
             if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll) {
                 this.parent.treeGrid.grid.setRowData(dataId, data);
             }
-            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar && !this.parent.allowTaskbarOverlap) {
+            if (data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar && !this.parent.allowTaskbarOverlap) {
                 this.updateDragDropRecords(selectedItem, tr);
             }
-            if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
+            if (data.hasChildRecords && this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
+                this.parent.dataOperation.updateOverlappingValues(data);
                 this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
             }
             let nextEditableElement: HTMLElement=this.parent.ganttChartModule.tempNextElement;
@@ -2052,26 +2102,33 @@ export class ChartRows extends DateProcessor {
             }
         }
     }
-    
+
     private updateResourceTaskbarElement(tRow: Node, parentTr: NodeList) {
-        const cloneElement: HTMLElement = (tRow as Element).querySelector('.e-taskbar-main-container');
-        addClass([cloneElement], 'collpse-parent-border');
+        let cloneElement: HTMLElement = (tRow as Element).querySelector('.e-taskbar-main-container');
+        if (this.parent.viewType === 'ProjectView' && (tRow as Element).querySelector('.e-collapse-parent')) {
+            cloneElement = (tRow as Element).querySelector('.e-collapse-parent');
+        }
+        if ((tRow as Element).querySelector('.e-collapse-parent') === null) {
+            addClass([cloneElement], 'collpse-parent-border');
+        }
         const id: string = (tRow as Element).querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
         const ganttData: IGanttData = this.parent.getRecordByID(id);
         if (!(isNullOrUndefined(ganttData)) && ganttData.ganttProperties.segments && ganttData.ganttProperties.segments.length > 0) {
             const segmentedTasks: HTMLCollectionOf<HTMLElement> =
-                cloneElement.getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>
-            for (var i = 0; i < segmentedTasks.length; i++) {
+                cloneElement.getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>;
+            for (let i: number = 0; i < segmentedTasks.length; i++) {
                 this.triggerQueryTaskbarInfoByIndex(segmentedTasks[i as number], ganttData);
             }
         }
         else if (this.parent.queryTaskbarInfo) {
             const mainTaskbar: HTMLElement = (cloneElement.querySelector('.e-gantt-child-taskbar'));
-            this.triggerQueryTaskbarInfoByIndex(mainTaskbar, ganttData);
+            if (!isNullOrUndefined(mainTaskbar)) {
+                this.triggerQueryTaskbarInfoByIndex(mainTaskbar, ganttData);
+            }
         }
         let zIndex: string = "";
         if (ganttData && !isNullOrUndefined(ganttData.ganttProperties.eOverlapIndex)) {
-           zIndex = (ganttData.ganttProperties.eOverlapIndex).toString();
+            zIndex = (ganttData.ganttProperties.eOverlapIndex).toString();
         }
         const cloneChildElement: HTMLElement = cloneElement.cloneNode(true) as HTMLElement;
         cloneChildElement.style.zIndex = zIndex;
@@ -2114,6 +2171,16 @@ export class ChartRows extends DateProcessor {
                     + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
                     this.updateResourceTaskbarElement(chartRows[i as number], parentTrNode);
                 }
+                else if (record.hasChildRecords) {
+                    for (let j: number = 0; j < record.childRecords.length; j++) {
+                        if (record.childRecords[j as number].childRecords && !record.childRecords[j as number].expanded) {
+                            if ((<HTMLElement>chartRows[i as number]).classList.contains('gridrowtaskId'
+                                + tasks[j as number].ganttProperties.rowUniqueID + 'level' + (tasks[j as number].level + 1))) {
+                                this.updateResourceTaskbarElement(chartRows[i as number], parentTrNode);
+                            }
+                        }
+                    }
+                }
             }
         }
         parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(leftLabelNode)[0]);
@@ -2127,18 +2194,24 @@ export class ChartRows extends DateProcessor {
      * @returns {void} .
      * @private
      */
-    public refreshRecords(items: IGanttData[], isValidateRange?: boolean): void {
+    public refreshRecords(items: IGanttData[], isValidateRange?: boolean, isUndoRedo?: boolean): void {
         if (this.parent.isGanttChartRendered) {
             this.parent.renderTemplates();
-            if (this.parent.viewType === 'ResourceView' && this.parent.enableMultiTaskbar) {
+            if (this.parent.enableMultiTaskbar) {
                 let sortedRecords: IGanttData[] = [];
                 sortedRecords = new DataManager(items).executeLocal(new Query()
                     .sortBy('expanded', 'Descending'));
                 items = sortedRecords;
             }
             for (let i: number = 0; i < items.length; i++) {
-                const index: number = this.parent.currentViewData.indexOf(items[i as number]);
-                this.refreshRow(index, isValidateRange);
+                let index: number;
+                if (isUndoRedo) {
+                    index = this.parent.ids.indexOf(items[i as number].ganttProperties.taskId.toString())
+                }
+                else {
+                    index = this.parent.currentViewData.indexOf(items[i as number]);
+                }
+                this.refreshRow(index, isValidateRange, isUndoRedo);
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
         }

@@ -6,6 +6,13 @@ import { ChildProperty, Collection, Property } from '@syncfusion/ej2-base';impor
 export interface RibbonTabModel {
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    keyTip?: string;
+
+    /**
      * Defines a unique identifier for the tab.
      *
      * @default ''

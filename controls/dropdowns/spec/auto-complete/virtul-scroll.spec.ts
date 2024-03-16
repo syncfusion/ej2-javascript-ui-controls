@@ -149,7 +149,7 @@ describe('Autocomplete_Virtualization', () => {
                 expect((li[0] as Element).classList.contains('e-item-focus')).toBe(true);
                 keyEventArgs.action = 'pageDown';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect((li[5] as Element).classList.contains('e-item-focus')).toBe(true);
+                expect((li[6] as Element).classList.contains('e-item-focus')).toBe(true);
                 keyEventArgs.action = 'pageDown';
                 dropObj.keyActionHandler(keyEventArgs);
                 expect((li[9] as Element).classList.contains('e-item-focus')).toBe(true);
@@ -173,7 +173,7 @@ describe('Autocomplete_Virtualization', () => {
                 ele = createElement('input', { id: 'AutoComplete' });
                 document.body.appendChild(ele);
                 dropObj = new AutoComplete({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true, fields: { text: 'text', value: 'text' }
+                    dataSource: datasource, popupHeight:'200px', query: new Query().take(10), enableVirtualization: true, fields: { text: 'text', value: 'text' }
                 });
                 dropObj.appendTo(ele);
             });
@@ -197,6 +197,7 @@ describe('Autocomplete_Virtualization', () => {
                 }, 850);
             });
             it('virtualization up actions scroll by manually', (done) => {
+
                 dropObj.showPopup();
                 dropObj.isPreventScrollAction = false
                 dropObj.list.scrollTop = 4068;

@@ -10,8 +10,6 @@ import { Workbook } from '../base/index';
  * @returns {ModuleDeclaration[]} - To get Workbook required modules.
  */
 export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDeclaration[] = []): ModuleDeclaration[] {
-    modules.push({ member: 'workbookBasic', args: [] });
-    modules.push({ member: 'workbookAll', args: [] });
     modules.push({
         member: 'dataBind',
         args: [context]

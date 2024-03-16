@@ -113,4 +113,11 @@ export interface FileMenuSettingsModel {
      */
     select?: EmitType<FileMenuEventArgs>;
 
+    /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    keyTip?: string;
+
 }

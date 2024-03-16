@@ -2,13 +2,33 @@
 
 ## [Unreleased]
 
-## 24.2.5 (2024-02-13)
+## 25.1.35 (2024-03-15)
+
+### QueryBuilder
+
+#### New Features
+
+- Provided the support to get / set the Mongo Query from query builder.
+- Provided the support to get / set the Parameter SQL and Named Parameter SQL from query builder.
+- Provided the Clone support to query builder rules/ groups.
+- Provided the Lock support to query builder rules/ groups.
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I870175` - Issue with `getSqlFromRules` method is not return custom value when changing boolean type column value in default complex data binding. has been fixed.
+- `#I556563` - Issue with QueryBuilder validation message position wrong issue while deleting the rule has been fixed.
+
+## 24.2.8 (2024-02-27)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#I534039` - Issue with `drop-down list popup` remains stick in the screen after close has been fixed.
+
+## 24.2.5 (2024-02-13)
 
 ### QueryBuilder
 

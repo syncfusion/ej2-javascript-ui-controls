@@ -475,9 +475,10 @@ describe('Diagram Control', () => {
         });
 
         it('Removing text annotation dynamically',(done: Function) => {
-            let node = diagram.nodes[0];
-            diagram.bpmnModule.checkAndRemoveAnnotations(node,diagram);
-            expect((node as Node).outEdges.length === 0).toBe(true);
+            let node1 = diagram.nameTable['start']
+            let node2 = diagram.nameTable['text1'];
+            diagram.remove(node2)
+            expect(node1.outEdges.length === 0).toBe(true);
             done();
         })
     });

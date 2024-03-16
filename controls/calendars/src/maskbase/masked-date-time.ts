@@ -382,6 +382,7 @@ export class MaskedDateTime {
         {
             let year: number = (this.isYearPart && (newDateValue.getFullYear().toString().length < 4
             && !this.isShortYear) ? newDateValue.getFullYear() * 10 : 0) + parseInt(newVal[start - 1], 10);
+            let yearValue: number = (this.dateformat.match(/y/g) || []).length;
             this.isShortYear = false;
             this.isYearZero = (newVal[start - 1] === '0' );
             if (isNaN(year)) {
@@ -394,7 +395,7 @@ export class MaskedDateTime {
                 this.isYearPart = false;
             } else {
                 newDateValue.setFullYear(year);
-                if (year.toString().length === 4)
+                if (year.toString().length === yearValue)
                 {
                     this.isNavigate = true;
                 }
@@ -578,9 +579,6 @@ export class MaskedDateTime {
             case 'yy':
                 result = proxy.isYearPart ? proxy.roundOff(proxy.maskDateValue.getFullYear() % 100, 2) :  proxy.defaultConstant['year'].toString();
                 result = proxy.zeroCheck(proxy.isYearZero , proxy.isYearPart , result );
-                if (proxy.isYearPart) {
-                    proxy.isNavigate = proxy.isShortYear = (proxy.maskDateValue.getFullYear() % 100).toString().length === 2;
-                }
                 break;
             case 'y':
             case 'yyyy':

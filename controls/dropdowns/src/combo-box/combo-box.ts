@@ -9,7 +9,7 @@ import { ComboBoxModel } from '../combo-box/combo-box-model';
 import { Search } from '../common/incremental-search';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DataManager, DataOptions, Predicate, Query } from '@syncfusion/ej2-data';
 
 const SPINNER_CLASS: string = 'e-atc-spinner-icon';
 
@@ -95,6 +95,7 @@ export class ComboBox extends DropDownList {
      * {% codeBlock src="combobox/index-api/index.html" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType double
      * @deprecated
      */
     @Property(null)
@@ -250,6 +251,7 @@ export class ComboBox extends DropDownList {
      * Gets or sets the display text of the selected item in the component.
      *
      * @default null
+     * @aspType string
      * @deprecated
      */
     @Property(null)
@@ -262,7 +264,14 @@ export class ComboBox extends DropDownList {
      * @deprecated
      */
     @Property(null)
-    public value: number | string | boolean | null;
+    public value: number | string | boolean | object | null;
+    /**
+    * Defines whether the object binding is allowed or not in the component.
+    *
+    * @default false
+    */
+    @Property(false)
+    public allowObjectBinding: boolean; 
     /**
      * *Constructor for creating the component
      *
@@ -334,7 +343,7 @@ export class ComboBox extends DropDownList {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected setOldValue(value: string | number): void {
+    protected setOldValue(value: string | number | object): void {
         if (this.allowCustom) {
             this.valueMuteChange(this.value);
         } else {
@@ -343,9 +352,13 @@ export class ComboBox extends DropDownList {
         this.removeSelection();
         this.setHiddenValue();
     }
-    private valueMuteChange(value: string | number | boolean): void {
+    private valueMuteChange(value: string | number | boolean | object): void {
+        value = this.allowObjectBinding && !isNullOrUndefined(value) ? getValue((this.fields.value) ? this.fields.value : '', value) : value;
         const inputValue: string = isNullOrUndefined(value) ? null : value.toString();
         Input.setValue(inputValue, this.inputElement, this.floatLabelType, this.showClearButton);
+        if(this.allowObjectBinding){
+            value = this.getDataByValue(value as string | number | boolean);
+        }
         this.setProperties({ value: value, text: value, index: null }, true);
         this.activeIndex = this.index;
         const fields: FieldSettingsModel = this.fields;
@@ -354,18 +367,50 @@ export class ComboBox extends DropDownList {
         dataItem[fields.value] = isNullOrUndefined(value) ? null : value.toString();
         this.itemData = <{ [key: string]: Object }>dataItem;
         this.item = null;
-        if (this.previousValue !== this.value) {
+        if ((!this.allowObjectBinding && (this.previousValue !== this.value)) || (this.allowObjectBinding && this.previousValue && this.value && !this.isObjectInArray(this.previousValue, [this.value]))) {
             this.detachChangeEvent(null);
         }
     }
     protected updateValues(): void {
         if (!isNullOrUndefined(this.value)) {
-            const li: Element = this.getElementByValue(this.value);
+            let currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+            const li: Element = this.getElementByValue(currentValue);
+            let doesItemExist: boolean = !isNullOrUndefined(li) ? true : false;
+            if (this.enableVirtualization && this.value) {
+                const fields: string = (this.fields.value) ? this.fields.value : '';
+                let currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+                if (this.dataSource instanceof DataManager && this.virtualGroupDataSource) {
+                    const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
+                        this.virtualGroupDataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', currentValue)));
+                    if (getItem && getItem.length > 0) {
+                        this.itemData = getItem[0];
+                        doesItemExist = true;
+                        const dataItem: { [key: string]: string } = this.getItemData();
+                        let value: string | number | boolean | Object = this.allowObjectBinding ? this.getDataByValue(dataItem.value) : dataItem.value;
+                        if((this.value === dataItem.value && this.text !== dataItem.text) || (this.value !== dataItem.value && this.text === dataItem.text)){
+                            this.setProperties({ 'text': dataItem.text, 'value': value });
+                        }
+                    }
+                }
+                else{
+                    const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
+                        this.dataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', currentValue)));
+                    if (getItem && getItem.length > 0) {
+                        this.itemData = getItem[0];
+                        doesItemExist = true;
+                        const dataItem: { [key: string]: string } = this.getItemData();
+                        let value: string | number | boolean | Object = this.allowObjectBinding ? this.getDataByValue(dataItem.value) : dataItem.value;
+                        if((this.value === dataItem.value && this.text !== dataItem.text) || (this.value !== dataItem.value && this.text === dataItem.text)){
+                            this.setProperties({ 'text': dataItem.text, 'value': value });
+                        }
+                    }
+                }
+            }
             if (li) {
                 this.setSelection(li, null);
-            } else if (this.allowCustom) {
+            } else if ((!this.enableVirtualization && this.allowCustom) || (this.allowCustom && this.enableVirtualization && !doesItemExist)) {
                 this.valueMuteChange(this.value);
-            } else {
+            } else if(!this.enableVirtualization || (this.enableVirtualization && !doesItemExist)){
                 this.valueMuteChange(null);
             }
         } else if (this.text && isNullOrUndefined(this.value)) {
@@ -477,7 +522,7 @@ export class ComboBox extends DropDownList {
                     this.updateIncrementalView(0, this.itemCount);
                 }
                 activeItem = Search(inputValue, this.incrementalLiCollections, this.filterType, true, dataSource, this.fields, type);
-                while (isNullOrUndefined(activeItem) && this.incrementalEndIndex < this.totalItemCount) {
+                while (isNullOrUndefined(activeItem.item) && this.incrementalEndIndex < this.totalItemCount) {
                     this.incrementalStartIndex = this.incrementalEndIndex;
                     this.incrementalEndIndex = this.incrementalEndIndex + 100 > this.totalItemCount ? this.totalItemCount : this.incrementalEndIndex + 100;
                     this.updateIncrementalInfo(this.incrementalStartIndex, this.incrementalEndIndex);
@@ -487,6 +532,7 @@ export class ComboBox extends DropDownList {
                     }
                     activeItem = Search(inputValue, this.incrementalLiCollections, this.filterType, true, dataSource, this.fields, type);
                     if (!isNullOrUndefined(activeItem)) {
+                        activeItem.index = (activeItem.index as number) + this.incrementalStartIndex;
                         break;
                     }
                     if (isNullOrUndefined(activeItem) && this.incrementalEndIndex >= this.totalItemCount) {
@@ -569,10 +615,12 @@ export class ComboBox extends DropDownList {
         }
     }
     protected checkCustomValue(): void {
-        this.itemData = this.getDataByValue(this.value);
+        const value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+        this.itemData = this.getDataByValue(value);
         const dataItem: { [key: string]: string } = this.getItemData();
+        const setValue: string | number | boolean | Object = this.allowObjectBinding ? this.itemData : dataItem.value;
         if (!(this.allowCustom && isNullOrUndefined(dataItem.value) && isNullOrUndefined(dataItem.text))) {
-            this.setProperties({ 'value': dataItem.value }, !this.allowCustom);
+            this.setProperties({ 'value': setValue }, !this.allowCustom);
         }
     }
     /**
@@ -624,10 +672,10 @@ export class ComboBox extends DropDownList {
             const currentValue: string = <string>this.getTextByValue(activeElement.getAttribute('data-value')).toString();
             const currentFillValue: string | number | boolean = this.getFormattedValue(activeElement.getAttribute('data-value'));
             if (this.getModuleName() === 'combobox') {
-                if (!this.isSelected && this.previousValue !== currentFillValue) {
+                if (!this.isSelected && ((!this.allowObjectBinding && this.previousValue !== currentFillValue)) || (this.allowObjectBinding && this.previousValue && currentFillValue && !this.isObjectInArray(this.previousValue, [this.getDataByValue(currentFillValue)]))) {
                     this.updateSelectedItem(activeElement, null);
                     this.isSelected = true;
-                    this.previousValue = this.getFormattedValue(activeElement.getAttribute('data-value'));
+                    this.previousValue = this.allowObjectBinding ? this.getDataByValue(this.getFormattedValue(activeElement.getAttribute('data-value'))) : this.getFormattedValue(activeElement.getAttribute('data-value'));
                 } else {
                     this.updateSelectedItem(activeElement, null, true);
                 }
@@ -798,23 +846,26 @@ export class ComboBox extends DropDownList {
         super.dropDownClick(e);
     }
     private customValue(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
-        const value: string | number | boolean = this.getValueByText(this.inputElement.value);
+        let value: string | number | boolean | object = this.getValueByText(this.inputElement.value);
         if (!this.allowCustom && this.inputElement.value !== '') {
-            const previousValue: string | number | boolean = this.previousValue;
-            const currentValue: string | number | boolean = this.value;
+            const previousValue: string | number | boolean | object = this.previousValue;
+            const currentValue: string | number | boolean | object = this.value;
+            value = this.allowObjectBinding ? this.getDataByValue(value) : value;
             this.setProperties({ value: value });
             if (isNullOrUndefined(this.value)) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
             }
-            if (this.autofill && previousValue === this.value && currentValue !== this.value) {
+            const newValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+            if (this.autofill && ((!this.allowObjectBinding && previousValue === this.value) || (this.allowObjectBinding && previousValue && this.isObjectInArray(previousValue,[this.value]))) && ((!this.allowObjectBinding && currentValue !== this.value) || (this.allowObjectBinding && currentValue && !this.isObjectInArray(currentValue,[this.value])))) {
                 this.onChangeEvent(null);
             }
         } else if (this.inputElement.value.trim() !== '') {
-            const previousValue: string | number | boolean = this.value;
+            const previousValue: string | number | boolean | object = this.value;
             if (isNullOrUndefined(value)) {
                 const value: string | Object = this.inputElement.value === '' ? null : this.inputElement.value;
                 // eslint-disable-next-line max-len
                 const eventArgs: { [key: string]: Object | string | number } = <{ [key: string]: Object | string | number }>{ text: value, item: {} };
+                this.isObjectCustomValue = true;
                 if (!this.initial) {
                     this.trigger('customValueSpecifier', eventArgs, (eventArgs: { [key: string]: Object | string | number }) => {
                         this.updateCustomValueCallback(value, eventArgs, previousValue, e);
@@ -824,8 +875,9 @@ export class ComboBox extends DropDownList {
                 }
             } else {
                 this.isSelectCustom = false;
+                value = this.allowObjectBinding ? this.getDataByValue(value) : value;
                 this.setProperties({ value: value });
-                if (previousValue !== this.value) {
+                if ((!this.allowObjectBinding && previousValue !== this.value) || (this.allowObjectBinding && previousValue && this.value && !this.isObjectInArray(previousValue, [this.value]))) {
                     this.onChangeEvent(e);
                 }
             }
@@ -836,7 +888,7 @@ export class ComboBox extends DropDownList {
     private updateCustomValueCallback(
         value: string | Object,
         eventArgs: { [key: string]: Object | string | number },
-        previousValue: string | number | boolean,
+        previousValue: string | number | boolean | object,
         e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         const fields: FieldSettingsModel = this.fields;
         const item: { [key: string]: string | Object } = <{ [key: string]: string | Object }>eventArgs.item;
@@ -848,16 +900,28 @@ export class ComboBox extends DropDownList {
             setValue(fields.value, value, dataItem);
         }
         this.itemData = <{ [key: string]: Object }>dataItem;
+        const emptyObject: { [key: string]: any } = {};
+        if (this.allowObjectBinding) {
+            let keys = this.listData && this.listData.length > 0 ? Object.keys(this.listData[0]) : Object.keys(this.itemData);
+            if((!(this.listData && this.listData.length > 0)) && (this.getModuleName() === 'autocomplete' || (this.getModuleName() === 'combobox' && this.allowFiltering))){
+                keys = this.firstItem ? Object.keys(this.firstItem) : Object.keys(this.itemData);
+            }
+            // Create an empty object with predefined keys
+            keys.forEach(key => {
+                emptyObject[key as any] = ((key === fields.value) || (key === fields.text)) ? getValue(fields.value, this.itemData) : null;
+            });
+        }
         const changeData: { [key: string]: Object } = {
             text: getValue(fields.text, this.itemData),
-            value: getValue(fields.value, this.itemData),
+            value: this.allowObjectBinding ? emptyObject : getValue(fields.value, this.itemData),
             index: null
         };
         this.setProperties(changeData, true);
         this.setSelection(null, null);
         this.isSelectCustom = true;
-        if (previousValue !== this.value) {
-            this.onChangeEvent(e);
+        this.isObjectCustomValue = false;
+        if ((!this.allowObjectBinding && (previousValue !== this.value)) || (this.allowObjectBinding && ((previousValue == null && this.value !== null) || (previousValue && !this.isObjectInArray(previousValue, [this.value]))))) {
+            this.onChangeEvent(e, true);
         }
     }
     /**
@@ -871,7 +935,7 @@ export class ComboBox extends DropDownList {
     public onPropertyChanged(newProp: ComboBoxModel, oldProp: ComboBoxModel): void {
         if (this.getModuleName() === 'combobox') {
             this.checkData(newProp);
-            this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string });
+            this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string }, oldProp as { [key: string]: string });
         }
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
@@ -1021,7 +1085,8 @@ export class ComboBox extends DropDownList {
                 this.customValue(e);
             }
         }
-        if (isNullOrUndefined(this.listData) && this.allowCustom && !isNullOrUndefined(inputValue) && inputValue !== this.value) {
+        let value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+        if (isNullOrUndefined(this.listData) && this.allowCustom && !isNullOrUndefined(inputValue) && inputValue !== value) {
             this.customValue();
         }
         super.hidePopup(e);

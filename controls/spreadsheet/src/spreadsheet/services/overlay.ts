@@ -63,6 +63,11 @@ export class Overlay {
             styles: 'width: ' + this.minWidth + ';  height: ' + this.minHeight
         });
         if (this.parent.allowEditing) {
+            const actOverlayElem: HTMLElement = this.parent.element.getElementsByClassName('e-ss-overlay-active')[0] as HTMLElement;
+            if (actOverlayElem) {
+                removeClass([actOverlayElem], 'e-ss-overlay-active');
+                this.parent.notify(removeDesignChart, {});
+            }
             div.classList.add('e-ss-overlay-active');
         }
         const indexes: number[] = getRangeIndexes(range);
@@ -360,11 +365,24 @@ export class Overlay {
     }
 
     private refreshOverlayElem(args: { selector?: string }): void {
-        const selector: string = '.e-ss-overlay-active' + ((args && args.selector) || '');
-        const overlayElem: HTMLElement = this.parent.element.querySelector(selector);
-        if (overlayElem) {
-            removeClass([overlayElem], 'e-ss-overlay-active');
-            this.parent.notify(removeDesignChart, {});
+        if (args) {
+            const selector: string = '.e-ss-overlay-active' + ((args && args.selector) || '');
+            const overlayElem: HTMLElement = this.parent.element.querySelector(selector);
+            if (overlayElem) {
+                removeClass([overlayElem], 'e-ss-overlay-active');
+                this.parent.notify(removeDesignChart, {});
+            }
+        }
+        else {
+            const selector: string = 'e-ss-overlay-active';
+            const overlayElems: HTMLElement[] = Array.from(this.parent.element.getElementsByClassName(selector) as HTMLCollectionOf<HTMLElement>);
+            for (let i = 0; i < overlayElems.length; i++) {
+                let element = overlayElems[i as number];
+                if (element) {
+                    removeClass([element], 'e-ss-overlay-active');
+                    this.parent.notify(removeDesignChart, {});
+                }
+            }
         }
         this.parent.notify(clearChartBorder, null);
     }
@@ -466,6 +484,12 @@ export class Overlay {
      */
     public destroy(): void {
         this.removeEventListener();
+        if (this.currentWidth) { this.currentWidth = null; }
+        if (this.currenHeight) { this.currenHeight = null; }
+        if (this.minHeight) { this.minHeight = null; }
+        if (this.minWidth) { this.minWidth = null; }
+        if (this.isOverlayClicked) { this.isOverlayClicked = null; }
+        if (this.isResizerClicked) { this.isResizerClicked = null; }
         this.parent = null;
     }
 }

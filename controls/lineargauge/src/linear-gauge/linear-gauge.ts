@@ -4,7 +4,7 @@ import { EmitType, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base'
 import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement, Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { Border, Font, Container, Margin, Annotation, TooltipSettings } from './model/base';
 import { FontModel, BorderModel, ContainerModel, MarginModel, AnnotationModel, TooltipSettingsModel } from './model/base-model';
-import { AxisModel, PointerModel } from './axes/axis-model';
+import { AxisModel, PointerModel, RangeModel } from './axes/axis-model';
 import { Axis, Pointer } from './axes/axis';
 import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, gaugeMouseUp, resized, valueChange } from './model/constant';
 import { LinearGaugeModel } from './linear-gauge-model';
@@ -474,6 +474,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public allowLoadingAnimation: boolean = false;
 
     /** @private */
+    public isPointerAnimationInProgress: boolean = false;
+
+    /** @private */
     public isOverAllAnimationComplete: boolean = false;
 
     /** @private */
@@ -527,6 +530,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     protected preRender(): void {
         this.unWireEvents();
+        this.isPointerAnimationInProgress = false;
         this.trigger(load, { gauge: this });
         this.initPrivateVariable();
         this.setCulture();
@@ -782,7 +786,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 options, style, style.color || this.themeStyle.titleFontColor, null, this.svgObject
             );
             element.setAttribute('aria-label', this.description || this.title);
-            element.setAttribute('role', '');
+            element.setAttribute('role', 'region');
             element.setAttribute('tabindex', this.tabIndex.toString());
         }
     }
@@ -1492,7 +1496,15 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             const axis: Axis = <Axis>this.axes[axisIndex as number];
             const pointer: Pointer = <Pointer>axis.pointers[pointerIndex as number];
             this.gaugeResized = false;
+            if (this.allowLoadingAnimation) {
+                this.allowLoadingAnimation = false;
+                this.createSvg();
+                this.renderGaugeElements();
+                this.calculateBounds();
+                this.renderAxisElements();
+            }
             if (pointer.startValue !== value) {
+                this.isPointerAnimationInProgress = false;
                 const id: string = this.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + pointerIndex;
                 const pointerElement: Element = getElement(id);
                 value = (value < axis.visibleRange.min) ? axis.visibleRange.min : ((value > axis.visibleRange.max) ?
@@ -1557,6 +1569,25 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         }
     }
 
+    private isGradientVisible(): boolean {
+        let isVisible: boolean = false;
+        for (const axis of this.axes) {
+            for (const pointer of axis.pointers) {
+                if (!isNullOrUndefined(pointer.linearGradient) || !isNullOrUndefined(pointer.radialGradient)) {
+                    isVisible = true;
+                    break;
+                }
+            }
+            for (const range of axis.ranges) {
+                if (!isNullOrUndefined(range.linearGradient) || !isNullOrUndefined(range.radialGradient)) {
+                    isVisible = true;
+                    break;
+                }
+            }
+        }
+        return isVisible;
+    }
+
     /**
      * To provide the array of modules needed for control rendering
      *
@@ -1573,37 +1604,45 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (annotationEnable) {
             modules.push({
                 member: 'Annotations',
-                args: [this, Annotations]
+                args: [this, Annotations],
+                name: 'Annotations'
             });
         }
         if (this.tooltip.enable) {
             modules.push({
                 member: 'Tooltip',
-                args: [this, GaugeTooltip]
+                args: [this, GaugeTooltip],
+                name: 'GaugeTooltip'
             });
         }
         if (this.allowPrint) {
             modules.push({
                 member: 'Print',
-                args: [this]
+                args: [this],
+                name: 'Print'
             });
         }
         if (this.allowImageExport) {
             modules.push({
                 member: 'ImageExport',
-                args: [this]
+                args: [this],
+                name: 'ImageExport'
             });
         }
         if (this.allowPdfExport) {
             modules.push({
                 member: 'PdfExport',
-                args: [this]
+                args: [this],
+                name: 'PdfExport'
             });
         }
-        modules.push({
-            member: 'Gradient',
-            args: [this, Gradient]
-        });
+        if (this.isGradientVisible()) {
+            modules.push({
+                member: 'Gradient',
+                args: [this, Gradient],
+                name: 'Gradient'
+            });
+        }
         return modules;
     }
 
@@ -1670,6 +1709,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     break;
                 case 'orientation':
                     this.isOverAllAnimationComplete = true;
+                    this.isPointerAnimationInProgress = this.allowLoadingAnimation = false;
                     for (let i: number = 0; i < this.axes.length; i++) {
                         for (let j: number = 0; j < this.axes[i as number].pointers.length; j++) {
                             this.axes[i as number].pointers[j as number]['startValue'] = this.axes[i as number].minimum;
@@ -1688,6 +1728,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                                     for (let y: number = 0; y < pointerPropertyLength; y++) {
                                         const index: number = parseInt(Object.keys(newProp.axes[x as number].pointers)[y as number], 10);
                                         if (!isNaN(index) && !isNullOrUndefined(Object.keys(newProp.axes[x as number].pointers[index as number]))) {
+                                            this.allowLoadingAnimation = false;
+                                            this.isPointerAnimationInProgress = false;
                                             this.axes[x as number].pointers[index as number]['startValue'] = this.axes[x as number].pointers[index as number]['currentValue'];
                                             this.axes[x as number].pointers[index as number]['isPointerAnimation'] = Object.keys(newProp.axes[x as number].pointers[index as number]).indexOf('value') > -1;
                                             if (this.pointerDrag) {
@@ -1716,11 +1758,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 }
                 if (refreshBounds || this.allowLoadingAnimation) {
                     this.createSvg();
-                    this.allowLoadingAnimation = this.animationDuration > 0 && !this.isOverAllAnimationComplete ? true : false;
                     this.renderGaugeElements();
                     this.calculateBounds();
                     this.renderAxisElements();
                     if (this.allowLoadingAnimation) {
+                        this.allowLoadingAnimation = this.animationDuration > 0 && !this.isOverAllAnimationComplete ? true : false;
                         this.renderAnimation();
                     }
                 }

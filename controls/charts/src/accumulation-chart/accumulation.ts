@@ -1784,7 +1784,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         const padding: number = this.border.width;
         const rect: RectOption = new RectOption(this.element.id + '_border', this.background || this.themeStyle.background, this.border, 1,
                                                 new Rect(padding / 2, padding / 2, this.availableSize.width - padding,
-                                                         this.availableSize.height - padding));
+                                                         this.availableSize.height - padding), 0, 0, '', this.border.dashArray);
         const htmlObject: Element = this.renderer.drawRectangle(rect);
         htmlObject.setAttribute('aria-hidden', 'true');
         appendChildElement(
@@ -1958,8 +1958,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             }
         }
         else {
-            ypos = this.accBaseModule.center.y - (centerLabelSize.height * labelCollection.length / 2) +
-            ((centerLabelSize.height + padding) / 2);
+            ypos = labelCollection.length > 1 ? (this.accBaseModule.center.y - (centerLabelSize.height * labelCollection.length / 2) +
+            ((centerLabelSize.height + padding) / 2)) : (this.accBaseModule.center.y + (centerLabelSize.height) / 4);
         }
         const options: TextOption = new TextOption(
             this.element.id + '_centerLabel',

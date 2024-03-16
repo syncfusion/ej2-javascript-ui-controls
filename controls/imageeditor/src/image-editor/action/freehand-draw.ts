@@ -1,4 +1,4 @@
-import { EventHandler, extend, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ActivePoint } from '@syncfusion/ej2-inputs';
 import { FreehandDraw, Point, SelectionPoint, ShapeChangeEventArgs, ShapeSettings, ShapeType, StrokeSettings } from '../index';
 import { CurrentObject, ImageDimension, ImageEditor } from '../index';
@@ -576,15 +576,11 @@ export class FreehandDrawing {
         if (selectedPoint.strokeColor === '#42a5f5') {
             selectedPoint.strokeColor = this.tempFHDStyles.strokeColor;
         }
-        if (!isBlazor()) {
-            parent.notify('toolbar', {prop: 'setSelectedFreehandColor', value: {color: '#42a5f5' } });
-        }
+        parent.notify('toolbar', {prop: 'setSelectedFreehandColor', value: {color: '#42a5f5' } });
         this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         parent.notify('draw', {prop: 'render-image', value: {isMouseWheel: null } });
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-        }
+        parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
         if (selectedPoint) {
             selectedPoint.isSelected = false;
         }
@@ -596,9 +592,7 @@ export class FreehandDrawing {
         const parent: ImageEditor = this.parent;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const selectedPoint: any = parent.pointColl[this.fhdSelIdx];
-        if (!isBlazor()) {
-            parent.notify('toolbar', {prop: 'setSelectedFreehandColor', value: {color: '#42a5f5' } });
-        }
+        parent.notify('toolbar', {prop: 'setSelectedFreehandColor', value: {color: '#42a5f5' } });
         this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
         this.lowerContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
         this.pointCounter = 0;
@@ -613,11 +607,7 @@ export class FreehandDrawing {
         parent.activeObj.strokeSettings.strokeWidth = this.penStrokeWidth = this.tempFHDStyles.strokeWidth;
         this.tempFHDStyles = {strokeColor: null, strokeWidth: null, fillColor: null};
         parent.notify('draw', {prop: 'render-image', value: {isMouseWheel: null } });
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false}); 
-        } else {
-            parent.updateToolbar(parent.element, 'imageLoaded');
-        }
+        parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false}); 
     }
 
     private selectFhd(index?: number): void {
@@ -653,10 +643,6 @@ export class FreehandDrawing {
         } else {
             parent.okBtn();
         }
-        if (isBlazor()) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (parent as any).getShapeValue('pen');
-        }
     }
 
     private deleteFhd(index: number, isId?: boolean): void {
@@ -688,9 +674,7 @@ export class FreehandDrawing {
             parent.freehandCounter -= 1; this.fhdHovIdx = this.fhdSelIdx = null;
             parent.notify('selection', {prop: 'resetFreehandDrawVariables'});
             parent.notify('draw', {prop: 'render-image', value: {isMouseWheel: null } });
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-            }
+            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
         }
     }
 
@@ -1024,21 +1008,13 @@ export class FreehandDrawing {
             if (isNullOrUndefined(parent.activeObj.strokeSettings.strokeWidth)) {
                 parent.activeObj.strokeSettings.strokeWidth = 2;
             }
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
-                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-            } else {
-                parent.updateToolbar(parent.element, 'pen');
-            }
+            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
+                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
         } else {
             parent.upperCanvas.style.cursor = parent.cursor = 'default';
             parent.notify('shape', { prop: 'apply', onPropertyChange: false, value: {shape: null, obj: null, canvas: null}});
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-                parent.notify('toolbar', {prop: 'setCurrentToolbar', value: {type: 'main' }});
-            } else {
-                parent.updateToolbar(parent.element, 'imageLoaded');
-            }
+            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
+            parent.notify('toolbar', {prop: 'setCurrentToolbar', value: {type: 'main' }});
             parent.notify('selection', {prop: 'setFreehandDrawCustomized', value: {isFreehandDrawCustomized: false }});
         }
     }
@@ -1076,47 +1052,22 @@ export class FreehandDrawing {
     private triggerShapeChanging(shapeChangingArgs: ShapeChangeEventArgs) : void {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const parent: ImageEditor = this.parent; const point: any = parent.pointColl[this.fhdSelIdx];
-        if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape',  shapeChangingArgs, null) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
-                this.penStrokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
-                if (parent.activeObj.strokeSettings.strokeColor !== shapeChangingArgs.currentShapeSettings.strokeColor) {
-                    parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
-                    const penColorElement: HTMLElement = parent.element.querySelector('.e-ie-toolbar-e-pen-color .e-dropdownbtn-preview') as HTMLElement;
-                    if (penColorElement) {
-                        penColorElement.style.background = shapeChangingArgs.currentShapeSettings.strokeColor;
-                    }
-                }
-                if (this.fhdSelID) {
-                    point.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
-                    point.strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
-                    point.points = shapeChangingArgs.currentShapeSettings.points;
-                    point.opacity = shapeChangingArgs.currentShapeSettings.opacity;
-                }
-                if (shapeChangingArgs.action === 'select') {
-                    this.freehandRedraw(this.upperContext);
-                    parent.updateToolbar(parent.element, 'imageLoaded');
-                    parent.updateToolbar(parent.element, 'pen');
-                }
-            });
-        } else {
-            parent.trigger('shapeChanging', shapeChangingArgs);
-            this.penStrokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
-            if (parent.activeObj.strokeSettings.strokeColor !== shapeChangingArgs.currentShapeSettings.strokeColor) {
-                parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
-                parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false });
-            }
-            if (this.fhdSelID) {
-                point.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
-                point.strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
-                point.points = shapeChangingArgs.currentShapeSettings.points;
-                point.opacity = shapeChangingArgs.currentShapeSettings.opacity;
-            }
-            if (shapeChangingArgs.action === 'select') {
-                this.freehandRedraw(this.upperContext);
-                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
-                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-            }
+        parent.trigger('shapeChanging', shapeChangingArgs);
+        this.penStrokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+        if (parent.activeObj.strokeSettings.strokeColor !== shapeChangingArgs.currentShapeSettings.strokeColor) {
+            parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
+            parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false });
+        }
+        if (this.fhdSelID && point && shapeChangingArgs.currentShapeSettings) {
+            point.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
+            point.strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+            point.points = shapeChangingArgs.currentShapeSettings.points;
+            point.opacity = shapeChangingArgs.currentShapeSettings.opacity;
+        }
+        if (shapeChangingArgs.action === 'select') {
+            this.freehandRedraw(this.upperContext);
+            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
+                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
         }
     }
 

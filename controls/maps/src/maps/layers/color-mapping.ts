@@ -7,9 +7,7 @@ import { getValueFromObject } from '../utils/helper';
  * ColorMapping class
  */
 export class ColorMapping {
-    private maps: Maps;
     constructor(maps: Maps) {
-        this.maps = maps;
     }
     /**
      * To get color based on shape settings.

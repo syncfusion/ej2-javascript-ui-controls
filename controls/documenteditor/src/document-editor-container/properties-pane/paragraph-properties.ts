@@ -258,14 +258,14 @@ export class Paragraph {
             beforeOpen: (): void => {
                 div.style.display = 'block';
                 let levelPattern: string = 'None';
-                if(!isNullOrUndefined(this.documentEditor.selection.paragraphFormat)) {
-                    if (isNullOrUndefined(this.documentEditor.selection.paragraphFormat.listId) || this.documentEditor.selection.paragraphFormat.listId == -1) {
+                if(!isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat)) {
+                    if (isNullOrUndefined(this.documentEditor.selectionModule.paragraphFormat.listId) || this.documentEditor.selectionModule.paragraphFormat.listId == -1) {
                         levelPattern = 'None';
                     }
                     else {
-                        let list = this.documentEditor.documentHelper.getListById(this.documentEditor.selection.paragraphFormat.listId);
+                        let list = this.documentEditor.documentHelper.getListById(this.documentEditor.selectionModule.paragraphFormat.listId);
                         let abstractList: WAbstractList = this.documentEditor.documentHelper.getAbstractListById(list.abstractListId);
-                        let level: WListLevel = abstractList.levels[this.documentEditor.selection.paragraphFormat.listLevelNumber];
+                        let level: WListLevel = abstractList.levels[this.documentEditor.selectionModule.paragraphFormat.listLevelNumber];
                         levelPattern = level.listLevelPattern;
                     }
                 }
@@ -398,7 +398,7 @@ export class Paragraph {
             cssClass: this.splitButtonClass,
             beforeOpen: (): void => {
                 div.style.display = 'block';
-                this.updateSelectedBulletListType(this.documentEditor.selection.paragraphFormat.listText);
+                this.updateSelectedBulletListType(this.documentEditor.selectionModule.paragraphFormat.listText);
             },
             beforeClose: (): void => {
                 div.style.display = 'none';
@@ -653,8 +653,8 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.toggleTextAlignment('Left');
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.toggleTextAlignment('Left');
             this.documentEditor.focusIn();
         }
     }
@@ -665,16 +665,16 @@ export class Paragraph {
         const text: string = args.item.text;
         switch (text) {
             case this.localObj.getConstant('Single'):
-                this.documentEditor.selection.paragraphFormat.lineSpacing = 1;
+                this.documentEditor.selectionModule.paragraphFormat.lineSpacing = 1;
                 break;
             case '1.15':
-                this.documentEditor.selection.paragraphFormat.lineSpacing = 1.15;
+                this.documentEditor.selectionModule.paragraphFormat.lineSpacing = 1.15;
                 break;
             case '1.5':
-                this.documentEditor.selection.paragraphFormat.lineSpacing = 1.5;
+                this.documentEditor.selectionModule.paragraphFormat.lineSpacing = 1.5;
                 break;
             case this.localObj.getConstant('Double'):
-                this.documentEditor.selection.paragraphFormat.lineSpacing = 2;
+                this.documentEditor.selectionModule.paragraphFormat.lineSpacing = 2;
                 break;
         }
         setTimeout((): void => {
@@ -682,7 +682,7 @@ export class Paragraph {
         }, 30);
     }
     private setLineSpacing(): void {
-        const lineSpacing: number = this.documentEditor.selection.paragraphFormat.lineSpacing;
+        const lineSpacing: number = this.documentEditor.selectionModule.paragraphFormat.lineSpacing;
         if (lineSpacing === 1) {
             this.appliedLineSpacing = this.localObj.getConstant('Single');
         } else if (lineSpacing === 1.15) {
@@ -696,6 +696,12 @@ export class Paragraph {
         }
     }
     private selectStyleValue(args: any): void {
+        let treeViewResult: HTMLElement = document.getElementById(this.documentEditor.containerId + '_treeDiv');
+                if (!isNullOrUndefined(treeViewResult) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.optionsPaneModule.isOptionsPaneShow) {
+                    treeViewResult.innerHTML = '';
+                    this.documentEditor.optionsPaneModule.data = this.documentEditor.optionsPaneModule.dataForTreeview();
+                    this.documentEditor.optionsPaneModule.initHeadingTab();
+                }
         if (this.isRetrieving || !args.isInteracted) {
             return;
         }
@@ -704,10 +710,16 @@ export class Paragraph {
         }, 10);
     }
     private applyStyleValue(args: any): void {
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
             let styleName: string = this.documentEditor.stylesDialogModule.getStyleName(SanitizeHtmlHelper.sanitize(args.itemData.StyleName));
             if (!isNullOrUndefined(this.documentEditor.documentHelper.styles.findByName(styleName))) {
-                this.documentEditor.editor.applyStyle(styleName, true);
+                this.documentEditor.editorModule.applyStyle(styleName, true);
+                let treeViewResult: HTMLElement = document.getElementById(this.documentEditor.containerId + '_treeDiv');
+                if (!isNullOrUndefined(treeViewResult) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.optionsPaneModule.isOptionsPaneShow) {
+                    treeViewResult.innerHTML = '';
+                    this.documentEditor.optionsPaneModule.data = this.documentEditor.optionsPaneModule.dataForTreeview();
+                    this.documentEditor.optionsPaneModule.initHeadingTab();
+                }
             }
         }
     }
@@ -716,8 +728,8 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.toggleTextAlignment('Right');
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.toggleTextAlignment('Right');
             this.documentEditor.focusIn();
         }
     }
@@ -725,8 +737,8 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.toggleTextAlignment('Center');
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.toggleTextAlignment('Center');
             this.documentEditor.focusIn();
         }
     }
@@ -735,8 +747,8 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.toggleTextAlignment('Justify');
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.toggleTextAlignment('Justify');
             this.documentEditor.focusIn();
         }
     }
@@ -744,8 +756,8 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.increaseIndent();
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.increaseIndent();
             this.documentEditor.focusIn();
         }
     }
@@ -753,8 +765,8 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.decreaseIndent();
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.decreaseIndent();
             this.documentEditor.focusIn();
         }
     }
@@ -762,8 +774,8 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
-            this.documentEditor.editor.clearList();
+        if (this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.clearList();
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -773,9 +785,9 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedNumberingStyle = 'arabic';
-            this.documentEditor.editor.applyNumbering(this.getLevelFormatNumber(), 'Arabic');
+            this.documentEditor.editorModule.applyNumbering(this.getLevelFormatNumber(), 'Arabic');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -785,9 +797,9 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedNumberingStyle = 'uproman';
-            this.documentEditor.editor.applyNumbering(this.getLevelFormatNumber(), 'UpRoman');
+            this.documentEditor.editorModule.applyNumbering(this.getLevelFormatNumber(), 'UpRoman');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -797,9 +809,9 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedNumberingStyle = 'upletter';
-            this.documentEditor.editor.applyNumbering(this.getLevelFormatNumber(), 'UpLetter');
+            this.documentEditor.editorModule.applyNumbering(this.getLevelFormatNumber(), 'UpLetter');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -809,9 +821,9 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedNumberingStyle = 'lowletter';
-            this.documentEditor.editor.applyNumbering(this.getLevelFormatNumber(), 'LowLetter');
+            this.documentEditor.editorModule.applyNumbering(this.getLevelFormatNumber(), 'LowLetter');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -821,9 +833,9 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedNumberingStyle = 'lowroman';
-            this.documentEditor.editor.applyNumbering(this.getLevelFormatNumber(), 'LowRoman');
+            this.documentEditor.editorModule.applyNumbering(this.getLevelFormatNumber(), 'LowRoman');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -831,16 +843,16 @@ export class Paragraph {
     }
     private getLevelFormatNumber(): string {
         let numberFormat: string = '%';
-        numberFormat = numberFormat + (((this.documentEditor.selection.paragraphFormat.listLevelNumber <= 0) ? 0 : this.documentEditor.selection.paragraphFormat.listLevelNumber) + 1) + '.';
+        numberFormat = numberFormat + (((this.documentEditor.selectionModule.paragraphFormat.listLevelNumber <= 0) ? 0 : this.documentEditor.selectionModule.paragraphFormat.listLevelNumber) + 1) + '.';
         return numberFormat;
     }
     private bulletDotClick(): void {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedBulletStyle = 'dot';
-            this.documentEditor.editor.applyBullet(String.fromCharCode(61623), 'Symbol');
+            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61623), 'Symbol');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -850,9 +862,9 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedBulletStyle = 'circle';
-            this.documentEditor.editor.applyBullet(String.fromCharCode(61551) + String.fromCharCode(32), 'Symbol');
+            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61551) + String.fromCharCode(32), 'Symbol');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -862,9 +874,9 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedBulletStyle = 'square';
-            this.documentEditor.editor.applyBullet(String.fromCharCode(61607), 'Wingdings');
+            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61607), 'Wingdings');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -874,9 +886,9 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedBulletStyle = 'flower';
-            this.documentEditor.editor.applyBullet(String.fromCharCode(61558), 'Wingdings');
+            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61558), 'Wingdings');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -886,9 +898,9 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedBulletStyle = 'arrow';
-            this.documentEditor.editor.applyBullet(String.fromCharCode(61656), 'Wingdings');
+            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61656), 'Wingdings');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -898,9 +910,9 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             this.appliedBulletStyle = 'tick';
-            this.documentEditor.editor.applyBullet(String.fromCharCode(61692), 'Wingdings');
+            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61692), 'Wingdings');
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -908,11 +920,11 @@ export class Paragraph {
     }
     public onSelectionChange(): void {
         this.isRetrieving = true;
-        if (this.documentEditor.editor) {
+        if (this.documentEditor.editorModule) {
             //#region paragraph format
-            let style: string = this.documentEditor.selection.characterFormat.styleName;
-            if (this.documentEditor.selection.characterFormat.styleName === "Default Paragraph Font") {
-                style = this.documentEditor.selection.paragraphFormat.styleName;
+            let style: string = this.documentEditor.selectionModule.characterFormat.styleName;
+            if (this.documentEditor.selectionModule.characterFormat.styleName === "Default Paragraph Font") {
+                style = this.documentEditor.selectionModule.paragraphFormat.styleName;
             }
             if (style) {
                 let localeValue: string = this.localObj.getConstant(style);
@@ -925,25 +937,25 @@ export class Paragraph {
             classList(this.rightAlignment, [], ['e-btn-toggle']);
             classList(this.centerAlignment, [], ['e-btn-toggle']);
             classList(this.justify, [], ['e-btn-toggle']);
-            if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Left') {
+            if (this.documentEditor.selectionModule.paragraphFormat.textAlignment === 'Left') {
                 classList(this.leftAlignment, ['e-btn-toggle'], []);
                 this.leftAlignment.setAttribute('aria-pressed', 'true');
                 this.rightAlignment.setAttribute('aria-pressed', 'false');
                 this.centerAlignment.setAttribute('aria-pressed', 'false');
                 this.justify.setAttribute('aria-pressed', 'false');
-            } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Right') {
+            } else if (this.documentEditor.selectionModule.paragraphFormat.textAlignment === 'Right') {
                 classList(this.rightAlignment, ['e-btn-toggle'], []);
                 this.leftAlignment.setAttribute('aria-pressed', 'false');
                 this.rightAlignment.setAttribute('aria-pressed', 'true');
                 this.centerAlignment.setAttribute('aria-pressed', 'false');
                 this.justify.setAttribute('aria-pressed', 'false');
-            } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Center') {
+            } else if (this.documentEditor.selectionModule.paragraphFormat.textAlignment === 'Center') {
                 classList(this.centerAlignment, ['e-btn-toggle'], []);
                 this.leftAlignment.setAttribute('aria-pressed', 'false');
                 this.rightAlignment.setAttribute('aria-pressed', 'false');
                 this.centerAlignment.setAttribute('aria-pressed', 'true');
                 this.justify.setAttribute('aria-pressed', 'false');
-            } else if (this.documentEditor.selection.paragraphFormat.textAlignment === 'Justify') {
+            } else if (this.documentEditor.selectionModule.paragraphFormat.textAlignment === 'Justify') {
                 classList(this.justify, ['e-btn-toggle'], []);
                 this.leftAlignment.setAttribute('aria-pressed', 'false');
                 this.rightAlignment.setAttribute('aria-pressed', 'false');

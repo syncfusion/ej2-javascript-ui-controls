@@ -525,8 +525,6 @@ describe('Diagram Control', () => {
 
         it('Checking default palette rendering', (done: Function) => {
             let node: any = palette.symbolTable['InitialNode'].wrapper.children[0];
-            console.log(node.offsetX);
-            console.log(node.offsetY);
             expect(node.offsetX === 14.5 && node.offsetY === 14.5).toBe(true);
             done();
         });

@@ -302,7 +302,7 @@ export class RangeSeries extends NiceInterval {
         const start: string = control.stockChart ? 'M' : 'L';
         const close: string = control.stockChart ? '' : 'Z';
         const options: PathOption = new PathOption(
-            control.element.id + '_SeriesBorder', 'transparent', control.navigatorBorder.width, control.navigatorBorder.color || (control.theme.indexOf('Dark') > -1 ? '#49454F' : '#DDDDDD'), 1, '',
+            control.element.id + '_SeriesBorder', 'transparent', control.navigatorBorder.width, control.navigatorBorder.color || (control.theme.indexOf('Dark') > -1 ? '#49454F' : '#DDDDDD'), 1, control.navigatorBorder.dashArray,
             ('M ' + (control.bounds.x) + ' ' + (control.bounds.y) +
                 ' L ' + (control.bounds.x + control.bounds.width) + ' ' + control.bounds.y +
                 start + (control.bounds.x + control.bounds.width) + ' ' + (control.bounds.y + control.bounds.height) +

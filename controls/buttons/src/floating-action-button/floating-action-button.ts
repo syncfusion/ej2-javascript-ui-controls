@@ -266,7 +266,7 @@ export class Fab extends Button implements INotifyPropertyChanged {
      * @returns {void}
      * @private
      */
-    public onPropertyChanged(newProp: FabModel, oldProp?: FabModel): void {
+    public onPropertyChanged(newProp: FabModel, oldProp: FabModel): void {
         super.onPropertyChanged(newProp, oldProp);
         for (const prop of Object.keys(newProp)) {
             switch (prop) {

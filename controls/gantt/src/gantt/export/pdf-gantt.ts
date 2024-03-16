@@ -34,6 +34,7 @@ export class PdfGantt extends PdfTreeGrid {
     public chartHeader: PdfTimeline;
     public chartPageIndex: number;
     public eventMarker : EventMarker;
+    public changeCloneProjectDates: boolean = false;
     public parent: Gantt;
 
     constructor(parent: Gantt) {
@@ -114,6 +115,7 @@ export class PdfGantt extends PdfTreeGrid {
             detail.endPoint = range[1];
             if (this.parent.cloneProjectStartDate.getHours() === 0 && this.parent.cloneProjectStartDate.getMinutes() === 0
             && this.parent.cloneProjectStartDate.getSeconds() === 0 ) {
+                this.changeCloneProjectDates = true;
                 this.parent.cloneProjectStartDate.setHours(8);
             }
             const timelineStartDate: Date = this.parent.dataOperation.getDateFromFormat(this.parent.timelineModule.timelineStartDate);

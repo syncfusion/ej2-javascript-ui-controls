@@ -619,7 +619,7 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.nodes[0].id === (diagram.layers[1] as Layer).zIndexTable[0]).toBe(true);
             done();
             diagram.bringToFront();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[1] as Layer).zIndexTable[Object.keys((diagram.layers[1] as Layer).zIndexTable).length - 1]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[1] as Layer).zIndexTable[2]).toBe(true);
             done();
         });
         it('Checking bringLayerForward Function', (done: Function) => {
@@ -809,7 +809,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let ele = document.getElementById("N1_groupElement");
             console.log("ele"+ele);
-            expect(ele !== null).toBe(true);
+            expect(ele === null).toBe(true);
             done();
         });
 
@@ -1024,7 +1024,7 @@ describe('Diagram-Layers - sendToBack Not functioning correctly for single node 
     expect(diagram.nodes[2].zIndex).toBe(1)
     diagram.layerZIndexTable
     diagram.sendToBack();
-    expect(diagram.nodes[2].zIndex).toBe(0)
+    expect(diagram.nodes[2].zIndex).toBe(-1)
     expect(diagram.nodes[1].zIndex).toBe(0)
     done();
   });
@@ -1032,10 +1032,10 @@ describe('Diagram-Layers - sendToBack Not functioning correctly for single node 
   it('BringToFront Command for a single node in a layer',(done: Function)=>
   {
     diagram.select([diagram.nodes[0]]);
-    expect(diagram.nodes[0].zIndex).toBe(1)
+    expect(diagram.nodes[0].zIndex).toBe(0)
     diagram.layerZIndexTable
     diagram.bringToFront();
-    expect(diagram.nodes[0].zIndex).toBe(2)
+    expect(diagram.nodes[0].zIndex).toBe(0)
     done();
   });
   
@@ -1043,10 +1043,10 @@ describe('Diagram-Layers - sendToBack Not functioning correctly for single node 
   {
     diagram.select([diagram.nodes[2]]);
     expect(diagram.nodes[1].zIndex).toBe(0)
-    expect(diagram.nodes[2].zIndex).toBe(1)
+    expect(diagram.nodes[2].zIndex).toBe(-1)
     diagram.layerZIndexTable
     diagram.bringToFront();
-    expect(diagram.nodes[2].zIndex).toBe(2)
+    expect(diagram.nodes[2].zIndex).toBe(1)
     expect(diagram.nodes[1].zIndex).toBe(0)
     done();
   });
@@ -1093,4 +1093,83 @@ describe('Diagram-Layers - sendToBack Not functioning correctly for single node 
     done();
   });
 
+});
+
+describe('872106: Layer object in diagram doesnot removed in clear method', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram_Layers' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+
+            {
+                id: 'node1', height: 75, width: 75, offsetX: 100, offsetY: 100, annotations: [{ content: 'Layer1' }]
+            },
+            {
+                id: 'node2', height: 75, width: 75, offsetX: 400, offsetY: 100, annotations: [{ content: 'Layer2' }]
+            },
+            {
+                id: 'node3', height: 75, width: 75, offsetX: 150, offsetY: 150, annotations: [{ content: 'Layer3' }]
+            },
+            {
+                id: 'node4', height: 75, width: 75, offsetX: 450, offsetY: 150, annotations: [{ content: 'Layer4' }]
+            },
+           
+        ];
+        let layers: LayerModel[] = [
+            {
+                id: 'Layer1',
+                visible: true,
+                objects: ['node1'],
+                lock: false,
+                zIndex: 0
+            },
+            {
+                id: 'Layer2',
+                visible: true,
+                objects: ['node2'],
+                lock: false,
+                zIndex: 1
+            },
+            {
+                id: 'Layer3',
+                visible: true,
+                objects: ['node3'],
+                lock: false,
+            },
+            {
+                id: 'Layer4',
+                visible: true,
+                objects: ['node4'],
+                lock: false,
+            }
+        ];
+        
+        diagram = new Diagram({
+            width: '1000px', height: '600px',
+            nodes: nodes,
+            layers: layers,
+        });
+        diagram.appendTo("#diagram_Layers");
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking layer length after clearing diagram', (done: Function) => {
+        let prevLayerCount = diagram.layers.length;
+        diagram.clear();
+        let currLayerCount = diagram.layers.length;
+        expect(prevLayerCount === 4 && currLayerCount === 1).toBe(true);
+        done();
+    });
+    it('Checking layer length after adding node dynamically', (done: Function) => {
+        let node:NodeModel = {id:'newNode',offsetX:100,offsetY:300,width:100,height:50,style:{fill:'green'}};
+        diagram.add(node);
+        let currLayerCount = diagram.layers.length;
+        let nodeCount = diagram.nodes.length;
+        expect(currLayerCount === 1 && nodeCount === 1).toBe(true);
+        done();
+    });
 });

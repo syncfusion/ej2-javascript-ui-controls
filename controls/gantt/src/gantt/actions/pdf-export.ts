@@ -167,6 +167,10 @@ export class PdfExport {
                 this.parent.perDayWidth = this.helper.beforeSinglePageExport['perDayWidth'];
                 this.parent.updatedConnectorLineCollection = this.helper.beforeSinglePageExport['updatedConnectorLineCollection'];
             }
+            if (this.gantt.changeCloneProjectDates) {
+                this.parent.cloneProjectStartDate.setHours(0);
+                this.gantt.changeCloneProjectDates = false;
+            }
             if (!isMultipleExport) {
                 if (!this.isBlob) {
                 // save the PDF

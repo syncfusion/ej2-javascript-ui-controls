@@ -137,6 +137,11 @@
           &.e-rtl {
             transform: rotate(180deg);
           }
+
+          .e-play-icon {
+            line-height: 1;
+            padding-left: 3px;
+          }
         }
 
         &.e-hover-arrows {

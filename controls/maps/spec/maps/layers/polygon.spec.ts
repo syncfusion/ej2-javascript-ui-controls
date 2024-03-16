@@ -154,10 +154,11 @@ describe('Map polygon properties tesing', () => {
             expect(spec.getAttribute('class')).toBe('highlightMapStyle');
             done();
         });
-        it('polygon shape border color', () => {
+        it('polygon shape border color', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_PolygonIndex_0');
                 expect(element.getAttribute('stroke')).toBe('blue');
+                done();
             };
             map.layers[0].polygonSettings.polygons[0].borderColor = "blue";         
             map.refresh();
@@ -170,10 +171,11 @@ describe('Map polygon properties tesing', () => {
             map.layers[0].polygonSettings.polygons[0].borderOpacity = 0.5;         
             map.refresh();
         });
-        it('polygon shape fill', () => {
+        it('polygon shape fill', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_PolygonIndex_0');
                 expect(element.getAttribute('fill')).toBe('red');
+                done();
             };
             map.layers[0].polygonSettings.polygons[0].fill = "red";         
             map.refresh();
@@ -457,10 +459,11 @@ describe('Map polygon properties tesing', () => {
             ]; 
             map.refresh();
         });
-        it('polygon shape border color', () => {
+        it('polygon shape border color', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_PolygonIndex_0');
                 expect(element.getAttribute('stroke')).toBe('blue');
+                done();
             };
             map.layers[0].polygonSettings.polygons[0].borderColor = "blue";         
             map.refresh();
@@ -473,10 +476,11 @@ describe('Map polygon properties tesing', () => {
             map.layers[0].polygonSettings.polygons[0].borderOpacity = 0.5;         
             map.refresh();
         });
-        it('polygon shape border width', () => {
+        it('polygon shape border width', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_PolygonIndex_0');
                 expect(Math.round(parseInt(element.getAttribute('stroke-width'))) == 4).toBe(true);
+                done();
             };
             map.layers[0].polygonSettings.polygons[0].borderWidth = 4;         
             map.refresh();

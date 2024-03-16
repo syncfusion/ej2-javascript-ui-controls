@@ -288,8 +288,8 @@ export class Zoom {
             } else {
                 if (mode !== 'X') {
                     argsData.currentZoomPosition += (1 - Math.abs((zoomRect.height + (zoomRect.y - bounds.y)) / (bounds.height)))
-                                                    * axis.zoomFactor;
-                    argsData.currentZoomFactor  *= (zoomRect.height / bounds.height);
+                        * axis.zoomFactor;
+                    argsData.currentZoomFactor *= (zoomRect.height / bounds.height);
                 }
             }
             if (parseFloat(argsData.currentZoomFactor.toFixed(3)) <= 0.001) {

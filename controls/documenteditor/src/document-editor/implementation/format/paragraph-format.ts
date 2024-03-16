@@ -338,8 +338,8 @@ export class WParagraphFormat {
                 this.ownerBase.containerWidget instanceof TableCellWidget;
         }
         let isPaste: boolean = !isNullOrUndefined(this.ownerBase) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)
-            && (this.ownerBase as ParagraphWidget).bodyWidget.page && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper) && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editor
-            && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editor.isPaste;
+            && (this.ownerBase as ParagraphWidget).bodyWidget.page && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper) && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editorModule
+            && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editorModule.isPaste;
         if (isInsideBodyWidget && !isPaste
             && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat)) {
             const propValue: Object = docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);

@@ -85,15 +85,22 @@ export class Lists {
         const preElementOLTest : boolean = this.testList(preElement);
         const nextElementOLTest : boolean = this.testList(nextElement);
         if (!preElementOLTest && !nextElementOLTest && preElemULStart !== '*' && nextElemULStart !== '*') {
+            const brElement: HTMLElement = createElement('br');
             if (startElementOLTest) {
                 range.startContainer.textContent = range.startContainer.textContent.slice(
                     range.startOffset, range.startContainer.textContent.length);
+                if (range.startContainer.nodeName === '#text' && range.startContainer.textContent.length === 0) {
+                    this.parent.domNode.insertAfter(brElement, range.startContainer as Element);
+                }
                 this.applyListsHandler({ subCommand: 'OL', callBack: e.callBack });
                 e.event.preventDefault();
             } else if (range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim() === '*' ||
             range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim() === '-') {
                 range.startContainer.textContent = range.startContainer.textContent.slice(
                     range.startOffset, range.startContainer.textContent.length);
+                if (range.startContainer.nodeName === '#text' && range.startContainer.textContent.length === 0) {
+                    this.parent.domNode.insertAfter(brElement, range.startContainer as Element);
+                }
                 this.applyListsHandler({ subCommand: 'UL', callBack: e.callBack });
                 e.event.preventDefault();
             }
@@ -121,7 +128,8 @@ export class Lists {
                 startNode.textContent = '';
             }
             const startNodeParent: HTMLElement = startNode.parentElement;
-            if (isNOU(startNodeParent.parentElement.closest('UL')) && isNOU(startNodeParent.parentElement.closest('OL'))) {
+            const parentOfCurrentOLUL: HTMLElement = startNodeParent.parentElement;
+            if (isNOU(parentOfCurrentOLUL.closest('UL')) && isNOU(parentOfCurrentOLUL.closest('OL'))) {
                 if (!isNOU(startNode.nextElementSibling)) {
                     const nearBlockNode: Element = this.parent.domNode.blockParentNode(startNode);
                     this.parent.nodeCutter.GetSpliceNode(range, (nearBlockNode as HTMLElement));
@@ -144,6 +152,15 @@ export class Lists {
                 } else {
                     detach(startNode);
                 }
+            }
+            // To handle the nested enter key press in the list for the first LI element
+            if (!isNOU(parentOfCurrentOLUL) && (!isNOU(parentOfCurrentOLUL.closest('UL')) || !isNOU(parentOfCurrentOLUL.closest('OL'))) &&
+                parentOfCurrentOLUL.nodeName === 'LI' && parentOfCurrentOLUL.style.listStyleType === 'none' &&
+                parentOfCurrentOLUL.textContent === '' && startNode.textContent === '' && startNode === startNodeParent.firstElementChild &&
+                isNOU(startNode.nextSibling)) {
+                detach(startNodeParent);
+                parentOfCurrentOLUL.style.removeProperty('list-style-type');
+                e.event.preventDefault();
             }
         }
     }
@@ -198,11 +215,11 @@ export class Lists {
     }
     private removeList(range: Range, e: IHtmlKeyboardEvent): void{
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
-        let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
+        let endNode: Element = (!isNOU(range.endContainer.parentElement.closest('li')) && range.endContainer.parentElement.closest('li').childElementCount > 1 && range.endContainer.nodeName === '#text') ? range.endContainer as Element :  this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
         startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
         endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
         startNode = startNode.nodeName !== 'LI' && !isNOU(startNode.closest('LI')) ? startNode.closest('LI') : startNode;
-        endNode = endNode.nodeName !== 'LI' && !isNOU(endNode.closest('LI')) ? endNode.closest('LI') : endNode;
+        endNode = endNode.nodeName !== 'LI' && endNode.nodeName !== '#text' && !isNOU(endNode.closest('LI')) ? endNode.closest('LI') : endNode;
         if (((range.commonAncestorContainer.nodeName === 'OL' || range.commonAncestorContainer.nodeName === 'UL' || range.commonAncestorContainer.nodeName === 'LI') &&
         isNOU(endNode.nextElementSibling) && endNode.textContent.length === range.endOffset &&
         isNOU(startNode.previousElementSibling) && range.startOffset === 0) ||
@@ -509,7 +526,7 @@ export class Lists {
         this.currentAction = e.subCommand;
         this.currentAction = e.subCommand = this.currentAction === 'NumberFormatList' ? 'OL' : this.currentAction === 'BulletFormatList' ? 'UL' : this.currentAction;
         this.domNode.setMarker(this.saveSelection);
-        let listsNodes: Node[] = this.domNode.blockNodes();
+        let listsNodes: Node[] = this.domNode.blockNodes(true);
         if (e.enterAction === 'BR') {
             this.setSelectionBRConfig();
             const allSelectedNode: Node[] = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument);
@@ -603,7 +620,7 @@ export class Lists {
 
     private applyLists(elements: HTMLElement[], type: string, selector?: string, item?: IAdvanceListItem, e?: IHtmlSubCommands): void {
         let isReverse: boolean = true;
-        if (this.isRevert(elements, type, item) && isNOU(item)) {
+        if (this.isRevert(elements, type, item) && isNOU(item) || (!isNOU(item) && item.listStyle === 'none')) {
             this.revertList(elements, e);
             this.removeEmptyListElements();
         } else {
@@ -623,6 +640,17 @@ export class Lists {
                     const listEle: Element = document.createElement(type);
                     listEle.innerHTML = '<li><br/></li>';
                     elements[i as number].appendChild(listEle);
+                } else if ('LI' !== elements[i as number].tagName && isNOU(item) &&
+                    elements[i as number].nodeName === 'BLOCKQUOTE') {
+                    isReverse = false;
+                    const elemAtt: string = this.domNode.attributes(elements[i as number]);
+                    const openTag: string = '<' + type + '>';
+                    const closeTag: string = '</' + type + '>';
+                    const newTag: string = 'li' + elemAtt;
+                    const replaceHTML: string = elements[i as number].innerHTML;
+                    const innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
+                    const collectionString: string = openTag + innerHTML + closeTag;
+                    elements[i as number].innerHTML = collectionString;
                 } else if ('LI' !== elements[i as number].tagName && isNOU(item)) {
                     isReverse = false;
                     const elemAtt: string = elements[i as number].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i as number]);
@@ -793,81 +821,83 @@ export class Lists {
         const viewNode: Element[] = [];
         for (let i: number = 0; i < elements.length; i++) {
             const element: Element = elements[i as number];
-            if (this.domNode.contents(element)[0].nodeType === 3 && this.domNode.contents(element)[0].textContent.trim().length === 0) {
-                detach(this.domNode.contents(element)[0]);
-            }
+            if ((isNullOrUndefined((e as IHtmlSubCommands).item)) || ((element.nodeName === 'LI' && (e as IHtmlSubCommands).item.listStyle === 'none'))) {
+                if (this.domNode.contents(element)[0].nodeType === 3 && this.domNode.contents(element)[0].textContent.trim().length === 0) {
+                    detach(this.domNode.contents(element)[0]);
+                }
 
-            let parentNode: Element = elements[i as number].parentNode as Element;
-            let className: string = element.getAttribute('class');
-            if (temp.length === 0) {
-                const siblingList: Element[] = <NodeListOf<Element> & Element[]>(elements[i as number] as Element).querySelectorAll('ul, ol');
-                const firstNode: Element = siblingList[0];
-                if (firstNode) {
-                    const child: NodeListOf<HTMLLIElement> = firstNode
-                        .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
-                    if (child) {
-                        const nestedElement: Element = createElement(firstNode.tagName);
-                        append([nestedElement], firstNode.parentNode as Element);
-                        const nestedElementLI: Element = createElement('li', { styles: 'list-style-type: none;' });
-                        append([nestedElementLI], nestedElement);
-                        append([firstNode], nestedElementLI);
+                let parentNode: Element = elements[i as number].parentNode as Element;
+                let className: string = element.getAttribute('class');
+                if (temp.length === 0) {
+                    const siblingList: Element[] = <NodeListOf<Element> & Element[]>(elements[i as number] as Element).querySelectorAll('ul, ol');
+                    const firstNode: Element = siblingList[0];
+                    if (firstNode) {
+                        const child: NodeListOf<HTMLLIElement> = firstNode
+                            .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
+                        if (child) {
+                            const nestedElement: Element = createElement(firstNode.tagName);
+                            append([nestedElement], firstNode.parentNode as Element);
+                            const nestedElementLI: Element = createElement('li', { styles: 'list-style-type: none;' });
+                            append([nestedElementLI], nestedElement);
+                            append([firstNode], nestedElementLI);
+                        }
                     }
                 }
-            }
-            if (element.parentNode.insertBefore(this.closeTag(parentNode.tagName) as Element, element),
-            'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
-            'UL' === (parentNode.parentNode as Element).tagName) {
-                element.parentNode.insertBefore(this.closeTag('LI') as Element, element);
-            } else {
-                let classAttr: string = '';
-                if (className) {
-                    // eslint-disable-next-line
-                    classAttr += ' class="' + className + '"';
-                }
-                if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
-                    const wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
-                        ' class="' + className + ' e-rte-wrap-inner"';
-                    let parentElement = parentNode as HTMLElement;
-                    if(!isNOU(parentElement.style.listStyleType)){
-                        (parentNode as HTMLElement).style.removeProperty("list-style-type");
-                    }
-                    if (!isNOU(parentElement.style.listStyleImage)) {
-                        (parentNode as HTMLElement).style.removeProperty("list-style-image");
-                    }
-                    if (parentElement.style.length === 0) {
-                        parentNode.removeAttribute("style");
-                    }
-                    const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass +
-                        this.domNode.attributes(parentElement) + '></' + CONSTANT.DEFAULT_TAG + '>';
-                    if (e.enterAction !== 'BR') {
-                        this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
-                    }
-                } else if (this.domNode.contents(element)[0].nodeType === 3) {
-                    const replace: string = this.domNode.createTagString(
-                        CONSTANT.DEFAULT_TAG, parentNode, this.parent.domNode.encode(this.domNode.contents(element)[0].textContent));
-                    this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
-                } else if ((this.domNode.contents(element)[0] as HTMLElement).classList.contains(markerClassName.startSelection) ||
-                    (this.domNode.contents(element)[0] as HTMLElement).classList.contains(markerClassName.endSelection)) {
-                    const replace: string = this.domNode.createTagString(
-                        CONSTANT.DEFAULT_TAG, parentNode, (this.domNode.contents(element)[0] as HTMLElement).outerHTML);
-                    this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
+                if (element.parentNode.insertBefore(this.closeTag(parentNode.tagName) as Element, element),
+                    'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
+                    'UL' === (parentNode.parentNode as Element).tagName) {
+                    element.parentNode.insertBefore(this.closeTag('LI') as Element, element);
                 } else {
-                    const childNode: Element = element.firstChild as Element;
-                    className = childNode.getAttribute('class');
-                    attributes(childNode, this.domNode.rawAttributes(parentNode));
-                    if (className && childNode.getAttribute('class')) {
-                        attributes(childNode, { 'class': className + ' ' + childNode.getAttribute('class') });
+                    let classAttr: string = '';
+                    if (className) {
+                        // eslint-disable-next-line
+                        classAttr += ' class="' + className + '"';
                     }
+                    if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
+                        const wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
+                            ' class="' + className + ' e-rte-wrap-inner"';
+                        let parentElement = parentNode as HTMLElement;
+                        if (!isNOU(parentElement.style.listStyleType)) {
+                            (parentNode as HTMLElement).style.removeProperty("list-style-type");
+                        }
+                        if (!isNOU(parentElement.style.listStyleImage)) {
+                            (parentNode as HTMLElement).style.removeProperty("list-style-image");
+                        }
+                        if (parentElement.style.length === 0) {
+                            parentNode.removeAttribute("style");
+                        }
+                        const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass +
+                            this.domNode.attributes(parentElement) + '></' + CONSTANT.DEFAULT_TAG + '>';
+                        if (e.enterAction !== 'BR') {
+                            this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
+                        }
+                    } else if (this.domNode.contents(element)[0].nodeType === 3) {
+                        const replace: string = this.domNode.createTagString(
+                            CONSTANT.DEFAULT_TAG, parentNode, this.parent.domNode.encode(this.domNode.contents(element)[0].textContent));
+                        this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
+                    } else if ((this.domNode.contents(element)[0] as HTMLElement).classList.contains(markerClassName.startSelection) ||
+                        (this.domNode.contents(element)[0] as HTMLElement).classList.contains(markerClassName.endSelection)) {
+                        const replace: string = this.domNode.createTagString(
+                            CONSTANT.DEFAULT_TAG, parentNode, (this.domNode.contents(element)[0] as HTMLElement).outerHTML);
+                        this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
+                    } else {
+                        const childNode: Element = element.firstChild as Element;
+                        className = childNode.getAttribute('class');
+                        attributes(childNode, this.domNode.rawAttributes(parentNode));
+                        if (className && childNode.getAttribute('class')) {
+                            attributes(childNode, { 'class': className + ' ' + childNode.getAttribute('class') });
+                        }
+                    }
+                    append([this.openTag('LI') as Element], element);
+                    prepend([this.closeTag('LI') as Element], element);
                 }
-                append([this.openTag('LI') as Element], element);
-                prepend([this.closeTag('LI') as Element], element);
-            }
-            this.domNode.insertAfter(this.openTag(parentNode.tagName), element);
-            if ((parentNode.parentNode as Element).tagName === 'LI') {
-                parentNode = parentNode.parentNode.parentNode as Element;
-            }
-            if (viewNode.indexOf(parentNode) < 0) {
-                viewNode.push(parentNode);
+                this.domNode.insertAfter(this.openTag(parentNode.tagName), element);
+                if ((parentNode.parentNode as Element).tagName === 'LI') {
+                    parentNode = parentNode.parentNode.parentNode as Element;
+                }
+                if (viewNode.indexOf(parentNode) < 0) {
+                    viewNode.push(parentNode);
+                }
             }
         }
         for (let i: number = 0; i < viewNode.length; i++) {

@@ -131,7 +131,7 @@ describe('chart control', () => {
         it('Showing default data label', (done: Function) => {
             loaded = (args: Object): void => {
                 let element = document.getElementById('container_Series_0_Point_3_Text_0');
-                expect((+element.textContent) == 26).toBe(true);
+                expect((+element.textContent) == 2).toBe(true);
                 expect(document.getElementById('containerShapeGroup0').childNodes.length == 0).toBe(true);
                 done();
             };
@@ -236,7 +236,7 @@ describe('chart control', () => {
             loaded = (args: Object): void => {
                 let element1: HTMLElement = document.getElementById('container_Series_1_Point_0_Text_0');
                 let element2: HTMLElement = document.getElementById('container_Series_1_Point_1_Text_0');
-                expect(parseFloat(element1.getAttribute('y')) >
+                expect(parseFloat(element1.getAttribute('y')) >=
                     parseFloat(element2.getAttribute('y'))).toBe(true);
                 done();
             }

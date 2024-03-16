@@ -338,7 +338,7 @@ export class ImageResizer {
             top = elementBox.y * this.documentHelper.zoomFactor;
         }
         this.setImageResizerPosition(left, top, width, height, this);
-        if (this.owner.selection.isInShape) {
+        if (this.owner.selectionModule.isInShape) {
             this.resizeContainerDiv.style.borderStyle = 'dashed';
         } else {
             this.resizeContainerDiv.style.borderStyle = 'solid';
@@ -1094,10 +1094,10 @@ export class ImageResizer {
         this.currentImageElementBox.width = parseFloat(this.imageResizerDiv.style.width) / this.documentHelper.zoomFactor;
         this.currentImageElementBox.height = parseFloat(this.imageResizerDiv.style.height) / this.documentHelper.zoomFactor;
         this.owner.isShiftingEnabled = true;
-        this.owner.editorModule.setOffsetValue(this.owner.selection);
+        this.owner.editorModule.setOffsetValue(this.owner.selectionModule);
         this.documentHelper.layout.reLayoutParagraph(this.currentImageElementBox.line.paragraph, 0, 0);
         this.updateHistoryForImageResizer();
-        this.owner.editorModule.reLayout(this.owner.selection, true);
+        this.owner.editorModule.reLayout(this.owner.selectionModule, true);
         this.viewer.updateScrollBars();
     }
     /**
@@ -1131,8 +1131,8 @@ export class ImageResizer {
             } else {
                 //Records the image size modifications
                 this.baseHistoryInfo.insertedText = CONTROL_CHARACTERS.Image;
-                this.baseHistoryInfo.insertedData = { width: HelperMethods.convertPixelToPoint(this.currentImageElementBox.width), height: HelperMethods.convertPixelToPoint(this.currentImageElementBox.height)};
-                this.owner.editorHistory.recordChanges(this.baseHistoryInfo);
+                this.baseHistoryInfo.insertedData = { width: HelperMethods.convertPixelToPoint(this.currentImageElementBox.width), height: HelperMethods.convertPixelToPoint(this.currentImageElementBox.height), alternativeText: this.currentImageElementBox.alternateText};
+                this.owner.editorHistoryModule.recordChanges(this.baseHistoryInfo);
             }
             //Fires the content changed event for the image size modifications
             this.baseHistoryInfo = undefined;

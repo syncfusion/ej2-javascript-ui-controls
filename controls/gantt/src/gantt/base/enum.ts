@@ -48,6 +48,8 @@ export type GridLine =
  * * Indent :- To indent a selected record.
  * * Outdent :- To outdent a selected record.
  * * CriticalPath :- To enable critical path.
+ * * Undo :- To enable undo action.
+ * * Redo :- To enable redo action.
  * ```
  */
 export type ToolbarItem =
@@ -69,7 +71,52 @@ export type ToolbarItem =
     'PdfExport' |
     'Indent' |
     'Outdent' |
-    'CriticalPath';
+    'CriticalPath'|
+    'Undo'|
+    'Redo';
+
+/**
+ * Defines the Undo Redo actions. They are
+ * ```props
+ * * Sorting :- Define the sorting action in undo/redo.
+ * * ColumnReorder :- Define the columnReorder action in undo/redo.
+ * * ColumnResize :- Define the columnResize action in undo/redo.
+ * * Delete :- Define the Delete action in undo/redo.
+ * * Edit :- Define the Edit action in undo/redo.
+ * * Add :- Define the Add action in undo/redo.
+ * * Search :- Define the search action in undo/redo.
+ * * Filtering :- Define the Filtering action in undo/redo.
+ * * ZoomIn :- Define the ZoomIn action in undo/redo.
+ * * ZoomOut :- Define the ZoomOut action in undo/redo.
+ * * ZoomToFit :- Define the ZoomToFit action in undo/redo.
+ * * ColumnState :- Define the ColumnState action in undo/redo.
+ * * PreviousTimeSpan :- Define the PreviousTimeSpan action in undo/redo.
+ * * NextTimeSpan :- Define the NextTimeSpan action in undo/redo.
+ * * Indent :- Define the Indent action in undo/redo.
+ * * Outdent :- Define the Outdent action in undo/redo.
+ * * RowDragAndDrop :- Define the RowDragAndDrop action in undo/redo.
+ * * TaskbarDragAndDrop :- Define the TaskbarDragAndDrop action in undo/redo.
+ * ```
+ */
+export type GanttAction =
+'Sorting' |
+'ColumnReorder' |
+'ColumnResize' |
+'Delete' |
+'Edit' |
+'Add' |
+'Search' |
+'Filtering' |
+'ZoomIn' |
+'ZoomOut' |
+'ZoomToFit' |
+'ColumnState' |
+'PreviousTimeSpan' |
+'NextTimeSpan' |
+'Indent' |
+'Outdent' |
+'RowDragAndDrop' |
+'TaskbarDragAndDrop';
 
 /**
  * Defines the schedule header mode. They are

@@ -24,7 +24,7 @@ export const findToolDlg: string = 'findToolDlg';
 /** @hidden */
 export const exportDialog: string = 'exportDialog';
 /** @hidden */
-export const getFilteredCollection: string = 'getFilteredCollection';
+export const setFilteredCollection: string = 'setFilteredCollection';
 /** @hidden */
 export const saveCompleted: string = 'saveCompleted';
 /** @hidden */
@@ -53,6 +53,8 @@ export const workbookEditOperation: string = 'workbookEditOperation';
 export const checkDateFormat: string = 'checkDateFormat';
 /** @hidden */
 export const checkNumberFormat: string = 'checkNumberFormat';
+/** @hidden */
+export const parseDecimalNumber: string = 'parseDecimalNumber';
 /** @hidden */
 export const getFormattedBarText: string = 'getFormattedBarText';
 /** @hidden */
@@ -218,8 +220,6 @@ export const saveError: string = 'saveError';
 /** @hidden */
 export const validationHighlight: string = 'validationHighlight';
 /** @hidden */
-export const updateFilter: string = 'updateFilter';
-/** @hidden */
 export const beforeInsert: string = 'beforeInsert';
 /** @hidden */
 export const beforeDelete: string = 'beforeDelete';
@@ -259,3 +259,5 @@ export const unMerge: string = 'unMerge';
 export const addFormatToCustomFormatDlg: string = 'addFormatToCustomFormatDlg';
 /** @hidden */
 export const checkFormulaRef: string = 'checkFormulaRef';
+/** @hidden */
+export const parseFormulaArgument: string = 'parseFormulaArgument';

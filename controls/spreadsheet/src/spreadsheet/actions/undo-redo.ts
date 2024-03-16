@@ -3,7 +3,7 @@ import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRen
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction, isImported } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo, getUpdateUsingRaf } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
-import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation, ColumnModel } from '../../workbook/index';
+import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, workbookEditOperation, ColumnModel, SortCollectionModel } from '../../workbook/index';
 import { getSheet, Workbook, checkUniqueRange, reApplyFormula, getCellAddress, getSwapRange, setColumn } from '../../workbook/index';
 import { getIndexesFromAddress, getSheetNameFromAddress, updateSortedDataOnCell, getSheetIndexFromAddress } from '../../workbook/index';
 import { sortComplete, ConditionalFormatModel, ApplyCFArgs, getColumn, ImageModel } from '../../workbook/index';
@@ -284,14 +284,18 @@ export class UndoRedo {
                     (args.eventArgs.beforeActionData as BeforeActionDataInternal).sortedCellDetails, isUndo: true });
             this.parent.notify(sortComplete, { range: args.eventArgs.range });
             if (this.parent.sortCollection && args.eventArgs.previousSort) {
-                for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
+                for (let i: number = this.parent.sortCollection.length - 1; i >= 0; i--) {
                     if (this.parent.sortCollection[i as number].sheetIndex === sheetIndex) {
                         updateSortIcon(i, false);
                         this.parent.sortCollection.splice(i, 1);
-                        if (args.eventArgs.previousSort.order) {
-                            this.parent.sortCollection.splice(i, 0, args.eventArgs.previousSort);
-                            updateSortIcon(i, true);
-                        } else if (!this.parent.sortCollection.length) {
+                        const prevSort: SortCollectionModel | SortCollectionModel[] = args.eventArgs.previousSort;
+                        if (Array.isArray(prevSort)) {
+                            for (let j: number = 0; j < prevSort.length; j++) {
+                                this.parent.sortCollection.splice(j, 0, prevSort[j as number]);
+                                updateSortIcon(j, true);
+                            }
+                        }
+                        if (!this.parent.sortCollection.length) {
                             this.parent.sortCollection = undefined;
                         }
                         break;
@@ -301,17 +305,16 @@ export class UndoRedo {
         } else {
             updateAction(args, this.parent, true);
             if (args.eventArgs.previousSort) {
-                let idx: number;
+                let idx: number = 0;
                 if (this.parent.sortCollection) {
-                    for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
+                    for (let i: number = this.parent.sortCollection.length - 1; i >= 0; i--) {
                         if (this.parent.sortCollection[i as number].sheetIndex === sheetIndex) {
                             updateSortIcon(i, false);
                             idx = i; this.parent.sortCollection.splice(i, 1);
-                            break;
                         }
                     }
                 } else {
-                    this.parent.sortCollection = []; idx = 0;
+                    this.parent.sortCollection = [];
                 }
                 this.parent.sortCollection.splice(
                     idx, 0, { sortRange: args.eventArgs.range.split('!')[1], sheetIndex: sheetIndex, columnIndex:

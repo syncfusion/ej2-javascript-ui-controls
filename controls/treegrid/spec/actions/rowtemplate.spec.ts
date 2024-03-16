@@ -53,57 +53,40 @@ let template : string = `<tr>
             </td>
          </tr>`;
 
-         let altrowtemplate : string = `<tr>
-         <div>
-             <td class="photo">
-                 \${FullName}
-                 </td>
-             <td class="photo">
-                 <img src="" alt="\${EmployeeID}" />
-             </td></div>
-             <td class="details">
-                 <table class="CardTable" cellpadding="3" cellspacing="2">
-                     <colgroup>
-                         <col width="50%">
-                         <col width="50%">
-                     </colgroup>
-                     <tbody>
-                         <tr>
-                             <td class="CardHeader">FullName </td>
-                             <td>\${FullName} </td>
-                         </tr>
-                         <tr>
-                             <td class="CardHeader">Designation</td>
-                             <td>\${Designation} </td>
-                         </tr>
-                         <tr>
-                             <td class="CardHeader">Address
-                             </td>
-     
-                             <td>\${Address}
-                             </td>
-                         </tr>
-                         <tr>
-                             <td class="CardHeader">Country
-                             </td>
-                             <td>\${Country}
-                             </td>
-                         </tr>
-                     </tbody>
-                 </table>
-             </td>
-          </tr>`;
+let rowtemplate: string = `
+<tr>
+        <td class="border" style='padding-left:18px;' >
+            <div>\${EmpID}</div>
+        </td>
+        <td class="border" style='padding: 10px 0px 0px 20px;'>
+            <div style="font-size:14px;">
+            \${Name}
+                <p style="font-size:9px;">\${Designation}</p>
+            </div>
+        </td>
+        <td class="border">
+            <div>
+                <div style="position:relative;display:inline-block;">
+                <img src="//ej2.syncfusion.com/demos/src/tree-grid/images/\${FullName}.png" alt="\${FullName}" />
+                </div>
+                <div style="display:inline-block;">
+                    <div style="padding:5px;">\${Address}</div>
+                    <div style="padding:5px;">\${Country}</div>
+                    <div style="padding:5px;font-size:12px;">\${Contact}</div>
+                </div>
+            </div>
+        </td>
+        <td class="border" style='padding-left: 20px;'>
+            <div>\${(DOB)}</div>
+        </td>
+
+    </tr>
+`;
 
 
 describe('Render rowtemplate', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
-    let actionComplete: () => void;
-    let dataBound: () => void;
-    let actionFailure: () => void;
     beforeAll((done: Function) => {
-        
       gridObj = createGrid(
         {
             dataSource: employeeData,
@@ -130,11 +113,11 @@ describe('Render rowtemplate', () => {
     it('Render the row template', () => {
         expect(gridObj.getRows()[0].querySelectorAll('td')[2].classList.contains("details")).toBe(true);
      });
-    //  it('onpropertychange set null value', function (done: Function) {
-    //     gridObj.rowTemplate = null;
-    //     expect((gridObj.getRows()[0].firstChild as HTMLElement).innerText == "EMP001").toBe(true);
-    //     done();
-    // });
+     it('onpropertychange set null value', function (done: Function) {
+        gridObj.rowTemplate = null;
+        expect((gridObj.getRows()[0].firstChild as HTMLElement).innerText == "EMP001").toBe(true);
+        done();
+    });
         afterAll(() => {
         destroy(gridObj);
       });
@@ -142,8 +125,6 @@ describe('Render rowtemplate', () => {
 
 describe('Sorting in row template', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
         
@@ -185,9 +166,6 @@ describe('Sorting in row template', () => {
 
 describe('Paging in row template', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
-    let actionComplete: () => void;
     beforeAll((done: Function) => {
         
       gridObj = createGrid(
@@ -220,8 +198,6 @@ describe('Paging in row template', () => {
 
 describe('Searching in rowtemplate', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
         
@@ -260,8 +236,6 @@ describe('Searching in rowtemplate', () => {
 
 describe('Filter in rowtemplate', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
         
@@ -299,8 +273,6 @@ describe('Filter in rowtemplate', () => {
 
 describe('Contextmenu in row template', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
         
@@ -350,9 +322,6 @@ describe('Contextmenu in row template', () => {
 
 describe('Check the row databound in row template', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
-    let actionComplete: () => void;
     let rowDataBound: () => void;
     beforeAll((done: Function) => {
         
@@ -389,4 +358,36 @@ describe('Check the row databound in row template', () => {
         afterAll(() => {
         destroy(gridObj);
       });
+});
+
+describe('Bug 870007: Script Error thrown on performing ExpandAll and CollapseAll action in RowTemplate', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData,
+                rowTemplate: rowtemplate,
+                childMapping: 'Children',
+                treeColumnIndex: 0,
+                columns: [
+                    {field: 'EmployeeID', width: 150, textAlign: 'Center'},
+                    { headerText: 'Employee Image', width: 150, textAlign: 'Center', field: 'OrderID' },
+                    { headerText: 'Employee Details', width: 300, field: 'EmployeeID'}
+                ],
+                height: 315
+            },
+            done
+        );
+    });
+    it('Collapse All', () => {
+        gridObj.collapseAll();
+        expect(gridObj.getRows()[0].querySelector('.e-treegridcollapse').classList[1]).toEqual('e-treegridcollapse');
+    });
+    it('Expand All', () =>{
+        gridObj.expandAll();
+        expect(gridObj.getRows()[0].querySelector('.e-treegridexpand').classList[1]).toEqual('e-treegridexpand');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
 });

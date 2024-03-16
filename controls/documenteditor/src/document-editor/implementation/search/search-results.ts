@@ -60,12 +60,12 @@ export class SearchResults {
     private getOffset(innerList: TextSearchResult): TextSearchResultInfo {
         const start: TextPosition = innerList.start;
         const end: TextPosition = innerList.end;
-        let blockInfo: ParagraphInfo = this.searchModule.documentHelper.owner.selection.getParagraphInfo(start);
+        let blockInfo: ParagraphInfo = this.searchModule.documentHelper.owner.selectionModule.getParagraphInfo(start);
         /* eslint-disable-next-line max-len */
-        const startIndex: string = this.searchModule.documentHelper.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
-        blockInfo = this.searchModule.documentHelper.owner.selection.getParagraphInfo(end);
+        const startIndex: string = this.searchModule.documentHelper.owner.selectionModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        blockInfo = this.searchModule.documentHelper.owner.selectionModule.getParagraphInfo(end);
         /* eslint-disable-next-line max-len */
-        const endIndex: string = this.searchModule.documentHelper.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        const endIndex: string = this.searchModule.documentHelper.owner.selectionModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         return { 'startOffset': startIndex, 'endOffset': endIndex };
     }
 

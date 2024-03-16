@@ -158,7 +158,7 @@ export class CheckBoxSelection {
                 }
                 EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
-            if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1 &&
+            if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1 && !this.parent.enableVirtualization &&
                 !(this.parent.isDynamicDataChange)) || (this.parent.isDynamicDataChange &&
                 this.parent.listData && this.parent.listData.length <= 1)) {
                 this.checkAllParent.style.display = 'none';
@@ -526,7 +526,13 @@ export class CheckBoxSelection {
                     });
                 remLi = this.parent.ulElement.querySelectorAll('li.e-active');
                 addClass(remLi, 'e-reorder-hide');
-                prepend([ulEle], this.parent.list);
+                if(this.parent.enableVirtualization) {
+                    var virtualUlElement = this.parent.list.querySelector('.e-virtual-ddl-content');
+                    prepend([ulEle], virtualUlElement);
+                }
+                else{
+                    prepend([ulEle], this.parent.list);
+                }
             }
             this.parent.focusAtFirstListItem();
         }

@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper, animationMode } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { getElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue, extend, merge, attributes } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+﻿﻿﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper, animationMode } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { getElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue, extend, merge, attributes } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import {ExpandOnSettings,SortOrder,FailureEventArgs,DataBoundEventArgs,DataSourceChangedEventArgs,DrawNodeEventArgs,NodeKeyPressEventArgs,NodeCheckEventArgs,NodeClickEventArgs,NodeExpandEventArgs,DragAndDropEventArgs,NodeEditEventArgs,NodeSelectEventArgs} from "./treeview";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -19,7 +19,6 @@ export interface FieldsSettingsModel {
      * @aspDatasourceNullIgnore
      * @isGenericType true
      */
-    /* eslint-disable */
     dataSource?: DataManager | { [key: string]: Object }[];
 
     /**
@@ -286,8 +285,8 @@ export interface TreeViewModel extends ComponentModel{
     dragArea?: HTMLElement | string;
 
     /**
-     * Specifies whether to allow rendering of untrusted HTML values in the TreeView component.
-     * While enable this property, it sanitize suspected untrusted strings and script, and update in the TreeView component.
+     * Specifies whether to display or remove the untrusted HTML values in the TreeView component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      * ```html
      * <div id="tree"></div>
      * ```
@@ -298,7 +297,7 @@ export interface TreeViewModel extends ComponentModel{
      * });
      * treeObj.appendTo('#tree');
      * ```
-     * @default false
+     * @default true
      */
     enableHtmlSanitizer?: boolean;
 
@@ -470,7 +469,6 @@ export interface TreeViewModel extends ComponentModel{
      *
      * @event
      */
-    /* eslint-disable */
     created?: EmitType<Object>;
 
     /**
@@ -500,7 +498,6 @@ export interface TreeViewModel extends ComponentModel{
      *
      * @event
      */
-    /* eslint-disable */
     destroyed?: EmitType<Object>;
 
     /**

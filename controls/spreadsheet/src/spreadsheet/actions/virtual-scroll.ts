@@ -736,6 +736,9 @@ export class VirtualScroll {
 
     private destroy(): void {
         this.removeEventListener();
+        if (this.rowHeader) { this.rowHeader.remove(); }
+        if (this.colHeader) { this.colHeader.remove(); }
+        if (this.content) { this.content.remove(); }
         this.rowHeader = null; this.colHeader = null; this.content = null; this.parent = null;
         this.scroll.length = 0; this.translateX = null; this.translateY = null;
     }

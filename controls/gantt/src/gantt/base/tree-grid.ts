@@ -92,6 +92,7 @@ export class GanttTreeGrid {
 
     private composeProperties(): void {
 	this.parent.treeGrid.hasChildMapping = this.parent.taskFields.hasChildMapping;
+        this.parent.treeGrid.query = this.parent.query;
         this.parent.treeGrid.loadChildOnDemand = this.parent.loadChildOnDemand;
         this.parent.treeGrid['isFromGantt'] = true;
         this.parent.treeGrid.parentIdMapping = this.parent.taskFields.parentID;
@@ -284,7 +285,7 @@ export class GanttTreeGrid {
                 collapsedArgs = this.createExpandCollapseArgs(args, null);
                 this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
             }
-            if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && !this.parent.ganttChartModule.isCollapseAll && collapsedArgs['gridRow']) {
+            if (!this.parent.allowTaskbarOverlap && !this.parent.ganttChartModule.isCollapseAll && collapsedArgs['gridRow']) {
                collapsedArgs['gridRow'].style.height = collapsedArgs['chartRow'].style.height;
 	       this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                             this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
@@ -313,7 +314,7 @@ export class GanttTreeGrid {
                 expandedArgs = this.createExpandCollapseArgs(args, null);
                 this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
             }
-            if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && !this.parent.ganttChartModule.isExpandAll && args['row']) {
+            if (!this.parent.allowTaskbarOverlap && !this.parent.ganttChartModule.isExpandAll && args['row']) {
                 args['row'].style.height = this.parent.rowHeight + 'px';
                 this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                                             this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
@@ -328,6 +329,9 @@ export class GanttTreeGrid {
         this.parent.trigger('expanded', args);
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
+        if (this.parent.undoRedoModule && (args.requestType == 'filtering' || args.requestType == 'searching' || args.requestType == 'sorting'  || args.requestType == 'filterAfterOpen')) {
+            this.parent.undoRedoModule['canUpdateIndex'] = false;
+        }
         this.parent.notify('actionBegin', args);
 	let flag:boolean = getValue('doubleClickTarget', this.parent.treeGrid.editModule);
         if(flag !== null){
@@ -414,10 +418,61 @@ export class GanttTreeGrid {
     }
     private treeActionComplete(args: object): void {
         const updatedArgs: object = extend({}, args);
+        if(getValue('requestType', args) === 'reorder') {
+            if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isFromUndoRedo'] && this.parent['isUndoRedoItemPresent']('ColumnReorder')) {
+                if (this.parent.undoRedoModule['redoEnabled']) {
+                    this.parent.undoRedoModule['disableRedo']();
+                }
+                this.parent.undoRedoModule['createUndoCollection']();
+                let record: Object = {};
+                record['action'] = 'ColumnReorder';
+                record['fromIndex'] = extend([],[],[args['fromIndex']],true)[0];
+                record['toIndex'] = extend([],[], [args['toIndex']],true)[0];
+                record['toColumn'] = extend([],[],[this.parent.treeGrid.columns[args['toIndex']]['field']],true)[0];
+                record['fromColumn'] = extend([],[],[this.parent.treeGrid.columns[args['fromIndex']]['field']],true)[0];
+                (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = record;
+            }
+        }
+        if (getValue('requestType', args) === 'columnstate') {
+            if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isFromUndoRedo'] && this.parent['isUndoRedoItemPresent']('ColumnState')) {
+                if (this.parent.undoRedoModule['redoEnabled']) {
+                    this.parent.undoRedoModule['disableRedo']();
+                }
+                this.parent.undoRedoModule['createUndoCollection']();
+                let record: Object = {};
+                record['action'] = 'ColumnState';
+                record['showhideColumns'] = extend([],[],args['columns'],true);
+                (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = record;
+            }
+        }
         if (getValue('requestType', args) === 'sorting') {
+            if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent']('Sorting')) {
+                if (!this.parent.undoRedoModule['isFromUndoRedo']) {
+                    if (this.parent.undoRedoModule['redoEnabled']) {
+                        this.parent.undoRedoModule['disableRedo']();
+                    }
+                    this.parent.undoRedoModule['createUndoCollection']();
+                    let record: Object = {};
+                    record['action'] = 'Sorting';
+                    record['sortColumns'] = [];
+                    record['sortColumns'] = this.parent.undoRedoModule['previousSortedColumns'];
+                    (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = record;
+                }
+                this.parent.undoRedoModule['previousSortedColumns'] = this.parent.treeGrid.sortSettings.columns;
+            }
             this.parent.notify('updateModel', {});
             deleteObject(updatedArgs, 'isFrozen');
         } else if (getValue('requestType', args) === 'filtering') {
+            if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isFromUndoRedo'] && this.parent['isUndoRedoItemPresent']('Filtering')) {
+                if (this.parent.undoRedoModule['redoEnabled']) {
+                    this.parent.undoRedoModule['disableRedo']();
+                }
+                this.parent.undoRedoModule['createUndoCollection']();
+                let record: Object = {};
+                record['action'] = 'Filtering';
+                record['filteredColumns'] = extend([],[],args['columns'],true);
+                (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = record;
+            }
             this.parent.notify('updateModel', {});
             const focussedElement: HTMLElement = this.parent.element.querySelector('.e-treegrid');
             focussedElement.focus();
@@ -441,6 +496,19 @@ export class GanttTreeGrid {
             this.parent.notify('actionComplete', args);
         }
         if (getValue('requestType', args) === 'searching') {
+            if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent']('Search')) {
+                if (!this.parent.undoRedoModule['isFromUndoRedo']) {
+                    if (this.parent.undoRedoModule['redoEnabled']) {
+                        this.parent.undoRedoModule['disableRedo']();
+                    }
+                    this.parent.undoRedoModule['createUndoCollection']();
+                    let record: Object = {};
+                    record['action'] = 'Search';
+                    record['searchString'] = this.parent.undoRedoModule['searchString'];
+                    (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = record;
+                }
+                this.parent.undoRedoModule['searchString'] = this.parent.treeGrid.searchSettings.key;
+            }
             this.parent.notify('actionComplete', args);
         }
         if (!isNullOrUndefined(getValue('batchChanges', args)) && !isNullOrUndefined(this.parent.toolbarModule)) {
@@ -469,8 +537,11 @@ export class GanttTreeGrid {
             }
             this.parent.addDeleteRecord = false;
         }
+        if(this.parent.undoRedoModule) {
+        this.parent.undoRedoModule['isFromUndoRedo'] = false;
+        }
         this.parent.trigger('actionComplete', updatedArgs);
-        if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && this.parent.showOverAllocation) {
+        if (!this.parent.allowTaskbarOverlap && this.parent.showOverAllocation) {
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
                 if (this.parent.currentViewData[i as number].hasChildRecords && !this.parent.currentViewData[i as number].expanded) {
                     this.parent.chartRowsModule.updateDragDropRecords(this.parent.currentViewData[i as number]);
@@ -553,7 +624,7 @@ export class GanttTreeGrid {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         const tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone','segments'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
             if (typeof ganttObj.columns[i as number] === 'string') {

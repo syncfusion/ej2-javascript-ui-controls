@@ -1,9 +1,7 @@
-import { SpreadsheetModel, Spreadsheet, BasicModule, DialogBeforeOpenEventArgs, CellSaveEventArgs } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet, DialogBeforeOpenEventArgs, CellSaveEventArgs } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { CellModel, getCell, getRangeAddress, DefineNameModel, RowModel, SheetModel, getFormatFromType } from '../../../src/index';
-
-Spreadsheet.Inject(BasicModule);
 
 /**
  *  Formula spec
@@ -212,7 +210,7 @@ describe('Spreadsheet formula module ->', () => {
             expect(cell.value.indexOf('/') > -1).toBeFalsy();
             expect(cell.value.indexOf(':') > -1).toBeFalsy();
             expect(!!Number(cell.value)).toBeTruthy();
-            expect(cell.format).toBe('M/d/yyyy h:mm');
+            expect(cell.format).toBe('mm-dd-yyyy h:mm');
             const cellContent: string = helper.invoke('getCell', [12, 0]).textContent;
             expect(cellContent.indexOf('/') > -1).toBeTruthy();
             expect(cellContent.indexOf(':') > -1).toBeTruthy();
@@ -226,7 +224,7 @@ describe('Spreadsheet formula module ->', () => {
             expect(cell.formula).toBe('=DATE(2022, 8, 22)');
             expect(cell.value).toBe('44795');
             const cellEle: HTMLElement = helper.invoke('getCell', [13, 0]);
-            expect(cellEle.textContent).toBe('08/22/2022');
+            expect(cellEle.textContent).toBe('8/22/2022');
             expect(cellEle.classList.contains('e-right-align')).toBeTruthy();
             helper.invoke('updateCell', [{ formula: '=DATE(2022, 1, -1)' }, 'A14']);
             expect(cell.formula).toBe('=DATE(2022, 1, -1)');
@@ -9319,7 +9317,7 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('Date formula with month > 12 and day > 31->', (done: Function) => {
             helper.edit('K7', '=DATE(2022,25,33)');
-            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('02/02/2024');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('2/2/2024');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[10])).toBe('{"value":"45324","formula":"=DATE(2022,25,33)","format":"mm-dd-yyyy"}');
             done();
         });
@@ -10477,6 +10475,79 @@ describe('Spreadsheet formula module ->', () => {
                 expect(cell.value).toBe('6');
                 expect(cellEle.textContent).toBe('6');
                 done();
+            });
+        });
+        describe('CR-Issue-EJ2-870831->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] },
+                    {
+                        rows: [
+                            { cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] },
+                            { cells: [{ value: '4' }] }, { cells: [{ value: '5' }] }, { cells: [{ value: '6' }] },
+                            { cells: [{ value: '7' }] }, { cells: [{ value: '8' }] }, { cells: [{ value: '9' }] }]
+                    },
+                    {}]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('The formula calculation is not working as expected when using the defined names that were added through the method', (done: Function) => {
+                helper.getInstance().addDefinedName({ refersTo: "='Sheet1'!H2", name: "test_1", scope: "Sheet1" });
+                expect(helper.getInstance().definedNames.length).toBe(1);
+                setTimeout(() => {
+                    expect(helper.getInstance().definedNames[0].name).toBe('test_1');
+                    helper.getInstance().selectRange('I2');
+                    helper.getInstance().editModule.startEdit();
+                    helper.getInstance().editModule.editCellData.value = '=test_1';
+                    helper.getInstance().editModule.endEdit();
+                    const value1: string = (helper.getInstance().sheets[0].rows[1].cells[7].value).toString();
+                    const value2: string = (helper.getInstance().sheets[0].rows[1].cells[8].value).toString();
+                    expect(value1).toEqual(value2);
+                    helper.getInstance().activeSheetIndex = 1;
+                    helper.getInstance().dataBind();
+                    setTimeout(() => {
+                        helper.getInstance().selectRange('I2');
+                        helper.getInstance().editModule.startEdit();
+                        helper.getInstance().editModule.editCellData.value = '=test_1';
+                        helper.getInstance().editModule.endEdit();
+                        expect(helper.getInstance().sheets[1].rows[1].cells[8].value).toBe('#NAME?');
+                        helper.getInstance().activeSheetIndex = 0;
+                        helper.getInstance().dataBind();
+                    });
+                    done();
+                });
+            });
+            it('To check whether the defined name reference is available after sheet rename', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+                let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+                editorElem.click();
+                editorElem.value = 'Hello';
+                helper.triggerKeyNativeEvent(13, false, false, editorElem);
+                setTimeout(() => {
+                    expect(spreadsheet.definedNames[0].refersTo).toBe("='Hello'!H2");
+                    expect(spreadsheet.definedNames[0].scope).toBe("Hello");
+                    helper.getInstance().selectRange('K2');
+                    helper.getInstance().editModule.startEdit();
+                    helper.getInstance().editModule.editCellData.value = '=test_1';
+                    helper.getInstance().editModule.endEdit();
+                    expect(spreadsheet.sheets[0].rows[1].cells[10].value).toBe("10");
+                    done();
+                });
+            });
+            it('Deletion of defined Names through public method', (done: Function) => {
+                helper.invoke('delete', [0]);
+                expect(helper.getInstance().definedNames.length).toBe(0);
+                setTimeout(() => {
+                    helper.getInstance().selectRange('J2');
+                    helper.getInstance().editModule.startEdit();
+                    helper.getInstance().editModule.editCellData.value = '=test_1';
+                    helper.getInstance().editModule.endEdit();
+                    expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('#NAME?');
+                    done();
+                });
             });
         });
         describe('EJ2-66373, EJ2-69543 ->', () => {
@@ -11650,7 +11721,7 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });
-        describe('EJ2-863643, EJ2-867609 ->', () => {
+        describe('EJ2-863643, EJ2-867609, EJ2-870519 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{
@@ -11696,6 +11767,25 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.invoke('getCell', [12, 9]).textContent).toBe('-1000');
                 helper.edit('J13', '=IF(A9=I1,--I4*-G3/(I3-I2),0)');
                 expect(helper.invoke('getCell', [12, 9]).textContent).toBe('1000');
+                done();
+            });
+            it('Cell values are updated directly from the data source before converted to formatted value', (done: Function) => {
+                expect(helper.invoke('getCell', [2, 1]).textContent).toBe('6/11/2014');
+                expect(helper.getInstance().sheets[0].rows[2].cells[1].format).toBe('mm-dd-yyyy');
+                expect(helper.invoke('getCell', [9, 1]).textContent).toBe('7/9/2014');
+                expect(helper.getInstance().sheets[0].rows[9].cells[1].format).toBe('mm-dd-yyyy');
+                helper.edit('K1', '=DATE(1999,1,3)');
+                expect(helper.invoke('getCell', [0, 10]).textContent).toBe('1/3/1999');
+                helper.edit('K2', '=DATE(2024,12,09)');
+                expect(helper.invoke('getCell', [1, 10]).textContent).toBe('12/9/2024');
+                helper.edit('K3', '=DATE(2024,06,09)');
+                expect(helper.invoke('getCell', [2, 10]).textContent).toBe('6/9/2024');
+                helper.edit('K4', '=DATE(F7,G4,G8)');
+                expect(helper.invoke('getCell', [3, 10]).textContent).toBe('7/3/2700');
+                helper.edit('K5', '=DATE(F6,G5,G3)');
+                expect(helper.invoke('getCell', [4, 10]).textContent).toBe('11/5/2200');
+                helper.edit('K6', '=DATE(F4,G9,G5)');
+                expect(helper.invoke('getCell', [5, 10]).textContent).toBe('6/11/2200');
                 done();
             });
         });
@@ -11934,6 +12024,119 @@ describe('Spreadsheet formula module ->', () => {
                     expect(parseInt(spreadsheet.sheets[1].rows[2].cells[0].value)).toEqual(160);
                     done();
                 });
+            });
+        });
+        describe('Checking formula with culture-specific separator', () => {
+            let spreadsheet: any; let sheet: any; let cell: any; let cellEle: Element;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }], listSeparator: ';' }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Default formula with list separator', (done: Function) => {
+                spreadsheet = helper.getInstance();
+                sheet = spreadsheet.sheets[0];
+                helper.invoke('updateCell', [{ formula: '=PRODUCT(D2;D3)' }, 'D12']);
+                cell = sheet.rows[11].cells[3];
+                expect(cell.value).toBe('200');
+                cellEle = helper.invoke('getCell', [11, 3]);
+                expect(cellEle.textContent).toBe('200');
+                helper.invoke('updateCell', [{ formula: '=SUM(D2;D3;D4;D5)' }, 'D12']);
+                expect(cell.value).toBe(65);
+                expect(cellEle.textContent).toBe('65');
+                helper.invoke('updateCell', [{ formula: '=SUMIF(D2:D7;">10")' }, 'D12']);
+                expect(cell.value).toBe(125);
+                expect(cellEle.textContent).toBe('125');
+                helper.invoke('updateCell', [{ formula: '=IF(4>5;TRUE;FALSE)' }, 'D12']);
+                expect(cell.value).toBe('FALSE');
+                expect(cellEle.textContent).toBe('FALSE');
+                helper.invoke('updateCell', [{ formula: '=IFS(A8<>"LoaferS";TRUE;A11="T-Shirts";FALSE)' }, 'D12']);
+                expect(cell.value).toBe('TRUE');
+                expect(cellEle.textContent).toBe('TRUE');
+                helper.invoke('updateCell', [{ formula: '=COUNTIFS(D2:D11;"<>20")' }, 'D12']);
+                expect(cell.value).toBe(7);
+                expect(cellEle.textContent).toBe('7');
+                helper.invoke('updateCell', [{ formula: '=SUMIFS(D2:D11;E2:E11;">15";F2:F11;">20")' }, 'D12']);
+                expect(cell.value).toBe(126);
+                expect(cellEle.textContent).toBe('126');
+                helper.invoke('updateCell', [{ formula: '=TEXT(B4;"dd-mmm-yy")' }, 'D12']);
+                expect(cell.value).toBe('27-Jul-14');
+                expect(cellEle.textContent).toBe('27-Jul-14');
+                helper.invoke('updateCell', [{ formula: '=CONCATENATE(A2;A3;A4;A8;A10)' }, 'D12']);
+                expect(cell.value).toBe('Casual ShoesSports ShoesFormal ShoesRunning ShoesCricket Shoes');
+                expect(cellEle.textContent).toBe('Casual ShoesSports ShoesFormal ShoesRunning ShoesCricket Shoes');
+                helper.invoke('updateCell', [{ formula: '=OR(TRUE;TRUE;TRUE;FALSE)' }, 'D12']);
+                expect(cell.value).toBe('TRUE');
+                expect(cellEle.textContent).toBe('TRUE');
+                helper.invoke('updateCell', [{ formula: '=HLOOKUP(Sheet1!$F$8;Sheet1!$F$2:$G$11;2;False)' }, 'D12']);
+                expect(cell.value).toBe('600');
+                expect(cellEle.textContent).toBe('600');
+                helper.invoke('updateCell', [{ formula: '=SUMPRODUCT($D$2:$D$11;$H$2:$H$11)' }, 'D12']);
+                expect(cell.value).toBe(18120);
+                expect(cellEle.textContent).toBe('18120');
+                done();
+            });
+            it('Nested formula with list separator', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(D2:D11; E2:E11; {10; 20}))' }, 'D12']);
+                expect(cell.value).toBe(196);
+                expect(cellEle.textContent).toBe('196');
+                helper.invoke('updateCell', [{ formula: '=ROUNDUP(AVERAGE(F2:F9);COUNT(F9;F11))' }, 'D12']);
+                expect(cell.value).toBe('376.25');
+                expect(cellEle.textContent).toBe('376.25');
+                helper.invoke('updateCell', [{ formula: '=ROUNDDOWN(RSQ(D2:D11;F2:F11);4)' }, 'D12']);
+                expect(cell.value).toBe('0.3789');
+                expect(cellEle.textContent).toBe('0.3789');
+                helper.invoke('updateCell', [{ formula: '=IFS(OR(A2<>"Casual Shoes";A11="T-Shirts");"Y";OR(A2<>"Casual Shoes";A11="T-Shirts"); "R")' }, 'D12']);
+                expect(cell.value).toBe('Y');
+                expect(cellEle.textContent).toBe('Y');
+                helper.invoke('updateCell', [{ formula: '=MAX(MOD(22;3); MOD(12;5))' }, 'D12']);
+                expect(cell.value).toBe('2');
+                expect(cellEle.textContent).toBe('2');
+                const formula: string = '=IF(OR(AND(ABS(D10)>ABS(E10);D10<0);AND(ABS(D10)<=ABS(E10);E10<0));-1*(IF(D10=0;((ABS(E10)-ABS(D10))/1)*100;' +
+                    '((ABS(E10)-ABS(D10))/ABS(D10))*100));IF(D10=0;((ABS(E10)-ABS(D10))/1)*100;((ABS(E10)-ABS(D10))/ABS(D10))*100))';
+                helper.invoke('updateCell', [{ formula: formula }, 'D12']);
+                expect(cell.value).toBe('-26.82926829268293');
+                expect(cellEle.textContent).toBe('-26.82926829');
+                done();
+            });
+            it('Default formula with decimal separator', (done: Function) => {
+                spreadsheet.workbookFormulaModule.calculateInstance.setParseDecimalSeparator(',');
+                helper.invoke('updateCell', [{ formula: '=IF(D2=10,23;D3;10,45)' }, 'D12']);
+                expect(cell.value).toBe('10.45');
+                expect(cellEle.textContent).toBe('10.45');
+                helper.invoke('updateCell', [{ formula: '=SUM("4,9";"5,2")' }, 'D12']);
+                expect(cell.value).toBe('10.1');
+                expect(cellEle.textContent).toBe('10.1');
+                helper.invoke('updateCell', [{ formula: '=SUM(-5,7;-8,9)' }, 'D12']);
+                expect(cell.value).toBe('-14.6');
+                expect(cellEle.textContent).toBe('-14.6');
+                helper.invoke('updateCell', [{ formula: '=COUNTIF(F2:F11;">100,84")' }, 'D12']);
+                expect(cell.value).toBe(10);
+                expect(cellEle.textContent).toBe('10');
+                helper.invoke('updateCell', [{ formula: '=AVERAGEIF(F2:F11;">110,27")' }, 'D12']);
+                expect(cell.value).toBe(472);
+                expect(cellEle.textContent).toBe('472');
+                helper.invoke('updateCell', [{ formula: '=SUMIF(D2:D11;"1,?")' }, 'D12']);
+                expect(cell.value).toBe(0);
+                expect(cellEle.textContent).toBe('0');
+                helper.invoke('updateCell', [{ formula: '=GEOMEAN(10,87;20,33;30;56,45;40,34)' }, 'D12']);
+                expect(cell.value).toBe('27.275806669844062');
+                expect(cellEle.textContent).toBe('27.27580667');
+                helper.invoke('updateCell', [{ formula: '=TRUNC("-8,9")' }, 'D12']);
+                expect(cell.value).toBe('-8');
+                expect(cellEle.textContent).toBe('-8');
+                helper.invoke('updateCell', [{ formula: '=POWER((D2+D10);1,3/3,45)' }, 'D12']);
+                expect(cell.value).toBe('4.3997929579013535');
+                expect(cellEle.textContent).toBe('4.399792958');
+                done();
+            });
+            it('Simple arithmetic expression with decimal separator', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=5,8+6,4+8,5' }, 'D12']);
+                expect(cell.value).toBe('20.7');
+                expect(cellEle.textContent).toBe('20.7');
+                spreadsheet.workbookFormulaModule.calculateInstance.setParseDecimalSeparator('.');
+                done();
             });
         });
     });
@@ -15574,20 +15777,20 @@ describe('Spreadsheet formula module ->', () => {
         it('DATE formula checking', (done: Function) => {
             expect(helper.invoke('getCell', [0, 4]).textContent).toBe('11/19/1901');
             expect(helper.invoke('getCell', [0, 5]).textContent).toBe('11/19/1901');
-            expect(helper.invoke('getCell', [1, 4]).textContent).toBe('01/31/1914');
-            expect(helper.invoke('getCell', [1, 5]).textContent).toBe('01/31/1914');
+            expect(helper.invoke('getCell', [1, 4]).textContent).toBe('1/31/1914');
+            expect(helper.invoke('getCell', [1, 5]).textContent).toBe('1/31/1914');
             expect(helper.invoke('getCell', [2, 4]).textContent).toBe('#NUM!');
-            expect(helper.invoke('getCell', [2, 5]).textContent).toBe('11/01/9999');
+            expect(helper.invoke('getCell', [2, 5]).textContent).toBe('11/1/9999');
             expect(helper.invoke('getCell', [3, 4]).textContent).toBe('#NUM!');
-            expect(helper.invoke('getCell', [3, 5]).textContent).toBe('01/01/1900');
+            expect(helper.invoke('getCell', [3, 5]).textContent).toBe('1/1/1900');
             expect(helper.invoke('getCell', [4, 4]).textContent).toBe('#NUM!');
             expect(helper.invoke('getCell', [4, 5]).textContent).toBe('#NUM!');
-            expect(helper.invoke('getCell', [5, 4]).textContent).toBe('01/10/2000');
-            expect(helper.invoke('getCell', [5, 5]).textContent).toBe('02/19/2000');
-            expect(helper.invoke('getCell', [6, 4]).textContent).toBe('02/10/1914');
-            expect(helper.invoke('getCell', [6, 5]).textContent).toBe('02/10/1914');
+            expect(helper.invoke('getCell', [5, 4]).textContent).toBe('1/10/2000');
+            expect(helper.invoke('getCell', [5, 5]).textContent).toBe('2/19/2000');
+            expect(helper.invoke('getCell', [6, 4]).textContent).toBe('2/10/1914');
+            expect(helper.invoke('getCell', [6, 5]).textContent).toBe('2/10/1914');
             expect(helper.invoke('getCell', [7, 4]).textContent).toBe('10/10/1960');
-            expect(helper.invoke('getCell', [8, 4]).textContent).toBe('10/03/1935');
+            expect(helper.invoke('getCell', [8, 4]).textContent).toBe('10/3/1935');
             expect(helper.invoke('getCell', [8, 5]).textContent).toBe('10/30/2000');
             expect(helper.invoke('getCell', [9, 4]).textContent).toBe('#VALUE!');
             expect(helper.invoke('getCell', [9, 5]).textContent).toBe('#VALUE!');
@@ -15595,8 +15798,8 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [10, 5]).textContent).toBe('#NAME?');
             expect(helper.invoke('getCell', [11, 4]).textContent).toBe('#VALUE!');
             expect(helper.invoke('getCell', [11, 5]).textContent).toBe('#VALUE!');
-            expect(helper.invoke('getCell', [12, 4]).textContent).toBe('03/01/2231');
-            expect(helper.invoke('getCell', [12, 5]).textContent).toBe('08/01/2001');
+            expect(helper.invoke('getCell', [12, 4]).textContent).toBe('3/1/2231');
+            expect(helper.invoke('getCell', [12, 5]).textContent).toBe('8/1/2001');
             expect(helper.invoke('getCell', [13, 4]).textContent).toBe('#VALUE!');
             expect(helper.invoke('getCell', [13, 5]).textContent).toBe('#VALUE!');
             expect(helper.invoke('getCell', [14, 4]).textContent).toBe('#NUM!');
@@ -15616,12 +15819,12 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [18, 6]).textContent).toBe('#VALUE!');
             expect(helper.invoke('getCell', [19, 4]).textContent).toBe('#REF!');
             expect(helper.invoke('getCell', [19, 5]).textContent).toBe('#REF!');
-            expect(helper.invoke('getCell', [20, 4]).textContent).toBe('05/22/2001');
+            expect(helper.invoke('getCell', [20, 4]).textContent).toBe('5/22/2001');
             expect(helper.invoke('getCell', [21, 4]).textContent).toBe('#VALUE!');
-            expect(helper.invoke('getCell', [21, 5]).textContent).toBe('12/01/1999');
+            expect(helper.invoke('getCell', [21, 5]).textContent).toBe('12/1/1999');
             expect(helper.invoke('getCell', [22, 4]).textContent).toBe('#VALUE!');
             expect(helper.invoke('getCell', [23, 4]).textContent).toBe('10/13/2000');
-            expect(helper.invoke('getCell', [24, 4]).textContent).toBe('02/10/2009');
+            expect(helper.invoke('getCell', [24, 4]).textContent).toBe('2/10/2009');
             done();
         });
     });
@@ -16124,7 +16327,7 @@ describe('Spreadsheet formula module ->', () => {
         });
     });
 
-    describe('EJ2-861114 -> Alphanumeric value in cell references are not properly calculated ->', () => {
+    describe('EJ2-861114 -> Alphanumberic value in cell references are not properly calculated ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{

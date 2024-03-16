@@ -242,13 +242,15 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.enableExternalMessage) {
             modules.push({
                 member: 'externalMessage',
-                args: [this]
+                args: [this],
+                name: 'ExternalMessage'
             });
         }
         if (this.checkpagesizes()) {
             modules.push({
                 member: 'pagerdropdown',
-                args: [this]
+                args: [this],
+                name: 'PagerDropDown'
             });
         }
         return modules;
@@ -868,10 +870,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private addFocus(element: Element, addFocusClass: boolean): void {
-        if (addFocusClass) {
-            addClass([element], ['e-focused', 'e-focus']);
+        if (!isNullOrUndefined(element)) {
+            if (addFocusClass) {
+                addClass([element], ['e-focused', 'e-focus']);
+            }
+            (element as HTMLElement).tabIndex = 0;
         }
-        (element as HTMLElement).tabIndex = 0;
     }
 
     private removeFocus(element: Element, removeFocusClass: boolean): void {
@@ -949,11 +953,13 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 this.refresh();
             }
             else {
-                if (oldProp.pageSize && this.pageSize !== oldProp.pageSize) {
-                    this.isCancel = true;
+                this.isCancel = true;
+                if (oldProp && oldProp.pageSize) {
                     this.setProperties({ pageSize: oldProp.pageSize }, true);
-                    this.pagerdropdownModule.setDropDownValue('value', oldProp.pageSize);
-                    this.pagerdropdownModule['dropDownListObject'].text = oldProp.pageSize + '';
+                    if (this.pagerdropdownModule) {
+                        this.pagerdropdownModule.setDropDownValue('value', oldProp.pageSize);
+                        this.pagerdropdownModule['dropDownListObject'].text = oldProp.pageSize + '';
+                    }
                 }
             }
         }

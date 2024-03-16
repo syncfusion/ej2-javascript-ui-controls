@@ -29,6 +29,7 @@ import {Alignment} from './enum';
 import { Chart3D } from '../../chart3d';
 import { Chart3DAxis } from '../../chart3d/axis/axis';
 import { Chart3DPoint, Chart3DSeries} from '../../chart3d/series/chart-series';
+import { CircularChart3D } from '../../circularchart3d/circularchart3d';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -738,7 +739,7 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
                 || (axis.name === series.chart.primaryXAxis.name && !series.xAxisName))) {
             if (series.type.indexOf('Stacking') > -1 && stackingGroups.indexOf(series.stackingGroup) === -1) {
                 stackingGroups.push(series.stackingGroup);
-            }      
+            }
             xValues = series.points.map((point: Points) => {
                 return point.xValue;
             });
@@ -1898,7 +1899,7 @@ export function textElement(
 /**
  * Method to calculate the width and height of the chart.
  */
-export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator | StockChart | Chart3D): void {
+export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator | StockChart | Chart3D | CircularChart3D): void {
     // fix for Chart rendered with default width in IE issue
     let containerWidth: number = chart.element.clientWidth || chart.element.offsetWidth;
     let containerHeight: number = chart.element.clientHeight;
@@ -1951,7 +1952,7 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
  *
  * @param {Chart} chart chart instance
  */
-export function createSvg(chart: Chart | AccumulationChart | RangeNavigator | Chart3D): void {
+export function createSvg(chart: Chart | AccumulationChart | RangeNavigator | Chart3D | CircularChart3D): void {
     (chart as Chart).canvasRender = new CanvasRenderer(chart.element.id);
     chart.renderer = (chart as Chart).enableCanvas ? (chart as Chart).canvasRender : new SvgRenderer(chart.element.id);
     calculateSize(chart);

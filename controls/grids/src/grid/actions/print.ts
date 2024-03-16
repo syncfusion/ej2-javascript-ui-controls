@@ -232,8 +232,10 @@ export class Print {
         }
         const colGroups: HTMLElement[] = selectAll(`colgroup${id}colgroup`, element);
         const contentColGroups: HTMLElement[] = selectAll('.e-content colgroup', element);
+        const footerColGroups: HTMLElement[] = selectAll('.e-summarycontent colgroup', element);
         this.hideColGroup(colGroups, depth);
         this.hideColGroup(contentColGroups, depth);
+        this.hideColGroup(footerColGroups, depth);
     }
 
     private hideColGroup(colGroups: HTMLElement[], depth: number): void {

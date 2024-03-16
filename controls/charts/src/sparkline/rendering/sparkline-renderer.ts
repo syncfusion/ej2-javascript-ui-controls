@@ -295,6 +295,7 @@ export class SparklineRenderer {
                 const element: Element = drawPath(this.sparkline, pathOption, group);
                 element.setAttribute('role', 'img');
                 element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
+                element.setAttribute('tabindex', i === 0 ? '0' : '-1');
             }
             const diffRadian: number = edRad - stRad;
             const mid: { x: number, y: number } = {
@@ -413,6 +414,7 @@ export class SparklineRenderer {
                     const element: Element = drawRectangle(spark, rectOptions, group);
                     element.setAttribute('role', 'img');
                     element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
+                    element.setAttribute('tabindex', i === 0 ? '0' : '-1');
                     group.appendChild(element);
                 }
             });
@@ -452,6 +454,7 @@ export class SparklineRenderer {
                 const element: Element = drawRectangle(spark, options, group);
                 element.setAttribute('role', 'img');
                 element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
+                element.setAttribute('tabindex', i === 0 ? '0' : '-1');
             }
         }
         this.sparkline.svgObject.appendChild(group);
@@ -507,6 +510,9 @@ export class SparklineRenderer {
                     const element: Element = drawCircle(spark, option, group);
                     element.setAttribute('role', 'img');
                     element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
+                    if ((this.sparkline.type.indexOf('Line') > -1) || (this.sparkline.type.indexOf('Area') > -1)) {
+                        element.setAttribute('tabindex', i === 0 ? '0' : '-1');
+                    }
                     group.appendChild(element);
                 }
             });

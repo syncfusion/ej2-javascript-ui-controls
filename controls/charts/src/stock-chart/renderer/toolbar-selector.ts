@@ -112,6 +112,7 @@ export class ToolBarSelector {
             this.stockChart.seriesType[this.stockChart.seriesType.length] = 'Hollow Candle' as ChartSeriesType;
         }
         const seriesType: DropDownButton = new DropDownButton({
+            enableHtmlSanitizer: false,
             items: this.getDropDownItems(this.stockChart.seriesType),
             select: (args: MenuEventArgs) => {
                 this.selectedSeries = args.item.text;
@@ -135,6 +136,7 @@ export class ToolBarSelector {
 
     public initializeTrendlineSelector(): void {
         this.trendlineDropDown = new DropDownButton({
+            enableHtmlSanitizer: false,
             items: this.stockChart.resizeTo ? this.trendlineDropDown.items :
                 this.getDropDownItems(this.stockChart.trendlineType),
             select: (args: MenuEventArgs) => {
@@ -172,6 +174,7 @@ export class ToolBarSelector {
     }
     public initializeIndicatorSelector(): void {
         this.indicatorDropDown = new DropDownButton({
+            enableHtmlSanitizer: false,
             items: this.stockChart.resizeTo ? this.indicatorDropDown.items :
                 this.getDropDownItems(this.stockChart.indicatorType),
             select: (args: MenuEventArgs) => {
@@ -311,6 +314,7 @@ export class ToolBarSelector {
     }
     public exportButton(): void {
         const exportChart: DropDownButton = new DropDownButton({
+            enableHtmlSanitizer: false,
             items: this.getDropDownItems(this.stockChart.exportType),
             select: (args: MenuEventArgs) => {
                 const type: ExportType = <ExportType>args.item.text;

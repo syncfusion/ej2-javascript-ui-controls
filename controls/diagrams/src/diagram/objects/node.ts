@@ -14,7 +14,7 @@ import { ShapeStyleModel, TextStyleModel, ShadowModel } from '../core/appearance
 import { Point } from '../primitives/point';
 import { Size } from '../primitives/size';
 import { PointModel } from '../primitives/point-model';
-import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status, ElementAction } from '../enum/enum';
+import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status, ElementAction, TextAnnotationDirection } from '../enum/enum';
 import { IElement } from './interface/IElement';
 import { Container } from '../core/containers/container';
 import { Canvas } from '../core/containers/canvas';
@@ -36,7 +36,7 @@ import { HorizontalAlignment, VerticalAlignment, BpmnShapes, BpmnEvents, BpmnTri
 import { BpmnDataObjects, BpmnTasks, BpmnSubProcessTypes, BpmnLoops, BranchTypes } from '../enum/enum';
 import { BpmnBoundary, BpmnActivities, UmlScope } from '../enum/enum';
 import { MarginModel } from '../core/appearance-model';
-import { UmlActivityShapeModel, MethodArgumentsModel, UmlClassModel } from './node-model';
+import { UmlActivityShapeModel, MethodArgumentsModel, UmlClassModel, BpmnTextAnnotationModel } from './node-model';
 import { BpmnEventModel, BpmnSubEventModel, BpmnAnnotationModel, BpmnActivityModel } from './node-model';
 import { BpmnTaskModel, BpmnSubProcessModel, BpmnGatewayModel } from './node-model';
 import { ShapeModel, BasicShapeModel, FlowShapeModel, ImageModel, PathModel, BpmnShapeModel, BpmnDataObjectModel } from './node-model';
@@ -1204,7 +1204,7 @@ export class BpmnActivity extends ChildProperty<BpmnActivity> {
 
 /**
  * Defines the behavior of the bpmn annotation
- *
+ * @deprecated
  */
 export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
     // tslint:disable-next-line:no-any
@@ -1213,7 +1213,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
     }
     /**
      * Sets the text to annotate the bpmn shape
-     *
+     * @deprecated
      * @default ''
      */
     @Property('')
@@ -1221,7 +1221,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
 
     /**
      * Sets the id of the BPMN sub event
-     *
+     * @deprecated
      * @default ''
      */
     @Property('')
@@ -1229,7 +1229,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
 
     /**
      * Sets the angle between the bpmn shape and the annotation
-     *
+     * @deprecated
      * @aspDefaultValueIgnore
      * @default undefined
      */
@@ -1238,7 +1238,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
 
     /**
      * Sets the height of the text
-     *
+     * @deprecated
      * @aspDefaultValueIgnore
      * @default undefined
      */
@@ -1247,7 +1247,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
 
     /**
      * Sets the width of the text
-     *
+     * @deprecated
      * @aspDefaultValueIgnore
      * @default undefined
      */
@@ -1256,7 +1256,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
 
     /**
      * Sets the distance between the bpmn shape and the annotation
-     *
+     * @deprecated
      * @aspDefaultValueIgnore
      * @default undefined
      */
@@ -1273,6 +1273,27 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
     public getClassName(): string {
         return 'BpmnAnnotation';
     }
+}
+
+export class BpmnTextAnnotation extends ChildProperty<BpmnTextAnnotation>{
+
+    /**
+     * Sets the parent node of bpmn text annotation
+     *
+     * @aspDefaultValueIgnore
+     * @default ''
+     */
+    @Property('')
+    public textAnnotationTarget: string;
+
+    /**
+     * To set the direction in which the text annotation path to be rendered
+     *
+     * @aspDefaultValueIgnore
+     * @default Auto
+     */
+    @Property('Auto')
+    public textAnnotationDirection: TextAnnotationDirection;
 }
 
 /**
@@ -1357,19 +1378,27 @@ export class BpmnShape extends Shape {
 
     /**
      * Defines the text of the bpmn annotation
-     *
+     * @deprecated
      * @default 'None'
      */
     @Complex<BpmnAnnotationModel>({}, BpmnAnnotation)
     public annotation: BpmnAnnotationModel;
     /**
      * Defines the text of the bpmn annotation collection
-     *
+     * @deprecated
      * @default 'None'
      */
 
     @Collection<BpmnAnnotationModel>([], BpmnAnnotation)
     public annotations: BpmnAnnotationModel[];
+
+    /**
+     * Defines the type of the BPMN Text annotation shape
+     *
+     * @default 'None'
+     */
+    @Complex<BpmnTextAnnotationModel>({}, BpmnTextAnnotation)
+    public textAnnotation: BpmnTextAnnotationModel;
 
     /**
      * Returns the name of class BpmnShape
@@ -2519,8 +2548,6 @@ export class Node extends NodeBase implements IElement {
     /** @private */
     public isPhase: boolean = false;
     /** @private */
-    public isTextNode: boolean = false;
-    /** @private */
     public get actualSize(): Size {
         if (this.wrapper !== null) {
             return this.wrapper.actualSize;
@@ -2635,6 +2662,8 @@ export class Node extends NodeBase implements IElement {
                             }
                         }
                     }
+                }else{
+                    console.warn("[WARNING] :: Module \"BpmnDiagrams\" is not available in Diagram component! You either misspelled the module name or forgot to load it.");
                 }
                 break;
             case 'Native':

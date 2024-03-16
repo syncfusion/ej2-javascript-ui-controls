@@ -186,6 +186,8 @@ export class Signature extends SignatureBase implements INotifyPropertyChanged {
     }
 
     public initialize(): void {
+        this.element.setAttribute('role', 'img');
+        this.element.setAttribute('aria-label', 'signature');
         addClass([this.element], 'e-' + this.getModuleName());
         super.initialize(this.element);
         if (this.enablePersistence) {

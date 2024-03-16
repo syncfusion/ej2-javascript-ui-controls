@@ -9,7 +9,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { MarginModel } from '../../common/model/base-model';
 import { ColorValue, appendChildElement, colorNameToHex, convertHexToColor, getFontStyle, getTemplateFunction, isCollide, measureElementRect, withIn } from '../../common/utils/helper';
 import { Chart3DAxis } from '../axis/axis';
-import { Chart3DFontModel } from '../model/chart3d-Interface-model';
+import { Chart3DTextFontModel } from '../model/chart3d-Interface-model';
 
 /**
  * The `DataLabel` module is used to render data label for the data point.
@@ -122,7 +122,7 @@ export class DataLabel3D {
         const backgroundColor: string = this.fontBackground === 'transparent' ? ((this.chart.theme.indexOf('Dark') > -1 || this.chart.theme === 'HighContrast') ? '#000000' : '#FFFFFF') : this.fontBackground;
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(backgroundColor));
         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-        const font: Chart3DFontModel = {
+        const font: Chart3DTextFontModel = {
             size: argsData.textStyle.size,
             fontWeight: argsData.textStyle.fontWeight,
             fontStyle: argsData.textStyle.fontStyle,

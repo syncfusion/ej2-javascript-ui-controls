@@ -36,6 +36,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     private signRatioPointsColl: Point[] = [];
     private tempCanvas: HTMLCanvasElement;
     private tempContext: CanvasRenderingContext2D;
+    private canRedraw: boolean = true;
 
     /**
      * Gets or sets the background color of the component.
@@ -256,7 +257,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     private resizeHandler(): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: SignatureBase = this;
-        if (this.isResponsive) {
+        if (this.isResponsive && this.canRedraw) {
             this.canvasContext.canvas.width = this.element.offsetWidth;
             this.canvasContext.canvas.height = this.element.offsetHeight;
             this.canvasContext.scale(1, 1);
@@ -624,7 +625,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         this.internalRefresh();
         this.signRatioPointsColl = [];
         this.updateSnapCollection(true);
-        this.isSignatureEmpty = true;
+        this.isSignatureEmpty = this.canRedraw = true;
         if (!this.isBlazor) {
             this.trigger('change', args);
         } else {
@@ -798,7 +799,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
                 proxy.updateSnapCollection();
             });
         };
-        this.isSignatureEmpty = false;
+        this.isSignatureEmpty = this.canRedraw = false;
     }
 
     private saveBackground(savebg: boolean): void {

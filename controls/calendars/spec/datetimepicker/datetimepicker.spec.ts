@@ -696,7 +696,7 @@ describe('DOM Wrapper Testing with basic properites', () => {
         datetimepicker.getDateObject(datetimepicker.value);
     });
     it('enabled false DISABLED attribute testing', () => {
-        expect(datetimepicker.inputElement.getAttribute('disabled')).toEqual('disabled');
+        expect(datetimepicker.inputElement.getAttribute('disabled')).toEqual('');
     });
     it('enabled false input element ARIA-DISABELD testing', () => {
         expect(datetimepicker.inputElement.getAttribute('aria-disabled')).toEqual('true');
@@ -4168,6 +4168,34 @@ describe('EJ2-56658:change event is not triggered while remove the selected time
         expect(datetimepicker.value).toEqual(null);
     });
 
+});
+describe('869555 : Meridian Value Checking', () => {
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'dateTime' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        if (datetimepicker) {
+            datetimepicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Meridian Value Checking', () => {
+        datetimepicker = new DateTimePicker({
+            format: "dd/MMM/yyy hh:mm:a",
+            value: new Date('23/May/2024 12:30:pm')
+        });
+    datetimepicker.appendTo('#dateTime');
+    datetimepicker.inputElement.value = '25/Mar/2024 12:30:am';
+    datetimepicker.dataBind();
+    datetimepicker.inputBlurHandler();
+    expect(datetimepicker.inputElement.value).toBe('25/Mar/2024 12:30:AM');
+    datetimepicker.inputElement.value = '27/Feb/2024 01:00:pm';
+    datetimepicker.dataBind();
+    datetimepicker.inputBlurHandler();
+    expect(datetimepicker.inputElement.value).toBe('27/Feb/2024 01:00:PM');
+    });
 });
 describe('EJ2-59142', () => {
     let datetimepicker: any;

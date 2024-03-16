@@ -2,13 +2,17 @@
 
 ## [Unreleased]
 
-## 24.1.44 (2024-01-03)
+## 25.1.35 (2024-03-15)
 
 ### Ribbon
 
-#### Bug Fixes
+#### Features
 
-`#I526346` - Fixed the issue with rendering item calculations in a simplified layout when some items are in a hidden state.
+- **Gallery item** - In addition to the existing built-in items, a new item, gallery, has been added to the Ribbon control. It allows users to perform specific actions by displaying a collection of related items, including icons, content, or images. Check out the demo [here](https://ej2.syncfusion.com/demos/#/material3/ribbon/gallery.html).
+
+- **Contextual tabs** - The Ribbon control now supports addition of contextual tabs, allows users to display the ribbon tabs on demand based on their needs. Similar to the normal ribbon tabs, it supports adding all built-in and custom ribbon items to execute specific actions. Check out the demo [here](https://ej2.syncfusion.com/demos/#/material3/ribbon/contextual-tab.html).
+
+- **KeyTips support** - The KeyTips feature enables users to quickly access the tabs or ribbon items by using defined unique key tips (up to 3 characters). To show the KeyTips, press Alt + Windows/Command keys, and close or traverse back by pressing the Esc key.  Check out the demo [here](https://ej2.syncfusion.com/demos/#/material3/ribbon/keytip.html).
 
 ## 24.1.41 (2023-12-18)
 

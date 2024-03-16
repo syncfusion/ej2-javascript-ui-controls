@@ -389,15 +389,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     };
     /**
      * An array of object that is used to configure the Tab component.
-     * ```typescript
-     *   let tabObj: Tab = new Tab( {
-     *     items: [
-     *       { header: { text: 'TabItem1' }, content: 'Tab Item1 Content' },
-     *       { header: { text: 'TabItem2' }, content: 'Tab Item2 Content' }
-     *     ]
-     *   });
-     *   tabObj.appendTo('#tab');
-     * ```
+     * 
+     * {% codeBlock src='tab/items/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
@@ -427,16 +420,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     public cssClass: string;
     /**
      * Specifies the index for activating the current Tab item.
-     * ```typescript
-     *   let tabObj: Tab = new Tab( {
-     *     selectedItem: 1,
-     *     items: [
-     *       { header: { text: 'TabItem1' }, content: 'Tab Item1 Content' },
-     *       { header: { text: 'TabItem2' }, content: 'Tab Item2 Content' }
-     *     ]
-     *   });
-     *   tabObj.appendTo('#tab');
-     * ```
+     * 
+     * {% codeBlock src='tab/selectedItem/index.md' %}{% endcodeBlock %}   
      *
      * @default 0
      */
@@ -498,11 +483,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     @Property(false)
     public enablePersistence: boolean;
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to enable the rendering of untrusted HTML values in the Tab component.
+     * When this property is enabled, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
      * Specifies whether to show the close button for header items to remove the item from the Tab.
@@ -1212,9 +1198,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (typeof val === 'string') {
             val = val.trim();
             if (this.isVue) {
-                templateFn = compile(SanitizeHtmlHelper.sanitize(val));
+                templateFn = compile(this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(val) : val);
             } else {
-                ele.innerHTML = SanitizeHtmlHelper.sanitize(val);
+                ele.innerHTML = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(val) : val;
             }
         } else {
             templateFn = compile(val);
@@ -1404,7 +1390,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         ele.removeChild(ele.firstChild);
                     }
                 }
-                if (this.isReact) {
+                if (this.isReact || this.isAngular || this.isVue) {
                     this.clearTemplate(['content']);
                 }
                 this.templateEle = [];
@@ -1568,7 +1554,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         const tbPop: HTEle = <HTEle>select('.e-popup.e-toolbar-pop', this.hdrEle);
         if (tbPop && tbPop.classList.contains('e-popup-close')) {
             const tbPopObj: Popup = (<PopupModel>(tbPop && (<Instance>tbPop).ej2_instances[0])) as Popup;
-            tbPopObj.position.X = (this.headerPlacement === 'Left') ? 'left' : 'right';
+            tbPopObj.position.X = (this.headerPlacement === 'Left' || this.element.classList.contains(CLS_RTL)) ? 'left' : 'right';
             tbPopObj.dataBind();
             tbPopObj.show(config);
         }

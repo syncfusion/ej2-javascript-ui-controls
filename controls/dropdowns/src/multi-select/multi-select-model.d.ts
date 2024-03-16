@@ -1,4 +1,4 @@
-import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings, ResultData } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType, Input } from '@syncfusion/ej2-inputs';import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend, Complex } from '@syncfusion/ej2-base';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate, JsonAdaptor } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
+import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings, ResultData } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { IInput, FloatLabelType, Input } from '@syncfusion/ej2-inputs';import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Animation, AnimationModel, Browser, prepend, Complex } from '@syncfusion/ej2-base';import { Search } from '../common/incremental-search';import { append, addClass, removeClass, closest, detach, remove, select, selectAll } from '@syncfusion/ej2-base';import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';import { DataManager, Query, Predicate, JsonAdaptor, DataOptions } from '@syncfusion/ej2-data';import { SortOrder } from '@syncfusion/ej2-lists';import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur, encodePlaceholder } from './float-label';
 import {visualMode,MultiSelectChangeEventArgs,RemoveEventArgs,ISelectAllEventArgs,TaggingEventArgs,CustomValueEventArgs} from "./multi-select";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -90,6 +90,13 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * @default true
      */
     enableHtmlSanitizer?: boolean;
+
+    /**
+     * Defines whether to enable virtual scrolling in the component. 
+     *
+     * @default false
+     */
+    enableVirtualization?: boolean;
 
     /**
      * Accepts the list items either through local or remote service and binds it to the MultiSelect component.
@@ -334,6 +341,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * Selects the list item which maps the data `text` field in the component.
      *
      * @default null
+     * @aspType string
      */
     text?: string | null;
 
@@ -344,7 +352,14 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * @default null
      * @isGenericType true
      */
-    value?: number[] | string[] | boolean[] | null;
+    value?: number[] | string[] | boolean[] | object[] | null ;
+
+    /**
+    * Defines whether the object binding is allowed or not in the component.
+    *
+    * @default false
+    */
+    allowObjectBinding?: boolean; 
 
     /**
      * Hides the selected item from the list item.

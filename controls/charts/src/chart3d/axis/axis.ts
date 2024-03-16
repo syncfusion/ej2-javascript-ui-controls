@@ -12,10 +12,10 @@ import { axisRangeCalculated } from '../../common/model/constants';
 import { textWrap } from '../../common/utils/helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Chart3D } from '../chart3D';
-import { Chart3DAxisRangeCalculatedEventArgs, Chart3DFont } from '../model/chart3d-Interface';
+import { Chart3DAxisRangeCalculatedEventArgs, Chart3DTextFont } from '../model/chart3d-Interface';
 import { Chart3DMajorGridLinesModel, Chart3DMajorTickLinesModel, Chart3DMinorGridLinesModel, Chart3DMinorTickLinesModel } from './axis-model';
 import { VisibleRangeModel } from '../../common/model/interface';
-import { Chart3DFontModel } from '../model/chart3d-Interface-model';
+import { Chart3DTextFontModel } from '../model/chart3d-Interface-model';
 import { valueToCoefficients } from '../utils/chart3dRender';
 
 /**
@@ -222,8 +222,8 @@ export class Chart3DAxis extends ChildProperty<Chart3DAxis> {
     /**
      * Options to customize the axis label.
      */
-    @Complex<Chart3DFontModel>({ fontFamily: null, size: '12px', fontStyle: 'Normal', fontWeight: '400', color: null }, Chart3DFont)
-    public labelStyle: Chart3DFontModel;
+    @Complex<Chart3DTextFontModel>({ fontFamily: null, size: '12px', fontStyle: 'Normal', fontWeight: '400', color: null }, Chart3DTextFont)
+    public labelStyle: Chart3DTextFontModel;
 
     /**
      * Specifies the title of an axis.
@@ -236,8 +236,8 @@ export class Chart3DAxis extends ChildProperty<Chart3DAxis> {
     /**
      * Options for customizing the axis title.
      */
-    @Complex<Chart3DFontModel>({ fontFamily: null, size: '14px', fontStyle: 'Normal', fontWeight: '600', color: null }, Chart3DFont)
-    public titleStyle: Chart3DFontModel;
+    @Complex<Chart3DTextFontModel>({ fontFamily: null, size: '14px', fontStyle: 'Normal', fontWeight: '600', color: null }, Chart3DTextFont)
+    public titleStyle: Chart3DTextFontModel;
 
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
@@ -966,7 +966,7 @@ export class Visible3DLabels {
 
     public value: number;
 
-    public labelStyle: Chart3DFontModel;
+    public labelStyle: Chart3DTextFontModel;
 
     public size: Size;
 
@@ -977,7 +977,7 @@ export class Visible3DLabels {
     public originalText: string;
 
     constructor(
-        text: string | string[], value: number, labelStyle: Chart3DFontModel,
+        text: string | string[], value: number, labelStyle: Chart3DTextFontModel,
         originalText: string | string[], size: Size = new Size(0, 0),
         breakLabelSize: Size = new Size(0, 0), index: number = 1
     ) {

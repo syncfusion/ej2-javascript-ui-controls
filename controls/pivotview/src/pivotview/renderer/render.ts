@@ -65,6 +65,7 @@ export class Render {
     private maxMeasurePos: number = 0;
     private hierarchyCount: number = 0;
     private actualText: string = '';
+    private drilledLevelInfo: { [key: string]: boolean } = {};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private timeOutObj: any;
     /** Constructor for render module
@@ -102,7 +103,7 @@ export class Render {
                 this.engine.headerContent = this.frameDataSource('header');
                 this.engine.valueContent = this.frameDataSource('value');
             } else {
-                if (this.parent.enableValueSorting) {
+                if (this.parent.enableValueSorting && this.parent.dataType !== 'olap') {
                     this.engine.valueContent = this.frameDataSource('value');
                 }
                 this.engine.isEngineUpdated = false;
@@ -170,6 +171,7 @@ export class Render {
     private refreshHeader(): void {
         const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) as HTMLElement;
         if (this.parent.enableVirtualization && !isNullOrUndefined(mCont)) {
+            const virtualTable: HTMLElement = (closest(mCont, '.' + cls.GRID_CONTENT) as HTMLElement).querySelector('.' + cls.VIRTUALTABLE_DIV);
             const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
             const vtr: HTMLElement = mCont.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
             this.parent.virtualHeaderDiv = mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
@@ -196,7 +198,8 @@ export class Render {
                         = Number(-freezedCellValue) + 'px';
                 }
             }
-            const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.VIRTUALTABLE_DIV);
+            const ele: HTMLElement = this.parent.isAdaptive ? mCont :
+                (virtualTable && (virtualTable.style.display !== 'none')) ? virtualTable : mCont.parentElement;
             mHdr.scrollLeft = ele.scrollLeft;
         }
     }
@@ -965,17 +968,18 @@ export class Render {
     }
 
     private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number, column: Column): HTMLElement {
-        if (this.parent.enableValueSorting && this.parent.dataType === 'pivot') {
-            const vSort: IValueSortSettings = this.parent.dataSourceSettings.valueSortSettings;
+        const engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
+        const vSort: IValueSortSettings = this.parent.dataSourceSettings.valueSortSettings;
+        if (this.parent.enableValueSorting && vSort && vSort.headerText !== '') {
             const len: number = (cell.type === 'grand sum' &&
                 this.parent.dataSourceSettings.values.length === 1 && !this.parent.dataSourceSettings.alwaysShowValueHeader) ? 0 :
                 (this.parent.dataSourceSettings.values.length > 1 || this.parent.dataSourceSettings.alwaysShowValueHeader) ?
-                    (this.parent.engineModule.headerContent.length - 1) :
-                    this.parent.dataSourceSettings.columns.length === 0 ? 0 : (this.parent.engineModule.headerContent.length - 1);
+                    (engine.headerContent.length - 1) :
+                    this.parent.dataSourceSettings.columns.length === 0 ? 0 : (engine.headerContent.length - 1);
             const lock: boolean = (vSort && vSort.headerText) ? cell.valueSort.levelName === vSort.headerText : cCnt === vSort.columnIndex;
             if (vSort !== undefined && lock && (rCnt === len || (rCnt + 1) === len && cell.level > -1 &&
-                this.parent.engineModule.headerContent[(rCnt + 1)][cCnt as number]
-                && this.parent.engineModule.headerContent[(rCnt + 1)][cCnt as number].level === -1)
+                engine.headerContent[(rCnt + 1)][cCnt as number]
+                && engine.headerContent[(rCnt + 1)][cCnt as number].level === -1)
                 && this.parent.dataSourceSettings.valueAxis === 'column') {
                 tCell.querySelector('div div').appendChild(createElement('span', {
                     className: (vSort.sortOrder === 'Descending' ?
@@ -1115,7 +1119,23 @@ export class Render {
                     const levelPosition: number = levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length -
                         (memberPos ? memberPos - 1 : memberPos);
                     let level: number = levelPosition ? (levelPosition - 1) : 0;
-                    level = cell.isSum ? level - 1 : level;
+                    if (this.parent.dataSourceSettings.subTotalsPosition === 'Bottom' && !isNullOrUndefined(levelName)) {
+                        const cellLevelName: string = !cell.isSum ? levelName : cell.type === 'value' ?
+                            levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter + (
+                                this.parent.engineModule.valueAxisFields[cell.actualText].caption ?
+                                    this.parent.engineModule.valueAxisFields[cell.actualText].caption :
+                                    this.parent.engineModule.valueAxisFields[cell.actualText].name))[0] : '';
+                        if (cell.isSum && (cell.type === 'value' ? this.drilledLevelInfo[cellLevelName as string] : true)) {
+                            level = level - 1;
+                        } else if (!cell.isSum) {
+                            if (cellLevelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length === 1) {
+                                this.drilledLevelInfo = {};
+                            }
+                            if (cell.members && cell.members.length > 0) {
+                                this.drilledLevelInfo[cellLevelName as string] = cell.isDrilled;
+                            }
+                        }
+                    }
                     do {
                         if (level > 0) {
                             tCell.appendChild(createElement('span', {
@@ -1306,7 +1326,10 @@ export class Render {
             }
         } else {
             const hierarchyName: string = cell.hierarchy;
-            const levelName: string = cell.memberType === 3 ? (this.measurePos + '.' + cell.levelUniqueName) : cell.levelUniqueName;
+            const actualLevelName: string = cell.valueSort ? cell.valueSort.levelName.toString() : '';
+            const levelPosition: number = cell.level === -1 ? this.measurePos :
+                actualLevelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length - 1;
+            const levelName: string = cell.memberType === 3 ? (levelPosition + '.' + cell.levelUniqueName) : cell.levelUniqueName;
             const hasChild: boolean = cell.hasChild;
             let isSubTotalCell: boolean = false;
             if (cell.isSum && cell.memberType === 3) {
@@ -1447,9 +1470,10 @@ export class Render {
                     } else if (cell.type) {
                         tCell.classList.add('e-colstot');
                     }
+                    const engine: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
                     let localizedText: string = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) || this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('grandTotal') :
                         cell.formattedText) : cell.formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total');
-                    localizedText = isColumnFieldsAvail && this.parent.engineModule.fieldList ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[cell.actualText].aggregateType)
+                    localizedText = isColumnFieldsAvail && engine.fieldList ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(engine.fieldList[cell.actualText].aggregateType)
                         + ' ' + this.parent.localeObj.getConstant('of') + ' ' + cell.formattedText : localizedText;
                     if ((tCell.querySelector('.e-headertext') as HTMLElement) !== null) {
                         (tCell.querySelector('.e-headertext') as HTMLElement).innerText = localizedText;
@@ -1778,9 +1802,10 @@ export class Render {
      */
     public frameStackedHeaders(): ColumnModel[] {
         const pivotColumns: PivotColumn[] = this.parent.pivotColumns;
+        const engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         const gridColumns: ColumnModel[] = this.parent.grid['columnModel'];
         let autoFitApplied: boolean = false;
-        const refreshColumn: boolean = this.parent.toolbarModule && this.parent.toolbarModule.isReportChange ? true : this.parent.actionObj ? ((this.parent.actionObj.actionName === 'Sort value' && this.parent.engineModule.valueAxis === 1) ||
+        const refreshColumn: boolean = this.parent.toolbarModule && this.parent.toolbarModule.isReportChange ? true : this.parent.actionObj ? ((this.parent.actionObj.actionName === 'Sort value' && engine.valueAxis === 1) ||
             (this.parent.actionObj.actionName === 'Sort field' && this.parent.actionObj.fieldInfo.axis === 'columns') ||
             (this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.actionObj.actionName === 'Sort field' && this.parent.pivotFieldListModule.actionObj.fieldInfo.axis === 'columns')
         ) : false;
@@ -1913,13 +1938,8 @@ export class Render {
         return this.pivotColumns;
     }
 
-    /**
-     * It is used to configure the last column width.
-     *
-     * @param {ColumnModel} column -  It contains the column model.
-     * @returns {void}
-     * @hidden
-     */
+    /** @hidden */
+
     public configLastColumnWidth(column: ColumnModel): void {
         column.minWidth = column.width;
         column.width = 'auto';
@@ -2129,20 +2149,20 @@ export class Render {
             // if (this.actualText !== cell.actualText && cell.colSpan > 1 && cell.level > -1) {
             //     ((args as any).gridCell as any).colSpan = (args.cell as any).colSpan = cell.colSpan > -1 ? cell.colSpan : 1;
             // }
-            rowSpan = cell.rowSpan > -1 ? cell.rowSpan : 1;
+            rowSpan = cell.rowSpan > 0 ? cell.rowSpan : 1;
             if ((args as any).name === 'excelHeaderQueryCellInfo') {
-                if (cell.rowSpan > -1) {
+                if (cell.rowSpan > 0) {
                     rowSpan = cell.rowSpan;
                 } else if (!isNullOrUndefined(cell.type) && cell.level !== 0) {
-                    rowSpan = -1;
-                    (args.cell as any).rowSpan = -1;
+                    rowSpan = 1;
+                    (args.cell as any).rowSpan = 1;
                 }
             }
             this.actualText = cell.actualText as string;
         } else {
             rowSpan = Object.keys(this.engine.headerContent).length;
         }
-        if ((args.cell as any).rowSpan !== rowSpan && rowSpan > -1) {
+        if ((args.cell as any).rowSpan !== rowSpan && rowSpan > 0) {
             (args.cell as any).rowSpan = rowSpan;
         }
         return args;

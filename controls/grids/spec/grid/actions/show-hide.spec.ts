@@ -9,7 +9,8 @@ import { Filter } from '../../../src/grid/actions/filter';
 import { contentReady, freezeRender } from '../../../src/grid/base/constant';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { Column } from '../../../src/grid/models/column';
-import { data, filterData } from '../base/datasource.spec';
+import { data, filterData, employeeData } from '../base/datasource.spec';
+import { DetailRow } from '../../../src/grid/actions/detail-row';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Resize } from '../../../src/grid/actions/resize';
@@ -20,7 +21,7 @@ import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
 import { Group } from '../../../src/grid/actions/group';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 
-Grid.Inject(Aggregate, Filter, Resize, RowDD, Edit, VirtualScroll, InfiniteScroll, Group);
+Grid.Inject(Aggregate, Filter, Resize, DetailRow, RowDD, Edit, VirtualScroll, InfiniteScroll, Group);
 
 describe('ShowHide module testing', () => {
 
@@ -988,6 +989,44 @@ describe('ShowHide module testing', () => {
             let rows: HTMLTableRowElement = (gridObj.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
             expect(rows.cells[3].classList.contains('e-hide')).toBeTruthy();
             expect(rows.cells[4].classList.contains('e-hide')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('EJ2-870490 - Issue with column chooser hidden maintain when editing the record', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowPaging: true,
+                    columns: [
+                        { field: 'EmployeeID', visible: false, headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                        { field: 'FirstName', headerText: 'First Name', textAlign: 'Left', width: 100 },
+                        { field: 'Title', headerText: 'Title', textAlign: 'Left', width: 120 },
+                        { field: 'City', headerText: 'City', textAlign: 'Left', width: 100 },
+                        { field: 'Country', headerText: 'Country', textAlign: 'Left', width: 100 }
+                    ],
+                    pageSettings: { pageCount: 5 },
+                    childGrid: {
+                        dataSource: filterData,
+                        queryString: 'EmployeeID',
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                            { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                            { field: 'ShipCity', headerText: 'Ship City', textAlign: 'Left', width: 100 },
+                            { field: 'Freight', headerText: 'Freight', textAlign: 'Left', width: 120 },
+                            { field: 'ShipName', headerText: 'Ship Name', textAlign: 'Left', width: 100 }
+                        ]
+                    }
+                }, done);
+        });
+
+        it('Show a Columns and check the visible property in cell object', () => {
+            gridObj.showColumns(['Employee ID'], 'headerText');
+            expect(gridObj.getRowsObject()[0].cells[1].visible).toBe(true);
         });
         afterAll(() => {
             destroy(gridObj);

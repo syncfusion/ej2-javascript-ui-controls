@@ -79,9 +79,9 @@ export class EmojiPicker {
         }
         this.popDiv = this.parent.createElement('div', { className: 'e-rte-emojipicker-popup', id: this.parent.getID() + '_emojiPicker' });
         if (!isNOU(this.parent.getToolbar()) && !this.parent.inlineMode.enable){
-            this.parent.getToolbar().appendChild(this.popDiv);
+            this.parent.getToolbar().parentElement.appendChild(this.popDiv);
         } else if (this.parent.inlineMode.enable) {
-            this.parent.inputElement.appendChild(this.popDiv);
+            this.parent.element.appendChild(this.popDiv);
         }
         EventHandler.add(this.popDiv, 'keydown', this.onKeyDown, this);
         EventHandler.add(this.popDiv, 'keyup', this.searchFilter, this);

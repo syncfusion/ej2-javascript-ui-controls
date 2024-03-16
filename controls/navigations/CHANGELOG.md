@@ -2,57 +2,19 @@
 
 ## [Unreleased]
 
-## 24.2.7 (2024-02-20)
+## 25.1.35 (2024-03-15)
 
-### TreeView
-
-#### Bug fixes
-
-- `#I550140` - Resolved the accessibility issue with TreeView component when rendered with checkbox.
-
-## 24.2.4 (2024-02-06)
-
-### Tab
-
-#### Bug fixes
-
-- `#I523951` - The issue with React's selection of a tab item using the select method, where all tab items were being underlined, has been resolved.
-
-## 24.2.3 (2024-01-31)
-
-### Menu
+### ContextMenu
 
 #### Bug Fixes
 
-- The issue with "Sub menu not opening properly while opens the next to next menu" has been resolved.
+- `#I565323` - The issue with "Context menu closed while scroll within the sub menu of context menu.
 
-### Tab
-
-#### Bug fixes
-
-- `#I546255` - An issue tab switching on disable item has been resolved.
-
-## 24.1.46 (2024-01-17)
-
-### Menu
-
-#### Bug Fixes
-
-- `#F519984` - The issue with "Keyboard action is not working properly in the Menu Component" has been resolved.
-
-### TreeView
-
-#### Bug Fixes
-
-- `#I531520` - TreeView component's title not decoded properly same as in tree node text has been resolved.
-
-### Toolbar
+### Stepper
 
 #### Bug fixes
 
-- `#I508465` - The issue with the differentiate toolbar active and focus states has been resolved.
-
-## 24.1.41 (2023-12-18)
+- `#I564429` - The issue with stepper progress bar misalignment in firefox browser has been resolved.
 
 ### TreeView
 

@@ -7321,7 +7321,7 @@ export class WordExport {
     private serializeContentTypes(contentType: String, formatType?: string): void {
 
         let writer: XmlWriter = new XmlWriter();
-
+        
 
         writer.writeStartElement(undefined, 'Types', 'http://schemas.openxmlformats.org/package/2006/content-types');
         //if (m_hasOleObject)
@@ -7362,12 +7362,12 @@ export class WordExport {
 
 
         //document.xml
-
-        if (formatType == 'Docx') {
+        if(formatType == 'Docx'){
             this.serializeOverrideContentType(writer, this.documentPath, this.documentContentType);
-        } else if (formatType == 'Dotx') {
+        } else if(formatType == 'Dotx'){
             this.serializeOverrideContentType(writer, this.documentPath, this.TemplateContentType);
         }
+
 
         //<Override PartName='/word/numbering.xml' ContentType='application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml'/>
         // if (HasNumbering) {

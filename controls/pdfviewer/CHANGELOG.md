@@ -2,6 +2,50 @@
 
 ## [Unreleased]
 
+## 25.1.35 (2024-03-15)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I557034` - Now, the text markup content is preserved properly in the exported JSON for multiline annotations.
+- `#I559996`, `#I556643` - Now, the author’s name does not update automatically upon moving the annotations.
+- `#I560732` - Now, the empty file is not exported if the added annotations are deleted through the context menu delete option.
+- `#I559473` - Now, the exporting rectangle annotation with custom thickness is working properly.
+
+#### Features
+ 
+- `#I551138`, `#I553282` - Implemented functionality to manage PDF page organization, including insertion, deletion, and rotation in the PDF Viewer.
+- `#I325358`, `#I336517`, `#I355078` - Enabled customization of context menu items in the PDF Viewer by introducing the `addCustomMenu` API for adding custom menu items. Additionally, provided the `customContextMenuSelect` and `customContextMenuBeforeOpen` events to enhance flexibility and control over context menu interactions within the PDF Viewer.
+- `#I516224` - Implemented the ability to programmatically control the opening and closing of the bookmark pane in the PDF Viewer through the introduction of the `openBookmarkPane` and `closeBookmarkPane` APIs. This allows users to conveniently interact with the bookmark pane within the PDF Viewer interface.
+- `#I515986` - Introduced events, namely `pageRenderInitiate` and `pageRenderComplete`, in the PDF Viewer to provide notification regarding the initiation and completion of page rendering processes. These events offer users enhanced control and insights into the rendering workflow within the viewer interface.
+- Integrated keyboard accessibility shortcuts and options for custom key commands using the `commandManager` API in the PDF Viewer, utilizing properties such as `keyboardCommand.name` for specifying custom command names and `keyboardCommand.gesture` for defining custom key gestures.
+- `#I477482`- Enhanced support for rendering custom appearance stamp images in the PDF Viewer.
+- Implemented support for utilizing PNG format images in the Standalone PDF Viewer for adding images to handwritten annotations, custom stamps, signatures, and initial form fields. Previously limited to certain formats like JPEG, now PNG images can also be saved and rendered for these purposes.
+
+## 24.2.9 (2024-03-05)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I547297` - Now, the data property was updated properly in the `addSignature` event.
+- `#I556216` - Now, the download was working properly for the provided document.
+- `#I556594` - Now, the script error does not occur when programmatically changing the font size in mobile mode.
+
+## 24.2.8 (2024-02-27)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I549538` - Now, the selected value and index of the dropdown are updated correctly for dropdown lists that are not selected.
+- `#I550956` - Now, the comments do not overlap when the author name has more characters.
+- `#I545417` - Now, dynamically show and hide the text search pane is working properly.
+- `#I553949` - Now, the check box appearance is properly displayed on iOS devices.
+- `#I558011` - Now, the form fields are rendered properly after pinch zooming in mobile mode.
+- `#I553568` - Now, the `ValidateFormFields` event is triggered properly, even though the form designer module was not injected.
+
 ## 24.2.7 (2024-02-20)
 
 ### PDF Viewer
@@ -28,11 +72,11 @@
 #### Bug Fixes
 
 - `#I543533` - Now, the `annotationPropertiesChange` event is triggered when updating the freetext annotation value for the first time.
-- `#I549061` - Now, the tree text annotation selector is resized after programmatically changing font size.
 - `#I549061` - Now, the text markup selection is working properly in mobile devices.
+- `#I547297` - Now, the canvas within the Signature dialogue container is now centred for mobile view, and in the mobile view, the data property has been included in the `addSignature` event arguments.
+- `#I549061` - Now, the tree text annotation selector is resized after programmatically changing font size.
 - `#I549061` - Now, the page does not zoom when selecting the free text annotation on a mobile device.
 - `#I542451` - Now, the background color of the freeText annotation does not appear as black after downloading the document in a Stand-alone PDF Viewer.
-- `#I547297` - Now, the canvas within the Signature dialogue container is now centred for mobile view, and in the mobile view, the data property has been included in the `addSignature` event arguments.
 
 ## 24.2.4 (2024-02-06)
 
@@ -57,9 +101,9 @@
 - `#I542557` - Now, multiline textbox field is not able to resize without form designer mode.
 - `#I537053` - Now, the highlight button does not appear focused even after being clicked again.
 - `#I537971` - Now, the signature content is visible when loading the customer provided PDF document.
+- `#I545609` - Now, the current page does not change when selecting 400% from the zoom drop-down.
 - `#I537057` - Now, the font sizes of the input element items in the toolbar does not vary across different themes.
 - `#I537061` - Now, the vertical alignment of toolbar items does not vary across different themes.
-- `#I545609` - Now, the current page does not change when selecting 400% from the zoom drop-down.
 - `#I538873` - Now, the text search is working properly in the Stand-alone PDF Viewer.
 - `#I545609` - The text selection in the Stand-alone PDF Viewer now works properly when zoomed in above 100%.
 - `#I539013` - Scrolling now works even if the annotation module is not injected on iPad and iPhone devices.
@@ -82,10 +126,10 @@
 
 #### Bug Fixes
 
-- `#I537980` - Now, the form fields have rendered properly without injecting the annotation, text selection, and text search modules.
 - `#I533753` - Now, only the formFieldSelect event is called when select the `formField`.
-- `#I537955` - Now, programmatically opening the handwritten signature dialog is works properly after opening the Initial dialog.
+- `#I537980` - Now, the form fields have rendered properly without injecting the annotation, text selection, and text search modules.
 - `#I536567` - Now, duplicate comment and replay content are not added to the annotation when exporting/importing the text markup annotation.
+- `#I537955` - Now, programmatically opening the handwritten signature dialog is works properly after opening the Initial dialog.
 - `#I536470` - Now, a script error is not occurs when rapidly adding a TextBox across multiple pages.
 
 ## 24.1.45 (2024-01-09)
@@ -102,7 +146,7 @@
 - `#I524631` - Now, the custom stamp options are not being removed in the custom stamp menu when updating after control initialization.
 - `#I531042` - Now, the custom data of the annotation is properly preserved after undoing the deletion of the imported annotation.
 - `#I533144` - Now, the documents load properly in the Stand-alone PDF Viewer when using the document path and open option alternatively.
-- `#I528636` - Now, the saved text markup annotation is rendered properly when adding the annotation programmatically.
+- `#I537955` - Now, programmatically opening the handwritten signature dialog is works properly after opening the Initial dialog.
 
 ## 24.1.44 (2024-01-03)
 
@@ -120,8 +164,8 @@
 
 - `#I499403` - Now, the import functionality is working for the given custom stamp annotation.
 - `#I525379` - Now, the PDF pages are rendered properly when zooming in the provided PDF document on the client-side rendering.
-- `#I529609` - Now, the annotation time does not change in the comment panel without making any changes.
 - `#F185745` - Now, the calibrate distance annotations is not flip when downloading the document and opening it in the other viewers.
+- `#I529609` - Now, the annotation time does not change in the comment panel without making any changes.
 - `#I529723` - Now, the radio button size does not enlarge when copied, pasted, or dragged.
 - `#I529705` - Now, the annotations are displayed after importing XFDF file.
 

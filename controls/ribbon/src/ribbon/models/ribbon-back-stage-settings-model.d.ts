@@ -13,6 +13,13 @@ export interface BackStageMenuModel {
     text?: string;
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    keyTip?: string;
+
+    /**
      * Defines whether to show the backstage menu button.
      *
      * @default false

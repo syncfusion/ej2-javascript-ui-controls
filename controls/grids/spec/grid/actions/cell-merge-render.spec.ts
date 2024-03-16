@@ -7,13 +7,15 @@ import { Grid } from '../../../src/grid/base/grid';
 import { CellMergeRender } from '../../../src/grid/renderer/cell-merge-renderer';
 import { ContentRender } from '../../../src/grid/renderer/content-renderer';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { data } from '../base/datasource.spec';
+import { data, filterData } from '../base/datasource.spec';
 import { extend } from '@syncfusion/ej2-base';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { Page } from '../../../src/grid/actions/page';
+import { Edit } from '../../../src/grid/actions/edit';
 import { profile, inMB, getMemoryProfile } from '../base/common.spec';
 
-Grid.Inject(VirtualScroll);
+Grid.Inject(VirtualScroll, Page, Edit);
 
 describe('Cell Merge', () => {
 
@@ -178,6 +180,114 @@ describe('Cell Merge', () => {
             });
         });
 
+    });
+
+    // frozen rows and columns with column spanning and row spanning feature
+    describe('EJ2-273272 - Need to provide support for frozen rows and columns with column spanning and row spanning', () => {
+        let gridObj: Grid;
+        let preventDefault: Function = new Function();
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    frozenColumns: 2,
+                    allowPaging: true,
+                    selectionSettings: { allowColumnSelection: true },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                        { field: 'EmployeeID', headerText: 'Employee ID', width: 180, minWidth: 10 },
+                        { field: 'OrderDate', headerText: 'Order Date', freeze: 'Fixed', width: 150, format: 'yMd', textAlign: 'Right', minWidth: 10 },
+                        { field: 'ShipRegion', headerText: 'Ship Region ', freeze: 'Fixed', width: 180, minWidth: 10 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 300, minWidth: 10 },
+                        { field: 'ShipAddress', headerText: 'Ship Address', clipMode: 'Ellipsis', width: 170, minWidth: 10 },
+                        { field: 'ShipCity', headerText: 'Ship City', freeze: 'Right', width: 250, minWidth: 10 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', freeze: 'Right', width: 250, minWidth: 10 },
+                    ],
+                    queryCellInfo: function (args: any) {
+                        var data = args.data;
+                        if (data.OrderID === 10249 && args.column.field === 'OrderID') {
+                            args.colSpan = 2;
+                        }
+                        if (data.OrderID === 10249 && args.column.field === 'Freight') {
+                            args.rowSpan = 3;
+                        }
+                        if (data.OrderID === 10248 && args.column.field === 'Freight') {
+                            args.colSpan = 3;
+                        }
+                        if (data.OrderID === 10248 && args.column.field === 'OrderDate') {
+                            args.colSpan = 5;
+                        }
+                        if (data.OrderID === 10248 && args.column.field === 'CustomerID') {
+                            args.colSpan = 2;
+                        }
+                        if (data.OrderID === 10251 && args.column.field === 'EmployeeID') {
+                            args.rowSpan = 2;
+                        }
+                        if (data.OrderID === 10255 && args.column.field === 'OrderDate') {
+                            args.colSpan = 2;
+                        }
+                        if (data.OrderID === 10253 && args.column.field === 'OrderID') {
+                            args.rowSpan = 2;
+                        }
+                        if (data.OrderID === 10253 && args.column.field === 'shipCity') {
+                            args.colSpan = 5;
+                        }
+                        if (data.OrderID === 10251 && args.column.field === 'OrderDate') {
+                            args.rowSpan = 2;
+                        }
+                        if (data.OrderID === 10252 && args.column.field === 'ShipRegion') {
+                            args.rowSpan = 2;
+                        }
+                        if (data.OrderID === 10259 && args.column.field === 'ShipRegion') {
+                            args.rowSpan = 2;
+                        }
+                        if (data.OrderID === 10258 && args.column.field === 'ShipName') {
+                            args.rowSpan = 15;
+                        }
+            
+                    },
+                }, done);
+        });
+
+        it('-- Frozen grid with rowSpan and Colspan --', () => {
+            let tr = gridObj.getContentTable().querySelectorAll('tr');
+            let row1 = tr[1].querySelectorAll('td');
+            let row2 = tr[2].querySelectorAll('td');
+            expect(row1.length).toBe(9);
+            expect(row2.length).toBe(9);
+            expect(row2[row2.length - 1].getAttribute('colspan')).toBe(null);
+            expect(row1[0].getAttribute('colspan')).toBe('2');
+        });
+
+        it('Rowspan and Colspan with columns selection - 1', () => {
+            gridObj.selectionModule.selectColumn(1);
+            let tr = gridObj.getContentTable().querySelectorAll('tr');
+            let cells = tr[1].querySelectorAll('td');
+            expect(cells[2].classList.contains('e-columnselection')).toBeFalsy();
+        });
+
+        
+        it('Rowspan and Colspan with edting', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(gridObj.element.querySelector('.e-inline-edit').querySelectorAll('.e-rowcell').length).toBe(8);
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.clearSelection();
+            gridObj.selectRow(0, true);
+            gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
     });
 
 });

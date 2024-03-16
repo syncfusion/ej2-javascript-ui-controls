@@ -17,6 +17,7 @@ import { TextHelper } from './text-helper';
 import { LayoutViewer, WebLayoutViewer, DocumentHelper } from './viewer';
 import { Revision } from '../track-changes/track-changes';
 import { Layout } from './layout';
+import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 /**
  * @private
  */
@@ -219,7 +220,7 @@ export abstract class Widget implements IWidget {
         if (widget instanceof BodyWidget) {
             if (index > 0 && !(widget.containerWidget instanceof FootNoteWidget)) {
                 widget = widget.page.bodyWidgets[index - 1];
-            } else if ((widget.containerWidget instanceof FootNoteWidget) && !widget.page.documentHelper.owner.editor.removeEditRange) {
+            } else if ((widget.containerWidget instanceof FootNoteWidget) && !widget.page.documentHelper.owner.editorModule.removeEditRange) {
                 if (index <= 0) {
                     return undefined;
                 }
@@ -274,7 +275,7 @@ export abstract class Widget implements IWidget {
             if (index < widget.page.bodyWidgets.length - 1 && !(widget.containerWidget instanceof FootNoteWidget)) {
                 widget = widget.page.bodyWidgets[index + 1];
             } else if (widget.containerWidget instanceof FootNoteWidget) {
-                if (index >= widget.containerWidget.bodyWidgets.length - 1 && !widget.page.documentHelper.owner.editor.removeEditRange) {
+                if (index >= widget.containerWidget.bodyWidgets.length - 1 && !widget.page.documentHelper.owner.editorModule.removeEditRange) {
                     return undefined;
                 }
                 widget = widget.containerWidget.bodyWidgets[index + 1];
@@ -1116,6 +1117,10 @@ export class ParagraphWidget extends BlockWidget {
      * @private
      */
     public isChangeDetected: boolean = false;
+    /**
+     * @private
+     */
+    public isCreatedUsingHtmlSpanTag: boolean = undefined;
     /**
      * @private
      * The clientX having previous left value of empty paragraph
@@ -2591,11 +2596,11 @@ export class TableWidget extends BlockWidget {
         return value < 100 ? value : 100; // The value should be lesser than or equal to 100%;
     }
 
-    public updateChildWidgetLeft(left: number): void {
+    public updateChildWidgetLeft(left: number, updateLeftIndent?: boolean): void {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let rowWidget: TableRowWidget = this.childWidgets[i] as TableRowWidget;
             rowWidget.x = left;
-            rowWidget.updateChildWidgetLeft(left);
+            rowWidget.updateChildWidgetLeft(left, updateLeftIndent);
         }
     }
 
@@ -3176,6 +3181,16 @@ export class TableRowWidget extends BlockWidget {
     /**
      * @private
      */
+    public getFirstRowWidth(): number {
+        let width: number = 0;
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            width += (this.childWidgets[i] as TableCellWidget).getCellWidth(this.ownerTable);
+        }
+        return width;
+    }
+    /**
+     * @private
+     */
     public getCellWidget(columnIndex: number, columnSpan: number): TableCellWidget {
         let tableHolder: WTableHolder = this.ownerTable.tableHolder;
         let index: number = tableHolder.getValidColumnIndex(columnIndex);
@@ -3297,7 +3312,7 @@ export class TableRowWidget extends BlockWidget {
      * @param left 
      * @private
      */
-    public updateChildWidgetLeft(left: number): void {
+    public updateChildWidgetLeft(left: number, updateLeftIndent?: boolean): void {
         // TODO: Cell spacing calculation.
         let spacing: number = 0;
         if (this.ownerTable.tableFormat.cellSpacing > 0) {
@@ -3307,7 +3322,7 @@ export class TableRowWidget extends BlockWidget {
             let cellWidget: TableCellWidget = this.childWidgets[i] as TableCellWidget;
             left += spacing + cellWidget.margin.left;
             cellWidget.x = left;
-            cellWidget.updateChildWidgetLeft(cellWidget.x);
+            cellWidget.updateChildWidgetLeft(cellWidget.x, updateLeftIndent);
             left += cellWidget.width + cellWidget.margin.right;
         }
     }
@@ -4197,12 +4212,16 @@ export class TableCellWidget extends BlockWidget {
     /**
      * @private
      */
-    public updateChildWidgetLeft(left: number): void {
+    public updateChildWidgetLeft(left: number, updateLeftIndent?: boolean): void {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
-            (this.childWidgets[i] as Widget).x = left;
-            if (this.childWidgets[i] instanceof TableWidget) {
-                let tableWidget: TableWidget = this.childWidgets[i] as TableWidget;
-                tableWidget.updateChildWidgetLeft(left);
+            let widget: Widget = this.childWidgets[i] as Widget;
+            widget.x = left;
+            if (updateLeftIndent && widget instanceof ParagraphWidget) {
+                widget.x = left + HelperMethods.convertPointToPixel(widget.leftIndent);
+            }
+            if (widget instanceof TableWidget) {
+                let tableWidget: TableWidget = widget as TableWidget;
+                tableWidget.updateChildWidgetLeft(left, updateLeftIndent);
                 if (tableWidget.isBidiTable) {
                     let clientArea: Rect = new Rect(tableWidget.x, tableWidget.y, tableWidget.width, tableWidget.height);
                     tableWidget.shiftWidgetsForRtlTable(clientArea, tableWidget);
@@ -6924,6 +6943,8 @@ export class ImageElementBox extends ShapeBase {
         image.cropX = this.cropX;
         image.cropY = this.cropY;
         image.isCrop = this.isCrop;
+        image.x = this.x;
+        image.y = this.y;
         if (this.margin) {
             image.margin = this.margin.clone();
         }
@@ -8454,6 +8475,10 @@ export class ChartCategoryAxis {
     /**
      * @private
      */
+    private isAutoMajor: boolean;
+    /**
+     * @private
+     */
     private minimumValue: number;
     /**
      * @private
@@ -8530,6 +8555,18 @@ export class ChartCategoryAxis {
      */
     set interval(value: number) {
         this.majorUnit = value;
+    }
+    /**
+     * @private
+     */
+    get isAutoInternal(): boolean {
+        return this.isAutoMajor;
+    }
+    /**
+     * @private
+     */
+    set isAutoInternal(value: boolean) {
+        this.isAutoMajor = value;
     }
     /**
      * @private
@@ -8633,6 +8670,7 @@ export class ChartCategoryAxis {
         chart.minimumValue = this.minimumValue;
         chart.maximumValue = this.maximumValue;
         chart.majorUnit = this.majorUnit;
+        chart.isAutoMajor = this.isAutoMajor;
         chart.majorTickMark = this.majorTickMark;
         chart.minorTickMark = this.minorTickMark;
         chart.tickLabelPostion = this.tickLabelPostion;
@@ -8774,6 +8812,9 @@ export class CommentCharacterElementBox extends ElementBox {
         let comment: CommentCharacterElementBox = new CommentCharacterElementBox(this.commentType);
         comment.commentId = this.commentId;
         comment.commentType = this.commentType;
+        if (!isNullOrUndefined(this.commentInternal)) {
+            comment.commentInternal = this.commentInternal.clone() as CommentElementBox;
+        }
         return comment;
     }
     constructor(type: number) {
@@ -8825,22 +8866,40 @@ export class CommentCharacterElementBox extends ElementBox {
         
         for (let index = 0; index < commentMarkDictionary.length; index++){
             let element:HTMLElement=commentMarkDictionary.keys[index];
+            
             if(commentMarkDictionary.get(element).length==1){
                 if(commentMarkDictionary.get(element)[0].commentMark){
                     if(commentMarkDictionary.get(element)[0].commentMark.firstElementChild.classList.contains('e-de-multi-cmt-mark')){
                         classList(commentMarkDictionary.get(element)[0].commentMark.firstElementChild,['e-de-cmt-mark-icon'],['e-de-multi-cmt-mark']);
-                    } 
+                    } else if(commentMarkDictionary.get(element)[0].commentInternal.isResolved && commentMarkDictionary.get(element)[0].commentMark.firstElementChild.classList.contains('e-de-cmt-mark-icon')) {    
+                        classList(commentMarkDictionary.get(element)[0].commentMark.firstElementChild,['e-de-cmt-resolve-icon'],['e-de-cmt-mark-icon']);                       
+                   } else if(!commentMarkDictionary.get(element)[0].commentInternal.isResolved && commentMarkDictionary.get(element)[0].commentMark.firstElementChild.classList.contains('e-de-cmt-resolve-icon')){
+                        classList(commentMarkDictionary.get(element)[0].commentMark.firstElementChild,['e-de-cmt-mark-icon'],['e-de-cmt-resolve-icon']);
+                      }
                 } 
             }
+
             if(commentMarkDictionary.get(element).length>1){
                 for (let z = 0; z < commentMarkDictionary.get(element).length; z++) {
-                    if(commentMarkDictionary.get(element)[z].commentMark){
-                        if(commentMarkDictionary.get(element)[z].commentMark.firstElementChild.classList.contains('e-de-cmt-mark-icon')){
-                            classList(commentMarkDictionary.get(element)[z].commentMark.firstElementChild,['e-de-multi-cmt-mark'],['e-de-cmt-mark-icon']);   
+                    let resolve = true;
+                    for (var z_1 = 0; z_1 < commentMarkDictionary.get(element).length; z_1++) {
+                        if (commentMarkDictionary.get(element)[z_1].commentInternal && !commentMarkDictionary.get(element)[z_1].commentInternal.isResolved) {
+                                resolve = false;
+                                break;
                         } 
+                    }
+
+                    if(commentMarkDictionary.get(element)[z].commentMark){
+                    if(commentMarkDictionary.get(element)[z].commentMark.firstElementChild.classList.contains('e-de-cmt-mark-icon')){
+                    classList(commentMarkDictionary.get(element)[z].commentMark.firstElementChild,['e-de-multi-cmt-mark'],['e-de-cmt-mark-icon']);}
+                    else if(!resolve && commentMarkDictionary.get(element)[z].commentMark.firstElementChild.classList.contains('e-de-multi-cmt-resolve')){classList(commentMarkDictionary.get(element)[z].commentMark.firstElementChild,['e-de-multi-cmt-mark'],['e-de-multi-cmt-resolve']);}
+                    else if(resolve){
+                        classList(commentMarkDictionary.get(element)[z].commentMark.firstElementChild,['e-de-multi-cmt-resolve'],['e-de-multi-cmt-mark']);
                     }
                 }   
             }
+        }
+
         }
     }
 
@@ -8946,6 +9005,8 @@ export class CommentElementBox extends CommentCharacterElementBox {
 
     public ownerComment: CommentElementBox = undefined;
 
+    private mentionsIn: FieldSettingsModel[] = [];
+
     get commentStart(): CommentCharacterElementBox {
         return this.commentStartIn;
     }
@@ -8987,6 +9048,14 @@ export class CommentElementBox extends CommentCharacterElementBox {
 
     set text(value: string) {
         this.textIn = value;
+    }
+
+    get mentions(): FieldSettingsModel[] {
+        return this.mentionsIn;
+    }
+
+    set mentions(value: FieldSettingsModel[]) {
+        this.mentionsIn = value;
     }
 
     constructor(date: string) {
@@ -9177,19 +9246,19 @@ export class Page {
             this.footerWidget.page = undefined;
         }
         if (this.headerWidgetIn && !isNullOrUndefined(this.headerWidgetIn.parentHeaderFooter)) {
-            if (this.viewer && this.documentHelper.owner.editor) {
-                this.documentHelper.owner.editor.removeFieldInWidget(this.headerWidgetIn);
+            if (this.viewer && this.documentHelper.owner.editorModule) {
+                this.documentHelper.owner.editorModule.removeFieldInWidget(this.headerWidgetIn);
                 // Remove content control
-                this.documentHelper.owner.editor.removeFieldInWidget(this.headerWidgetIn, false, true);
+                this.documentHelper.owner.editorModule.removeFieldInWidget(this.headerWidgetIn, false, true);
             }
             this.headerWidgetIn.destroy();
             this.headerWidget = undefined;
         }
         if (this.footerWidgetIn && !isNullOrUndefined(this.footerWidgetIn.parentHeaderFooter)) {
-            if (this.viewer && this.documentHelper.owner.editor) {
-                this.documentHelper.owner.editor.removeFieldInWidget(this.footerWidgetIn);
+            if (this.viewer && this.documentHelper.owner.editorModule) {
+                this.documentHelper.owner.editorModule.removeFieldInWidget(this.footerWidgetIn);
                 // Remove content control
-                this.documentHelper.owner.editor.removeFieldInWidget(this.footerWidgetIn, false, true);
+                this.documentHelper.owner.editorModule.removeFieldInWidget(this.footerWidgetIn, false, true);
             }
             this.footerWidgetIn.destroy();
             this.footerWidgetIn = undefined;
@@ -9776,4 +9845,21 @@ export class TabStopListInfo {
      * @private
      */
     public value: WTabStop;
+}
+/** 
+ * @private
+ */
+export class FootnoteEndnoteMarkerElementBox extends TextElementBox {
+    /**
+     * @private
+     */
+    public getLength(): number {
+        return 1;
+    }
+    /**
+     * @private
+     */
+    public clone(): FootnoteEndnoteMarkerElementBox {
+        return super.clone();
+    }
 }

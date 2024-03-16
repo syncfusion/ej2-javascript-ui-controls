@@ -18,7 +18,8 @@ export class Page implements IAction {
     //Internal variables
     private element: HTMLElement;
     private pageSettings: PageSettingsModel;
-    private isForceCancel: boolean;
+    /** @hidden */
+    public isForceCancel: boolean;
     private isInitialLoad: boolean;
     private isInitialRender: boolean = true;
     private evtHandlers: { event: string, handler: Function }[];
@@ -111,9 +112,9 @@ export class Page implements IAction {
             const links: NodeList = numericContainer.querySelectorAll('a');
             for (let i: number = 0; i < links.length; i++) {
                 if (this.parent.getContentTable()) {
-                    (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-owns', this.parent.getContentTable().id);
+                    (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-owns', this.parent.getContentTable().id + ' ' + (i + 1));
                 } else {
-                    (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-owns', this.parent.element.getAttribute('id') + '_content_table');
+                    (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-owns', this.parent.element.getAttribute('id') + '_content_table' + ' ' + (i + 1));
                 }
                 const numericContainerDiv: Element = this.parent.createElement('div');
                 numericContainerDiv.appendChild(links[parseInt(i.toString(), 10)]);
@@ -125,7 +126,7 @@ export class Page implements IAction {
             for (let j: number = 0; j < classList.length; j++) {
                 const element: Element = this.element.querySelector(classList[parseInt(j.toString(), 10)]);
                 if (this.parent.getContentTable()) {
-                    element.setAttribute('aria-owns', this.parent.getContentTable().id);
+                    element.setAttribute('aria-owns', this.parent.getContentTable().id + classList[parseInt(j.toString(), 10)].replace('.e-', ' '));
                 }
             }
         }
@@ -219,8 +220,12 @@ export class Page implements IAction {
             if (!this.isForceCancel) {
                 if (!isNullOrUndefined(e.newProp) && !isNullOrUndefined(e.newProp.pageSize)) {
                     gObj.notify(events.preventBatch, { instance: this, handler: this.setPageSize, arg1: e.newProp.pageSize });
-                    this.pagerObj.pageSize = e.oldProp.pageSize;
-                    gObj.pageSettings.pageSize = e.newProp.pageSize;
+                    this.pagerObj.setProperties({ pageSize: e.oldProp.pageSize }, true);
+                    this.parent.setProperties({ pageSettings: { pageSize: e.oldProp.pageSize } }, true);
+                    this.pagerObj.setProperties({
+                        currentPage: gObj.pageSettings.currentPage === this.pagerObj.currentPage ?
+                            this.pagerObj.previousPageNo : gObj.pageSettings.currentPage
+                    }, true);
                 } else if (e.currentPage) {
                     gObj.notify(events.preventBatch, { instance: this, handler: this.goToPage, arg1: e.currentPage });
                     this.pagerObj.currentPage = gObj.pageSettings.currentPage === this.pagerObj.currentPage ?

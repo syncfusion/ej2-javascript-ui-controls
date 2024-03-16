@@ -127,9 +127,13 @@ export class Render {
                 }
                 if (args.requestType === 'grouping') {
                     // Remove the dropped column name from groupsettings.columns if args.cancel is true                
-                    const index: number = this.parent.groupSettings.columns.indexOf((args as GroupEventArgs).columnName);
+                    const index = gObj.groupSettings.columns.indexOf((args as GroupEventArgs).columnName);
                     if (index !== -1) {
-                        this.parent.groupSettings.columns.splice(index, 1);
+                        gObj.setProperties({ groupSettings: { Columns: gObj.groupSettings.columns.splice(index, 1) } }, true);
+                        gObj.setProperties({ sortSettings: { Columns: gObj.sortSettings.columns.splice(index, 1) } }, true);
+                        const column: Column = gObj.getColumnByField((args as GroupEventArgs).columnName);
+                        const headerCell: Element = gObj.getColumnHeaderByField(column.field);
+                        column.visible = (!isNullOrUndefined(headerCell) && !headerCell.classList.contains('e-hide'));
                     }
                 }
                 return;
@@ -371,7 +375,9 @@ export class Render {
         if (gObj.detailTemplate || gObj.childGrid) {
             ++spanCount;
         }
-        const tr: Element = this.parent.createElement('tr', { className: 'e-emptyrow', attrs: { role: 'row' } });
+        const className = gObj.editSettings.showAddNewRow && gObj.editSettings.newRowPosition === 'Bottom' ?
+            'e-emptyrow e-show-added-row' : 'e-emptyrow';
+        const tr: Element = this.parent.createElement('tr', { className: className, attrs: { role: 'row' } });
         var td: HTMLElement;
         if (gObj.emptyRecordTemplate) {
             const emptyRecordTemplateID: string = gObj.element.id + 'emptyRecordTemplate';
@@ -409,6 +415,10 @@ export class Render {
                 events.onEmpty,
                 { rows: [new Row<Column>({ isDataRow: true, cells: [new Cell<Column>({ isDataCell: true, visible: true })] })] }
             );
+            if (gObj.editSettings.showAddNewRow) {
+                gObj.addRecord();
+                this.parent.notify(events.showAddNewRowFocus, {});
+            }
         }
     }
 
@@ -760,47 +770,59 @@ export class Render {
         return deferred.promise;
     }
 
-    private getPredicate(key: string, operator: string, value: string | number | Date): Predicate {
+    /**
+     * @param {string} key - Defines the key
+     * @param {string} operator - Defines the operator
+     * @param {string | number | Date} value - Defines the value
+     * @returns {Predicate} - Returns the predicate
+     * @hidden */
+    public getPredicate(key: string, operator: string, value: string | number | Date): Predicate {
         if (value instanceof Date) {
             return getDatePredicate({ field: key, operator: operator, value: value });
         }
         return new Predicate(key, operator, value);
     }
 
-    private updateGroupInfo(current: Object[], untouched: Object[]): Object[] {
+    /**
+     * @param {Object[]} current - Defines the current object
+     * @param {Object[]} untouched - Defines the object needs to merge
+     * @returns {Object[]} - Returns the updated group information
+     * @hidden */
+    public updateGroupInfo(current: Object[], untouched: Object[]): Object[] {
         const dm: DataManager = new DataManager(<JSON[]>untouched);
         const elements: Group[] = current;
         for (let i: number = 0; i < elements.length; i++) {
-            const uGroup: Group = dm.executeLocal(new Query()
+            const updatedGroup: Group = dm.executeLocal(new Query()
                 .where(new Predicate('field', '==', elements[parseInt(i.toString(), 10)].field).and(this.getPredicate('key', 'equal', elements[parseInt(i.toString(), 10)].key))))[0];
-            elements[parseInt(i.toString(), 10)].count = uGroup.count; const itemGroup: Group =
-                (<Group>elements[parseInt(i.toString(), 10)].items);
-            const uGroupItem: Group = (<Group>uGroup.items);
-            if (itemGroup.GroupGuid) {
-                elements[parseInt(i.toString(), 10)].items =
-                <Object[]>this.updateGroupInfo(elements[parseInt(i.toString(), 10)].items, uGroup.items);
-            }
-            const rows: AggregateRowModel[] = this.parent.aggregates;
-            for (let j: number = 0; j < rows.length; j++) {
-                const row: AggregateRowModel = (rows as AggregateRowModel)[parseInt(j.toString(), 10)];
-                for (let k: number = 0; k < row.columns.length; k++) {
-                    const types: string[] = row.columns[parseInt(k.toString(), 10)].type instanceof Array ?
-                        (row.columns[parseInt(k.toString(), 10)].type) as string[] :
-                        [(row.columns[parseInt(k.toString(), 10)].type)] as string[];
-                    for (let l: number = 0; l < types.length; l++) {
-                        const key: string = (row.columns[parseInt(k.toString(), 10)] as AggregateColumnModel).field + ' - ' + types[parseInt(l.toString(), 10)].toLowerCase();
-                        const data: Object[] = itemGroup.level ? uGroupItem.records : uGroup.items;
-                        const context: Object = this.parent;
-                        if (types[parseInt(l.toString(), 10)] === 'Custom') {
-                            const data: Group = itemGroup.level ? uGroupItem : uGroup;
-                            let temp: Function = (row.columns[parseInt(k.toString(), 10)] as AggregateColumnModel)
-                                .customAggregate as Function;
-                            if (typeof temp === 'string') {
-                                temp = getValue(temp, window);
+            if (!isNullOrUndefined(updatedGroup)) {
+                elements[parseInt(i.toString(), 10)].count = updatedGroup.count; const itemGroup: Group =
+                    (<Group>elements[parseInt(i.toString(), 10)].items);
+                const updatedGroupItem: Group = (<Group>updatedGroup.items);
+                if (itemGroup.GroupGuid) {
+                    elements[parseInt(i.toString(), 10)].items =
+                        <Object[]>this.updateGroupInfo(elements[parseInt(i.toString(), 10)].items, updatedGroup.items);
+                }
+                const rows: AggregateRowModel[] = this.parent.aggregates;
+                for (let j: number = 0; j < rows.length; j++) {
+                    const row: AggregateRowModel = (rows as AggregateRowModel)[parseInt(j.toString(), 10)];
+                    for (let k: number = 0; k < row.columns.length; k++) {
+                        const column: AggregateColumnModel = row.columns[parseInt(k.toString(), 10)];
+                        const types: string[] = column.type instanceof Array ? (column.type) as string[] : [(column.type)] as string[];
+                        for (let l: number = 0; l < types.length; l++) {
+                            const key: string = (column as AggregateColumnModel).field + ' - ' + types[parseInt(l.toString(), 10)].toLowerCase();
+                            const data: Object[] = itemGroup.level ? updatedGroupItem.records : updatedGroup.items;
+                            const context: Object = this.parent;
+                            if (types[parseInt(l.toString(), 10)] === 'Custom') {
+                                const data: Group = itemGroup.level ? updatedGroupItem : updatedGroup;
+                                let temp: Function = (column as AggregateColumnModel)
+                                    .customAggregate as Function;
+                                if (typeof temp === 'string') {
+                                    temp = getValue(temp, window);
+                                }
+                                elements[parseInt(i.toString(), 10)].aggregates[`${key}`] = temp ? (temp as Function).call(context, data, (row.columns[parseInt(k.toString(), 10)] as AggregateColumnModel)) : '';
+                            } else {
+                                elements[parseInt(i.toString(), 10)].aggregates[`${key}`] = DataUtil.aggregates[types[parseInt(l.toString(), 10)].toLowerCase()](data, (row.columns[parseInt(k.toString(), 10)] as AggregateColumnModel).field);
                             }
-                            elements[parseInt(i.toString(), 10)].aggregates[`${key}`] = temp ? (temp as Function).call(context, data, (row.columns[parseInt(k.toString(), 10)] as AggregateColumnModel)) : '';
-                        } else {
-                            elements[parseInt(i.toString(), 10)].aggregates[`${key}`] = DataUtil.aggregates[types[parseInt(l.toString(), 10)].toLowerCase()](data, (row.columns[parseInt(k.toString(), 10)] as AggregateColumnModel).field);
                         }
                     }
                 }

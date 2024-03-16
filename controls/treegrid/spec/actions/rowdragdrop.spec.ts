@@ -19,7 +19,7 @@ describe('Treegrid Row Reorder', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'taskName', headerText: 'taskName', width: 60 },
             { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
             { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
@@ -49,7 +49,7 @@ describe('Treegrid Row Reorder', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'taskName', headerText: 'taskName', width: 60 },
             { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
             { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
@@ -79,7 +79,7 @@ describe('Treegrid Row Reorder', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'taskName', headerText: 'taskName', width: 60 },
             { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
             { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
@@ -111,7 +111,7 @@ describe('Treegrid Row Reorder', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'taskName', headerText: 'taskName', width: 60 },
             { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
             { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
@@ -141,7 +141,7 @@ describe('Treegrid Row Reorder', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'taskName', headerText: 'taskName', width: 60 },
             { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
             { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
@@ -169,7 +169,7 @@ describe('Treegrid Row Reorder', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'taskName', headerText: 'taskName', width: 60 },
             { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
             { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
@@ -197,7 +197,7 @@ describe('Treegrid Row Reorder', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'taskName', headerText: 'taskName', width: 60 },
             { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
             { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
@@ -226,7 +226,7 @@ describe('Treegrid Row Reorder', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'taskName', headerText: 'taskName', width: 60 },
             { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
             { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
@@ -322,7 +322,7 @@ describe('Treegrid Row Reorder', () => {
           allowRowDragAndDrop: true,
           toolbar: ['Indent', 'Outdent'],
           columns: [
-            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: "TaskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'TaskName', headerText: 'TaskName', width: 60 },
             { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
           ],
@@ -387,7 +387,7 @@ describe('Treegrid Row Reorder', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: "TaskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'TaskName', headerText: 'TaskName', width: 60 },
             { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
           ],
@@ -489,7 +489,7 @@ describe('Drag and Drop with TextWrap', () => {
         allowRowDragAndDrop: true,
         allowTextWrap: true,
         columns: [
-            { field: 'taskID', headerText: 'Task ID', width: 90, textAlign: 'Right' },
+            { field: 'taskID', headerText: 'Task ID', width: 90, textAlign: 'Right', isPrimaryKey: true },
             { field: 'taskName', headerText: 'TaskName', width: 50 },
             { field: 'startDate', headerText: 'Start Date', format: 'yMd', textAlign: 'Right', width: 90},
             { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
@@ -644,7 +644,7 @@ describe('Treegrid Row Drop as Child', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: "TaskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'TaskName', headerText: 'TaskName', width: 60 },
             { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
           ],
@@ -676,7 +676,7 @@ describe('Treegrid Row Drop as Child', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: "TaskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'TaskName', headerText: 'TaskName', width: 60 },
             { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
           ],
@@ -707,7 +707,7 @@ describe('Treegrid Row Drop as Child', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: "TaskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'TaskName', headerText: 'TaskName', width: 60 },
             { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
           ],
@@ -739,7 +739,7 @@ describe('Treegrid Row Drop as Child', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: "TaskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'TaskName', headerText: 'TaskName', width: 60 },
             { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
           ],
@@ -770,7 +770,7 @@ describe('Treegrid Row Drop as Child', () => {
           treeColumnIndex: 1,
           allowRowDragAndDrop: true,
           columns: [
-            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: "TaskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
             { field: 'TaskName', headerText: 'TaskName', width: 60 },
             { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
           ],

@@ -1,8 +1,9 @@
-import { _PdfName } from './../pdf-primitives';
+import { _PdfDictionary, _PdfName } from './../pdf-primitives';
 import { _PdfBaseStream, _PdfContentStream } from './../base-stream';
 import { PdfGraphics } from './pdf-graphics';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { _toRectangle } from './../utils';
+import { _JsonDocument } from './../import-export/json-document';
 /**
  * `PdfTemplate` class represents the template of the PDF.
  * ```typescript
@@ -35,6 +36,15 @@ export class PdfTemplate {
     _needScale: boolean;
     _g: PdfGraphics;
     _crossReference: _PdfCrossReference;
+    _isExported: boolean = false;
+    _appearance: string;
+    _pendingResources: string;
+    /**
+     * Initializes a new instance of the `PdfTemplate` class.
+     *
+     * @private
+     */
+    constructor()
     /**
      * Initializes a new instance of the `PdfTemplate` class.
      *
@@ -51,7 +61,7 @@ export class PdfTemplate {
      * @private
      */
     constructor(bounds: number[], crossReference: _PdfCrossReference)
-    constructor(value: number[] | _PdfBaseStream, crossReference: _PdfCrossReference) {
+    constructor(value?: number[] | _PdfBaseStream, crossReference?: _PdfCrossReference) {
         this._crossReference = crossReference;
         if (value instanceof _PdfBaseStream) {
             this._content = value;
@@ -65,16 +75,20 @@ export class PdfTemplate {
             }
             this._isReadOnly = true;
         } else {
-            this._size = [value[2], value[3]];
-            this._content = new _PdfContentStream([]);
-            this._content.dictionary._crossReference = this._crossReference;
-            this._initialize();
-            this._content.dictionary.set('BBox', [value[0], value[1], value[0] + value[2], value[1] + value[3]]);
+            if (typeof value !== 'undefined') {
+                this._size = [value[2], value[3]];
+                this._content = new _PdfContentStream([]);
+                this._content.dictionary._crossReference = this._crossReference;
+                this._initialize();
+                this._content.dictionary.set('BBox', [value[0], value[1], value[0] + value[2], value[1] + value[3]]);
+            } else {
+                this._isReadOnly = true;
+            }
         }
         this._writeTransformation = true;
     }
     /**
-     * Get the graphics of the PDF template.
+     * Get the graphics of the PDF template. (Read only)
      *
      * @returns {PdfGraphics} The graphics object of the PDF template.
      * ```typescript
@@ -111,8 +125,74 @@ export class PdfTemplate {
         }
         return this._g;
     }
+    /**
+     * Get the size of the PDF template. (Read only)
+     *
+     * @returns {number[]} Template width and height as number array.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a new rubber stamp annotation
+     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(50, 100, 100, 50);
+     * // Access the normal template of the appearance
+     * let template: PdfTemplate = appearance.normal;
+     * // Get the width and height of the PDF template as number array.
+     * let size: number[] = template.size;
+     * // Create new image object by using JPEG image data as Base64 string format
+     * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
+     * // Draw the image as the custom appearance for the annotation
+     * template.graphics.drawImage(image, 0, 0, size[0], size[1]);
+     * // Add annotation to the page
+     * page.annotations.add(annotation);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get size(): number[] {
+        return this._size;
+    }
     _initialize(): void {
         this._content.dictionary.set('Type', _PdfName.get('XObject'));
         this._content.dictionary.set('Subtype', _PdfName.get('Form'));
+    }
+    _exportStream(dictionary: _PdfDictionary, crossReference: _PdfCrossReference): void {
+        const jsonDocument: _JsonDocument = new _JsonDocument();
+        jsonDocument._crossReference = crossReference;
+        jsonDocument._isAnnotationExport = true;
+        const resourceTable: Map<string, string> = new Map<string, string>();
+        jsonDocument._writeObject(resourceTable, dictionary.get('N'), dictionary, 'normal');
+        this._appearance = jsonDocument._convertToJson(resourceTable);
+        jsonDocument._dispose();
+    }
+    _importStream(hasCrossReference: boolean): void {
+        const jsonDocument: _JsonDocument = new _JsonDocument();
+        if (hasCrossReference) {
+            jsonDocument._crossReference = this._crossReference;
+        }
+        const json: any = JSON.parse(this._appearance); // eslint-disable-line
+        if (json) {
+            const entry: any = json['normal']; // eslint-disable-line
+            if (entry) {
+                this._content = jsonDocument._parseStream(entry['stream']);
+                if (hasCrossReference) {
+                    this._content.dictionary._crossReference = this._crossReference;
+                    this._content.dictionary._updated = true;
+                }
+            }
+        }
+        jsonDocument._dispose();
+    }
+    _updatePendingResource(crossReference: _PdfCrossReference): void {
+        if (this._content._pendingResources && this._content._pendingResources !== '') {
+            const jsonDocument: _JsonDocument = new _JsonDocument();
+            jsonDocument._crossReference = crossReference;
+            jsonDocument._parseStreamElements(this._content);
+            this._content._pendingResources = '';
+            jsonDocument._dispose();
+        }
     }
 }

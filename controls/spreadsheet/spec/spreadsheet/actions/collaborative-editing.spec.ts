@@ -1394,7 +1394,7 @@ describe('Collaborative Editing ->', () => {
             helper.invoke('selectRange', ['D3']);
             helper.getInstance().filterModule.filterByCellValueHandler();
             setTimeout(() => {
-                expect(JSON.stringify(helper2.getInstance().filterModule.filterCollection.get(1))).toBe('[{"field":"D","operator":"equal","type":"number","matchCase":false,"value":20,"ignoreAccent":false}]');
+                expect(JSON.stringify(helper2.getInstance().filterModule.filterCollection.get(1))).toBe('[{"field":"D","operator":"equal","type":"number","matchCase":false,"value":"20","ignoreAccent":false}]');
                 expect(helper2.getInstance().filterModule.filterCollection.get(0)).toBeUndefined();
                 expect(sheets2[1].rows[1].hidden).toBeTruthy();
                 expect(sheets2[1].rows[2].hidden).toBeFalsy();
@@ -1423,7 +1423,7 @@ describe('Collaborative Editing ->', () => {
                 expect(helper2.getInstance().activeSheetIndex).toBe(0);
                 helper.click('#spreadsheet_redo');
                 setTimeout(() => {
-                    expect(JSON.stringify(helper2.getInstance().filterModule.filterCollection.get(1))).toBe('[{"field":"D","operator":"equal","type":"number","matchCase":false,"value":20,"ignoreAccent":false}]');
+                    expect(JSON.stringify(helper2.getInstance().filterModule.filterCollection.get(1))).toBe('[{"field":"D","operator":"equal","type":"number","matchCase":false,"value":"20","ignoreAccent":false}]');
                     expect(helper2.getInstance().filterModule.filterCollection.get(0)).toBeUndefined();
                     expect(sheets2[1].rows[1].hidden).toBeTruthy();
                     expect(sheets2[1].rows[2].hidden).toBeFalsy();

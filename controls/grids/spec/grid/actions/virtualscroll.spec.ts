@@ -1324,6 +1324,58 @@ describe('Column virtualization', () => {
        });
     });
 
+    describe('EJ2-870042- Editing a Grid with virtual scroll and column with no field results in a script error => ', () => {
+        let gridObj: Grid;
+        let columns: Column[] = largeDatasetColumns(5);
+        columns.unshift({ type: 'checkbox', width: 50 } as Column);
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: largeDataset.slice(0, 50),
+                    columns: columns,
+                    enableVirtualization: true,
+                    enableColumnVirtualization: true,
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    height: 300,
+                    width: 400
+                }, done);
+        });
+        it('edit record', (done: Function) => {
+            let actionComplete = (args: EditEventArgs) => {
+                if (args.requestType === 'beginEdit') {
+                    expect(gridObj.isEdit).toBeTruthy();
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(0, true);
+            gridObj.startEdit();
+        });
+
+        it('Save edited record', (done: Function) => {
+            let actionComplete = (args: EditEventArgs) => {
+                if (args.requestType === 'save') {
+                    expect(gridObj.isEdit).toBeFalsy();
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.endEdit();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = columns = null;
+        });
+    });
+
     describe('EJ2-847398 - changeDataSource not working properly when virtualization is enabled => ', () => {
         let gridObj: Grid;
         const data: Object[] = [
@@ -1522,4 +1574,4 @@ describe('EJ2-859411-Scroll using the down arrow key by focusing the template, t
         destroy(grid);
         grid = dataBound = null;
     });
-})
+});

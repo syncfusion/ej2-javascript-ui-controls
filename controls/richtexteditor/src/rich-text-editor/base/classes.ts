@@ -47,11 +47,7 @@ export const CLS_TB_FIXED: string = 'e-rte-tb-fixed';
  * @deprecated
  */
 export const CLS_TB_FLOAT: string = 'e-rte-tb-float';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_TB_ABS_FLOAT: string = 'e-rte-tb-abs-float';
+
 /**
  * @hidden
  * @deprecated

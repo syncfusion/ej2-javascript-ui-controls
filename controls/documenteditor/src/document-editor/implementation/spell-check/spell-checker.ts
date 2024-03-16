@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo } from '../index';
-import { XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from './../../index';
+import { ServiceFailureArgs, XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from './../../index';
 import { Dictionary } from '../../base/dictionary';
 import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -47,6 +47,10 @@ export class SpellChecker {
      */
     public uniqueKey: string = '';
     private removeUnderlineInternal: boolean = false;
+    /**
+     * @private
+     */
+    public isChangeAll: boolean = false;
     private spellCheckSuggestion: string[];
     /**
      * @default 1000
@@ -151,7 +155,7 @@ export class SpellChecker {
      */
     public set removeUnderline(value: boolean) {
         this.removeUnderlineInternal = value;
-        this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
+        this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
     }
     /**
      * Getter indicates whether spell check has to be performed or not.
@@ -168,7 +172,7 @@ export class SpellChecker {
      */
     public set enableSpellCheck(value: boolean) {
         this.enableSpellCheckInternal = value;
-        this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
+        this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
     }
 
     public constructor(documentHelper: DocumentHelper) {
@@ -199,7 +203,7 @@ export class SpellChecker {
             this.documentHelper.selection.end = (dialogElement as ErrorTextElementBox).end.clone();
             if (content !== 'Ignore Once') {
                 content = this.manageSpecialCharacters(exactText, content);
-                this.documentHelper.owner.editor.insertTextInternal(content, true);
+                this.documentHelper.owner.editorModule.insertTextInternal(content, true);
                 this.documentHelper.selection.start.setPositionInternal(this.documentHelper.selection.end);
                 this.documentHelper.clearSelectionHighlight();
                 return;
@@ -217,7 +221,7 @@ export class SpellChecker {
             this.handleReplace(content);
         }
         if (content !== 'Ignore Once') {
-            this.documentHelper.owner.editor.insertTextInternal(content, true);
+            this.documentHelper.owner.editorModule.insertTextInternal(content, true);
             if (!isNullOrUndefined(this.currentContextInfo)) {
                 this.removeErrorsFromCollection(this.currentContextInfo);
             }
@@ -259,7 +263,7 @@ export class SpellChecker {
             startPosition.offset += matches[0].toString().length;
         }
 
-        startPosition.location = this.documentHelper.owner.selection.getPhysicalPositionInternal((startPosition.currentWidget as LineWidget), startPosition.offset, true);
+        startPosition.location = this.documentHelper.owner.selectionModule.getPhysicalPositionInternal((startPosition.currentWidget as LineWidget), startPosition.offset, true);
 
         startPosition = this.documentHelper.owner.searchModule.textSearch.getTextPosition(startPosition.currentWidget as LineWidget, startPosition.offset.toString());
         //startPosition.location = this.owner.selection.getPhysicalPositionInternal(span.line, offset, true);
@@ -280,7 +284,7 @@ export class SpellChecker {
 
         this.documentHelper.selection.end = this.documentHelper.owner.searchModule.textSearch.getTextPosition(lineWidget, endOffset.toString());
 
-        this.documentHelper.selection.end.location = this.documentHelper.owner.selection.getPhysicalPositionInternal((startPosition.currentWidget as LineWidget), endOffset, true);
+        this.documentHelper.selection.end.location = this.documentHelper.owner.selectionModule.getPhysicalPositionInternal((startPosition.currentWidget as LineWidget), endOffset, true);
         this.documentHelper.selection.end.setPositionParagraph(lineWidget, endOffset);
         this.currentContextInfo = { 'element': startInlineObj.element, 'text': (startInlineObj.element as TextElementBox).text };
     }
@@ -317,7 +321,7 @@ export class SpellChecker {
         if (textElement.ignoreOnceItems.indexOf(exactText) === -1) {
             textElement.ignoreOnceItems.push(exactText);
         }
-        this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
+        this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
     }
 
     /**
@@ -332,7 +336,7 @@ export class SpellChecker {
             this.ignoreAllItems.push(retrievedText);
             this.removeErrorsFromCollection(contextItem);
             this.documentHelper.triggerSpellCheck = true;
-            this.documentHelper.owner.editor.reLayout(this.documentHelper.selection);
+            this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
             this.documentHelper.triggerSpellCheck = false;
             this.documentHelper.clearSelectionHighlight();
         }
@@ -352,7 +356,7 @@ export class SpellChecker {
             this.documentHelper.triggerSpellCheck = true;
             this.removeErrorsFromCollection(contextItem);
             this.ignoreAllItems.push(retrievedText);
-            this.documentHelper.owner.editor.reLayout(this.documentHelper.selection, true);
+            this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, true);
             this.documentHelper.triggerSpellCheck = false;
         });
     }
@@ -452,11 +456,11 @@ export class SpellChecker {
     public handleSuggestions(allsuggestions: any): string[] {
         this.spellCheckSuggestion = [];
         if (allsuggestions.length === 0) {
-            this.spellCheckSuggestion.push(this.documentHelper.owner.contextMenu.locale.getConstant('Add to Dictionary'));
+            this.spellCheckSuggestion.push(this.documentHelper.owner.contextMenuModule.locale.getConstant('Add to Dictionary'));
         } else {
 
             allsuggestions = (allsuggestions.length > 3 ) ? this.constructInlineMenu(allsuggestions) : allsuggestions;
-            this.spellCheckSuggestion.push(this.documentHelper.owner.contextMenu.locale.getConstant('Add to Dictionary'));
+            this.spellCheckSuggestion.push(this.documentHelper.owner.contextMenuModule.locale.getConstant('Add to Dictionary'));
         }
         /* eslint-disable @typescript-eslint/no-explicit-any */
         const spellSuggestion: any = [];
@@ -465,7 +469,7 @@ export class SpellChecker {
                 spellSuggestion.push(
                     {
                         text: str,
-                        id: this.documentHelper.owner.element.id + '_contextmenu_otherSuggestions_spellcheck_' + (str === this.documentHelper.owner.contextMenu.locale.getConstant('Add to Dictionary') ? 'Add to Dictionary': str),
+                        id: this.documentHelper.owner.element.id + '_contextmenu_otherSuggestions_spellcheck_' + (str === this.documentHelper.owner.contextMenuModule.locale.getConstant('Add to Dictionary') ? 'Add to Dictionary': str),
                         iconCss: ''
                     });
 
@@ -951,9 +955,7 @@ export class SpellChecker {
                 const httpRequest: XMLHttpRequest = new XMLHttpRequest();
 
                 let service: string = this.documentHelper.owner.serviceUrl;
-                service += (isByPage)
-                    ? this.documentHelper.owner.serverActionSettings.spellCheckByPage
-                    : this.documentHelper.owner.serverActionSettings.spellCheck;
+                service = (isByPage) ? service + this.documentHelper.owner.serverActionSettings.spellCheckByPage : service + this.documentHelper.owner.serverActionSettings.spellCheck;
                 httpRequest.open('POST', service, true);
                 httpRequest.setRequestHeader('Content-Type', 'application/json');
                 this.setCustomHeaders(httpRequest);
@@ -970,12 +972,12 @@ export class SpellChecker {
                         if (httpRequest.status === 200 || httpRequest.status === 304) {
                             resolve(httpRequest.response);
                         } else {
-                            const result: any = {
-                                name: 'onFailure',
-                                status: httpRequest.status,
+                            const result: ServiceFailureArgs= {
+                                status: httpRequest.status.toString(),
                                 statusText: httpRequest.responseText,
                                 url: service
                             };
+                            (result as any).name= 'onFailure';
                             if (!isNullOrUndefined(spellchecker.documentHelper)) {
                                 spellchecker.documentHelper.owner.fireServiceFailure(result);
                             }
@@ -1066,14 +1068,14 @@ export class SpellChecker {
         const pattern: RegExp = this.documentHelper.owner.searchModule.textSearch.stringToRegex((isNullOrUndefined(currentText)) ? (errorElement as TextElementBox).text : currentText, 'CaseSensitive');
         this.textSearchResults.clearResults();
         const results: TextSearchResults = this.textSearchResults;
-        const textLineInfo: TextInLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false, undefined, undefined, undefined, undefined, undefined, true);
+        const textLineInfo: TextInLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false, pattern, undefined, undefined, undefined, undefined, true);
         const text: string = textLineInfo.fullText;
         const matches: RegExpExecArray[] = [];
         const spans: any = textLineInfo.elementsWithOffset;
         let matchObject: RegExpExecArray;
         // eslint-disable  no-cond-assign
         while (!isNullOrUndefined(matchObject = pattern.exec(text))) {
-            if (spans.containsKey(errorElement)) {
+            if (this.isChangeAll) {
                 matchObject.index = spans.get(errorElement);
             }
             matches.push(matchObject);
@@ -1094,7 +1096,7 @@ export class SpellChecker {
         this.documentHelper.selection.start = element.start.clone();
         this.documentHelper.selection.end = element.end.clone();
         this.documentHelper.selection.highlight(errorElement.start.paragraph, errorElement.start, errorElement.end);
-        this.documentHelper.owner.spellCheckDialog.updateSuggestionDialog(error, element);
+        this.documentHelper.owner.spellCheckDialogModule.updateSuggestionDialog(error, element);
     }
 
     /**

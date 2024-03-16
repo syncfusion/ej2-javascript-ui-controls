@@ -124,6 +124,7 @@ export class EventBase {
                 const fieldInfo: IField = this.parent.engineModule.fieldList[fieldName as string];
                 let members: IAxisSet[] =
                     PivotUtil.getClonedData(fieldInfo.dateMember as []) as IAxisSet[];
+                this.parent.isDateField = PivotUtil.isDateField(fieldName as string, this.parent.engineModule as PivotEngine);
                 const membersInfo: string[] | number[] = fieldInfo && fieldInfo.membersOrder ?
                     [...fieldInfo.membersOrder] as string[] | number[] : [];
                 let outOfRange: IAxisSet;
@@ -218,9 +219,8 @@ export class EventBase {
             } else {
                 const engineModule: PivotEngine = this.parent.engineModule as PivotEngine;
                 const field: IField = engineModule.fieldList[fieldName as string];
-                const members: IMembers = (engineModule.formatFields[fieldName as string] &&
-                    (['date', 'dateTime', 'time'].indexOf(engineModule.formatFields[fieldName as string].type) > -1)) ?
-                    field.formattedMembers : field.members;
+                const members: IMembers = this.parent.dataType === 'olap' ? field.members :
+                    PivotUtil.getFormattedMembers(field.members, fieldName, engineModule);
                 for (const item of filterObj.items) {
                     if (members[item as string]) {
                         isItemAvail = true;
@@ -562,8 +562,6 @@ export class EventBase {
         this.parent.currentTreeItemsPos = {};
         this.parent.savedTreeFilterPos = {};
         const engineModule: PivotEngine = this.parent.engineModule as PivotEngine;
-        this.parent.isDateField = engineModule.formatFields[fieldName as string] &&
-            ((['date', 'dateTime', 'time']).indexOf(engineModule.formatFields[fieldName as string].type) > -1);
         const list: { [key: string]: Object }[] = [];
         let memberCount: number = 1;
         const filterObj: { [key: string]: string } = {};
@@ -572,7 +570,7 @@ export class EventBase {
         }
         const modifiedFieldName: string = fieldName.replace(/[^a-zA-Z0-9 ]/g, '_');
         for (const member of members) {
-            let memberName: string = engineModule.formatFields[fieldName as string] ? member.formattedText : member.actualText.toString();
+            let memberName: string = member.actualText.toString();
             memberName = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(memberName) : memberName;
             const actualText: string | number = this.parent.enableHtmlSanitizer ?
                 SanitizeHtmlHelper.sanitize(member.actualText as string) : member.actualText;
@@ -581,17 +579,18 @@ export class EventBase {
                 id: modifiedFieldName + '_' + memberCount,
                 htmlAttributes: nodeAttr,
                 actualText: actualText,
-                name: memberName,
+                name: this.parent.isDateField ? member.formattedText :
+                    engineModule.getFormattedValue(actualText, fieldName).formattedText,
                 isSelected: isInclude ? false : true
             };
-            if (filterObj[memberName as string] !== undefined) {
+            if (filterObj[this.parent.isDateField ? member.formattedText as string : memberName as string] !== undefined) {
                 obj.isSelected = isInclude ? true : false;
             }
             if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
                 list.push(obj);
             }
             if (!obj.isSelected) {
-                this.parent.savedTreeFilterPos[memberCount - 1] = memberName;
+                this.parent.savedTreeFilterPos[memberCount - 1] = this.parent.isDateField ? member.formattedText : memberName;
             }
             this.parent.currentTreeItems.push(obj);
             this.parent.searchTreeItems.push(obj);

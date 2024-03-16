@@ -150,18 +150,18 @@ export class StatusBar {
             beforeItemRender: (args: MenuEventArgs) => {
                 args.element.innerHTML = '<span></span>' + args.item.text;
                 if (isNullOrUndefined(this.currentLanguage)) {
-                    this.currentLanguage = this.documentEditor.spellChecker.languageID;
+                    this.currentLanguage = this.documentEditor.spellCheckerModule.languageID;
                 }
                 if (isNullOrUndefined(this.allowSuggestion)) {
-                    this.allowSuggestion = this.documentEditor.spellChecker.allowSpellCheckAndSuggestion;
+                    this.allowSuggestion = this.documentEditor.spellCheckerModule.allowSpellCheckAndSuggestion;
                 }
                 const span: HTMLElement = args.element.children[0] as HTMLElement;
                 if (args.item.text === this.localObj.getConstant('Spell Check') && this.documentEditor.enableSpellCheck &&
-                    this.documentEditor.spellChecker.enableSpellCheck) {
+                    this.documentEditor.spellCheckerModule.enableSpellCheck) {
                     span.style.marginRight = '10px';
                     span.setAttribute('class', 'e-de-selected-spellcheck-item');
                 } else if (args.item.text === this.localObj.getConstant('Underline errors') && this.documentEditor.enableSpellCheck &&
-                    this.documentEditor.spellChecker.enableSpellCheck && !this.documentEditor.spellChecker.removeUnderline) {
+                    this.documentEditor.spellCheckerModule.enableSpellCheck && !this.documentEditor.spellCheckerModule.removeUnderline) {
                     span.style.marginRight = '10px';
                     span.setAttribute('class', 'e-de-selected-underline-item');
                 } else {
@@ -187,12 +187,12 @@ export class StatusBar {
     private setSpellCheckValue(text: string): void {
         this.spellCheckButton.content = this.localObj.getConstant('Spelling');
         if (text.match(this.localObj.getConstant('Spell Check'))) {
-            this.documentEditor.spellChecker.enableSpellCheck = (this.documentEditor.spellChecker.enableSpellCheck) ? false : true;            
+            this.documentEditor.spellCheckerModule.enableSpellCheck = (this.documentEditor.spellCheckerModule.enableSpellCheck) ? false : true;            
             this.documentEditor.documentHelper.triggerSpellCheck = false;
             this.documentEditor.documentHelper.triggerElementsOnLoading = false;
         } else if (text.match(this.localObj.getConstant('Underline errors'))) {
-            if (this.documentEditor.enableSpellCheck && this.documentEditor.spellChecker.enableSpellCheck) {
-                this.documentEditor.spellChecker.removeUnderline = (this.documentEditor.spellChecker.removeUnderline) ? false : true;
+            if (this.documentEditor.enableSpellCheck && this.documentEditor.spellCheckerModule.enableSpellCheck) {
+                this.documentEditor.spellCheckerModule.removeUnderline = (this.documentEditor.spellCheckerModule.removeUnderline) ? false : true;
             }
         }
     }
@@ -223,9 +223,9 @@ export class StatusBar {
         this.updatePageNumberWidth();
     }
     public updatePageNumberOnViewChange(args: ViewChangeEventArgs): void {
-        if (this.documentEditor.selection
-            && this.documentEditor.selection.startPage >= args.startPage && this.documentEditor.selection.startPage <= args.endPage) {
-            this.startPage = this.documentEditor.selection.startPage;
+        if (this.documentEditor.selectionModule
+            && this.documentEditor.selectionModule.startPage >= args.startPage && this.documentEditor.selectionModule.startPage <= args.endPage) {
+            this.startPage = this.documentEditor.selectionModule.startPage;
         } else {
             this.startPage = args.startPage;
         }
@@ -240,8 +240,8 @@ export class StatusBar {
                 if (pageNumber > this.editorPageCount) {
                     this.updatePageNumber();
                 } else {
-                    if (this.documentEditor.selection) {
-                        this.documentEditor.selection.goToPage(parseInt(this.pageNumberInput.value, 10));
+                    if (this.documentEditor.selectionModule) {
+                        this.documentEditor.selectionModule.goToPage(parseInt(this.pageNumberInput.value, 10));
                         this.documentEditor.focusIn();
                     } else {
                         this.documentEditor.scrollToPage(parseInt(this.pageNumberInput.value, 10));

@@ -69,8 +69,9 @@ export class EditRender {
         let cell: HTMLElement;
         let value: string;
         const form: Element = gObj.editSettings.mode === 'Dialog' ?
-            select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) :
-            gObj.element.getElementsByClassName('e-gridform')[0];
+            select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) : gObj.editSettings.showAddNewRow &&
+            gObj.element.querySelector('.e-editedrow') ? gObj.element.querySelector('.e-editedrow').getElementsByClassName('e-gridform')[0]
+            : gObj.element.getElementsByClassName('e-gridform')[0];
         const cols: Column[] = gObj.editSettings.mode !== 'Batch' ? gObj.getColumns() as Column[] : [gObj.getColumnByField(args.columnName)];
         for (const col of cols) {
             if (this.parent.editSettings.template && !isNullOrUndefined(col.field)) {
@@ -103,7 +104,7 @@ export class EditRender {
                         foreignKeyData: col.isForeignColumn() && getObject(col.field, args.foreignKeyData)
                     });
                 }
-                if (!isFocused && !cell.getAttribute('disabled') && !parentsUntil(cell, 'e-checkbox-disabled')) {
+                if (!isFocused && isNullOrUndefined(cell.getAttribute('disabled')) && !parentsUntil(cell, 'e-checkbox-disabled')) {
                     this.focusElement(cell as HTMLInputElement, args.type);
                     isFocused = true;
                 }
@@ -121,8 +122,9 @@ export class EditRender {
             this.focus.onClick({ target: closest(elem, 'td') }, true);
         } else {
             const isFocus: boolean = (this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && this.parent.editSettings.mode === 'Normal' ? false : true;
-            if (isFocus || ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && this.parent.editSettings.newRowPosition === 'Bottom'
-                && parentsUntil(elem, literals.addedRow))) {
+            if ((isFocus || ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && this.parent.editSettings.newRowPosition === 'Bottom'
+                && parentsUntil(elem, literals.addedRow))) && (!this.parent.editSettings.showAddNewRow ||
+                    (this.parent.editSettings.showAddNewRow && (!parentsUntil(elem, literals.addedRow)) || this.parent.addNewRowFocus))) {
                 elem.focus();
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

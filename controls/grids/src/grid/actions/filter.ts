@@ -954,7 +954,8 @@ export class Filter implements IAction {
                 this.processFilter(e);
             }
         }
-        if (e.action === 'altDownArrow' && this.filterSettings.type !== 'FilterBar' && isNullOrUndefined(this.parent.element.querySelector('.e-filter-popup'))) {
+        if (e.action === 'altDownArrow' && this.filterSettings.type !== 'FilterBar' && !parentsUntil(e.target as Element, 'e-toolbar')
+            && isNullOrUndefined(this.parent.element.querySelector('.e-filter-popup'))) {
             const element: HTMLElement = gObj.focusModule.currentInfo.element;
             if (element && element.classList.contains('e-headercell')) {
                 const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));

@@ -111,18 +111,15 @@ export class PdfTimeline {
                 }
                 //Secondary header Event Arguments
                 /* eslint-disable-next-line */
-                if (!this.parent.pdfExportModule.gantt.taskbar.isAutoFit() && this.parent.timelineModule.bottomTier !=="Day") {
-                    var unit = this.parent.perDayWidth
-                    if (width < unit || (width > unit)) {
-                        width = unit
-                    }
-                }
                 this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, width, secondHeader.value, false,secondHeader.startDate);
                 this.bottomTierPoint.x = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? this.bottomTierPoint.x + width : this.bottomTierPoint.x + pixelToPoint(width);
                 remainWidth -= width;
                 secondHeader.completedWidth = width;
                 if (isCompleted) {
                     this.bottomTierIndex++;
+                }
+                if (remainWidth > 0 && remainWidth < width) {
+                    remainWidth = secondHeader.width - 1;
                 }
             } else {
                 remainWidth = 0;

@@ -1,14 +1,12 @@
 /**
  *  Spreadsheet base spec
  */
-import { SpreadsheetModel, Spreadsheet, BasicModule, CellSaveEventArgs, onContentScroll } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet, CellSaveEventArgs, onContentScroll } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData, filterData, ScrollingData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell, ImageModel } from '../../../src/workbook/index';
 import { EmitType, setCurrencyCode, L10n } from '@syncfusion/ej2-base';
-
-Spreadsheet.Inject(BasicModule);
 
 describe('Spreadsheet base module ->', () => {
     let helper: SpreadsheetHelper;

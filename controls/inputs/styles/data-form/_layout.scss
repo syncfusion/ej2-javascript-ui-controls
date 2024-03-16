@@ -118,7 +118,7 @@
       grid-column: span 12/span 12;
     }
 
-    .e-label-left {
+    .e-label-position-left {
 
       .e-form-item-wrapper {
         flex: 1 1 auto;
@@ -165,7 +165,7 @@
       }
     }
 
-    #{if(&, '&', '*')} .e-label-top {
+    #{if(&, '&', '*')} .e-label-position-top {
       display: $form-display-flex;
       flex-direction: $form-label-top-direction;
       margin-top: $form-layout-margin-top;
@@ -185,7 +185,7 @@
       }
     }
 
-    #{if(&, '&', '*')} .e-label-left {
+    #{if(&, '&', '*')} .e-label-position-left {
       display: $form-display-flex;
       text-align: $form-label-text-align;
       margin-top: $form-layout-margin-top;

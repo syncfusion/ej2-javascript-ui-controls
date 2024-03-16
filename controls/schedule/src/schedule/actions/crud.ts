@@ -37,7 +37,16 @@ export class Crud {
     }
 
     public refreshDataManager(): void {
-        if (!this.parent.activeView) { return; }
+        if (!this.parent.activeView) {
+            return;
+        }
+
+        if (this.parent.uiStateValues && this.parent.uiStateValues.isPreventEventRefresh) {
+            this.parent.uiStateValues.isPreventEventRefresh = false;
+            this.parent.refreshEvents(false);
+            this.parent.hideSpinner();
+            return;
+        }
         const start: Date = this.parent.activeView.startDate();
         const end: Date = this.parent.activeView.endDate();
         const dataManager: Promise<any> = this.parent.dataModule.getData(this.parent.dataModule.generateQuery(start, end));

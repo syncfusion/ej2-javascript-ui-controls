@@ -32,6 +32,7 @@
       }
 
       .e-toolbar-items {
+        height: $schedule-tbar-min-height;
 
         &.e-tbar-pos {
           height: $schedule-tbar-min-height;
@@ -173,6 +174,8 @@
         }
 
         .e-toolbar-items {
+          height: $schedule-tbar-bgr-size;
+          
           &.e-tbar-pos {
             height: $schedule-tbar-bgr-size;
             min-height: $schedule-tbar-bgr-size;
@@ -2723,7 +2726,7 @@
         .e-toolbar-item {
           min-height: $schedule-tbar-bgr-items-size;
 
-          &:not(.e-separator) {
+          &:not(.e-separator):not(.e-spacer) {
             min-width: $schedule-tbar-bgr-item-size;
           }
 

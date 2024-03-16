@@ -594,7 +594,21 @@ describe('DDList', () => {
                 done();
             }, 800);
         });
-
+        it('value at dynamic changes with allowObjectBinding', (done) => {
+            listObj = new DropDownList({ dataSource: datasource2, fields: { text: 'text', value: 'id' }, allowObjectBinding: true });
+            listObj.appendTo(element);
+            listObj.value = { id: 'id1', text: 'HTML' };
+            listObj.dataBind();
+            setTimeout(() => { 
+                expect(listObj.isObjectInArray({ id: "id1", text: "HTML" }, [listObj.value])).toBe(true)
+                listObj.value = { id: 'list2', text: 'Phython' };
+                setTimeout(() => {
+                    expect(listObj.isObjectInArray({ id: 'list2', text: 'Phython' }, [listObj.value])).toBe(true)
+                    expect(isNullOrUndefined(listObj.popupObj)).toBe(true);
+                    done();
+                }, 800);
+            }, 800);
+        });
     });
 
     //Multiple cssClass
@@ -838,7 +852,7 @@ describe('DDList', () => {
             expect(listObj.element.classList.contains('e-disabled')).toEqual(true);
             expect(listObj.inputWrapper.container.classList.contains('e-disabled')).toEqual(true);
             expect(listObj.element.getAttribute('aria-disabled')).toEqual('true');
-            expect(listObj.element.getAttribute('disabled')).toEqual('disabled');
+            expect(listObj.element.getAttribute('disabled')).toEqual('');
             listObj.enabled = true;
             listObj.dataBind();
             expect(listObj.element.classList.contains('e-disabled')).toEqual(false);
@@ -1465,7 +1479,22 @@ describe('DDList', () => {
                 }, 450);
             }, 450)
         });
+        it('mouse click on list with allowObjectBinding', (done) => {
+            listObj.allowObjectBinding = true;
+            listObj.showPopup();
+            setTimeout(() => {
+                let item: HTMLElement[] = listObj.popupObj.element.querySelectorAll('li')[3];
+                mouseEventArgs.target = item;
+                mouseEventArgs.type = 'click';
+                listObj.onMouseClick(mouseEventArgs);
+                setTimeout(function () {
+                    expect(listObj.isPopupOpen).toBe(false);
+                    done();
+                }, 450);
+            }, 450)
+        });
         it('change & close event trigger ', (done) => {
+            listObj.allowObjectBinding = false;
             listObj.enabled = true;
             listObj.showPopup();
             let closeAction: EmitType<Object> = jasmine.createSpy('Open');

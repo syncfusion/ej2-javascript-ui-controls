@@ -27,7 +27,8 @@ export class ExpandCellRenderer extends IndentCellRenderer implements ICellRende
         node.setAttribute('ej-mappingvalue', data.key);
         node.setAttribute('aria-expanded', isExpand ? 'true' : 'false');
         node.setAttribute('tabindex', '-1');
-        if (this.parent.infiniteScrollSettings && this.parent.infiniteScrollSettings.enableCache) {
+        if (this.parent.infiniteScrollSettings && this.parent.infiniteScrollSettings.enableCache &&
+            !this.parent.groupSettings.enableLazyLoading) {
             cell.cellType = CellType.Indent;
             node.className = isExpand ? 'e-recordplusexpand e-disablepointer' : 'e-recordpluscollapse e-disablepointer';
         }

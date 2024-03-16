@@ -5,9 +5,7 @@ import { PathOption, calculatePolygonPath, maintainSelection } from '../utils/he
  * When injected, this module will be used to render polygon shapes over the Maps.
  */
 export class Polygon {
-    private maps: Maps;
     constructor(maps: Maps) {
-        this.maps = maps;
     }
     /**
      * To render polygon for maps
@@ -35,7 +33,7 @@ export class Polygon {
                 polygonSetting.fill, (polygonSetting.borderWidth / factor), polygonSetting.borderColor,
                 polygonSetting.opacity, polygonSetting.borderOpacity, '', path);
             const polygonEle: Element = maps.renderer.drawPath(pathOptions) as SVGPathElement;
-            maintainSelection(this.maps.selectedPolygonElementId, this.maps.polygonSelectionClass, polygonEle,
+            maintainSelection(maps.selectedPolygonElementId, maps.polygonSelectionClass, polygonEle,
                                 'PolygonselectionMapStyle');
             polygonSVGObject.appendChild(polygonEle);
             polygonsSVGObject.appendChild(polygonSVGObject);
@@ -59,6 +57,5 @@ export class Polygon {
      * @private
      */
     public destroy(): void {
-        this.maps = null;
     }
 }

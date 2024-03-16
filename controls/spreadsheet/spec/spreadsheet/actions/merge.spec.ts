@@ -510,5 +510,115 @@ describe('Merge ->', () => {
                 done();
             });
         });
+        describe('EJ2-861455 ->', () => {
+            let spreadsheet: Spreadsheet;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet(
+                    { sheets: [ { rows: [{ cells: [{ value: '' }] }] } ] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            })
+            it('Handle all cells merging with an empty active cell', function (done){
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBeUndefined();
+                helper.edit('C1', '11/11/2001');
+                helper.edit('C2', '12/11/2001');
+                helper.edit('C3', '12/08/2004');
+                helper.edit('C4', '12/12/2006');
+                helper.edit('D1', '12/12/2006');
+                helper.edit('D2', '12/08/2004');
+                helper.edit('D3', '12/08/2004');
+                helper.edit('D4', '12/08/2004');
+                helper.invoke('merge', ['A1:D4']);
+                setTimeout(()=>{
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].colSpan).toBe(4);
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].rowSpan).toBe(4);     
+                    done();
+                });
+                helper.click('#spreadsheet_undo');
+                helper.edit('C1', '');
+                helper.invoke('merge', ['A1:D4']);
+                setTimeout(()=>{
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].colSpan).toBe(4);
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].rowSpan).toBe(4);     
+                    done();
+                });
+                helper.click('#spreadsheet_undo');
+                helper.edit('D1', '');
+                helper.invoke('merge', ['A1:D4']);
+                setTimeout(()=>{
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].colSpan).toBe(4);
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].rowSpan).toBe(4);     
+                    done();
+                });
+            });
+            it('Handle horizontal merging with an empty active cell', function (done){
+                spreadsheet = helper.getInstance();
+                helper.edit('C5', '11/11/2001');
+                helper.edit('C6', '12/11/2001');
+                helper.edit('C7', '12/08/2004');
+                helper.edit('C8', '12/12/2006');
+                helper.edit('D5', '12/12/2006');
+                helper.edit('D6', '12/08/2004');
+                helper.edit('D7', '12/08/2004');
+                helper.edit('D8', '12/08/2004');
+                helper.invoke('merge', ['A5:D8', 'Horizontally']);
+                setTimeout(()=>{
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].colSpan).toBe(4);
+                    expect(spreadsheet.sheets[0].rows[5].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[5].cells[0].colSpan).toBe(4); 
+                    expect(spreadsheet.sheets[0].rows[6].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[6].cells[0].colSpan).toBe(4);
+                    expect(spreadsheet.sheets[0].rows[7].cells[0].format).toBe('mm-dd-yyyy');
+                    expect(spreadsheet.sheets[0].rows[7].cells[0].colSpan).toBe(4);  
+                    done();
+                });
+                helper.click('#spreadsheet_undo');
+            });
+            it('Handle Vertical merging with an empty active cell', function (done) {
+                spreadsheet = helper.getInstance();
+                helper.edit('A11', '11/11/2001');
+                helper.edit('A12', '12/11/2001');
+                helper.edit('A13', '12/08/2004');
+                helper.edit('A14', '12/12/2006');
+                helper.invoke('merge', ['A9:A14', 'Vertically']);
+                setTimeout(function () {
+                    expect(spreadsheet.sheets[0].rows[8].cells[0].rowSpan).toBe(6);
+                    expect(spreadsheet.sheets[0].rows[8].cells[0].format).toBe('mm-dd-yyyy');
+                    done();
+                });
+                helper.click('#spreadsheet_undo');
+                helper.edit('A11', '');
+                helper.invoke('merge', ['A9:A14', 'Vertically']);
+                setTimeout(function () {
+                    expect(spreadsheet.sheets[0].rows[8].cells[0].rowSpan).toBe(6);
+                    expect(spreadsheet.sheets[0].rows[8].cells[0].format).toBe('mm-dd-yyyy');
+                    done();
+                });
+                helper.click('#spreadsheet_undo');
+            });
+            it('Handle merging formula applied with formatting with active empty cell', function (done){
+                spreadsheet = helper.getInstance();
+                helper.edit('E1','10');
+                helper.edit('E2','-10');
+                helper.edit('E3','30');
+                helper.edit('E4','40');
+                helper.edit('E5','50');
+                helper.edit('B15', '=SUM(E1:E5)');
+                spreadsheet.sheets[0].rows[14].cells[1].format = '$#,##0.00';
+                helper.invoke('merge', ['A15:B15']);
+                setTimeout(function () {
+                    expect(spreadsheet.sheets[0].rows[14].cells[0].colSpan).toBe(2);
+                    expect(spreadsheet.sheets[0].rows[14].cells[0].format).toBe('$#,##0.00');
+                    expect(spreadsheet.sheets[0].rows[14].cells[0].formula).toBe('=SUM(E1:E5)');
+                    done();
+                });
+            });
+        });
     });
 });

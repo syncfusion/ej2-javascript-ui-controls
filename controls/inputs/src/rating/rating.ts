@@ -901,6 +901,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private keyActionHandler(e: KeyboardEventArgs): void {
+        e.preventDefault();
         if (this.disabled || this.readOnly) { return; }
         if ((e.target as HTMLElement).classList.contains(ITEMLIST)) {
             switch (e.action) {

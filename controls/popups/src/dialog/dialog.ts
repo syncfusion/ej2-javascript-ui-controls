@@ -432,6 +432,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private preventVisibility: boolean;
     private refElement: HTMLElement;
     private dlgClosedBy: string;
+    private boundWindowResizeHandler: () => void;
     /**
      * Specifies the value that can be displayed in dialog's content area.
      * It can be information, list, or other HTML elements.
@@ -1995,10 +1996,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
     private wireWindowResizeEvent(): void {
-        window.addEventListener('resize', this.windowResizeHandler.bind(this));
+        this.boundWindowResizeHandler = this.windowResizeHandler.bind(this);
+        window.addEventListener('resize', this.boundWindowResizeHandler);
     }
     private unWireWindowResizeEvent(): void {
-        window.removeEventListener('resize', this.windowResizeHandler.bind(this));
+        window.removeEventListener('resize', this.boundWindowResizeHandler);
+        this.boundWindowResizeHandler = null;
     }
     /**
      * Binding event to the element while widget creation
@@ -2093,6 +2096,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         this.allowMaxHeight = false;
                         this.element.style.maxHeight = eventArgs.maxHeight;
                     }
+                    if (this.enableResize && this.boundWindowResizeHandler == null && !this.initialRender) {
+                        this.wireWindowResizeEvent();
+                    }
                     this.storeActiveElement = <HTMLElement>document.activeElement;
                     this.element.tabIndex = -1;
                     if (this.isModal && (!isNullOrUndefined(this.dlgOverlay))) {
@@ -2184,6 +2190,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         if (!isNullOrUndefined(this.targetEle)) {
                             removeClass([this.targetEle],  [DLG_TARGET , SCROLL_DISABLED]);
                         }
+                    }
+                    if (this.enableResize) {
+                        this.unWireWindowResizeEvent();
                     }
                     if (document.body.classList.contains(DLG_TARGET) &&
                         document.body.classList.contains(SCROLL_DISABLED)) {

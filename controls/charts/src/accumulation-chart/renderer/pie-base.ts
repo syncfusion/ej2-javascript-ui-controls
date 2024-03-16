@@ -211,7 +211,7 @@ export class PieBase extends AccumulationBase {
     /**
      * Method to start animation for pie series.
      */
-    protected doAnimation(slice: Element, series: AccumulationSeries): void {
+    protected doAnimation(slice: Element, series: AccumulationSeries, groupElement: Element): void {
         const startAngle: number = series.startAngle - 90;
         const duration: number = this.accumulation.duration ? this.accumulation.duration : series.animation.duration;
         let value: number;
@@ -235,6 +235,7 @@ export class PieBase extends AccumulationBase {
                 if (datalabelGroup) {
                     (datalabelGroup as HTMLElement).style.visibility = this.accumulation.isDestroyed ? 'hidden' : 'visible';
                 }
+                (groupElement as HTMLElement).style.cssText = '';
             }
         });
     }

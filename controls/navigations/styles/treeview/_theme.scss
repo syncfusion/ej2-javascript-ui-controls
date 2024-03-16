@@ -15,7 +15,7 @@
   }
   
   @else if $theme-name =='tailwind' {
-    background-color: darken($treeview-item-active-hover-bg, 10%);
+    background-color: $treeview-item-active-hover-bg;
   }
 
   @else {

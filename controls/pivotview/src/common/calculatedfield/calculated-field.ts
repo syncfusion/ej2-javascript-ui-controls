@@ -654,7 +654,14 @@ export class CalculatedField implements IAction {
                                     field = report.calculatedFieldSettings[i as number];
                                     this.updateFormatSettings(report, field.name, calcInfo.formatString);
                                     this.parent.olapEngineModule.getFormattedFields(report.formatSettings);
-                                    this.parent.olapEngineModule.formatFields[field.name].format = this.getFormat(field.formatString);
+                                    if (this.parent.olapEngineModule.formatFields[field.name]) {
+                                        if (this.parent.olapEngineModule.formatFields[field.name].format) {
+                                            this.parent.olapEngineModule.formatFields[field.name].format =
+                                                this.getFormat(field.formatString);
+                                        } else {
+                                            delete this.parent.olapEngineModule.formatFields[field.name];
+                                        }
+                                    }
                                     this.isFieldExist = true;
                                     break;
                                 }
@@ -680,7 +687,13 @@ export class CalculatedField implements IAction {
                             report.calculatedFieldSettings.push(field);
                             this.updateFormatSettings(report, field.name, calcInfo.formatString);
                             this.parent.olapEngineModule.getFormattedFields(report.formatSettings);
-                            this.parent.olapEngineModule.formatFields[field.name].format = this.getFormat(field.formatString);
+                            if (this.parent.olapEngineModule.formatFields[field.name]) {
+                                if (this.parent.olapEngineModule.formatFields[field.name].format) {
+                                    this.parent.olapEngineModule.formatFields[field.name].format = this.getFormat(field.formatString);
+                                } else {
+                                    delete this.parent.olapEngineModule.formatFields[field.name];
+                                }
+                            }
                         }
                         this.parent.lastCalcFieldInfo = field;
                     } else {
@@ -1550,25 +1563,39 @@ export class CalculatedField implements IAction {
     }
     private getFormat(pivotFormat: string): string {
         let format: string = pivotFormat;
-        switch (format) {
-        case 'Standard':
-            format = 'N';
-            break;
-        case 'Currency':
-            format = 'C';
-            break;
-        case 'Percent':
-            format = 'P';
-            break;
-        case 'N':
-            format = 'Standard';
-            break;
-        case 'C':
-            format = 'Currency';
-            break;
-        case 'P':
-            format = 'Percent';
-            break;
+        if (this.parent.dataType !== 'olap') {
+            switch (format) {
+            case 'Standard':
+                format = 'N';
+                break;
+            case 'Currency':
+                format = 'C';
+                break;
+            case 'Percent':
+                format = 'P';
+                break;
+            case 'N':
+                format = 'Standard';
+                break;
+            case 'C':
+                format = 'Currency';
+                break;
+            case 'P':
+                format = 'Percent';
+                break;
+            }
+        } else {
+            switch (format) {
+            case 'Standard':
+                format = 'N';
+                break;
+            case 'Currency':
+                format = 'C';
+                break;
+            case 'Percent':
+                format = 'P';
+                break;
+            }
         }
         return format;
     }

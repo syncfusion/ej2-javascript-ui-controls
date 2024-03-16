@@ -136,6 +136,4 @@ export class RibbonDropDownSettings extends ChildProperty<RibbonDropDownSettings
     public setProperties(prop: Object, muteOnChange: boolean): void {
         super.setProperties(prop, muteOnChange);
     }
-
 }
-

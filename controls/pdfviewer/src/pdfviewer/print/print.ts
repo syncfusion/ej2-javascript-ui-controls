@@ -97,10 +97,9 @@ export class Print {
 
     private createRequestForPrint(pageIndex: number, pageWidth: number, pageHeight: number, pageCount: number, printScaleFactor: number): void {
         const proxy: Print = this;
-        // tslint: disable-next-line:max-line-length
-        // set default zoomFactor value.
         const jsonObject: object = {
-            pageNumber: pageIndex.toString(), documentId: this.pdfViewerBase.documentId,
+            pageNumber: pageIndex.toString(),
+            documentId: this.pdfViewerBase.documentId,
             hashId: this.pdfViewerBase.hashId, zoomFactor: "1",
             action: 'PrintImages',
             elementId: this.pdfViewer.element.id,

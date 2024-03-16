@@ -603,11 +603,12 @@ export class CellRenderer implements ICellRenderer {
      * @param {boolean} checkHeight - Specifies the checkHeight.
      * @param {boolean} checkCF - Specifies the check for conditional format.
      * @param {boolean} skipFormatCheck - Specifies whether to skip the format checking while applying the number format.
+     * @param {boolean} checkFormulaAdded - Specifies whether to check the formula added or not.
      * @returns {void}
      */
     public refreshRange(
         range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
-        skipFormatCheck?: boolean): void {
+        skipFormatCheck?: boolean, checkFormulaAdded?: boolean): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cRange: number[] = range.slice(); let args: CellRenderArgs; let cell: HTMLTableCellElement;
         if (inView(this.parent, cRange, true)) {
@@ -620,6 +621,9 @@ export class CellRenderer implements ICellRenderer {
                         args = { rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell: j ===
                             cRange[3], isRefresh: true, isHeightCheckNeeded: true, manualUpdate: true, first: '', onActionUpdate:
                             checkHeight, skipFormatCheck: skipFormatCheck };
+                        if (checkFormulaAdded) {
+                            args.address = getCellAddress(i, j);
+                        }
                         this.update(args);
                         if (checkCF && sheet.conditionalFormats && sheet.conditionalFormats.length) {
                             this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [i, j], isAction: true });
@@ -701,9 +705,9 @@ export class CellRenderer implements ICellRenderer {
     public destroy(): void {
         this.parent.off(updateView, this.updateView);
         this.parent.off('calculateFormula', this.calculateFormula);
-        this.element = null;
-        this.th = null;
-        this.tableRow = null;
+        if (this.element) { this.element.remove(); } this.element = null;
+        if (this.th) { this.th.remove(); } this.th = null;
+        if (this.tableRow) { this.tableRow.remove(); } this.tableRow = null;
         this.parent = null;
     }
 }

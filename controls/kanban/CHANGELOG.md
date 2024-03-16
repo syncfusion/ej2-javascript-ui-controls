@@ -2,22 +2,6 @@
 
 ## [Unreleased]
 
-## 24.1.47 (2024-01-23)
-
-### Kanban
-
-#### Bug Fixes
-
-`#I544423` - Now, the Kanban column header title shows properly when the column is collapsed.
-
-## 24.1.46 (2024-01-17)
-
-### Kanban
-
-#### Bug Fixes
-
-`#I535989` - Now, drop clone works properly when slowly dragging and dropping the cards in the last position in the Kanban column.
-
 ## 24.1.41 (2023-12-18)
 
 ### Kanban

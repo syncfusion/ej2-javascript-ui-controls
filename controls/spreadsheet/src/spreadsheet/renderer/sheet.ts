@@ -785,8 +785,8 @@ export class SheetRender implements IRenderer {
                         isFreezePane: true };
                     this.parent.notify(checkMerge, args);
                     if (args.insideFreezePane) { return; }
-                    if (this.parent.viewport.topIndex + frozenRow >= range[0]) {
-                        this.refreshPrevMerge(range[0] + 1, indexes[1]);
+                    if (this.parent.viewport.topIndex + frozenRow >= range[2]) {
+                        this.refreshPrevMerge(range[2] + 1, indexes[1]);
                     }
                 }
                 if (firstcell && ((firstcell as HTMLTableCellElement).colSpan > 1 || (firstcell as HTMLTableCellElement).rowSpan > 1)) {
@@ -811,16 +811,34 @@ export class SheetRender implements IRenderer {
     }
 
     private checkColMerge(indexes: number[], range: number[], cell: Element, model: CellModel, firstcell?: Element): void {
-        if (this.parent.scrollSettings.enableVirtualization && cell && indexes[1] === this.parent.viewport.leftIndex +
-            this.parent.frozenColCount(this.parent.getActiveSheet()) && (!isNullOrUndefined(model.rowSpan) ||
+        if (this.parent.scrollSettings.enableVirtualization && cell && (!isNullOrUndefined(model.rowSpan) ||
             !isNullOrUndefined(model.colSpan))) {
-            if (model.colSpan < 0) {
-                const e: CellRenderArgs = { td: cell as HTMLTableCellElement, colIdx: indexes[1], rowIdx: indexes[0], isFreezePane: true };
-                this.parent.notify(checkMerge, e);
-                if (e.insideFreezePane) { return; }
+            let frozenCol: number = this.parent.frozenColCount(this.parent.getActiveSheet());
+            if (indexes[1] === this.parent.viewport.leftIndex + frozenCol) {
+                if (model.colSpan < 0) {
+                    const e: CellRenderArgs = { td: cell as HTMLTableCellElement, colIdx: indexes[1], rowIdx: indexes[0], isFreezePane: true };
+                    this.parent.notify(checkMerge, e);
+                    if (e.insideFreezePane) { return; }
+                    if (this.parent.viewport.leftIndex + frozenCol >= range[3]) {
+                        const td: HTMLTableCellElement
+                            = this.parent.getCell(indexes[0], indexes[3] + 1, this.parent.getRow(indexes[0], null, indexes[3] + 1)) as HTMLTableCellElement;
+                        if (td) {
+                            this.cellRenderer.refresh(indexes[0], range[3] + 1, null, td);
+                        }
+                    }
+                }
+                if (firstcell && ((firstcell as HTMLTableCellElement).colSpan >= 1 || (firstcell as HTMLTableCellElement).rowSpan >= 1)) {
+                    this.cellRenderer.refresh(indexes[0], indexes[1] + (range[3] - range[1]) + 1, null, firstcell);
+                }
             }
-            if (firstcell && ((firstcell as HTMLTableCellElement).colSpan >= 1 || (firstcell as HTMLTableCellElement).rowSpan >= 1)) {
-                this.cellRenderer.refresh(indexes[0], indexes[1] + (range[3] - range[1]) + 1, null, firstcell);
+            else if (model.colSpan > 1) {
+                if (indexes[1] + model.colSpan - 1 >= range[3] + 1 && indexes[1] < range[3] + 1) {
+                    const td: HTMLTableCellElement
+                        = this.parent.getCell(indexes[0], indexes[3]+1, this.parent.getRow(indexes[0], null, indexes[3]+1)) as HTMLTableCellElement;
+                    if (td) {
+                        this.cellRenderer.refresh(indexes[0], range[3] + 1, null, td);
+                    }
+                }
             }
         }
     }
@@ -993,9 +1011,9 @@ export class SheetRender implements IRenderer {
      * @returns {void}
      */
     public destroy(): void {
-        this.headerPanel = null;
-        this.contentPanel = null;
-        this.col = null;
+        if (this.headerPanel) { this.headerPanel.remove(); } this.headerPanel = null;
+        if (this.contentPanel) { this.contentPanel.remove(); } this.contentPanel = null;
+        if (this.col) { this.col.remove(); } this.col = null;
         this.rowRenderer = null;
         this.cellRenderer = null;
         this.colGroupWidth = null;

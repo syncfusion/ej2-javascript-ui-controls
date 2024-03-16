@@ -145,6 +145,7 @@ export class BulletTooltip {
             let fill: string = this.control.tooltip.fill ? this.control.tooltip.fill : this.control.themeStyle.tooltipFill;
             let borderWidth: number = ((this.control.theme === 'Fabric' || this.control.theme === 'Fluent' && !this.control.tooltip.border.width) ? 1 : this.control.tooltip.border.width);
             let borderColor: string = ((this.control.theme === 'Fabric' || this.control.theme === 'Fluent' && !this.control.tooltip.border.color) ? '#D2D0CE' : this.control.tooltip.border.color);
+            let borderDashArray: string = this.control.tooltip.border.dashArray ? "dashed " + borderColor + "; border-dasharray: " + this.control.tooltip.border.dashArray + ';' : 'Solid' + ' ' + borderColor + ';'
             let xPos: number = mouseX;
             let yPos: number = mouseY;
             xPos = ((xPos + stringToNumber(tooltipdiv.getAttribute('width'), this.control.containerWidth) < window.innerWidth) ?
@@ -171,7 +172,7 @@ export class BulletTooltip {
                 const divStyle: string = style + 'left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;' +
                     '-webkit-border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px;-o-border-radius: 5px 5px 5px 5px;' +
                     'border-radius: 5px 5px 5px 5px;' + 'background-color:' + fill + ';' + 'color:' +
-                    color + '; border:' + borderWidth + 'px Solid' + ' ' + borderColor + ';' +
+                    color + '; border:' + borderWidth + 'px '+ borderDashArray +
                     'padding-bottom: 7px;' + 'font-style:' + this.control.themeStyle.tooltipLabelFont.fontStyle +
                     '; padding-left: 10px; font-family:' + fontFamily + '; font-size:'+ this.control.tooltip.textStyle.size +'; padding-right: 10px; padding-top: 7px';
                 tooltipdiv.style.cssText = divStyle;

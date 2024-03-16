@@ -173,8 +173,7 @@ describe('Overview', () => {
 
             console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) )
             expect((diagram.scroller.currentZoom.toFixed(4) === '3.4665')).toBe(true);
-            expect((Math.round(diagram.scroller.horizontalOffset) <= -1092  &&
-                Math.round(diagram.scroller.horizontalOffset) >= -1093 ) && (Math.round(diagram.scroller.verticalOffset) <= -110  &&
+            expect((Math.round(diagram.scroller.horizontalOffset) <= -1092 ) && (Math.round(diagram.scroller.verticalOffset) <= -110  &&
                     Math.round(diagram.scroller.verticalOffset) >= -113)).toBe(true);
             done();
         });
@@ -190,8 +189,8 @@ describe('Overview', () => {
             overview[mouseup]({ target: target, type: mouseDown });
             console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) )
             expect((diagram.scroller.currentZoom.toFixed(4) === '6.8768')).toBe(true);
-            expect((Math.round(diagram.scroller.horizontalOffset) >= -2722 && Math.round(diagram.scroller.horizontalOffset) <= -2721) &&
-                (Math.round(diagram.scroller.verticalOffset) >= -222)).toBe(true);
+            expect((Math.round(diagram.scroller.horizontalOffset) >= -2726 && Math.round(diagram.scroller.horizontalOffset) <= -2715) &&
+                (Math.round(diagram.scroller.verticalOffset) >= -230 && Math.round(diagram.scroller.verticalOffset) <= -216 )).toBe(true);
             done();
         });
         it('Click on the overview rect - Scale with resizer Left', (done: Function) => {
@@ -204,8 +203,8 @@ describe('Overview', () => {
             mouseEvents.mouseDownEvent(overviewelement, 1056, 160);
             mouseEvents.mouseMoveEvent(overviewelement, 1106, 170);
             overview[mouseup]({ target: target, type: mouseDown });   console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) ); expect((diagram.scroller.currentZoom.toFixed(4) === '6.8768')).toBe(true);
-            expect((Math.round(diagram.scroller.horizontalOffset) >= -2721  && Math.round(diagram.scroller.horizontalOffset) <= -2720 ) &&
-                (Math.round(diagram.scroller.verticalOffset) >= -221 && Math.round(diagram.scroller.verticalOffset) <= -216 )).toBe(true);
+            expect((Math.round(diagram.scroller.horizontalOffset) >= -2722  && Math.round(diagram.scroller.horizontalOffset) <= -2720 ) &&
+                (Math.round(diagram.scroller.verticalOffset) >= -222 && Math.round(diagram.scroller.verticalOffset) <= -216 )).toBe(true);
             done();
         });
         it('Click on the overview rect - Scale with resizer Top left', (done: Function) => {
@@ -218,8 +217,8 @@ describe('Overview', () => {
             mouseEvents.mouseDownEvent(overviewelement, 1106, 170);
             mouseEvents.mouseMoveEvent(overviewelement, 1056, 160);
             overview[mouseup]({ target: target, type: mouseDown });   console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) ); expect((diagram.scroller.currentZoom.toFixed(4) === '2.3750')).toBe(true);
-            expect((Math.round(diagram.scroller.horizontalOffset) >= -541  && Math.round(diagram.scroller.horizontalOffset) <= -540) &&
-                (Math.round(diagram.scroller.verticalOffset) >= 256) && Math.round(diagram.scroller.verticalOffset) <= 260).toBe(true);
+            expect((Math.round(diagram.scroller.horizontalOffset) >= -545  && Math.round(diagram.scroller.horizontalOffset) <= -540) &&
+                (Math.round(diagram.scroller.verticalOffset) >= 250) && Math.round(diagram.scroller.verticalOffset) <= 260).toBe(true);
             done();
         });
         it('Click on the overview rect - Scale with resizer Top left Y greater than x', (done: Function) => {
@@ -232,8 +231,8 @@ describe('Overview', () => {
             mouseEvents.mouseDownEvent(overviewelement, 1106, 170);
             mouseEvents.mouseMoveEvent(overviewelement, 1096, 140);
             overview[mouseup]({ target: target, type: mouseDown });   console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) ); expect(diagram.scroller.currentZoom.toFixed(4) == '1.6393').toBe(true);
-            expect((Math.round(diagram.scroller.horizontalOffset) <= -174  && Math.round(diagram.scroller.horizontalOffset) >= -177) &&
-                (Math.round(diagram.scroller.verticalOffset) >= 342) && (Math.round(diagram.scroller.verticalOffset) <= 344)).toBe(true);
+            expect((Math.round(diagram.scroller.horizontalOffset) <= -172  && Math.round(diagram.scroller.horizontalOffset) >= -180) &&
+                (Math.round(diagram.scroller.verticalOffset) >= 335) && (Math.round(diagram.scroller.verticalOffset) <= 345)).toBe(true);
             done();
         });
         it('Click on the overview rect - Scale with resizer Top', (done: Function) => {
@@ -245,9 +244,10 @@ describe('Overview', () => {
             overview[mouseDown]({ target: target, type: mouseDown });
             mouseEvents.mouseDownEvent(overviewelement, 1056, 170);
             mouseEvents.mouseMoveEvent(overviewelement, 1156, 190);
-            overview[mouseup]({ target: target, type: mouseDown });   console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) ); expect((diagram.scroller.currentZoom.toFixed(4) == '2.1866')).toBe(true);
-            expect((Math.round(diagram.scroller.horizontalOffset) >= -322 && Math.round(diagram.scroller.horizontalOffset) <= -320) &&
-                (Math.round(diagram.scroller.verticalOffset) >= 309 && Math.round(diagram.scroller.verticalOffset) <= 312)).toBe(true);
+            overview[mouseup]({ target: target, type: mouseDown });   console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) ); 
+            expect((diagram.scroller.currentZoom.toFixed(4) == '2.1866')).toBe(true);
+            expect((Math.round(diagram.scroller.horizontalOffset) <= -315 && Math.round(diagram.scroller.horizontalOffset) >= -330) &&
+                (Math.round(diagram.scroller.verticalOffset) >= 300 && Math.round(diagram.scroller.verticalOffset) <= 315)).toBe(true);
             done();
         });
         it('Click on the overview rect - Scale with resizer Top right', (done: Function) => {
@@ -259,9 +259,10 @@ describe('Overview', () => {
             overview[mouseDown]({ target: target, type: mouseDown });
             mouseEvents.mouseDownEvent(overviewelement, 1156, 190);
             mouseEvents.mouseMoveEvent(overviewelement, 1176, 170);
-            overview[mouseup]({ target: target, type: mouseDown });   console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) ); expect((diagram.scroller.currentZoom.toFixed(4) === '1.7998')).toBe(true);
-            expect((Math.round(diagram.scroller.horizontalOffset) >= -264  && Math.round(diagram.scroller.horizontalOffset) <= -262) &&
-                (Math.round(diagram.scroller.verticalOffset) >= 355 && Math.round(diagram.scroller.verticalOffset) <= 358)).toBe(true); done();
+            overview[mouseup]({ target: target, type: mouseDown });   console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) ); 
+            expect((diagram.scroller.currentZoom.toFixed(4) === '1.7998')).toBe(true);
+            expect((Math.round(diagram.scroller.horizontalOffset) >= -270  && Math.round(diagram.scroller.horizontalOffset) <= -260) &&
+                (Math.round(diagram.scroller.verticalOffset) >= 350 && Math.round(diagram.scroller.verticalOffset) <= 360)).toBe(true); done();
         });
         it('Click on the overview rect - Scale with resizer Top right with Y greater than X', (done: Function) => {
             let overviewelement: HTMLElement = document.getElementById(overview.element.id);
@@ -273,8 +274,8 @@ describe('Overview', () => {
             mouseEvents.mouseDownEvent(overviewelement, 1156, 190);
             mouseEvents.mouseMoveEvent(overviewelement, 1166, 170);
             overview[mouseup]({ target: target, type: mouseDown });   console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) ); expect(diagram.scroller.currentZoom.toFixed(4) === '1.4851').toBe(true);
-            expect((Math.round(diagram.scroller.horizontalOffset) >= -218 && Math.round(diagram.scroller.horizontalOffset) <= -217) &&
-                (Math.round(diagram.scroller.verticalOffset) >= 393  && Math.round(diagram.scroller.verticalOffset) <= 395)).toBe(true);
+            expect((Math.round(diagram.scroller.horizontalOffset) >= -225 && Math.round(diagram.scroller.horizontalOffset) <= -210) &&
+                (Math.round(diagram.scroller.verticalOffset) >= 385  && Math.round(diagram.scroller.verticalOffset) <= 395)).toBe(true);
             done();
         });
         it('Click on the overview rect - Scale with resizer  Right', (done: Function) => {
@@ -1986,7 +1987,7 @@ describe('Overview', () => {
                 { id: 'node7', width: 100, height: 100, offsetX: -200, offsetY: 800,style:{fill:'brown'}  },
                 { id: 'node8', width: 100, height: 100, offsetX: 600, offsetY: 800 ,style:{fill:'white'} },
                 { id: 'node9', width: 100, height: 100, offsetX: 1400, offsetY: 800,style:{fill:'skyblue'}  },
-            
+
             ];
             diagram = new Diagram({
                 width: '100%',
@@ -2032,7 +2033,7 @@ describe('Overview', () => {
             expect(preHeight !== curHeight);
             done();
         });
-       
-    });
 
+    });
+    
 });

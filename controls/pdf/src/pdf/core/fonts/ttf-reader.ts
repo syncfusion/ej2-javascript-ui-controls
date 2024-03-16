@@ -862,16 +862,16 @@ export class _TrueTypeReader {
     _getGlyph(charCode?: string | number): _TrueTypeGlyph {
         if (typeof charCode === 'number') {
             let obj1: object = null;
-            if (!this._metrics._isSymbol && this._microsoftGlyphs != null) {
+            if (!this._metrics._isSymbol && this._microsoftGlyphs !== null) {
                 if (this._microsoftGlyphs.containsKey(charCode)) {
                     obj1 = this._microsoftGlyphs.getValue(charCode);
                 }
-            } else if (this._metrics._isSymbol && this._macintoshGlyphs != null) {
+            } else if (this._metrics._isSymbol && this._macintoshGlyphs !== null) {
                 if (this._macintoshGlyphs.containsKey(charCode)) {
                     obj1 = this._macintoshGlyphs.getValue(charCode);
                 }
             }
-            const glyph: _TrueTypeGlyph = (obj1 != null) ? obj1 as _TrueTypeGlyph : this._getDefaultGlyph();
+            const glyph: _TrueTypeGlyph = (obj1 !== null) ? obj1 as _TrueTypeGlyph : this._getDefaultGlyph();
             return glyph;
         } else {
             let obj: object = null;

@@ -23,3 +23,10 @@ export type EnterKey = 'P' | 'DIV' | 'BR';
  * Defines tag to be used when shift + enter key is pressed.
  */
 export type ShiftEnterKey = 'P' | 'DIV' | 'BR';
+
+/**
+ * Defines the types of action to be used in the Rich Text Editor.
+ * @hidden
+ * @private
+ */
+export type ContentHeightSource = 'SourceCode' | 'Init' | 'Preview' | 'Maximize' | 'Minimize' | 'WindowResize' | 'Toolbar' | 'Resize' | 'Refresh';

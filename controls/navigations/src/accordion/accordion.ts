@@ -361,11 +361,12 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     @Property('Multiple')
     public expandMode: ExpandMode;
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to enable the rendering of untrusted HTML values in the Accordion component.
+     * When this property is enabled, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
      * Specifies the animation configuration settings for expanding and collapsing the panel.
@@ -901,12 +902,12 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             }
         } catch (e) {
             if (typeof (value) === 'string') {
-                ele.innerHTML = SanitizeHtmlHelper.sanitize(value);
+                ele.innerHTML = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(value) : value;
             } else if ((value as any) instanceof (HTMLElement)) {
                 ele.appendChild(value as HTMLElement);
                 if (this.trgtEle) {
                     (<HTMLElement>ele.firstElementChild).style.display = '';
-                }             
+                }
             } else {
                 templateFn = templateCompiler(value);
             }
@@ -935,7 +936,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 ele.appendChild(el);
             });
         } else if (ele.childElementCount === 0) {
-            ele.innerHTML = SanitizeHtmlHelper.sanitize(value);
+            ele.innerHTML = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(value) : value;
         }
         if (!isNOU(temString)) {
             if (this.templateEle.indexOf(value) === -1) {
@@ -962,11 +963,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             append(this.getItemTemplate()(this.dataSource[parseInt(index.toString(), 10)], this, 'itemTemplate', this.element.id + '_itemTemplate', false), ctn);
             itemcnt.appendChild(ctn);
         } else {
-            if (this.enableHtmlSanitizer && typeof (this.items[parseInt(index.toString(), 10)].content)) {
-                this.items[parseInt(index.toString(), 10)].content =
-                    SanitizeHtmlHelper.sanitize(this.items[parseInt(index.toString(), 10)].content);
+            let content: string = this.items[parseInt(index.toString(), 10)].content;
+            if (this.enableHtmlSanitizer && typeof (content) === 'string') {
+                content = SanitizeHtmlHelper.sanitize(content);
             }
-            itemcnt.appendChild(this.fetchElement(ctn, this.items[parseInt(index.toString(), 10)].content, index));
+            itemcnt.appendChild(this.fetchElement(ctn, content, index));
         }
         return itemcnt;
     }
@@ -1011,7 +1012,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     private expandAnimation(ef: Str, icn: HTEle, trgt: HTEle, trgtItemEle: HTEle, animate: AnimationModel, args: ExpandEventArgs): void {
         if (ef === 'None' && animationMode === 'Enable'){
             ef = 'SlideDown';
-            animate.name = 'SlideDown'
+            animate.name = 'SlideDown';
         }
         let height: number;
         this.lastActiveItemId = trgtItemEle.id;
@@ -1115,9 +1116,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         });
     }
     private collapseAnimation(ef: Str, trgt: HTEle, trgtItEl: HTEle, icn: HTEle, animate: AnimationModel, args: ExpandEventArgs): void {
-        if(ef === 'None' && animationMode === 'Enable') {
+        if (ef === 'None' && animationMode === 'Enable') {
             ef = 'SlideUp';
-            animate.name = 'SlideUp'
+            animate.name = 'SlideUp';
         }
         let height: number;
         let trgtHeight: number;

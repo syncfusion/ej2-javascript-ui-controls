@@ -551,6 +551,22 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     @Event()
     public pan: EmitType<IMapPanEventArgs>;
 
+    /**
+    * This event is triggered after performing the panning action.
+    *
+    * @event panComplete
+    */
+    @Event()
+    public panComplete: EmitType<IMapPanEventArgs>;
+
+    /**
+    * This event is triggered after the zooming operation is completed.
+    *
+    * @event zoomComplete
+    */
+    @Event()
+    public zoomComplete: EmitType<IMapPanEventArgs>;
+
     // Internal properties declaration area.
     /**
      * Specifies the function to format the text contents in the maps.
@@ -775,7 +791,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public zoomNotApplied: boolean = false;
     /** @public */
     public dataLabelShape: number[] = [];
-    public zoomShapeCollection: object[] = [];
+    public zoomShapeCollection: string[] = [];
     public zoomLabelPositions: object[] = [];
     public mouseDownEvent: Object = { x: null, y: null };
     public mouseClickEvent: Object = { x: null, y: null };
@@ -922,6 +938,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.trigger(load, { maps: this });
             this.createSVG();
             this.findBaseAndSubLayers();
+            if (!isNullOrUndefined(this.markerModule)) {
+                this.markerModule.initializeMarkerClusterList();
+            }
             this.createSecondaryElement();
             this.addTabIndex();
             this.themeStyle = getThemeStyle(this.theme);
@@ -1387,16 +1406,22 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public getMinMaxLatitudeLongitude(): IMinMaxLatitudeLongitude {
-        const element: ClientRect = document.getElementById(this.element.id).getBoundingClientRect();
-        let minPosition: GeoPosition = this.isTileMap ? this.pointToLatLong((this.mapAreaRect.x - this.margin.left),
-            - this.mapAreaRect.y) : this.getGeoLocation(0, (this.mapAreaRect.x + element.left), this.mapAreaRect.y);
-        let maxPosition: GeoPosition = this.isTileMap ? this.pointToLatLong(this.mapAreaRect.width, (this.mapAreaRect.height - this.mapAreaRect.y)) :
-            this.getGeoLocation(0, (this.mapAreaRect.x + element.left + this.mapAreaRect.width), (this.mapAreaRect.y + this.mapAreaRect.height));
-        const MinMaxLatitudeLongitude: IMinMaxLatitudeLongitude = {
-            minLatitude: minPosition.latitude, maxLatitude: maxPosition.latitude, minLongitude: minPosition.longitude,
-            maxLongitude: maxPosition.longitude
-        };
-        return MinMaxLatitudeLongitude;
+        const mapsElement: HTMLElement = document.getElementById(this.element.id);
+        if (!isNullOrUndefined(mapsElement)) {
+            const element: ClientRect = mapsElement.getBoundingClientRect();
+            let minPosition: GeoPosition = this.isTileMap ? this.pointToLatLong((this.mapAreaRect.x - this.margin.left),
+                - this.mapAreaRect.y) : this.getGeoLocation(0, (this.mapAreaRect.x + element.left), this.mapAreaRect.y);
+            let maxPosition: GeoPosition = this.isTileMap ? this.pointToLatLong(this.mapAreaRect.width, (this.mapAreaRect.height - this.mapAreaRect.y)) :
+                this.getGeoLocation(0, (this.mapAreaRect.x + element.left + this.mapAreaRect.width), (this.mapAreaRect.y + this.mapAreaRect.height));
+            const MinMaxLatitudeLongitude: IMinMaxLatitudeLongitude = {
+                minLatitude: minPosition.latitude, maxLatitude: maxPosition.latitude, minLongitude: minPosition.longitude,
+                maxLongitude: maxPosition.longitude
+            };
+            return MinMaxLatitudeLongitude;
+        } else {
+            return { minLatitude: 0, maxLatitude: 0, minLongitude: 0,
+                maxLongitude: 0 };
+        }
     }
     /**
      * @returns {void}
@@ -1409,10 +1434,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const templateElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.element.id + '_template');
         if (!isNullOrUndefined(templateElements) && templateElements.length > 0 &&
             getElementByID(this.element.id + '_Layer_Collections') && !this.isTileMap) {
-            for (let i: number = 0; i < templateElements.length; i++) {
+            Array.prototype.forEach.call(templateElements, (templateGroupEle: Element, i: number) => {
                 let offSetLetValue: number = 0;
                 let offSetTopValue: number = 0;
-                const templateGroupEle: Element = templateElements[i as number] as Element;
                 if (!isNullOrUndefined(templateGroupEle) && templateGroupEle.childElementCount > 0) {
                     const layerOffset: ClientRect = getElementByID(this.element.id + '_Layer_Collections').getBoundingClientRect();
                     const elementOffset: ClientRect = getElementByID(templateGroupEle.id).getBoundingClientRect();
@@ -1422,20 +1446,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                         offSetTopValue = this.isTileMap ? 0 : (layerOffset.top < elementOffset.top) ?
                             - (Math.abs(elementOffset.top - layerOffset.top)) : Math.abs(elementOffset.top - layerOffset.top);
                     }
-                    for (let j: number = 0; j < templateGroupEle.childElementCount; j++) {
-                        const currentTemplate: HTMLElement = <HTMLElement>templateGroupEle.childNodes[j as number];
+                    Array.prototype.forEach.call(templateGroupEle.childNodes, (currentTemplate: HTMLElement, j: number) => {
                         if (currentTemplate.id.indexOf('Marker') !== -1) {
-                            const elementOffset: ClientRect = getElementByID(currentTemplate.id).getBoundingClientRect();
-                            currentTemplate.style.left = parseFloat(currentTemplate.style.left) - (this.isTileMap ? 0 : elementOffset.width / 2) + 'px';
-                            currentTemplate.style.top = parseFloat(currentTemplate.style.top) - (this.isTileMap ? 0 : elementOffset.height / 2) + 'px';
+                            if (currentTemplate.style.visibility != "hidden") {
+                                const elementOffset: ClientRect = getElementByID(currentTemplate.id).getBoundingClientRect();
+                                currentTemplate.style.left = parseFloat(currentTemplate.style.left) - (this.isTileMap ? 0 : elementOffset.width / 2) + 'px';
+                                currentTemplate.style.top = parseFloat(currentTemplate.style.top) - (this.isTileMap ? 0 : elementOffset.height / 2) + 'px';
+                            }
                         } else {
                             currentTemplate.style.left = parseFloat(currentTemplate.style.left) + offSetLetValue + 'px';
                             currentTemplate.style.top = parseFloat(currentTemplate.style.top) + offSetTopValue + 'px';
                             currentTemplate.style.transform = 'translate(-50%, -50%)';
                         }
-                    }
+                    });
                 }
-            }
+            });
         }
     }
 
@@ -1573,7 +1598,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 options, style, style.color || (type === 'title' ? this.themeStyle.titleFontColor : this.themeStyle.subTitleFontColor),
                 groupEle
             );
-            element.setAttribute('aria-label', this.description || title.text);
+            element.setAttribute('aria-label', title.text);
+            element.setAttribute('role', 'region');
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
                 height = Math.abs((titleBounds.y + this.margin.bottom) - this.availableSize.height);
                 this.mapAreaRect = new Rect(this.margin.left, titleBounds.y + 10, width, height - 10);
@@ -1729,7 +1755,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             zoom.performZoomingByToolBar('zoomout');
         } else if (this.zoomSettings.enable && zoom && event['keyCode'] === 82) {
             zoom.performZoomingByToolBar('reset');
-            zoom.isPanning = false;
+            zoom.isPanModeEnabled = false;
         } else if (this.zoomSettings.enable && this.zoomSettings.enablePanning && zoom
             && (event.code === 'ArrowUp' || event.code === 'ArrowDown')) {
             event.preventDefault();
@@ -1898,12 +1924,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /** @private */
     public getClickLocation(targetId: string, pageX: number, pageY: number, targetElement: HTMLElement,
-                             x: number, y: number): GeoPosition {
+                             x: number, y: number, type?: string): GeoPosition {
         let layerIndex: number = 0;
         let latLongValue: any;
-        if (targetId.indexOf('_LayerIndex_') !== -1 && !this.isTileMap &&
-            (parseInt(this.mouseDownEvent['x'], 10) === parseInt(this.mouseClickEvent['x'], 10)) &&
-            (parseInt(this.mouseDownEvent['y'], 10) === parseInt(this.mouseClickEvent['y'], 10))) {
+        if (targetId.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (!isNullOrUndefined(type) ||
+            ((parseInt(this.mouseDownEvent['x'], 10) === parseInt(this.mouseClickEvent['x'], 10)) &&
+            (parseInt(this.mouseDownEvent['y'], 10) === parseInt(this.mouseClickEvent['y'], 10))))) {
             layerIndex = parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
             if (this.layers[layerIndex as number].geometryType === 'Normal') {
                 if (targetId.indexOf('_shapeIndex_') > -1) {
@@ -1956,8 +1982,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             } else {
                 latLongValue = this.getGeoLocation(layerIndex, x, y);
             }
-        } else if (this.isTileMap && (parseInt(this.mouseDownEvent['x'], 10) === parseInt(this.mouseClickEvent['x'], 10)) &&
-            (parseInt(this.mouseDownEvent['y'], 10) === parseInt(this.mouseClickEvent['y'], 10))) {
+        } else if (this.isTileMap && (!isNullOrUndefined(type) ||
+            ((parseInt(this.mouseDownEvent['x'], 10) === parseInt(this.mouseClickEvent['x'], 10)) &&
+                (parseInt(this.mouseDownEvent['y'], 10) === parseInt(this.mouseClickEvent['y'], 10))))) {
             latLongValue = this.getTileGeoLocation(x, y);
         }
         return latLongValue;
@@ -2714,13 +2741,51 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.mouseDownEvent = { x: null, y: null };
         this.mouseClickEvent = { x: null, y: null };
         this.formatFunction = null;
-        //TODO: Calling the below code throws spec issue.
-        //this.renderer = null;
-        this.availableSize = new Size(0, 0);
+        this.localeObject = null;
+        this.defaultLocalConstants = null;
+        this.intl = null;
+        this.mapAreaRect = null;
+        this.layersCollection = null;
+        this.themeStyle = null;
+        this.totalRect = null;
+        this.baseSize = null;
+        this.baseMapBounds = null;
+        this.baseMapRectBounds = null;
+        this.baseTranslatePoint = null;
+        this.baseTileTranslatePoint = null;
+        this.markerZoomCenterPoint = null;
+        this.currentTiles = null;
+        this.serverProcess = null;
+        this.toolbarProperties = null;
+        this.zoomLabelPositions = null;
+        this.resizeEvent = null;
+        this.availableSize = null;
         if (document.getElementById('mapsmeasuretext')) {
             document.getElementById('mapsmeasuretext').remove();
         }
         this.removeSvg();
+        this.svgObject = null;
+        this.mapLayerPanel = null;
+        this.renderer = null;
+        this.translatePoint = null;
+        this.tileTranslatePoint = null;
+        this.previousPoint = null;
+        this.dataLabelShape = [];
+        this.zoomShapeCollection = [];
+        this.selectedElementId = [];
+        this.selectedMarkerElementId = [];
+        this.selectedBubbleElementId = [];
+        this.shapeSelectionClass = null;
+        this.markerSelectionClass = null;
+        this.bubbleSelectionClass = null;
+        this.navigationSelectionClass = null;
+        this.selectedNavigationElementId = [];
+        this.polygonSelectionClass = null;
+        this.selectedPolygonElementId = [];
+        this.legendSelectionClass = null;
+        this.previousTranslate = null;
+        this.initialTileTranslate = null;
+        this.markerDragArgument = null;
     }
 
     /**
@@ -2856,38 +2921,44 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.isBubbleVisible()) {
             modules.push({
                 member: 'Bubble',
-                args: [this]
+                args: [this],
+                name: 'Bubble'
             });
         }
         if (isVisible.highlight) {
             modules.push({
                 member: 'Highlight',
-                args: [this]
+                args: [this],
+                name: 'Highlight'
             });
         }
         if (isVisible.selection) {
             modules.push({
                 member: 'Selection',
-                args: [this]
+                args: [this],
+                name: 'Selection'
             });
         }
         if (this.legendSettings.visible) {
             modules.push({
                 member: 'Legend',
-                args: [this]
+                args: [this],
+                name: 'Legend'
             });
         }
         if (this.zoomSettings.enable || this.zoomSettings.zoomFactor > this.zoomSettings.minZoom) {
             modules.push({
                 member: 'Zoom',
-                args: [this]
+                args: [this],
+                name: 'Zoom'
             });
         }
 
         if (this.isMarkersVisible()) {
             modules.push({
                 member: 'Marker',
-                args: [this]
+                args: [this],
+                name: 'Marker'
             });
         }
 
@@ -2895,51 +2966,59 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.isDataLabelVisible()) {
             modules.push({
                 member: 'DataLabel',
-                args: [this]
+                args: [this],
+                name: 'DataLabel'
             });
         }
 
         if (this.isNavigationVisible()) {
             modules.push({
                 member: 'NavigationLine',
-                args: [this]
+                args: [this],
+                name: 'NavigationLine'
             });
         }
         if (this.isPolygonVisible()) {
             modules.push({
                 member: 'Polygon',
-                args: [this]
+                args: [this],
+                name: 'Polygon'
             });
         }
 
         if (isVisible.tooltip) {
             modules.push({
                 member: 'MapsTooltip',
-                args: [this]
+                args: [this],
+                name: 'MapsTooltip'
             });
         }
         if (annotationEnable) {
             modules.push({
                 member: 'Annotations',
-                args: [this, Annotations]
+                args: [this, Annotations],
+                name: 'Annotations'
             });
         }
         if (this.allowPrint) {
             modules.push({
                 member: 'Print',
-                args: [this]
+                args: [this],
+                name: 'Print'
             });
         }
         if (this.allowImageExport) {
             modules.push({
                 member: 'ImageExport',
-                args: [this]
+                args: [this],
+                name: 'ImageExport'
             });
         }
         if (this.allowPdfExport) {
             modules.push({
                 member: 'PdfExport',
-                args: [this]
+                args: [this],
+                name: 'PdfExport'
             });
         }
 
@@ -3148,6 +3227,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     if (polygon.points.length > 0) {
                         isSelection = layer.polygonSettings.highlightSettings.enable || isSelection;
                         isHighlight = layer.polygonSettings.selectionSettings.enable || isHighlight;
+                        istooltipVisible = layer.polygonSettings.tooltipSettings.visible || istooltipVisible;
                     }
                 }
                 for (const marker of markers) {

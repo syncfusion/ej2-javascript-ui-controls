@@ -72,18 +72,24 @@ export class _PdfCrossReference {
             }
         }
         let hasRoot: boolean = false;
+        let root: _PdfDictionary;
         try {
-            const root: _PdfDictionary = trailerDictionary.get('Root');
-            if (root) {
+            root = trailerDictionary.get('Root');
+        }
+        catch (e) {
+            throw new BaseException('Invalid cross reference', 'XRefParseException');
+        }
+        if (root) {
+            try {
                 const pagesEntry: _PdfDictionary = root.get('Pages');
                 if (pagesEntry) {
                     this._root = root;
                     hasRoot = true;
                 }
             }
-        }
-        catch (ex) {
-            throw new BaseException('Invalid cross reference', 'InvalidXRef');
+            catch (ex) {
+                throw new BaseException('Invalid cross reference', 'InvalidXRef');
+            }
         }
         if (!hasRoot) {
             if (!recoveryMode) {

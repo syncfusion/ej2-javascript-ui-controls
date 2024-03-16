@@ -25,6 +25,7 @@ let ganttModel: Object = {
         work: 'work',
         child: 'subtasks'
     },
+    taskType: 'FixedWork',
     resourceFields: {
         id: 'resourceId',
         name: 'resourceName',
@@ -39,7 +40,6 @@ let ganttModel: Object = {
         allowTaskbarEditing: true,
         showDeleteConfirmDialog: true
     },
-    taskType: 'FixedWork',
     columns: [
         { field: 'TaskID', visible: false },
         { field: 'TaskName', headerText: 'Name', width: 250 },
@@ -214,6 +214,7 @@ describe('Gantt - Resource view', () => {
                         expandState: 'isExpand',
                         child: 'subtasks'
                     },
+                    taskType: 'FixedWork',
                     resourceFields: {
                         id: 'resourceId',
                         name: 'resourceName',
@@ -313,6 +314,7 @@ describe('Gantt - Resource view', () => {
                     work: 'work',
                     child: 'subtasks'
                 },
+               taskType: 'FixedWork',
                 resourceFields: {
                     id: 'resourceId',
                     name: 'resourceName',
@@ -432,6 +434,7 @@ describe('Resoure editing using Edit dialog', () => {
                 work: 'work',
                 child: 'subtasks'
             },
+             taskType: 'FixedWork',
             resourceFields: {
                 id: 'resourceId',
                 name: 'resourceName',
@@ -967,6 +970,7 @@ describe('Self reference data', () => {
                 work: 'work',
                 child: 'subtasks'
             },
+             taskType: 'FixedWork',
             enableVirtualization: true,
             resourceFields: {
                 id: 'resourceId',
@@ -1015,6 +1019,7 @@ describe('Self reference data', () => {
               work: 'work',
               child: 'subtasks'
             },
+             taskType: 'FixedWork',
             resourceFields: {
               id: 'resourceId',
               name: 'resourceName',
@@ -1106,6 +1111,7 @@ describe('Self reference data', () => {
                 work: 'work',
                 child: 'subtasks'
             },
+             taskType: 'FixedWork',
             resourceFields: {
                 id: 'resourceId',
                 name: 'resourceName',
@@ -1119,7 +1125,6 @@ describe('Self reference data', () => {
                 allowTaskbarEditing: true,
                 showDeleteConfirmDialog: true
             },
-            taskType:'FixedWork',
             columns: [
                 { field: 'TaskID', visible: false },
                 { field: 'TaskName', headerText: 'Name', width: 250 },
@@ -1218,6 +1223,7 @@ describe('Self reference data', () => {
             work: 'work',
             child: 'subtasks'
         },
+       taskType: 'FixedWork',
         resourceFields: {
             id: 'resourceId',
             name: 'resourceName',
@@ -1247,7 +1253,6 @@ describe('Self reference data', () => {
             rightLabel: 'resources',
             taskLabel: 'Progress'
         },
-        taskType:'FixedWork',
         allowResizing: true,
         allowSelection: true,
         highlightWeekends: true,
@@ -1304,6 +1309,7 @@ describe('Resource view with persistence', () => {
                 work: 'work',
                 child: 'subtasks'
             },
+            taskType: 'FixedWork',
             resourceFields: {
                 id: 'resourceId',
                 name: 'resourceName',
@@ -1333,7 +1339,6 @@ describe('Resource view with persistence', () => {
                 rightLabel: 'resources',
                 taskLabel: 'Progress'
             },
-            taskType:'FixedWork',
             enablePersistence: true,
             allowResizing: true,
             allowSelection: true,
@@ -1363,7 +1368,6 @@ describe('Resource view with persistence', () => {
             dataSource: normalResourceData,
         resources: resourceCollection,
         viewType: 'ResourceView',
-        taskType:'FixedWork',
         taskFields: {
             id: 'TaskID',
             name: 'TaskName',
@@ -1376,6 +1380,7 @@ describe('Resource view with persistence', () => {
             work: 'work',
             child: 'subtasks'
         },
+       taskType: 'FixedWork',
         resourceFields: {
             id: 'resourceId',
             name: 'resourceName',
@@ -1446,7 +1451,6 @@ describe('Resource view with persistence', () => {
                 dataSource: [],
             resources: resourceCollection,
             viewType: 'ResourceView',
-            taskType:'FixedWork',
             taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
@@ -1458,6 +1462,7 @@ describe('Resource view with persistence', () => {
                 resourceInfo: 'resources',
                 work: 'work',
             },
+            taskType: 'FixedWork',
             resourceFields: {
                 id: 'resourceId',
                 name: 'resourceName',
@@ -1526,7 +1531,6 @@ describe('Resource view with persistence', () => {
                 dataSource: normalResourceData,
             resources: resourceCollection,
             viewType: 'ResourceView',
-          taskType:'FixedWork',
             taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
@@ -1539,6 +1543,7 @@ describe('Resource view with persistence', () => {
                 work: 'work',
                 child: 'subtasks'
             },
+            taskType: 'FixedWork',
             resourceFields: {
                 id: 'resourceId',
                 name: 'resourceName',
@@ -1893,6 +1898,7 @@ describe('Resource view with persistence', () => {
                   showDeleteConfirmDialog: true,
                 },
                 columns: [
+                  { field: 'PlanningId', visible: false },
                   { field: 'Name', visible: true },
                   { field: 'StartDate', headerText: 'StartDate' },
                   { field: 'EndDate' },
@@ -1954,7 +1960,6 @@ describe('Resource view with persistence', () => {
                 enableMultiTaskbar: true,
                 viewType: 'ResourceView',
                 collapseAllParentTasks: true,
-               taskType:'FixedWork',
                 taskFields: {
                     id: 'TaskID',
                     name: 'TaskName',
@@ -1968,6 +1973,7 @@ describe('Resource view with persistence', () => {
                     work: 'work',
                     child: 'subtasks'
                 },
+               taskType: 'FixedWork',
                 resourceFields: {
                     id: 'resourceId',
                     name: 'resourceName',
@@ -2170,6 +2176,7 @@ describe('Resource view with persistence', () => {
                     work: 'work',
                     child: 'subtasks'
                 },
+               taskType: 'FixedWork',
                 durationUnit: 'Hour',
                 resourceFields: {
                     id: 'resourceId',
@@ -2185,7 +2192,6 @@ describe('Resource view with persistence', () => {
                     allowTaskbarEditing: true,
                     showDeleteConfirmDialog: true
                 },
-                taskType:'FixedWork',
                 columns: [
                     { field: 'TaskID', visible: false },
                     { field: 'TaskName', headerText: 'Name', width: 250 },
@@ -2246,6 +2252,7 @@ describe('Change resources and datasource simultaneously', () => {
                     work: 'work',
                     child: 'subtasks'
                 },
+                 taskType: 'FixedWork',
                 resourceFields: {
                     id: 'resourceId',
                     name: 'resourceName',
@@ -2588,6 +2595,7 @@ describe('Incorrect duration for parent task in hour mode', () => {
                     work: 'work',
                 
                 },
+               taskType: 'FixedWork',
                 resourceFields: {
                     id: 'resourceId',
                     name: 'resourceName',
@@ -2664,6 +2672,7 @@ describe('Render multitaskbar with virtualization', () => {
                     work: 'work',
                     child: 'subtasks'
                 },
+               taskType: 'FixedWork',
                 resourceFields: {
                     id: 'resourceId',
                     name: 'resourceName',
@@ -2873,6 +2882,7 @@ describe('Other instance of the taskbar not moved in the resource view issue', (
                 name: 'resourceName',
             },
             columns:[
+                { field: 'Id', visible: false },
                 {
                     field: 'Name',
                     headerText: 'Job Name',
@@ -3002,5 +3012,89 @@ describe("MT-858829-Virtual date Resource View sample is not rendering", () => {
         triggerMouseEvent(element, 'click');
         ganttObj.treeGrid.saveCell();
         expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(4);
+      });    
+  });
+describe("Project view duration editing", () => {
+    let ganttObj: Gantt;
+    let projectNewData: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+    ];
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+            dataSource: projectNewData,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            enableMultiTaskbar: true,
+            showOverAllocation: true,
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 1000);
+    });
+    it("Project View duartion cell edit", () => {
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = null;
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(null);
       });    
   });

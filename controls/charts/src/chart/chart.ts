@@ -2662,7 +2662,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         const rect: RectOption = new RectOption(
             this.element.id + '_ChartBorder', fillColor, this.border, 1,
-            new Rect(width * 0.5 + x, width * 0.5 + y, this.availableSize.width - width, this.availableSize.height - width));
+            new Rect(width * 0.5 + x, width * 0.5 + y, this.availableSize.width - width, this.availableSize.height - width), 0, 0, '', this.border.dashArray);
 
         this.htmlObject = redrawElement(this.redraw, this.element.id + '_ChartBorder', rect, this.renderer) as HTMLElement
             || this.renderer.drawRectangle(rect) as HTMLElement;
@@ -2700,7 +2700,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             const rect: RectOption = new RectOption(
                 this.element.id + '_ChartAreaBorder', this.chartArea.background,
                 { width: this.chartArea.border.width, color: this.chartArea.border.color || this.themeStyle.areaBorder },
-                this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect);
+                this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect, 0, 0, '', this.chartArea.border.dashArray);
             this.htmlObject = this.renderer.drawRectangle(rect) as HTMLElement;
             this.htmlObject.setAttribute('aria-hidden', 'true');
             appendChildElement(

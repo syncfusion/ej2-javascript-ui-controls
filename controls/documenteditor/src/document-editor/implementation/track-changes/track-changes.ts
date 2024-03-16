@@ -64,8 +64,8 @@ export class Revision {
     }
 
     private handleAcceptReject(isFromAccept: boolean): void {
-        this.owner.selection.selectRevision(this);
-        const selection: Selection = this.owner.selection;
+        this.owner.selectionModule.selectRevision(this);
+        const selection: Selection = this.owner.selectionModule;
         let startPos: TextPosition = selection.start;
         let endPos: TextPosition = selection.end;
         if (!selection.start.isExistBefore(selection.end)) {
@@ -73,15 +73,15 @@ export class Revision {
             endPos = selection.start;
         }
         let blockInfo: ParagraphInfo = selection.getParagraphInfo(startPos);
-        this.owner.editor.initHistory(isFromAccept ? 'Accept Change' : 'Reject Change');
-        this.owner.editorHistory.currentBaseHistoryInfo.markerData.push(this.owner.editor.getMarkerData(undefined, undefined, this));
+        this.owner.editorModule.initHistory(isFromAccept ? 'Accept Change' : 'Reject Change');
+        this.owner.editorHistoryModule.currentBaseHistoryInfo.markerData.push(this.owner.editorModule.getMarkerData(undefined, undefined, this));
         if (this.revisionType === 'Deletion') {
-            blockInfo = selection.getParagraphInfo(this.owner.selection.start);
-            selection.editPosition = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            blockInfo = selection.getParagraphInfo(this.owner.selectionModule.start);
+            selection.editPosition = this.owner.selectionModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         } else {
-            selection.editPosition = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+            selection.editPosition = this.owner.selectionModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         }
-        this.owner.editor.updateInsertPosition();
+        this.owner.editorModule.updateInsertPosition();
         this.isContentRemoved = false;
         this.canSkipTableItems = false;
         this.skipUnLinkElement = false;
@@ -111,20 +111,20 @@ export class Revision {
         this.isTableRevision = false;
         if (this.isContentRemoved) {
             const textPosition: TextPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
-            this.owner.selection.selectContent(textPosition, true);
-            this.owner.editor.updateEndPosition();
+            this.owner.selectionModule.selectContent(textPosition, true);
+            this.owner.editorModule.updateEndPosition();
         } else {
             selection.selectRange(startPos, endPos);
-            this.owner.editor.updateHistoryPosition(endPos, false);
+            this.owner.editorModule.updateHistoryPosition(endPos, false);
         }
-        if (this.owner.editorHistory && this.owner.editorHistory.currentBaseHistoryInfo.action !== 'BackSpace') {
-            this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.reverse();
+        if (this.owner.editorHistoryModule && this.owner.editorHistoryModule.currentBaseHistoryInfo.action !== 'BackSpace') {
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.removedNodes.reverse();
         }
-        if (this.owner.editorHistory) {
+        if (this.owner.editorHistoryModule) {
             if (this.owner.trackChangesPane.isTrackingPageBreak) {
-                this.owner.editorHistory.currentBaseHistoryInfo.action = 'TrackingPageBreak';
+                this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'TrackingPageBreak';
             }
-            let editorHistory: EditorHistory = this.owner.editorHistory;
+            let editorHistory: EditorHistory = this.owner.editorHistoryModule;
             if (editorHistory.currentHistoryInfo && (editorHistory.currentHistoryInfo.action === 'Accept All' || editorHistory.currentHistoryInfo.action === 'Reject All')) {
                 if (this.owner.documentHelper.blockToShift) {
                     this.owner.documentHelper.layout.shiftLayoutedItems(false);
@@ -132,14 +132,14 @@ export class Revision {
             }
             editorHistory.updateHistory();
         }
-        this.owner.editor.reLayout(this.owner.selection);
+        this.owner.editorModule.reLayout(this.owner.selectionModule);
         if (blockInfo.paragraph.isInHeaderFooter) {
-            this.owner.editor.updateHeaderFooterWidget();
+            this.owner.editorModule.updateHeaderFooterWidget();
         }
     }
     private handleGroupAcceptReject(isAccept?: boolean): void {
         if (this.owner.trackChangesPane.tableRevisions.containsKey(this)) {
-            this.owner.editor.initComplexHistory(isAccept? 'Accept All': 'Reject All');
+            this.owner.editorModule.initComplexHistory(isAccept? 'Accept All': 'Reject All');
             let groupingAcceptReject: Revision[] = this.owner.trackChangesPane.tableRevisions.get(this);
             for (let i: number = groupingAcceptReject.length - 1; i >= 0; i--) {
                 if (isAccept) {
@@ -148,8 +148,8 @@ export class Revision {
                     groupingAcceptReject[i].handleAcceptReject(false);
                 }
             }
-            if (this.owner.editorHistory) {
-                this.owner.editorHistory.updateComplexHistory();
+            if (this.owner.editorHistoryModule) {
+                this.owner.editorHistoryModule.updateComplexHistory();
             }
         }
     }
@@ -208,14 +208,14 @@ export class Revision {
             return false;
         }
         let removeChanges: boolean = (!isNullOrUndefined(isFromAccept)) && ((revision.revisionType === 'MoveFrom' || revision.revisionType === 'Deletion') && isFromAccept ) || ((revision.revisionType === 'Insertion' || revision.revisionType === 'MoveTo') && !isFromAccept);
-        if (this.owner.selection.isTOC()) {
+        if (this.owner.selectionModule.isTOC()) {
             if (removeChanges) {
-                this.owner.editor.deleteSelectedContents(this.owner.selection, true);
+                this.owner.editorModule.deleteSelectedContents(this.owner.selectionModule, true);
                 if (revision.range.length === 0) {
                     this.owner.revisions.remove(revision);
                 }
                 this.isContentRemoved = true;
-                this.owner.editorHistory.currentBaseHistoryInfo.action = 'BackSpace';
+                this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'BackSpace';
             } else {
                 while (this.range.length > 0) {
                     let currentElement: ElementBox = this.range[0] as ElementBox;
@@ -224,36 +224,36 @@ export class Revision {
                         this.owner.revisions.remove(revision);
                     }
                 }
-                this.owner.editor.addRemovedNodes(this.revisionID);
-                this.owner.editorHistory.currentBaseHistoryInfo.action = 'AcceptTOC';
+                this.owner.editorModule.addRemovedNodes(this.revisionID);
+                this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'AcceptTOC';
             }
             return false;
         }
         if (item instanceof ElementBox && !this.canSkipTableItems) {
             if (removeChanges) {
                 if (!this.skipeElementRemoval(item)) {
-                    this.owner.editor.addRemovedNodes(item.clone());
+                    this.owner.editorModule.addRemovedNodes(item.clone());
                 } else {
                     this.skipUnLinkElement = true;
                     return true;
                 }
             } else {
-                this.owner.editorHistory.currentBaseHistoryInfo.action = 'ClearRevisions';
+                this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'ClearRevisions';
                 this.updateRevisionID();
                 this.removeRevisionFromPara(start, end);
                 // Set false to this because we retrived the revision based on above action (after this iteration we have changed the action basded the below property)
                 this.owner.trackChangesPane.isTrackingPageBreak = false;
             }
         } else if (!this.canSkipTableItems && (item instanceof WCharacterFormat) && (!removeChanges)) {
-            this.owner.editorHistory.currentBaseHistoryInfo.action = 'ClearRevisions';
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'ClearRevisions';
             this.updateRevisionID();
             this.removeRevisionFromPara(start, end);
         } else if (item instanceof WRowFormat && !removeChanges) {
             this.isTableRevision = true;
             let tableWidget: TableWidget = (item as WRowFormat).ownerBase.ownerTable;
             let currentRow: TableRowWidget = item.ownerBase as TableRowWidget;
-            this.owner.editorHistory.currentBaseHistoryInfo.action = 'RemoveRowTrack';
-            this.owner.editor.cloneTableToHistoryInfo(tableWidget);
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'RemoveRowTrack';
+            this.owner.editorModule.cloneTableToHistoryInfo(tableWidget);
         }
 
         removeChanges = removeChanges && !this.canSkipTableItems;
@@ -262,24 +262,24 @@ export class Revision {
             this.removeRevisionItemsFromRange(item);
             if (item instanceof FootnoteElementBox) {
                 if (item.footnoteType === 'Footnote') {
-                    this.owner.editor.removeFootnote(item);
+                    this.owner.editorModule.removeFootnote(item);
                 }
             }
             this.removeItem(item);
             this.isContentRemoved = true;
             this.owner.documentHelper.layout.reLayoutParagraph(currentPara, 0, 0);
             if (isNullOrUndefined(currentPara.childWidgets)) {
-                const textPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.owner.selection.editPosition);
-                this.owner.selection.selectContent(textPosition, true);
+                const textPosition: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.owner.selectionModule.editPosition);
+                this.owner.selectionModule.selectContent(textPosition, true);
             }
         } else if (item instanceof WCharacterFormat && removeChanges) {
             this.isContentRemoved = true;
             this.skipUnLinkElement = false;
             this.removeRevisionItemsFromRange(item);
             if (revision.range.length === 1) {
-                this.owner.editor.deleteSelectedContents(this.owner.selection, true);
+                this.owner.editorModule.deleteSelectedContents(this.owner.selectionModule, true);
             } else {
-                this.owner.editor.deleteSelectedContents(this.owner.selection, true);
+                this.owner.editorModule.deleteSelectedContents(this.owner.selectionModule, true);
                 this.removeRevisionFromPara(start, end);
                 let rangeIndex: number = revision.range.indexOf(item);
                 revision.range.splice(rangeIndex, 1);
@@ -288,32 +288,32 @@ export class Revision {
                     this.removeRangeRevisionForItem(this.range[0]);
                 }
             }
-            this.owner.editorHistory.currentBaseHistoryInfo.action = 'BackSpace';
-            this.owner.editorHistory.currentBaseHistoryInfo.isAcceptOrReject = isFromAccept ? 'Accept' : 'Reject';
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'BackSpace';
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.isAcceptOrReject = isFromAccept ? 'Accept' : 'Reject';
         } else if (item instanceof WRowFormat && removeChanges) {
             let tableWidget: TableWidget = (item as WRowFormat).ownerBase.ownerTable;
             tableWidget = tableWidget.combineWidget(this.owner.viewer) as TableWidget;
             let currentRow: TableRowWidget = item.ownerBase as TableRowWidget;
             this.removeRevisionItemsFromRange(item);
-            this.owner.editorHistory.currentBaseHistoryInfo.action = 'DeleteCells';
-            this.owner.editor.cloneTableToHistoryInfo(tableWidget);
-            this.owner.editor.removeDeletedCellRevision(currentRow);
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'DeleteCells';
+            this.owner.editorModule.cloneTableToHistoryInfo(tableWidget);
+            this.owner.editorModule.removeDeletedCellRevision(currentRow);
             this.isContentRemoved = true;
             tableWidget.removeChild(tableWidget.childWidgets.indexOf(currentRow));
             this.canSkipTableItems = true;
             // Before destroying the table row widget, delete the field element from the row.
-            this.owner.editor.removeFieldInBlock(currentRow);
+            this.owner.editorModule.removeFieldInBlock(currentRow);
             // Before destroying the table row widget, delete the bookmark element from the row.
-            this.owner.editor.removeFieldInBlock(currentRow, true);
+            this.owner.editorModule.removeFieldInBlock(currentRow, true);
             // Before destroying the table row widget, delete the content control element from the row.
-            this.owner.editor.removeFieldInBlock(currentRow, undefined, true);
+            this.owner.editorModule.removeFieldInBlock(currentRow, undefined, true);
             currentRow.destroy();
             if (tableWidget.childWidgets.length === 0) {
-                this.owner.selection.editPosition = this.owner.selection.getHierarchicalIndex(tableWidget, '0');
-                this.owner.editor.removeBlock(tableWidget);
+                this.owner.selectionModule.editPosition = this.owner.selectionModule.getHierarchicalIndex(tableWidget, '0');
+                this.owner.editorModule.removeBlock(tableWidget);
                 tableWidget.destroy();
             } else {
-                this.owner.editor.updateTable(tableWidget, true);
+                this.owner.editorModule.updateTable(tableWidget, true);
             }
         }
         // if the range is of row format, we will remove the row and for history preservation we use whole table to be cloned, hence skipping this part
@@ -329,8 +329,8 @@ export class Revision {
     }
 
     private removeRevisionFromPara(start: TextPosition, end: TextPosition): void {
-        let blockInfo: ParagraphInfo = this.owner.selection.getParagraphInfo(start);
-        let endBlockInfo: ParagraphInfo = this.owner.selection.getParagraphInfo(end);
+        let blockInfo: ParagraphInfo = this.owner.selectionModule.getParagraphInfo(start);
+        let endBlockInfo: ParagraphInfo = this.owner.selectionModule.getParagraphInfo(end);
         let para: ParagraphWidget = blockInfo.paragraph;
         while (para instanceof ParagraphWidget) {
             if (para.characterFormat.revisions.length > 0) {
@@ -351,7 +351,7 @@ export class Revision {
     }
 
     private updateRevisionID(): void {
-        this.owner.editor.addRemovedNodes(this.revisionID);
+        this.owner.editorModule.addRemovedNodes(this.revisionID);
         while (this.range.length > 0) {
             this.removeRangeRevisionForItem(this.range[0]);
         }
@@ -409,17 +409,17 @@ export class Revision {
         return false;
     }
     private removeRevisionFromRow(row: TableRowWidget): void {
-        this.owner.editor.unlinkRangeFromRevision(row.rowFormat);
+        this.owner.editorModule.unlinkRangeFromRevision(row.rowFormat);
         //this.owner.editor.addRemovedRevisionInfo(row.rowFormat, undefined);
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             let cellWidget: TableCellWidget = row.childWidgets[i] as TableCellWidget;
-            this.owner.editor.removeRevisionForCell(cellWidget, false);
+            this.owner.editorModule.removeRevisionForCell(cellWidget, false);
         }
     }
 
     private removeItem(element: ElementBox): void {
         let paraWidget: ParagraphWidget = element.line.paragraph;
-        this.owner.editor.unLinkFieldCharacter(element);
+        this.owner.editorModule.unLinkFieldCharacter(element);
         let elementIndex: number = element.line.children.indexOf(element);
         element.line.children.splice(elementIndex, 1);
         let paraFloatingElementIndex: number = element.line.paragraph.floatingElements.indexOf(element as ShapeBase);
@@ -428,12 +428,12 @@ export class Revision {
         if (blockFloatingElementIndex > -1) {
             element.line.paragraph.bodyWidget.floatingElements.splice(blockFloatingElementIndex, 1);
         }
-        this.owner.editor.removeEmptyLine(paraWidget);
+        this.owner.editorModule.removeEmptyLine(paraWidget);
     }
 
     private canSkipCloning(): boolean {
-        if (!isNullOrUndefined(this.owner) && this.owner.editorHistory && this.owner.editorHistory.currentBaseHistoryInfo) {
-            let baseHistoryInfo: BaseHistoryInfo = this.owner.editorHistory.currentBaseHistoryInfo;
+        if (!isNullOrUndefined(this.owner) && this.owner.editorHistoryModule && this.owner.editorHistoryModule.currentBaseHistoryInfo) {
+            let baseHistoryInfo: BaseHistoryInfo = this.owner.editorHistoryModule.currentBaseHistoryInfo;
             if (baseHistoryInfo.action === 'DeleteCells') {
                 return true;
             }
@@ -568,7 +568,7 @@ export class RevisionCollection {
      */
     public handleRevisionCollection(isfromAcceptAll: boolean, changes?: Revision[]): void {
         this.skipGroupAcceptReject = true;
-        let selection: Selection = this.owner.selection;
+        let selection: Selection = this.owner.selectionModule;
         let startPos: TextPosition = selection.start;
         let endPos: TextPosition = selection.end;
         let revisionCollec: Revision[] = changes ? changes : this.changes;
@@ -582,9 +582,9 @@ export class RevisionCollection {
         startPos = startPos.clone();
         endPos = endPos.clone();
         if (isfromAcceptAll) {
-            this.owner.editor.initComplexHistory('Accept All');
+            this.owner.editorModule.initComplexHistory('Accept All');
         } else {
-            this.owner.editor.initComplexHistory('Reject All');
+            this.owner.editorModule.initComplexHistory('Reject All');
         }
         while (revisionCollec.length > 0) {
             if (isfromAcceptAll) {
@@ -596,22 +596,22 @@ export class RevisionCollection {
                 revisionCollec.splice(0, 1);
             }
             if (this.owner.enableHeaderAndFooter) {
-                this.owner.editor.updateHeaderFooterWidget();
+                this.owner.editorModule.updateHeaderFooterWidget();
             }
         }
         if(!isNullOrUndefined(selection.editPosition)) {
             let textPosition: TextPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
-            this.owner.selection.selectContent(textPosition, true);
+            this.owner.selectionModule.selectContent(textPosition, true);
         }
-        if (this.owner.editorHistory) {
-            this.owner.editorHistory.updateComplexHistory();
+        if (this.owner.editorHistoryModule) {
+            this.owner.editorHistoryModule.updateComplexHistory();
             if(isNullOrUndefined(selection.editPosition)) {
-                this.owner.editorHistory.undoStack.pop();
+                this.owner.editorHistoryModule.undoStack.pop();
             }
         }
-        this.owner.editor.isSkipOperationsBuild = true;
-        this.owner.editor.reLayout(this.owner.selection, false);
-        this.owner.editor.isSkipOperationsBuild = false;
+        this.owner.editorModule.isSkipOperationsBuild = true;
+        this.owner.editorModule.reLayout(this.owner.selectionModule, false);
+        this.owner.editorModule.isSkipOperationsBuild = false;
         this.skipGroupAcceptReject = false;
     }
 

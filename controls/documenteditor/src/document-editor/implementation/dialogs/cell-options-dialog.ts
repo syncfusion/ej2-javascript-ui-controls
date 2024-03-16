@@ -216,17 +216,17 @@ export class CellOptionsDialog {
      * @returns {void}
      */
     public applySubCellOptions(cellFormat: WCellFormat): void {
-        this.documentHelper.owner.editorHistory.initComplexHistory(this.documentHelper.selection, 'CellMarginsSelection');
+        this.documentHelper.owner.editorHistoryModule.initComplexHistory(this.documentHelper.selection, 'CellMarginsSelection');
         this.documentHelper.owner.editorModule.initHistory('CellOptions');
-        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentBaseHistoryInfo)) {
-            this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.insertedFormat = cellFormat;
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo)) {
+            this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.insertedFormat = cellFormat;
         }
         /* eslint-disable max-len */
         this.documentHelper.selection.start.paragraph.associatedCell.ownerTable.combineWidget(this.owner);
         this.applyCellMarginValue(this.documentHelper.selection.start.paragraph.associatedCell.ownerRow.combineWidget(this.owner) as TableRowWidget, this.documentHelper.selection.start, this.documentHelper.selection.end, cellFormat);
         this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, false);
-        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
-            this.documentHelper.owner.editorHistory.updateComplexHistory();
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistoryModule.currentHistoryInfo)) {
+            this.documentHelper.owner.editorHistoryModule.updateComplexHistory();
         }
     }
 
@@ -241,10 +241,10 @@ export class CellOptionsDialog {
         }
     }
     private applyCellMarginsInternal(row: TableRowWidget, cellFormat: WCellFormat): void {
-        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentBaseHistoryInfo)) {
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo)) {
             const currentFormat: WCellFormat = (row.childWidgets[0] as TableCellWidget).cellFormat;
             /* eslint-disable max-len */
-            cellFormat = this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.addModifiedCellOptions(currentFormat, cellFormat, row.ownerTable);
+            cellFormat = this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.addModifiedCellOptions(currentFormat, cellFormat, row.ownerTable);
         }
         if (!isNullOrUndefined(cellFormat)) {
             this.applyCellMarginsForCells(row, cellFormat);

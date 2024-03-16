@@ -2,47 +2,20 @@
 
 ## [Unreleased]
 
-## 24.2.7 (2024-02-20)
+## 25.1.35 (2024-03-15)
 
 ### FileManager
 
 #### Bug Fixes
 
-- `#I553140` - The high risk vulnerability issue with 'unset-value' dependency in the FileManager component is resolved.
-
-## 24.1.47 (2024-01-23)
+- `#FB50961` - The issues related to XSS attacks with file or folder names in the File Manager details view template is fixed.
 
 ### FileManager
 
-#### Bug Fixes
+#### Features
 
-- `#I543790` - The issue with the breadcrumb bar of the File Manager showing an incorrect name for the Azure File service provider has been resolved.
-
-## 24.1.45 (2024-01-09)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I536863` - The issue while creating a new folder within empty subfolder using the context menu from navigation pane selection is resolved.
-
-## 24.1.44 (2024-01-03)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I536115` - The issue of adding an unnecessary `<ul>` element under the large icons view while using `enableVirtualization` property in the FileManager component has been resolved.
-
-## 24.1.43 (2023-12-27)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I527570` - The issue with auto scroll during drag and drop operation in the FileManager component has been resolved.
-
-- `#I531559`, `#I529731` - The file selection issue for the duplicate folders with different parents in the navigation pane of FileManager has been resolved.
+- Provided support in FileManager component to perform download operations via Fetch API request. Now FileManager component, will allow users to perform download operations using either the default form submit method or the latest Fetch API request with a Boolean property `useFormPost` in the `BeforeDownloadEventargs`. The default value of `useFormPost` is set to `true`, directing the FileManager component to utilize the form submit method by default for download operations.
+- `#I521053` - Custom sorting support is provided in the File Manager component. This feature will allow users to achieve windows natural sorting behaviour using `sortComparer` property. This is achieved by assigning the ‘sortComparer’ function exported from the utility file.
 
 ## 24.1.41 (2023-12-18)
 

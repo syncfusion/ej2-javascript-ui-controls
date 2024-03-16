@@ -159,8 +159,16 @@ export class ContextMenu {
                 if (!isNullOrUndefined(this.rowData)) {
                 this.parent.convertToMilestone(this.rowData.ganttProperties.rowUniqueID);
                 } 
-                else if(this.parent.flatData.length === 0){
-                    this.parent.addRecord()
+                else if (this.parent.flatData.length === 0 && this.item === "Milestone") {
+                    const data = this.parent.editModule.createNewRecord();
+                    const taskSettings = this.parent.taskFields;
+                    if (this.parent.taskFields['duration']) {
+                        data[taskSettings["duration"]] = 0;
+                    }
+                    if (this.parent.taskFields["milestone"]) {
+                        data[taskSettings["milestone"]] = true;
+                    }
+                    this.parent.addRecord(data);
                 }
                 break;
             case 'DeleteTask':
@@ -316,7 +324,7 @@ export class ContextMenu {
 
         const contextMenuClickDate: Date =
             this.parent.dataOperation.getEndDate(
-                startDate, splitTaskDuration, (this.parent.timelineModule.customTimelineSettings.bottomTier.unit !== "None") ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit.toLocaleLowerCase() : this.parent.timelineModule.customTimelineSettings.topTier.unit.toLocaleLowerCase(), this.rowData, false
+                startDate, splitTaskDuration, this.rowData.ganttProperties.durationUnit, this.rowData, false
             );
         return contextMenuClickDate;
     }
@@ -582,7 +590,7 @@ export class ContextMenu {
     }
     private contextMenuOpen(args: CMenuOpenEventArgs): void {
         this.isOpen = true;
-        const firstMenuItem: Element =  this.parent['args']  = args.element.querySelectorAll('li:not(.e-menu-hide):not(.e-disabled)')[0];
+        const firstMenuItem: Element = this.parent['args'] = args.element.querySelectorAll('li:not(.e-menu-hide):not(.e-disabled)')[0];
         if (!isNullOrUndefined(firstMenuItem)) {
             addClass([firstMenuItem], 'e-focused');
         }

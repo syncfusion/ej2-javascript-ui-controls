@@ -67,7 +67,7 @@ interface ChipFields {
     leadingIconCss: string;
     trailingIconCss: string;
     enabled: boolean;
-    value: string | number;
+    value: string | number | null;
     leadingIconUrl: string;
     trailingIconUrl: string;
 }
@@ -206,7 +206,7 @@ export interface ChipDataArgs {
     /**
      * It denotes the item text.
      */
-    text: string;
+    text: string | undefined;
 
     /**
      * It denotes the Item index.
@@ -443,7 +443,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      */
 
     protected chipType(): boolean {
-        return (this.chips && this.chips.length && this.chips.length > 0);
+        return (this.chips && this.chips.length && this.chips.length > 0) as boolean;
     }
 
     /**
@@ -459,7 +459,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         this.setAttributes();
         this.createChip();
         this.setRtl();
-        this.select(this.selectedChips, property);
+        this.select(this.selectedChips);
         this.wireEvent(false);
         this.rippleFunction = rippleEffect(this.element, {
             selector: '.e-chip'
@@ -522,6 +522,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                         'aria-label': fieldsData.text, 'aria-selected': 'false'
                     }
                 });
+                if (this.enableDelete) { wrapper.setAttribute('aria-keyshortcuts', 'Enter to delete'); }
                 if (fieldsData.value) {
                     wrapper.setAttribute('data-value', fieldsData.value.toString());
                 }
@@ -561,7 +562,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 (this.avatarText.toString()),
             trailingIconCss: typeof data === 'object' ? (data.trailingIconCss ? data.trailingIconCss.toString() :
                 this.trailingIconCss.toString()) : (this.trailingIconCss.toString()),
-            enabled: typeof data === 'object' ? (!isNullOrUndefined(data.enabled) ? (data.enabled.toString() === 'false' ? false : true) :
+            enabled: typeof data === 'object' ? (data.enabled !== undefined? (data.enabled.toString() === 'false' ? false : true) :
                 chipEnabled) : (chipEnabled),
             value: typeof data === 'object' ? ((data.value ? data.value.toString() : null)) : null,
             leadingIconUrl:  typeof data === 'object' ? (data.leadingIconUrl ? data.leadingIconUrl.toString() : this.leadingIconUrl) :
@@ -617,17 +618,21 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      */
 
     public find(fields: number | HTMLElement): ChipDataArgs {
-        let chipData: ChipDataArgs;
+        let chipData : ChipDataArgs = {text: '', index: -1, element: this.element, data: ''};
         const chipElement: HTMLElement = fields instanceof HTMLElement ?
             fields as HTMLElement : this.element.querySelectorAll('.' + classNames.chip)[fields as number] as HTMLElement;
         if (chipElement && this.chipType()) {
-            chipData = { text: undefined, index: undefined, element: undefined, data: undefined };
             chipData.index = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chipElement);
-            chipData.text = typeof this.chips[chipData.index] === 'object' ?
-                ((this.chips[chipData.index] as ChipModel).text ?
-                    (this.chips[chipData.index] as ChipModel).text.toString() : '') :
-                this.chips[chipData.index].toString();
-            chipData.data = this.chips[chipData.index];
+            let chip = this.chips[chipData.index as number];
+            if (typeof chip === 'object' && chip !== null) {
+                let chipModel = chip as ChipModel;
+                if (chipModel.text !== undefined) {
+                    chipData.text = chipModel.text.toString();
+                }
+            } else if (chip !== undefined) {
+                chipData.text = chip.toString();
+            }
+            chipData.data = chip;
             chipData.element = chipElement;
         }
         return chipData;
@@ -689,7 +694,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                      callFromProperty: boolean, selectionType?: selectionType): void {
         let index: number;
         let chipNodes: HTMLElement;
-        let chipValue: string | number;
+        let chipValue: string | number | null = null;
         if (this.chipType() && this.selection !== 'None') {
             if (callFromProperty) {
                 const chipElements: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.chip);
@@ -708,7 +713,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                         const fieldsData: ChipFields = this.getFieldValues(this.chips[j as number]);
                         if (selectionType === 'value') {
                             if (fieldsData.value !== null) {
-                                chipValue = chipNodes.dataset.value;
+                                chipValue = chipNodes.dataset.value as string | number;
                             }
                         } else if (selectionType === 'text') {
                             chipValue = chipNodes.innerText;
@@ -763,8 +768,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      *  @returns {void}
      */
 
-    public getSelectedChips(): SelectedItem | SelectedItems {
-        let selectedChips: SelectedItem | SelectedItems;
+    public getSelectedChips(): SelectedItem | SelectedItems | undefined{
+        let selectedChips: SelectedItem | SelectedItems | undefined;
         if (this.chipType() && this.selection !== 'None') {
             const selectedItems: SelectedItems = { texts: [], Indexes: [], data: [], elements: [] };
             const items: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.active);
@@ -774,10 +779,10 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 const index: number = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chip);
                 selectedItems.Indexes.push(index);
                 (selectedItems.data as ChipModel[]).push((this.chips as ChipModel[])[index as number]);
-                const text: string = typeof this.chips[index as number] === 'object' ?
-                    (this.chips[index as number] as ChipModel).text ? (this.chips[index as number] as ChipModel).text.toString()
+                const text: string | null | undefined = typeof this.chips[index as number] === 'object' ?
+                    (this.chips[index as number] as ChipModel).text ? (this.chips[index as number] as ChipModel).text
                         : null : this.chips[index as number].toString();
-                selectedItems.texts.push(text);
+                selectedItems.texts.push(text as string);
             }
             const selectedItem: SelectedItem = {
                 text: selectedItems.texts[0], index: selectedItems.Indexes[0],
@@ -824,7 +829,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private focusOutHandler(e: MouseEventArgs): void {
         const chipWrapper: HTMLElement = <HTMLElement>closest((e.target as HTMLElement), '.' + classNames.chip);
-        const focusedElement: HTMLElement = !this.chipType() ? (this.element.classList.contains(classNames.focused) ?
+        const focusedElement: HTMLElement | null= !this.chipType() ? (this.element.classList.contains(classNames.focused) ?
             this.element : null) : this.element.querySelector('.' + classNames.focused);
         if (chipWrapper && focusedElement) {
             focusedElement.classList.remove(classNames.focused);
@@ -859,8 +864,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         if (this.chipType()) {
             const chipData: ChipDataArgs = this.find(chipWrapper);
             (chipData as ClickEventArgs).event = e;
-            const deleteElement: HTMLElement = (e.target as HTMLElement).classList.contains(classNames.deleteIcon) ?
-                e.target as HTMLElement : (del ? chipWrapper.querySelector('.' + classNames.deleteIcon) : undefined);
+            const deleteElement: HTMLElement | undefined = (e.target as HTMLElement).classList.contains(classNames.deleteIcon) ?
+                e.target as HTMLElement : (del ? chipWrapper.querySelector('.' + classNames.deleteIcon) as HTMLElement : undefined);
             if (deleteElement && this.enableDelete) {
                 (chipData as DeleteEventArgs).cancel = false;
                 const deletedItemArgs: DeleteEventArgs = chipData as DeleteEventArgs;
@@ -900,7 +905,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private selectionHandler(chipWrapper: HTMLElement): void {
         if (this.selection === 'Single') {
-            const activeElement: HTMLElement = this.element.querySelector('.' + classNames.active);
+            const activeElement = this.element.querySelector('.' + classNames.active) as HTMLElement;
             if (activeElement && activeElement !== chipWrapper) {
                 activeElement.classList.remove(classNames.active);
                 activeElement.setAttribute('aria-selected', 'false');
@@ -923,8 +928,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         const chipListEle: NodeListOf<Element> = this.element.querySelectorAll('.e-chip');
         const chipCollIndex: number[] = [];
         const chipCollValue: string[] = [];
-        let chip: string | number = null;
-        let value: string;
+        let chip: string | number | null = null;
+        let value: string | null = null;
         for (let i: number = 0; i < chipListEle.length; i++) {
             const selectedEle: Element = this.element.querySelectorAll('.e-chip')[i as number];
             if (selectedEle.getAttribute('aria-selected') === 'true') {
@@ -1016,10 +1021,10 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.selection === 'Multiple') {
                     this.multiSelectedChip = [];
                     this.multiSelection(newProp.selectedChips as number[] | string[]);
-                    this.onSelect(this.multiSelectedChip, true, property);
+                    this.onSelect(this.multiSelectedChip, true);
                     this.updateSelectedChips();
                 } else {
-                    this.onSelect(newProp.selectedChips, true, property);
+                    this.onSelect(newProp.selectedChips, true);
                 }
                 break;
             case 'enableRtl':
