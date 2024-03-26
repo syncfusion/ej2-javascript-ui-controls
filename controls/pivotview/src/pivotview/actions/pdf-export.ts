@@ -530,7 +530,7 @@ export class PDFExport {
             } else {
                 this.engine.pageSettings = null;
             }
-            (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings as IDataOptions, true);
+            (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings as IDataOptions, true, true);
             this.parent.applyFormatting(this.engine.pivotValues);
             clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
             this.engine.pivotValues = currentPivotValues;

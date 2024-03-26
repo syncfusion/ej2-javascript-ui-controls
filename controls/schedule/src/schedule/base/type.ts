@@ -41,7 +41,7 @@ export type CurrentAction = 'Add' | 'Save' | 'Delete' | 'DeleteOccurrence' | 'De
 /**
  * An enum that holds the options for success result.
  */
-export type ReturnType = { result: Record<string, any>[], count: number, aggregates?: Record<string, any> };
+export type ReturnType = { result: Record<string, any>[], count: number, aggregates?: Record<string, any>, cancel: boolean };
 
 /**
  * An enum that holds the available popup types in the scheduler. They are

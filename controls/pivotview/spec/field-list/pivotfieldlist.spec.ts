@@ -222,7 +222,6 @@ describe('PivotFieldList spec', () => {
     describe('Pivot Field List Rendering', () => {
         describe('Field List with Tree Node Action', () => {
             let fieldListObj: PivotFieldList;
-            let pivotCommon: PivotCommon;
             let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
             let down: MouseEvent = new MouseEvent('mousedown', {
                 'view': window,
@@ -286,10 +285,7 @@ describe('PivotFieldList spec', () => {
                         }
                     });
                 fieldListObj.appendTo('#PivotFieldList');
-                pivotCommon = fieldListObj.pivotCommon;
             });
-
-            let persistdata: string;
             it('check field list tree view', () => {
                 expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-container')));
                 expect(fieldListObj.treeViewModule.fieldTable.element.classList.contains('e-field-list'));
@@ -355,6 +351,37 @@ describe('PivotFieldList spec', () => {
                     closest(checkEle[0], 'li').dispatchEvent(down);
                     closest(checkEle[0], 'li').dispatchEvent(up);
                     expect(checkEle.length).toBe(2);
+                    (fieldListObj.element.getElementsByClassName('e-member-editor-dialog')[0].getElementsByClassName('e-ok-btn')[0] as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('Node selecting with space key - check', (done: Function) => {
+                let keyboardEventArgs: any = {
+                    preventDefault: (): void => {},
+                    action: null
+                };
+                let fileds: HTMLElement[] = [].slice.call(fieldListObj.element.querySelectorAll('.e-list-item'));
+                (fieldListObj.treeViewModule.fieldTable as any).focusIn();
+                keyboardEventArgs.action = 'space';
+                (fieldListObj.treeViewModule.fieldTable as any).keyActionHandler(keyboardEventArgs);
+                setTimeout(() => {
+                    expect(fileds[0].getAttribute('aria-checked')).toBe('true');
+                    expect(fileds[0].querySelectorAll('.e-check').length).toBe(1);
+                    done();
+                });
+            });
+            it('Node selecting with space key - uncheck', (done: Function) => {
+                let keyboardEventArgs: any = {
+                    preventDefault: (): void => {},
+                    action: null
+                };
+                let fileds: HTMLElement[] = [].slice.call(fieldListObj.element.querySelectorAll('.e-list-item'));
+                (fieldListObj.treeViewModule.fieldTable as any).focusIn();
+                keyboardEventArgs.action = 'space';
+                (fieldListObj.treeViewModule.fieldTable as any).keyActionHandler(keyboardEventArgs);
+                setTimeout(() => {
+                    expect(fileds[0].getAttribute('aria-checked')).toBe('false');
+                    expect(fileds[0].querySelectorAll('.e-check').length).toBe(0);
                     done();
                 });
             });

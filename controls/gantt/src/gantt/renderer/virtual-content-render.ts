@@ -45,6 +45,22 @@ export class VirtualContentRenderer {
      */
     public adjustTable(): void {
         const content: HTMLElement = this.parent.treeGrid.getContent().querySelector('.e-content').querySelector('.e-virtualtable');
-        this.parent.ganttChartModule.virtualRender.wrapper.style.transform = content.style.transform;
+        if (this.parent.enableTimelineVirtualization) {
+            const virtualTable: string = (document.getElementsByClassName('e-virtualtable')[1] as HTMLElement).style.transform;
+            const treegridVirtualHeight: string = (this.parent.treeGrid.element.getElementsByClassName('e-virtualtable')[0] as HTMLElement).style.transform;
+            let translateXValue: string;
+            if (virtualTable !== "") {
+                translateXValue = virtualTable.match(/translate.*\((.+)\)/)[1].split(', ')[0];
+            }
+            else {
+                const chartTransform: string = (this.parent.ganttChartModule.scrollElement.getElementsByClassName('e-virtualtable')[0] as HTMLElement).style.transform;
+                translateXValue = chartTransform.match(/translate.*\((.+)\)/)[1].split(', ')[0];
+            }
+            const translateYValue: string = treegridVirtualHeight.match(/translate.*\((.+)\)/)[1].split(', ')[1];
+            this.parent.ganttChartModule.virtualRender.wrapper.style.transform = `translate(${translateXValue}, ${translateYValue})`;
+        }
+        else {
+            this.parent.ganttChartModule.virtualRender.wrapper.style.transform = content.style.transform;
+        }
     }
 }

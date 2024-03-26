@@ -538,7 +538,7 @@ export class CellRenderer implements ICellRenderer {
         } else {
             compiledStr = compile(template);
             const compiledTemplate: Element | Element[] = compiledStr(cell, this.parent, 'ranges', '');
-            return compiledTemplate[0] ? <Element[]>compiledTemplate : [<Element>compiledTemplate];
+            return (<Element[]>compiledTemplate)[0] ? <Element[]>compiledTemplate : [<Element>compiledTemplate];
         }
     }
 

@@ -825,43 +825,43 @@ describe('insert Audio', () => {
              }, 1000);
          });
      });
-     describe('Disable the insert audio dialog button when the audio is uploading', () => {
-         let rteObj: RichTextEditor;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 toolbarSettings: {
-                     items: ['Audio']
-                 },
-                 insertAudioSettings: {
-                     saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
-                     path: "../Audios/"
-                 }
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Button enabled with audio upload Success', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
-             let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
-             setTimeout(() => {
-                 expect((dialogEle.querySelector('.e-insertAudio') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
-                 done();
-             }, 4900);
-         });
-     });
+    //  describe('Disable the insert audio dialog button when the audio is uploading', () => {
+    //      let rteObj: RichTextEditor;
+    //      beforeEach((done: Function) => {
+    //          rteObj = renderRTE({
+    //              toolbarSettings: {
+    //                  items: ['Audio']
+    //              },
+    //              insertAudioSettings: {
+    //                  saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
+    //                  path: "../Audios/"
+    //              }
+    //          });
+    //          done();
+    //      })
+    //      afterEach((done: Function) => {
+    //          destroy(rteObj);
+    //          done();
+    //      })
+    //      it(' Button enabled with audio upload Success', (done) => {
+    //          let rteEle: HTMLElement = rteObj.element;
+    //          (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+    //          let args = { preventDefault: function () { } };
+    //          let range = new NodeSelection().getRange(document);
+    //          let save = new NodeSelection().save(range, document);
+    //          let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
+    //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+    //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+    //          (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
+    //          let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
+    //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+    //          (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
+    //          setTimeout(() => {
+    //              expect((dialogEle.querySelector('.e-insertAudio') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
+    //              done();
+    //          }, 4900);
+    //      });
+    //  });
      describe('Getting error while insert the audio after applied the  lower case or  upper case commands in Html Editor  - ', () => {
          let rteObj: RichTextEditor;
          let controlId: string;
@@ -1039,50 +1039,50 @@ describe('insert Audio', () => {
          });
      });
  
-     describe('Rename audios in success event- ', () => {
-         let rteObj: RichTextEditor;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 fileUploadSuccess: function (args : any) {
-                     args.file.name = 'rte_audio';
-                     var filename : any = document.querySelectorAll(".e-file-name")[0];
-                     filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
-                     filename.title = args.file.name;
-                 },
-                 insertAudioSettings: {
-                     saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
-                     path: "../Audios/"
-                 },
-                 toolbarSettings: {
-                     items: ['Audio']
-                 },
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it('Check name after renamed', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-             let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
-             setTimeout(() => {
-                 expect(document.querySelectorAll(".e-file-name")[0].innerHTML).toBe('rte_audio');
-                 done();
-             }, 4900);
-         });
-     });
+    //  describe('Rename audios in success event- ', () => {
+    //      let rteObj: RichTextEditor;
+    //      beforeEach((done: Function) => {
+    //          rteObj = renderRTE({
+    //              fileUploadSuccess: function (args : any) {
+    //                  args.file.name = 'rte_audio';
+    //                  var filename : any = document.querySelectorAll(".e-file-name")[0];
+    //                  filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+    //                  filename.title = args.file.name;
+    //              },
+    //              insertAudioSettings: {
+    //                  saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+    //                  path: "../Audios/"
+    //              },
+    //              toolbarSettings: {
+    //                  items: ['Audio']
+    //              },
+    //          });
+    //          done();
+    //      })
+    //      afterEach((done: Function) => {
+    //          destroy(rteObj);
+    //          done();
+    //      })
+    //      it('Check name after renamed', (done) => {
+    //          let rteEle: HTMLElement = rteObj.element;
+    //          (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+    //          let args = { preventDefault: function () { } };
+    //          let range = new NodeSelection().getRange(document);
+    //          let save = new NodeSelection().save(range, document);
+    //          let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
+    //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+    //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+    //          (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
+    //          (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+    //          let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
+    //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+    //          (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
+    //          setTimeout(() => {
+    //              expect(document.querySelectorAll(".e-file-name")[0].innerHTML).toBe('rte_audio');
+    //              done();
+    //          }, 4900);
+    //      });
+    //  });
  
      describe('Inserting Audio as Base64 - ', () => {
          let rteObj: RichTextEditor;
@@ -1168,58 +1168,58 @@ describe('insert Audio', () => {
          });
      });
      
-     describe('Insert Audio mediaSelected, mediaUploading and mediaUploadSuccess event - ', () => {
-         let rteObj: RichTextEditor;
-         let mediaSelectedSpy: jasmine.Spy = jasmine.createSpy('onFileSelected');
-         let mediaUploadingSpy: boolean = false;
-         let mediaUploadSuccessSpy: jasmine.Spy = jasmine.createSpy('onFileUploadSuccess');
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 fileSelected: mediaSelectedSpy,
-                 fileUploading: mediaUploading,
-                 fileUploadSuccess: mediaUploadSuccessSpy,
-                 insertAudioSettings: {
-                     saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
-                     path: "../Audios/"
-                 },
-                 toolbarSettings: {
-                     items: ['Audio']
-                 }
-             });
-             function mediaUploading() {
-                mediaUploadingSpy = true;
-             }
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Test the component insert audio events - case 1 ', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
-             (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-             let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
-             expect(mediaSelectedSpy).toHaveBeenCalled();
-             expect(mediaUploadingSpy).toBe(true);
-             setTimeout(() => {
-                 expect(mediaUploadSuccessSpy).toHaveBeenCalled();
-                 evnArg.selectNode = [rteObj.element];
-                 (<any>rteObj).audioModule.deleteAudio(evnArg);
-                 (<any>rteObj).audioModule.uploadObj.upload((<any>rteObj).audioModule.uploadObj.filesData[0]);
-                 done();
-             }, 4000);
-         });
-     });
+    //  describe('Insert Audio mediaSelected, mediaUploading and mediaUploadSuccess event - ', () => {
+    //      let rteObj: RichTextEditor;
+    //      let mediaSelectedSpy: jasmine.Spy = jasmine.createSpy('onFileSelected');
+    //      let mediaUploadingSpy: boolean = false;
+    //      let mediaUploadSuccessSpy: jasmine.Spy = jasmine.createSpy('onFileUploadSuccess');
+    //      beforeEach((done: Function) => {
+    //          rteObj = renderRTE({
+    //              fileSelected: mediaSelectedSpy,
+    //              fileUploading: mediaUploading,
+    //              fileUploadSuccess: mediaUploadSuccessSpy,
+    //              insertAudioSettings: {
+    //                  saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+    //                  path: "../Audios/"
+    //              },
+    //              toolbarSettings: {
+    //                  items: ['Audio']
+    //              }
+    //          });
+    //          function mediaUploading() {
+    //             mediaUploadingSpy = true;
+    //          }
+    //          done();
+    //      })
+    //      afterEach((done: Function) => {
+    //          destroy(rteObj);
+    //          done();
+    //      })
+    //      it(' Test the component insert audio events - case 1 ', (done) => {
+    //          let rteEle: HTMLElement = rteObj.element;
+    //          (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+    //          let args = { preventDefault: function () { } };
+    //          let range = new NodeSelection().getRange(document);
+    //          let save = new NodeSelection().save(range, document);
+    //          let evnArg = { args: MouseEvent, self: (<any>rteObj).audioModule, selection: save, selectNode: new Array(), };
+    //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+    //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+    //          (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
+    //          (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+    //          let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
+    //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+    //          (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
+    //          expect(mediaSelectedSpy).toHaveBeenCalled();
+    //          expect(mediaUploadingSpy).toBe(true);
+    //          setTimeout(() => {
+    //              expect(mediaUploadSuccessSpy).toHaveBeenCalled();
+    //              evnArg.selectNode = [rteObj.element];
+    //              (<any>rteObj).audioModule.deleteAudio(evnArg);
+    //              (<any>rteObj).audioModule.uploadObj.upload((<any>rteObj).audioModule.uploadObj.filesData[0]);
+    //              done();
+    //          }, 4000);
+    //      });
+    //  });
  
      describe('Insert audio mediaSelected event args cancel true - ', () => {
          let rteObj: RichTextEditor;

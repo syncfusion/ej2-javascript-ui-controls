@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I566544` - An issue with `aria-labelledby` accessibility issue in the recurrence editor has been fixed.
+- `#I549259` - An issue where the weekend dates are rendered in the Agenda view after setting up the `showWeekend` property to `false` has been fixed.
+
 ## 25.1.35 (2024-03-15)
 
 ### Schedule

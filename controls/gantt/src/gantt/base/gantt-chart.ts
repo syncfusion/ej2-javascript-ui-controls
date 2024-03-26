@@ -330,8 +330,15 @@ export class GanttChart {
             const wrapper1: HTMLElement = getValue('wrapper', this.parent.ganttChartModule.virtualRender);
             const treegridVirtualHeight: string = (this.parent.treeGrid.element.getElementsByClassName('e-virtualtable')[0] as HTMLElement).style.transform;
             const virtualTable: string = (document.getElementsByClassName('e-virtualtable')[1] as HTMLElement).style.transform;
-            if (this.parent.enableTimelineVirtualization && virtualTable !== "") {
-                const translateXValue: string = virtualTable.match(/translate.*\((.+)\)/)[1].split(', ')[0];
+            if (this.parent.enableTimelineVirtualization) {
+                let translateXValue: string;
+                if (virtualTable !== "") {
+                    translateXValue = virtualTable.match(/translate.*\((.+)\)/)[1].split(', ')[0];
+                }
+                else {
+                    const chartTransform: string = (this.parent.ganttChartModule.scrollElement.getElementsByClassName('e-virtualtable')[0] as HTMLElement).style.transform;
+                    translateXValue = chartTransform.match(/translate.*\((.+)\)/)[1].split(', ')[0];
+                }
                 const translateYValue: string = treegridVirtualHeight.match(/translate.*\((.+)\)/)[1].split(', ')[1];
                 wrapper1.style.transform = `translate(${translateXValue}, ${translateYValue})`;
             }

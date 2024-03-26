@@ -5,8 +5,8 @@ import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { IAction, FieldDropEventArgs, FieldRemoveEventArgs, FieldDragStartEventArgs } from '../../common/base/interface';
 import {
-    TreeView, NodeCheckEventArgs, DragAndDropEventArgs, DrawNodeEventArgs,
-    NodeExpandEventArgs, NodeSelectEventArgs
+    TreeView, NodeClickEventArgs, DragAndDropEventArgs, DrawNodeEventArgs,
+    NodeExpandEventArgs, NodeSelectEventArgs, NodeCheckEventArgs
 } from '@syncfusion/ej2-navigations';
 import { IFieldOptions, IField, IDataOptions, FieldItemInfo } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
@@ -35,6 +35,7 @@ export class TreeViewRenderer implements IAction {
     private nonSearchList: HTMLElement[];
     private isSearching: boolean = false;
     private parentIDs: string[] = [];
+    private isSpaceKey: boolean = true;
 
     /** Constructor for render module
      *
@@ -143,6 +144,7 @@ export class TreeViewRenderer implements IAction {
     private renderTreeView(): void {
         this.fieldTable = new TreeView({
             fields: { dataSource: this.getTreeData(), id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass' },
+            nodeChecked: this.nodeChecked.bind(this),
             nodeClicked: this.nodeStateChange.bind(this),
             keyPress: this.nodeStateChange.bind(this),
             cssClass: cls.FIELD_LIST_TREE_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
@@ -384,6 +386,7 @@ export class TreeViewRenderer implements IAction {
             locale: this.parent.locale,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             cssClass: this.parent.cssClass,
+            nodeChecked: this.nodeChecked.bind(this),
             nodeClicked: this.addNode.bind(this),
             keyPress: this.addNode.bind(this),
             drawNode: this.updateTreeNode.bind(this),
@@ -574,31 +577,57 @@ export class TreeViewRenderer implements IAction {
         }
         return buttonElement;
     }
-    private nodeStateChange(args: NodeCheckEventArgs): void {
-        const id: string = args.node.getAttribute('data-uid');
+    private nodeChecked(args: NodeCheckEventArgs): void {
+        if (this.isSpaceKey) {
+            const node: HTMLElement = closest(args.node, '.' + cls.TEXT_CONTENT_CLASS) as HTMLElement;
+            if (!isNullOrUndefined(node)) {
+                const li: HTMLElement = closest(node, 'li') as HTMLElement;
+                const id: string = li.getAttribute('data-uid');
+                if (this.parent.isAdaptive) {
+                    this.addNode(undefined, id, args.action === 'check', node);
+                } else {
+                    this.nodeStateChange(undefined, id, args.action === 'check', node);
+                }
+            }
+        }
+        this.isSpaceKey = false;
+    }
+    private nodeStateChange(args: NodeClickEventArgs, id: string, isChecked: boolean, node: HTMLElement): void {
+        node = isNullOrUndefined(node) ? args.node : node;
+        id = isNullOrUndefined(id) ? node.getAttribute('data-uid') : id;
         if (this.parent.pivotCommon.filterDialog.dialogPopUp) {
             this.parent.pivotCommon.filterDialog.dialogPopUp.close();
         }
         const list: { [key: string]: Object } = this.parent.pivotFieldList;
-        const selectedNode: { [key: string]: Object } = list[id as string] as { [key: string]: Object };
-        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(id, this.parent);
-        const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
-        const parentNode: Element = args.node.closest('.' + cls.FIELD_TREE_PARENT);
-        let isChecked: boolean = false; /* eslint-disable @typescript-eslint/no-explicit-any */
-        const getNodeDetails: any = this.fieldTable.getNode(args.node);
-        if ((args as any).event && (args as any).event.target &&
-            !(args as any).event.target.classList.contains(cls.CHECK_BOX_FRAME_CLASS)) {
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-            if (getNodeDetails.isChecked === 'true') {
-                this.fieldTable.uncheckAll([args.node]);
-                isChecked = false;
-            } else {
-                this.fieldTable.checkAll([args.node]);
-                isChecked = true;
+        const selectedNode: { [key: string]: Object; } = list[id as string] as { [key: string]: Object };
+        if (!isNullOrUndefined(args)) {
+            /* eslint-disable @typescript-eslint/no-explicit-any */
+            this.isSpaceKey = (args.event as any).action && (args.event as any).action === 'space';
+            if (isNullOrUndefined(selectedNode) || node.classList.contains(cls.ICON_DISABLE) || (args.event.target &&
+                ((args.event.target as HTMLElement).classList.contains(cls.COLLAPSIBLE) ||
+                (args.event.target as HTMLElement).classList.contains(cls.EXPANDABLE))) ||
+                ((args.event as any).action && (args.event as any).action !== 'enter')) {
+                return;
             }
-        } else {
-            isChecked = getNodeDetails.isChecked === 'true';
+            isChecked = false;
+            const getNodeDetails: any = this.fieldTable.getNode(node);
+            if ((args as any).event && (args as any).event.target &&
+                !(args as any).event.target.classList.contains(cls.CHECK_BOX_FRAME_CLASS)) {
+                /* eslint-enable @typescript-eslint/no-explicit-any */
+                if (getNodeDetails.isChecked === 'true') {
+                    this.fieldTable.uncheckAll([node]);
+                    isChecked = false;
+                } else {
+                    this.fieldTable.checkAll([node]);
+                    isChecked = true;
+                }
+            } else {
+                isChecked = getNodeDetails.isChecked === 'true';
+            }
         }
+        const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(id, this.parent);
+        const parentNode: Element = node.closest('.' + cls.FIELD_TREE_PARENT);
         if (isChecked) {
             const eventdrop: FieldDropEventArgs = {
                 fieldName: id, dropField: fieldInfo.fieldItem,
@@ -610,11 +639,11 @@ export class TreeViewRenderer implements IAction {
             };
             control.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
                 if (!observedArgs.cancel) {
-                    addClass([args.node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                    addClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
                     if (parentNode) {
                         addClass([parentNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
                     }
-                    this.updateSelectedNodes(args.node, 'check');
+                    this.updateSelectedNodes(node, 'check');
                     const addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id, fieldInfo.fieldItem);
                     this.updateReportSettings(addNode, observedArgs);
                     this.updateNodeStateChange(id, selectedNode, isChecked);
@@ -630,11 +659,11 @@ export class TreeViewRenderer implements IAction {
             };
             control.trigger(events.fieldRemove, removeFieldArgs, (observedArgs: FieldRemoveEventArgs) => {
                 if (!observedArgs.cancel) {
-                    removeClass([args.node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                    removeClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
                     if (parentNode && isNullOrUndefined(parentNode.querySelector('.' + cls.FIELD_TREE_CHILD + ' .' + cls.NODE_CHECK_CLASS))) {
                         removeClass([parentNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
                     }
-                    this.updateSelectedNodes(args.node, 'uncheck');
+                    this.updateSelectedNodes(node, 'uncheck');
                     this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
                     if (this.parent.dataType === 'pivot' && this.parent.showValuesButton && this.parent.dataSourceSettings.values.length > 1 &&
                         fieldInfo && fieldInfo.position < this.parent.dataSourceSettings.valueIndex &&
@@ -774,27 +803,38 @@ export class TreeViewRenderer implements IAction {
         }
     }
 
-    private addNode(args: NodeCheckEventArgs): void {
-        const id: string = args.node.getAttribute('data-uid');
+    private addNode(args: NodeClickEventArgs, id: string, isChecked: boolean, node: HTMLElement): void {
+        node = isNullOrUndefined(node) ? args.node : node;
+        id = isNullOrUndefined(id) ? node.getAttribute('data-uid') : id;
         const list: { [key: string]: Object } = this.parent.pivotFieldList;
-        const selectedNode: { [key: string]: Object } = list[id as string] as { [key: string]: Object };
+        const selectedNode: { [key: string]: Object; }  = list[id as string] as { [key: string]: Object };
+        if (!isNullOrUndefined(args)) {
+            /* eslint-disable @typescript-eslint/no-explicit-any */
+            this.isSpaceKey = (args.event as any).key && (args.event as any).key === ' ';
+            if (isNullOrUndefined(selectedNode) || args.node.classList.contains(cls.ICON_DISABLE) || (args.event.target &&
+                ((args.event.target as HTMLElement).classList.contains(cls.COLLAPSIBLE) ||
+                (args.event.target as HTMLElement).classList.contains(cls.EXPANDABLE))) ||
+                ((args.event as any).key && (args.event as any).key !== 'Enter')) {
+                return;
+            }
+            isChecked = false;
+            const getNodeDetails: any = this.fieldTable.getNode(args.node);
+            if ((args as any).event && (args as any).event.target &&
+                !(args as any).event.target.classList.contains(cls.CHECK_BOX_FRAME_CLASS)) {
+                /* eslint-enable @typescript-eslint/no-explicit-any */
+                if (getNodeDetails.isChecked === 'true') {
+                    this.fieldTable.uncheckAll([args.node]);
+                    isChecked = false;
+                } else {
+                    this.fieldTable.checkAll([args.node]);
+                    isChecked = true;
+                }
+            } else {
+                isChecked = getNodeDetails.isChecked === 'true';
+            }
+        }
         const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(selectedNode.id.toString(), this.parent);
         const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
-        let isChecked: boolean = false; /* eslint-disable @typescript-eslint/no-explicit-any */
-        const getNodeDetails: any = this.fieldTable.getNode(args.node);
-        if ((args as any).event && (args as any).event.target &&
-            !(args as any).event.target.classList.contains(cls.CHECK_BOX_FRAME_CLASS)) {
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-            if (getNodeDetails.isChecked === 'true') {
-                this.fieldTable.uncheckAll([args.node]);
-                isChecked = false;
-            } else {
-                this.fieldTable.checkAll([args.node]);
-                isChecked = true;
-            }
-        } else {
-            isChecked = getNodeDetails.isChecked === 'true';
-        }
         if (isChecked) {
             const axis: string[] = ['filters', 'columns', 'rows', 'values'];
             const eventdrop: FieldDropEventArgs = {

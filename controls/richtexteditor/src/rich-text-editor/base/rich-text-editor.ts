@@ -3565,9 +3565,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 }, 0);
             } else if (this.iframeSettings.enable) {
                 const iframeElement: HTMLIFrameElement = this.element.querySelector('#' + this.getID() + '_rte-view');
-                setTimeout(() => {
-                    this.setAutoHeight(iframeElement);
-                }, 100);
+                this.setAutoHeight(iframeElement);
                 this.inputElement.style.overflow = 'hidden';
             }
         } else {

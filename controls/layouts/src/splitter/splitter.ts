@@ -554,7 +554,9 @@ export class Splitter extends Component<HTMLElement> {
             - staticPaneWidth - (this.border * 2);
         const avgDiffWidth: number = flexPaneWidth / flexPaneIndexes.length;
         for (let j: number = 0; j < flexPaneIndexes.length; j++) {
-            this.allPanes[flexPaneIndexes[j as number]].style.flexBasis = avgDiffWidth + 'px';
+            if (this.allPanes[flexPaneIndexes[j as number]].style.flexBasis !== '') {
+                this.allPanes[flexPaneIndexes[j as number]].style.flexBasis = avgDiffWidth + 'px';
+            }
         }
         this.allPanes[index as number].classList.add(STATIC_PANE);
     }
@@ -1359,7 +1361,9 @@ export class Splitter extends Component<HTMLElement> {
             if (paneCount - 1 === i) {
                 const staticPaneCount: number = this.element.querySelectorAll('.' + STATIC_PANE).length;
                 if (staticPaneCount === paneCount) {
-                    removeClass([this.allPanes[i as number]], STATIC_PANE);
+                    if (this.allPanes[i as number].style.flexBasis === '') {
+                        removeClass([this.allPanes[i as number]], STATIC_PANE);
+                    }
                 }
             }
         }

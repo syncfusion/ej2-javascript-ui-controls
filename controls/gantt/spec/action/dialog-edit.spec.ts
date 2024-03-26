@@ -5117,3 +5117,448 @@ describe('Dialog editing - predecessor Tab with decimal', () => {
         }
     });
 });
+describe('CR-875373:Start date defaulting to incorrect value when remove the startDate in add dialog issues', function () {
+    let ganttObj: Gantt;
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                        { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                        { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                    ]
+                }
+            ],
+            allowSorting: true,
+            allowSelection: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                endDate: 'EndDate',
+                child: 'subtasks',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Indent', 'Outdent'],
+        }, done);
+    });
+    afterAll(function () {
+       if (ganttObj) {
+              destroyGantt(ganttObj);
+          }
+    })
+    beforeEach(function (done) {
+        setTimeout(done, 1000);
+    });
+it('Verifying endDate after dialog add without startDate', () => {
+        ganttObj.openAddDialog();
+        ganttObj.dataBind();
+        let startDate: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+        startDate.value = '';
+        startDate.dataBind();
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.endDate, 'M/d/yyyy')).toEqual('4/2/2019');
+    });
+});
+  describe('Duration column Dialog editing with decimal', () => {
+    let ganttObj: Gantt;
+    let numericParams = { params: { decimals: 2 } };
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [{ TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 1 }],
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration',edit:numericParams,editType:'numericedit' },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/10/2019',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+        ganttObj.openEditDialog('5');
+    });
+    it('editing with decimal', () => {
+        ganttObj.actionComplete = (args: any): void => {
+           if (args.requestType == "save") {
+               expect(args.data.ganttProperties.duration).toBe(0.25)
+           }
+        }
+        ganttObj.dataBind();
+        let durationField: any = document.querySelector('#' + ganttObj.element.id + 'Duration') as HTMLInputElement;
+        if (durationField) {
+            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            textObj.value = '0.25';
+            textObj.dataBind();
+            let save: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(save, 'click');
+        }
+    });
+});
+describe('Add new record with validation rule', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [],
+            allowSorting: true,
+            allowReordering: true,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            renderBaseline: true,
+            baselineColor: 'red',
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                {
+                    field: 'CustomColumn', headerText: 'CustomColumn', editType: 'numericedit', validationRules: {
+                        number: true,
+                        min: 20, required: true
+                    }
+                }
+            ],
+            editDialogFields: [
+                { type: 'General', headerText: 'General' },
+                { type: 'Dependency' },
+                { type: 'Resources' },
+                { type: 'Notes' }
+            ],
+            addDialogFields: [
+                { type: 'General', headerText: 'General',fields:['TaskID','TaskName','CustomColumn'] },
+                { type: 'Dependency' },
+                { type: 'Resources' },
+                { type: 'Notes' }
+            ],
+            sortSettings: {
+                columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            selectedRowIndex: 1,
+            splitterSettings: {
+                position: "50%",
+                // columnIndex: 4
+            },
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Single',
+                enableToggle: false
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            filterSettings: {
+                type: 'Excel'
+            },
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            eventMarkers: [
+                {
+                    day: '04/10/2019',
+                    cssClass: 'e-custom-event-marker',
+                    label: 'Project approval and kick-off'
+                }
+            ],
+            holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+
+            }],
+            searchSettings:
+            {
+                fields: ['TaskName', 'Duration']
+            },
+            labelSettings: {
+                leftLabel: 'TaskID',
+                rightLabel: 'Task Name: ${taskData.TaskName}',
+                taskLabel: '${Progress}%'
+            },
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+        ganttObj.openAddDialog();
+    });
+    it('add record', () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType == "refresh") {
+                expect(ganttObj.currentViewData.length).toBe(0);
+            }
+        }
+        ganttObj.dataBind();
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+    });
+});
+describe('Edit cell with timeline virtualization', () => {
+    let ganttObj: Gantt;
+    let SelfReferenceData = [
+        { TaskID: 1, TaskName: 'Project Initiation', StartDate: new Date('04/02/2019'), EndDate: new Date('04/21/2019'), Notes: 'xxxxx' },
+        { TaskID: 2, TaskName: 'Identify Site location Empty note', StartDate: new Date('03/29/2019'), Duration: 4, Progress: 50, ParentId: 1, Notes: '' },
+        { TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50, ParentId: 1 },
+        { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50, Predecessor: '2', ParentId: 1 },
+        { TaskID: 5, TaskName: 'Project Estimation', StartDate: new Date('04/02/2019'), EndDate: new Date('04/21/2019') },
+        { TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 50, ParentId: 5 },
+        { TaskID: 7, TaskName: 'List materials_info', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 50, ParentId: 5, Notes: 'yyyyyyy' },
+        { TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 50, ParentId: 5 }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: SelfReferenceData,
+        enableTimelineVirtualization: true,
+        allowExcelExport: true,
+        height: '450px',
+        enableImmutableMode: true,
+        highlightWeekends: true,
+        allowResizing: true,
+        showColumnMenu: true,
+        allowFiltering: true,
+        allowSorting: true,
+        allowReordering: true,
+        allowRowDragAndDrop: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            notes: 'Notes',
+            parentID: 'ParentId'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        editDialogFields: [
+            { type: 'General' },
+            { type: 'Dependency' },
+            { type: 'Notes' },
+        ],
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Delete', 'CriticalPath', 'ExcelExport', 'PdfExport', { text: 'Quick Filter', id: 'Quick Filter' }, { text: 'Clear Filter', id: 'Clear Filter' }],
+        columns: [
+            { field: 'TaskID', width: 50 },
+            { field: 'TaskName', width: 250 },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Predecessor' },
+            { field: 'Progress' },
+            { field: 'Notes' },
+        ],
+        selectionSettings: {
+            type: 'Multiple'
+        },
+        splitterSettings: {
+            columnIndex: 4
+        },
+        enableContextMenu: true,
+        projectStartDate: new Date('03/24/2019'),
+            projectEndDate: new Date('07/06/2019')
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        ganttObj.openEditDialog(1);
+        setTimeout(done, 500);
+    });
+    it('edit start date cell', () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if(args.action === "DialogEditing")
+            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineEndDate, 'MM/dd/yyyy')).toBe('04/07/2024');
+        };
+        let StartDate: any = document.querySelector('#' + ganttObj.element.id + 'StartDate') as HTMLInputElement;
+        if (StartDate) {
+            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            SD.value = new Date('03/22/2024');
+            SD.dataBind();
+            let save: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+            triggerMouseEvent(save, 'click');
+        }
+    });
+});

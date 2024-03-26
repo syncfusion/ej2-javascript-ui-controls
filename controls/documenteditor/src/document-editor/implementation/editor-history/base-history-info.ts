@@ -204,26 +204,22 @@ export class BaseHistoryInfo {
     }
 
     public updateSelection(): void {
-        this.updateCollaborativeSelection();
+        this.updateCollaborativeSelection(this.owner.selectionModule.start.clone(), this.owner.selectionModule.end.clone());
         let blockInfo: ParagraphInfo = this.owner.selectionModule.getParagraphInfo(this.owner.selectionModule.start);
         this.selectionStart = this.owner.selectionModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         blockInfo = this.owner.selectionModule.getParagraphInfo(this.owner.selectionModule.end);
         this.selectionEnd = this.owner.selectionModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
     }
 
-    private updateCollaborativeSelection(): void {
+    private updateCollaborativeSelection(start: TextPosition, end: TextPosition): void {
         if (this.owner.enableCollaborativeEditing && !this.owner.editorModule.isRemoteAction) {
             //TODO: Need to consider formard and backward selection
-            let start: TextPosition;
-            let end: TextPosition;
             if (this.action == 'RemoveEditRange') {
                 let startEdit: EditRangeStartElementBox = this.owner.selectionModule.getEditRangeStartElement();
                 let position: PositionInfo = this.owner.selectionModule.getPosition(startEdit);
                 start = position.startPosition;
                 end = position.endPosition;
             } else {
-                start = this.owner.selectionModule.start.clone();
-                end = this.owner.selectionModule.end.clone();
                 this.updateTableSelection(start, end);
             }
             this.startIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(start);
@@ -247,7 +243,7 @@ export class BaseHistoryInfo {
             } else {
                 this.endIndex -= this.owner.selectionModule.getTableRelativeValue(end, start);
             }
-            if (this.action === 'BackSpace' || this.action === 'Delete') {
+            // if (this.action === 'BackSpace' || this.action === 'Delete') {
                 let isParagraphStart: boolean = isForward ? (start.paragraph.equals(end.paragraph) && start.isAtParagraphStart) : (start.paragraph.equals(end.paragraph) && end.isAtParagraphStart);
                 if ((isParagraphStart || !start.paragraph.equals(end.paragraph))) {
                     if (isForward) {
@@ -256,7 +252,7 @@ export class BaseHistoryInfo {
                         this.startIndex += this.paraInclude(start);
                     }
                 }
-            }
+            // }
             this.splitOperationForDelete(start, end);
             // Code for Comparing the offset calculated using old approach and optimized approach
             // throwCustomError(this.newStartIndex !== this.startIndex, "New StartIndex " + this.newStartIndex + " and old StartIndex " + this.startIndex + " doesnot match");
@@ -504,8 +500,11 @@ export class BaseHistoryInfo {
             if (!isNullOrUndefined(this.insertPosition)) {
                 this.insertIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(this.insertPosition);
             }
+            this.startIndex = this.insertIndex;
             if (!isNullOrUndefined(this.endPosition)) {
-                this.updateCollaborativeSelection();
+                let startPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.insertPosition);
+                let endPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.endPosition);
+                this.updateCollaborativeSelection(startPosition, endPosition);
             }
             this.startIndex = this.insertIndex;
         }
@@ -525,6 +524,8 @@ export class BaseHistoryInfo {
                     }
                 }
                 this.isRemovedNodes = true;
+            } else {
+                this.isRemovedNodes = false;
             }
             this.removedNodesIn = [];
             if (isNullOrUndefined(this.endPosition)) {
@@ -613,13 +614,15 @@ export class BaseHistoryInfo {
             // Use this property to skip deletion if already selected content deleted case.
             let isRemoveContent: boolean = false;
             if (this.endRevisionLogicalIndex && deletedNodes.length > 0) {
+                let currentPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(this.endRevisionLogicalIndex);
                 if (this.editorHistory.isUndoing || (this.editorHistory.isRedoing && insertTextPosition.isAtSamePosition(endTextPosition))) {
-                    let currentPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(this.endRevisionLogicalIndex);
                     sel.selectPosition(insertTextPosition, currentPosition);
-                    if(this.owner.enableCollaborativeEditing) {
-                        this.endIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(currentPosition);
-                    }
                 }
+                this.collabEnd = this.endRevisionLogicalIndex;
+                if (this.owner.enableCollaborativeEditing) {
+                    this.endIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(currentPosition);
+                    this.endIndex += this.paraInclude(currentPosition);
+                }	              
                 if (this.editorHistory.isUndoing) {
                     this.owner.editorModule.deleteSelectedContents(sel, true);
                     isRemoveContent = true;
@@ -1968,6 +1971,7 @@ export class BaseHistoryInfo {
                                 }
                                 operation.markerData.splittedRevisions.push(this.markerData[j]);
                                 this.markerData.splice(j, 1);
+                                j--;
                             }
                         }
                     }
@@ -2107,10 +2111,6 @@ export class BaseHistoryInfo {
                 if (this.editorHistory.isUndoing && this.isRemovedNodes) {
                     operations.push(this.getUndoRedoOperation(action));
                 } else {
-                    if (this.editorHistory.isRedoing && action === 'InsertTable') {
-                        this.insertedNodes.reverse();
-                        this.insertedNodes.splice(0, 1);
-                    }
                     let tableRowOperation: Operation[] = this.buildTableRowCellOperation(action);
                     for (let i: number = 0; i < tableRowOperation.length; i++) {
                         operations.push(tableRowOperation[i]);
@@ -2180,7 +2180,19 @@ export class BaseHistoryInfo {
                     } else {
                         if (this.removedNodes.length > 0) {
                             if (this.owner.enableTrackChanges) {
-                                operations = this.getDeleteOperationsForTrackChanges();
+                                if (this.editorHistory.isRedoing) {
+                                    if (this.removedNodes.length > 0) {
+                                        let deleteOperation: Operation = this.getDeleteOperation(action);
+                                        deleteOperation.markerData = { isSkipTracking: true };
+                                        operations.push(deleteOperation);
+                                    }
+                                    if (this.isRemovedNodes) {
+                                        let operationCollection: Operation[] = this.getDeleteContent(action);
+                                        operations = [...operations, ...operationCollection];
+                                    }
+                                } else {
+                                    operations = this.getDeleteOperationsForTrackChanges();
+                                }
                             } else {
                                 let deleteOperation: Operation = this.getDeleteOperation(action);
                                 operations.push(deleteOperation);
@@ -2209,6 +2221,7 @@ export class BaseHistoryInfo {
                         }
                     }
                 }
+                this.markerData = [];
                 break;
             case 'ResolveComment':
             case 'EditComment':
@@ -2612,7 +2625,7 @@ export class BaseHistoryInfo {
         if (!isNullOrUndefined(element)) {
             do {
                 let insertedText;
-                let Data: MarkerInfo;
+                let data: MarkerInfo;
                 let elementLength;
                 let characterFormat;
                 let type;
@@ -2629,31 +2642,45 @@ export class BaseHistoryInfo {
 
                     if (element.fieldType === 0 && element.formFieldData) {
                         type = this.formFieldType;
-                        Data = this.markerData.pop();
-                        if (isNullOrUndefined(Data)) {
-                            Data = {};
+                        if (element.revisions.length > 0) {
+                            data = this.owner.editorModule.getRevisionMarkerData(data, element.revisions[0]);
                         }
-                        Data.type = 'Field';
-                        Data.formFieldData = JSON.stringify(element.formFieldData);
+                        if (isNullOrUndefined(data)) {
+                            data = {};
+                        }
+                        data.type = 'Field';
+                        data.formFieldData = JSON.stringify(element.formFieldData);
                     } else {
-                        Data = this.markerData.pop();
-                        if (isNullOrUndefined(Data)) {
-                            Data = {};
+                        if(element.revisions.length > 0) {
+                            data = this.owner.editorModule.getRevisionMarkerData(data, element.revisions[0]);
                         }
-                        Data.type = 'Field';
+                        if (isNullOrUndefined(data)) {
+                            data = {};
+                        }
+                        data.type = 'Field';
                     }
                     elementLength = element.length;
                 } else if (this.fieldBegin.formFieldData && element instanceof BookmarkElementBox) {
+                    if (element.revisions.length > 0) {
+                        data = this.owner.editorModule.getRevisionMarkerData(data, element.revisions[0]);
+                    }
                     insertedText = element.bookmarkType === 0 ? CONTROL_CHARACTERS.Marker_Start : CONTROL_CHARACTERS.Marker_End;
-                    Data = { 'bookmarkName': element.name, 'type': 'Bookmark' };
+                    if (isNullOrUndefined(data)) {
+                        data = {};
+                    }
+                    data.bookmarkName = element.name;
+                    data.type = 'Bookmark';
                     elementLength = element.length;
                 } else if (element instanceof TextElementBox) {
                     insertedText = element.text;
                     elementLength = element.length;
-                    Data = this.markerData.pop();
+                    if (element.revisions.length > 0) {
+                        data = this.owner.editorModule.getRevisionMarkerData(data, element.revisions[0]);
+                    }
                 }
                 if (!(element instanceof BookmarkElementBox)) {
-                    let characterData: any = this.owner.sfdtExportModule.writeCharacterFormat(element.characterFormat, 0);
+                    let characterData: any = {};
+                    HelperMethods.writeCharacterFormat(characterData, true, element.characterFormat, undefined, true);
                     characterFormat = JSON.stringify(characterData);
                 }
                 let operation: Operation = {
@@ -2662,12 +2689,12 @@ export class BaseHistoryInfo {
                     type: type,
                     text: insertedText,
                     length: elementLength,
-                    markerData: Data,
+                    markerData: data,
                     format: characterFormat
                 }
                 operations.push(operation);
                 elementOffset += element.length;
-                Data = undefined;
+                data = undefined;
                 type = undefined;
                 characterFormat = undefined;
                 if (element instanceof FieldElementBox && element.fieldType === 1) {
@@ -2675,14 +2702,21 @@ export class BaseHistoryInfo {
                     if (this.fieldBegin.formFieldData && element.nextNode instanceof BookmarkElementBox) {
                         let elementBox: BookmarkElementBox = element.nextNode;
                         insertedText = elementBox.bookmarkType === 0 ? CONTROL_CHARACTERS.Marker_Start : CONTROL_CHARACTERS.Marker_End;
-                        Data = { 'bookmarkName': elementBox.name, 'type': 'Bookmark' };
+                        if (element.revisions.length > 0) {
+                            data = this.owner.editorModule.getRevisionMarkerData(data, elementBox.revisions[0]);
+                        }
+                        if (isNullOrUndefined(data)) {
+                            data = {};
+                        }
+                        data.bookmarkName = elementBox.name;
+                        data.type = 'Bookmark';
                         elementLength = elementBox.length;
                         let operation: Operation = {
                             action: 'Insert',
                             offset: elementOffset,
                             text: insertedText,
                             length: elementLength,
-                            markerData: Data
+                            markerData: data
                         };
                         operations.push(operation);
                     }
@@ -2705,7 +2739,7 @@ export class BaseHistoryInfo {
         paraEnd.offset = endPosition.offset - 1;
         let isParaSelected: boolean = startPosition.isAtParagraphStart && paraEnd.isAtParagraphEnd;
         if (isParaSelected && (!startPosition.currentWidget.paragraph.isInsideTable)) {
-            operations.push(this.getInsertOperation('Enter'));
+            operations.push(this.getInsertOperation('Enter', false, true));
             operations.push(this.getUndoRedoOperation(action));
         } else if (startPosition.paragraph == endPosition.paragraph) {
             if (startPosition.isAtSamePosition(endPosition)) {
@@ -2975,7 +3009,7 @@ export class BaseHistoryInfo {
      * @private
      * @returns {Operation}
      */
-    public getInsertOperation(action: Action, setEndIndex?: boolean): Operation {
+    public getInsertOperation(action: Action, setEndIndex?: boolean, skipMarkerData?: boolean): Operation {
         let insertedText: string = action === 'Enter' ? '\n' : this.insertedText;
         let length: number;
         if (action === 'InsertTable' || action === 'InsertTableBelow' || action === 'InsertRowAbove' || action === 'InsertRowBelow'
@@ -2999,7 +3033,7 @@ export class BaseHistoryInfo {
             imageData: this.insertedData,
             format: this.format,
         }
-        if (!isNullOrUndefined(this.markerData)) {
+        if (!isNullOrUndefined(this.markerData) && !skipMarkerData) {
             operation.markerData = this.markerData.pop();
         }
         if (this.insertedElement instanceof FootnoteElementBox) {
@@ -3084,21 +3118,22 @@ export class BaseHistoryInfo {
                     this.insertIndex -= 1;
                 }
             }
+            if (this.insertedNodes.length > 1 && action === 'InsertTable') {
+                let enterOperation: Operation = this.getInsertOperation('Enter', false, true);
+                if (isNullOrUndefined(enterOperation.markerData)) {
+                    enterOperation.markerData = {};
+                }
+                enterOperation.markerData.isSkipTracking = true;
+                operations.push(enterOperation);
+            }
             for (let i: number = 0; i < this.insertedNodes.length; i++) {
-                if (this.insertedNodes[i] instanceof ParagraphWidget && action === 'InsertTable') {
-                    let enterOperation: Operation = this.getInsertOperation('Enter');
-                    if (isNullOrUndefined(enterOperation.markerData)) {
-                        enterOperation.markerData = {};
-                    }
-                    enterOperation.markerData.isSkipTracking = true;
-                    operations.push(enterOperation);
-                } else if (this.insertedNodes[i] instanceof TableWidget) {
+                if (this.insertedNodes[i] instanceof TableWidget) {
                     let tableWidget: TableWidget = (this.insertedNodes[i] as TableWidget).combineWidget(this.owner.viewer) as TableWidget;
                     this.tableRelatedLength = action === 'InsertTableBelow' ? 0 : 1;
                     this.insertedText = CONTROL_CHARACTERS.Table;
                     let tableFormat: any = this.owner.sfdtExportModule ? this.owner.sfdtExportModule.writeTableFormat(tableWidget.tableFormat, 0) : {};
                     this.format = JSON.stringify(tableFormat);
-                    operations.push(this.getInsertOperation(action));
+                    operations.push(this.getInsertOperation(action, false, true));
                     for (let j: number = 0; j < tableWidget.childWidgets.length; j++) {
                         let row: TableRowWidget = tableWidget.childWidgets[j] as TableRowWidget;
                         operations.push(this.buildRowOperation(row, action));
@@ -3234,7 +3269,7 @@ export class BaseHistoryInfo {
             this.owner.sfdtExportModule.assignRowFormat(rowFormat, row.rowFormat, 0);
         }
         this.format = JSON.stringify(rowFormat);
-        if(row.rowFormat.revisions.length > 0) {
+        if (action === 'InsertTable' && row.rowFormat.revisions.length > 0) {
             let revision: Revision = row.rowFormat.revisions[row.rowFormat.revisions.length - 1];
             let lastRevision: MarkerInfo = this.markerData[this.markerData.length - 1];
             if (!(!isNullOrUndefined(lastRevision) && lastRevision.revisionId === revision.revisionID)) {
@@ -3244,7 +3279,6 @@ export class BaseHistoryInfo {
         this.tableRelatedLength = 1;
         let operation: Operation = this.getInsertOperation(action);
         this.format = undefined;
-        this.markerData = [];
         return operation
     }
     /**
@@ -3270,7 +3304,7 @@ export class BaseHistoryInfo {
         this.type = 'CellFormat';
         let cellFormat: any = !isNullOrUndefined(this.owner.sfdtExportModule) ? this.owner.sfdtExportModule.writeCellFormat(cell.cellFormat, 0) : {};
         this.format = JSON.stringify(cellFormat);
-        operations.push(this.getInsertOperation(action));
+        operations.push(this.getInsertOperation(action, false, true));
         if (!isCellInserted) {
             return operations;
         }
@@ -3278,12 +3312,12 @@ export class BaseHistoryInfo {
         this.type = 'ParagraphFormat';
         let paragraphFormat: any = this.owner.sfdtExportModule.writeParagraphFormat((cell.childWidgets[0] as ParagraphWidget).paragraphFormat, 0, true);
         this.format = JSON.stringify(paragraphFormat);
-        operations.push(this.getInsertOperation(action));
+        operations.push(this.getInsertOperation(action, false, true));
         this.tableRelatedLength = 0;
         this.type = 'CharacterFormat';
         let characterData: any = this.owner.sfdtExportModule.writeCharacterFormat((cell.childWidgets[0] as ParagraphWidget).characterFormat, 0, true);
         this.format = JSON.stringify(characterData);
-        operations.push(this.getInsertOperation(action));
+        operations.push(this.getInsertOperation(action, false, true));
         this.format = undefined;
         this.type = undefined;
         return operations;
@@ -3389,13 +3423,13 @@ export class BaseHistoryInfo {
      * @private
      * @returns {Operation}
      */
-    public getFormatOperation(element?: ElementBox, action?: string): Operation {
+    public getFormatOperation(element?: ElementBox, action?: string, skipIncrement?: boolean): Operation {
         if (this.startIndex > this.endIndex) {
             [this.startIndex, this.endIndex] = [this.endIndex, this.startIndex];
         }
         let length: number = 0;
-        if (this.endIndex === this.startIndex && this.action !== 'StyleName' && this.action !== 'DeleteBookmark' && this.action !== 'RemoveEditRange' && this.action !== 'InsertHyperlink') {
-            if (this.action === 'BackSpace') {
+        if (this.endIndex === this.startIndex && !skipIncrement && this.action !== 'DeleteBookmark' && this.action !== 'RemoveEditRange' && this.action !== 'InsertHyperlink') {
+            if(this.action === 'BackSpace') {
                 this.startIndex--;
             } else {
                 this.endIndex++;
@@ -3698,17 +3732,19 @@ export class BaseHistoryInfo {
                 }
                 let formatOperation: Operation;
                 if (action === 'ListFormat') {
-                    formatOperation = this.getFormatOperation(undefined, action);
+                    formatOperation = this.getFormatOperation(undefined, undefined, true);
+                    formatOperation.type = 'ListFormat';
                     this.createListFormat(action, formatOperation);
                 } else {
-                    formatOperation = this.getFormatOperation();
+                    formatOperation = this.getFormatOperation(undefined, undefined, true);
                 }
                 operations.push(formatOperation);
             }
         } else {
             let operation: Operation;
             if (action === 'ListFormat') {
-                operation = this.getFormatOperation(undefined, action);
+                operation = this.getFormatOperation(undefined, undefined, true);
+                operation.type = 'ListFormat';
                 this.createListFormat(action, operation);
             } else {
                 if (start.paragraph.isInsideTable && isCell) {
@@ -3718,7 +3754,7 @@ export class BaseHistoryInfo {
                     this.endIndex = this.startIndex + length;
                     this.writeBorderFormat(isBorder, isShading, start.paragraph.associatedCell);
                 }
-                operation = this.getFormatOperation();
+                operation = this.getFormatOperation(undefined, undefined, true);
             }
             operations.push(operation);
         }

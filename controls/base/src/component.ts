@@ -152,22 +152,28 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     }
     /**
      * Adding unload event to persist data when enable persistence true
+     *
+     * @returns {void}
      */
-    public attachUnloadEvent():any {
+    public attachUnloadEvent(): void {
         this.handleUnload = this.handleUnload.bind(this);
         window.addEventListener('unload', this.handleUnload);
     }
     /**
      * Handling unload event to persist data when enable persistence true
+     *
+     * @returns {void}
      */
-     public handleUnload():any{
+    public handleUnload(): void {
         this.setPersistData();
     }
     /**
      * Removing unload event to persist data when enable persistence true
+     *
+     * @returns {void}
      */
-    public detachUnloadEvent():any {
-        window.removeEventListener('unload',this.handleUnload);
+    public detachUnloadEvent(): void {
+        window.removeEventListener('unload', this.handleUnload);
     }
     /**
      * Appends the control within the given HTML element
@@ -198,7 +204,29 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             }
             this.preRender();
             this.injectModules();
-            // Checked weather cases are valid or not. If control leads to more than five counts  
+            // Throw a warning for the required modules to be injected.
+            const ignoredComponents: { [key: string]: string | string[] } = { // Add component to ignore it from injectable module validation
+                schedule: 'all',
+                diagram: 'all',
+                PdfViewer: 'all',
+                grid: ['logger'],
+                richtexteditor: ['link', 'table', 'image', 'audio', 'video', 'formatPainter', 'emojiPicker', 'pasteCleanup', 'htmlEditor', 'toolbar'],
+                treegrid: ['filter'],
+                gantt: ['tooltip'],
+                chart: ['Export', 'Zoom'],
+                accumulationchart: ['Export']
+            };
+            const component: string = this.getModuleName();
+            if (this.requiredModules && (!ignoredComponents[`${component}`] || ignoredComponents[`${component}`] !== 'all')) {
+                const modulesRequired: ModuleDeclaration[] = this.requiredModules();
+                for (const module of this.moduleLoader.getNonInjectedModules(modulesRequired)) {
+                    const moduleName: string = module.name ? module.name : module.member;
+                    if (ignoredComponents[`${component}`] && ignoredComponents[`${component}`].indexOf(module.member) !== -1) { continue; }
+                    const componentName: string = component.charAt(0).toUpperCase() + component.slice(1); // To capitalize the component name
+                    console.warn(`[WARNING] :: Module "${moduleName}" is not available in ${componentName} component! You either misspelled the module name or forgot to load it.`);
+                }
+            }
+            // Checked weather cases are valid or not. If control leads to more than five counts
             if (!isvalid && !isBannerAdded) {
                 createLicenseOverlay();
                 isBannerAdded = true;
@@ -333,7 +361,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         // tslint:disable-next-line:no-function-constructor-with-string-args
         onIntlChange.on('notifyExternalChange', this.detectFunction, this, this.randomId);
         // Based on the considered control list we have count the instance
-        if (typeof window !== "undefined" && typeof document !== "undefined" && !validateLicense()) {
+        if (typeof window !== 'undefined' && typeof document !== 'undefined' && !validateLicense()) {
             if (componentList.indexOf(this.getModuleName()) !== -1) {
                 instancecount = instancecount + 1;
                 if (instancecount > 5) {

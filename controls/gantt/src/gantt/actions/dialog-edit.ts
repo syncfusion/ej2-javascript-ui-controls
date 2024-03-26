@@ -73,11 +73,8 @@ export class DialogEdit {
     private storeColumn:any;
     private taskfields:any;
     private storeValidTab:any;
-    private singleTab:boolean;
     private storeDependencyTab:HTMLElement;
     private storeResourceTab:HTMLElement;
-    private isAddingDialog : boolean;
-    private isEditingDialog :boolean;
     private firstOccuringTab:string;
     private numericOrString: any;
     private types: IDependencyEditData[];
@@ -490,112 +487,62 @@ export class DialogEdit {
         target.style.pointerEvents = 'none';
         if ((this.localeObj.getConstant('cancel')).toLowerCase() === (e.target as HTMLInputElement).innerText.trim().toLowerCase()) {
             if (this.dialog && !this.dialogObj.isDestroyed) {
+                this.CustomformObj = null;
+                this.formObj = null;
                 this.dialogObj.hide();
                 this.dialogClose();
             }
         } else {
-            if (this.singleTab && this.CustomformObj) {
+            if (this.CustomformObj) {
                 if (!this.CustomformObj.validate()) {
                     target.style.pointerEvents = '';
                     return;
                 }
-            } else {
-                if (this.CustomformObj) {
-                    if (this.isAddingDialog ) {
-                        if (this.parent.addDialogFields.length > 1 && this.parent.addDialogFields[0].type == "Custom" && !this.formObj) {
-                            if (!this.CustomformObj.validate()) {
-                                target.style.pointerEvents = '';
-                                return;
-                            }
-                        }
-                    } else if (this.isEditingDialog ) {
-                        if (this.parent.editDialogFields.length > 1 && this.parent.editDialogFields[0].type == "Custom" && !this.formObj) {
-                            if (!this.CustomformObj.validate()) {
-                                target.style.pointerEvents = '';
-                                return;
-                            }
-                        }
-                    }
-                    if (!this.formObj.validate() && !this.CustomformObj.validate()) {
+            }
+            if (this.formObj) {
+                let formValid = this.formObj.validate();
+                if (!formValid) {
+                    target.style.pointerEvents = '';
+                    return;
+                }
+            }
+            if (this.storeDependencyTab || this.firstOccuringTab === "Dependency") {
+                let dependencyTab;
+                if (this.firstOccuringTab === "Dependency") {
+                    let element = (e.target as Element).closest('#' + this.parent.element.id + '_dialog');
+                    dependencyTab = element.querySelector('.e-gridform');
+                } else {
+                    dependencyTab = this.storeDependencyTab.querySelector('.e-gridform');
+                }
+                if (dependencyTab) {
+                    let dependencyTabValid = dependencyTab['ej2_instances'][0].validate();
+                    if (!dependencyTabValid) {
                         target.style.pointerEvents = '';
                         return;
                     }
                 }
-                if (this.formObj) {
-                    let formValid = this.formObj.validate();
-                    if (this.storeDependencyTab) {
-                        let dependencyTab = this.storeDependencyTab.querySelector('.e-gridform');
-                        if (dependencyTab) {
-                            let dependencyTabValid = dependencyTab['ej2_instances'][0].validate();
-                            if (!formValid || !dependencyTabValid) {
-                                target.style.pointerEvents = '';
-                                return;
-                            }
-                        }
-                    }
-                    if (this.storeResourceTab) {
-                        let resourceTab = this.storeResourceTab.querySelector('.e-gridform');
-                        if (resourceTab) {
-                            let resourceTabValid = resourceTab['ej2_instances'][0].validate();
-                            if (!formValid || !resourceTabValid) {
-                                target.style.pointerEvents = '';
-                                return;
-                            }
-                        }
-                    }
-                    if (!formValid) {
+            }
+            if (this.storeResourceTab || this.firstOccuringTab === "Resources") {
+                let resourceTab;
+                if (this.firstOccuringTab === "Resources") {
+                    let element = (e.target as Element).closest('#' + this.parent.element.id + '_dialog');
+                    resourceTab = element.querySelector('.e-gridform');
+                } else {
+                    resourceTab = this.storeResourceTab.querySelector('.e-gridform');
+                }
+
+                if (resourceTab) {
+                    let resourceTabValid = resourceTab['ej2_instances'][0].validate();
+                    if (!resourceTabValid) {
                         target.style.pointerEvents = '';
                         return;
-                    }
-                } else if (this.storeDependencyTab || this.firstOccuringTab == "Dependency") {
-                    if (this.firstOccuringTab == "Dependency") {
-                        let element = (e.target as Element).closest('#'+this.parent.element.id+'_dialog');
-                        let dependencyTab = element.querySelector('.e-gridform');
-                        if (dependencyTab) {
-                            let dependencyTabValid = dependencyTab['ej2_instances'][0].validate();
-                            if (!dependencyTabValid) {
-                                target.style.pointerEvents = '';
-                                return;
-                            }
-                        }
-                    } else {
-                        let dependencyTab = this.storeDependencyTab.querySelector('.e-gridform');
-                        if (dependencyTab) {
-                            let dependencyTabValid = dependencyTab['ej2_instances'][0].validate();
-                            if (!dependencyTabValid) {
-                                target.style.pointerEvents = '';
-                                return;
-                            }
-                        }
-                    }
-                } else if (this.storeResourceTab || this.firstOccuringTab == "Resources") {
-                    if (this.firstOccuringTab == "Resources") {
-                        let element = (e.target as Element).closest('#'+this.parent.element.id+'_dialog');
-                        let resourceTab = element.querySelector('.e-gridform');
-                        if (resourceTab) {
-                            let resourceTabValid = resourceTab['ej2_instances'][0].validate();
-                            if (!resourceTabValid) {
-                                target.style.pointerEvents = '';
-                                return;
-                            }
-                        }
-                    } else {
-                        let resourceTab = this.storeResourceTab.querySelector('.e-gridform');
-                        if (resourceTab) {
-                            let resourceTabValid = resourceTab['ej2_instances'][0].validate();
-                            if (!resourceTabValid) {
-                                target.style.pointerEvents = '';
-                                return;
-                            }
-                        }
                     }
                 }
             }
             this.initiateDialogSave();
+            this.CustomformObj = null;
+            this.formObj = null;
             target.style.pointerEvents = 'auto';
-            this.singleTab = false;
-            this.isAddingDialog  = false;
-            this.isEditingDialog  = false;
         }
     }
     /**
@@ -821,6 +768,8 @@ export class DialogEdit {
                 const columns: any[] = this.parent.treeGrid.grid.getColumns();
                 const isValidateColumn: boolean = columns.some(obj => obj.validationRules);
                 if (isValidateColumn) {
+                    this.CustomformObj = null;
+                    this.formObj = null;
                     this.changeFormObj(actionCompleteArgs.element, false);
                 }
                 this.parent.trigger('actionComplete', actionCompleteArgs, (actionCompleteArg: CObject) => {
@@ -873,92 +822,50 @@ export class DialogEdit {
             this.validateColumn(this.storeColumn, this.taskfields, this.storeValidTab);
         }
 
-        if ((this.isFromAddDialog || this.isFromEditDialog) && this.isSingleCustomTab()) {
-            isCustomTab = true;
-            this.singleTab = true;
-        }
-        if (this.isFromAddDialog) {
-            if (this.parent.addDialogFields.length > 1) {
-                if (this.parent.addDialogFields[0].type === 'Resources'
-                    || this.parent.addDialogFields[0].type === 'Dependency') {
-                    this.firstOccuringTab = this.parent.addDialogFields[0].type;
-                }
+        if (this.isFromAddDialog && this.parent.addDialogFields && this.parent.addDialogFields.length > 0) {
+            const firstFieldType = this.parent.addDialogFields[0].type;
+            if (firstFieldType === 'Resources' || firstFieldType === 'Dependency') {
+                this.firstOccuringTab = firstFieldType;
             }
-            if (this.parent.addDialogFields.length == 1) {
-                this.firstOccuringTab = this.parent.addDialogFields[0].type;
+        } else if (this.isFromEditDialog && this.parent.editDialogFields && this.parent.editDialogFields.length > 0) {
+            const firstFieldType = this.parent.editDialogFields[0].type;
+            if (firstFieldType === 'Resources' || firstFieldType === 'Dependency') {
+                this.firstOccuringTab = firstFieldType;
             }
         }
-        else if (this.isFromEditDialog) {
-            if (this.parent.editDialogFields.length > 1) {
-                if (this.parent.editDialogFields[0].type === 'Resources'
-                    || this.parent.editDialogFields[0].type === 'Dependency') {
-                    this.firstOccuringTab = this.parent.editDialogFields[0].type;
+        if (!this.CustomformObj || !this.formObj) {
+            const customFieldColumns = this.customFieldColumn;
+            const taskFieldColumns = this.taskFieldColumn;
+            if (!this.CustomformObj && customFieldColumns && customFieldColumns.length > 0) {
+                const validationRulesArray: { [key: string]: { [rule: string]: any } } = {};
+                for (let i:number = 0; i < customFieldColumns.length; i++) {
+                    const customColumn = customFieldColumns[i as number]; // Rename the variable
+                    if (customColumn.visible && customColumn.validationRules) {
+                        validationRulesArray[customColumn.field] = customColumn.validationRules;
+                    }
+                }
+                if (Object.keys(validationRulesArray).length > 0) {
+                    this.CustomformObj = actionCompleteArgs.querySelector('#'+this.parent.element.id+'Custom0TabContainer') as HTMLElement;
+                    if (this.CustomformObj) {
+                        this.CustomformObj = this.createFormObj(this.CustomformObj, validationRulesArray);
+                    }
                 }
             }
-            if (this.parent.editDialogFields.length == 1) {
-                this.firstOccuringTab = this.parent.editDialogFields[0].type;
-            }
-        }
-        if (this.isFromEditDialog) { 
-            if (this.parent.editDialogFields.length > 1) {
-                if (this.parent.editDialogFields[0].type == 'Custom') {
-                    isCustomTab = true
+            if (!this.formObj && taskFieldColumns && taskFieldColumns.length > 0) {
+                const validationRulesArray: { [key: string]: { [rule: string]: any } } = {};
+                for (let i:number = 0; i < taskFieldColumns.length; i++) {
+                    const taskColumn = taskFieldColumns[i as number]; // Rename the variable
+                    if (taskColumn.visible && taskColumn.validationRules) {
+                        validationRulesArray[taskColumn.field] = taskColumn.validationRules;
+                    }
+                }
+                if (Object.keys(validationRulesArray).length > 0) {
+                    this.formObj = actionCompleteArgs.querySelector('#'+this.parent.element.id+'GeneralTabContainer') as HTMLElement;
+                    if (this.formObj) {
+                        this.formObj = this.createFormObj(this.formObj, validationRulesArray);
+                    }
                 }
             }
-        }
-        if (this.isFromAddDialog) { 
-            if (this.parent.addDialogFields.length > 1) {
-                if (this.parent.addDialogFields[0].type == 'Custom') {
-                    isCustomTab = true
-                }
-            }
-        }
-        if (isCustomTab) {
-            this.CustomformObj = (actionCompleteArgs as HTMLElement).querySelector('.e-edit-form-row');
-            if (this.CustomformObj === null) {
-                return;
-            }
-
-            let validationRulesArray: { [key: string]: { [rule: string]: any } } = {};
-
-            for (let i: number = 0; i < this.customFieldColumn.length; i++) {
-                const column = this.customFieldColumn[parseInt(i.toString(), 10)];
-                if (!column.visible) {
-                    continue;
-                }
-                if (column.validationRules) {
-                    validationRulesArray[column.field] = column.validationRules;
-                }
-            }
-
-            if (Object.keys(validationRulesArray).length > 0) {
-                this.CustomformObj = this.createFormObj(this.CustomformObj, validationRulesArray);
-            }
-        } else {
-            this.formObj = (actionCompleteArgs as HTMLElement).querySelector('.e-edit-form-row');
-            if (this.formObj === null) {
-                return;
-            }
-
-            let validationRulesArray: { [key: string]: { [rule: string]: any } } = {};
-
-            for (let i: number = 0; i < this.taskFieldColumn.length; i++) {
-                const column = this.taskFieldColumn[parseInt(i.toString(), 10)];
-                if (!column.visible) {
-                    continue;
-                }
-                if (column.validationRules) {
-                    validationRulesArray[column.field] = column.validationRules;
-                }
-            }
-
-            if (Object.keys(validationRulesArray).length > 0) {
-                this.formObj = this.createFormObj(this.formObj, validationRulesArray);
-            }
-        }
-        if (this.isFromAddDialog == true || this.isFromEditDialog) {
-            this.isAddingDialog  = this.isFromAddDialog
-            this.isEditingDialog  = this.isFromEditDialog
         }
         this.isFromAddDialog = false;
         this.isFromEditDialog = false;
@@ -976,44 +883,24 @@ export class DialogEdit {
         return null;
     }
 
-    private isSingleCustomTab(): boolean {
-        const dialogFields = this.isFromAddDialog
-            ? this.parent.addDialogFields
-            : this.parent.editDialogFields;
-
-        return this.isFromAddDialog || this.isFromEditDialog
-            ? dialogFields.length === 1 && dialogFields[0].type === 'Custom'
-            : false;
-    }
-
     private validateColumn(storeColumn: any, taskfields: any, storeValidTab: any) {
-        storeColumn.forEach((column: { field: any }) => {
-            const field = column.field;
-            let isValueMatching = false;
-            const taskfieldValues: (string | number)[] = [];
-            if (this.parent.customColumns.indexOf(field) === -1) {
-                isValueMatching = true;
-            }
-            if (isValueMatching) {
-                if ((this.isFromAddDialog || this.isFromEditDialog) && storeValidTab) {
-                    if (storeValidTab.some((obj: { fields: string }) => obj.fields.includes(column.field))) {
-                        this.taskFieldColumn.push(column);
-                    }
+        if (storeValidTab) {
+            storeValidTab.forEach((element: any) => {
+                const targetArray = element.type === "General" ? this.taskFieldColumn : this.customFieldColumn;
+                element.fields.forEach((field: any) => {
+                    targetArray.push(this.parent.getColumnByField(field, storeColumn));
+                });
+            });
+        } else {
+            storeColumn.forEach((column: { field: any }) => {
+                if (column.field.includes(this.parent.customColumns)) {
+                    this.customFieldColumn.push(column);
                 } else {
                     this.taskFieldColumn.push(column);
                 }
-            } else {
-                if ((this.isFromAddDialog || this.isFromEditDialog) && storeValidTab) {
-                    if (storeValidTab.some((obj: { fields: string }) => obj.fields.includes(column.field))) {
-                        this.customFieldColumn.push(column);
-                    }
-                } else {
-                    this.customFieldColumn.push(column);
-                }
-            }
-        });
+            });
+        }
     }
-
     private createFormObj(form: HTMLFormElement, rules: { [name: string]: { [rule: string]: Object } }): FormValidator {
         return new FormValidator(form, {
             rules: rules,
@@ -1234,11 +1121,9 @@ export class DialogEdit {
                 numeric.min = 0;
                 numeric.max = 100;
             }
-            if (taskSettings.work === column.field) {
-                numeric.change = (args: CObject): void => {
-                    this.validateScheduleFields(args, column, ganttObj);
-                };
-            }
+            numeric.change = (args: CObject): void => {
+                 this.validateScheduleFields(args, column, ganttObj);
+            };
             fieldsModel[column.field] = numeric;
             break;
         }
@@ -1387,30 +1272,41 @@ export class DialogEdit {
         let tempValue: string | Date | number;
         const taskField: TaskFieldsModel = this.parent.taskFields;
         if (col.editType === 'stringedit') {
-            const textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
-            tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as () => void)() :
-                !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function) (columnName, ganttObj.editModule.dialogModule.editedRecord, col) :   // eslint-disable-line
-                    this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
-            if (textBox.value !== tempValue.toString() && taskField.duration === columnName) {
-                textBox.value = tempValue as string;
-                textBox.dataBind();
-            } else if (taskField.startDate === columnName || taskField.endDate === columnName) {
-                textBox.value = taskField.startDate === columnName ? ganttProp.startDate.toString() : ganttProp.endDate.toString();
-                textBox.dataBind();
+            const element = dialog.querySelector('#' + ganttId + columnName);
+            if (element) {
+                const textBox = <TextBox>(<EJ2Instance>element).ej2_instances[0];
+                if (textBox) {
+                    tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as () => void)() :
+                        !isNullOrUndefined(col.valueAccessor) ? (col.valueAccessor as Function)(columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
+                            this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
+                    if (textBox.value !== tempValue.toString() && taskField.duration === columnName) {
+                        textBox.value = tempValue as string;
+                        textBox.dataBind();
+                    } else if (taskField.startDate === columnName || taskField.endDate === columnName) {
+                        textBox.value = taskField.startDate === columnName ? ganttProp.startDate.toString() : ganttProp.endDate.toString();
+                        textBox.dataBind();
+                    }
+                }
             }
         } else if (col.editType === 'datepickeredit' || col.editType === 'datetimepickeredit') {
-            const picker: DatePicker = col.editType === 'datepickeredit' ?
-                <DatePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0] :
-                <DateTimePicker>(<EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
-            tempValue = ganttProp[ganttField as string];
-            if (((isNullOrUndefined(picker.value)) && !isNullOrUndefined(tempValue)) ||
-                (isNullOrUndefined(tempValue) && !isNullOrUndefined(picker.value)) ||
-                (picker.value !== tempValue && !isNullOrUndefined(picker.value) && !isNullOrUndefined(tempValue)
-                    && picker.value.toString() !== tempValue.toString())) {
-                picker.value = tempValue as Date;
-                picker.dataBind();
+            const element = dialog.querySelector('#' + ganttId + columnName);
+            if (element) {
+                const picker = col.editType === 'datepickeredit' ?
+                    (<DatePicker>(<EJ2Instance>element).ej2_instances[0]) :
+                    (<DateTimePicker>(<EJ2Instance>element).ej2_instances[0]);
+                if (picker) {
+                    tempValue = ganttProp[ganttField as string];
+                    if (((isNullOrUndefined(picker.value)) && !isNullOrUndefined(tempValue)) ||
+                        (isNullOrUndefined(tempValue) && !isNullOrUndefined(picker.value)) ||
+                        (picker.value !== tempValue && !isNullOrUndefined(picker.value) && !isNullOrUndefined(tempValue)
+                            && picker.value.toString() !== tempValue.toString())) {
+                        picker.value = tempValue as Date;
+                        picker.dataBind();
+                    }
+                }
             }
-        } else if (col.editType === 'numericedit') {
+        }
+        else if (col.editType === 'numericedit') {
             const numericTextBox: NumericTextBox = <NumericTextBox>(
                 <EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
             tempValue = ganttProp[ganttField as string];
@@ -2755,7 +2651,12 @@ export class DialogEdit {
                     inputModel.checked = false;
                 }
             } else {
-                inputModel.value = ganttData[column.field];
+                if (!this.parent.taskFields[column.field] && column.editType == 'numericedit' && (ganttData[column.field] === "" || ganttData[column.field] === 0)) {
+                    inputModel.value = 0;
+                }
+                else {
+                    inputModel.value = ganttData[column.field];
+                }
             }
         }
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
@@ -3003,6 +2904,7 @@ export class DialogEdit {
             /**
              * If any update on edited task do it here
              */
+	    this.parent.editModule['editedRecord'] = this.rowData;
             this.parent.dataOperation.updateWidthLeft(this.rowData);
             const editArgs: ITaskbarEditedEventArgs = {
                 data: this.rowData,
@@ -3010,6 +2912,7 @@ export class DialogEdit {
             };
             this.parent.editModule.initiateUpdateAction(editArgs);
         } else {
+	    this.parent.editModule['editedRecord'] = this.addedRecord;
             if (this.parent.viewType === 'ResourceView') {
                 const newRecords: Object = extend({}, this.addedRecord, true);
                 if (newRecords[this.parent.taskFields.resourceInfo].length) {
@@ -3084,15 +2987,10 @@ export class DialogEdit {
                     controlObj.value = valueString;
                 }
                 const column: GanttColumnModel = ganttObj.columnByField[fieldName as string];
-                if (fieldName == this.parent.taskFields.duration) {
-                    if (parseInt(this.rowData[fieldName as string]) != parseInt(controlObj.value as string)) {
-                        this.disableUndo = true;
-                    }
-                }
-                else {
-                    if (this.rowData[fieldName as string] != controlObj.value) {
-                        this.disableUndo = true;
-                    }
+                if (fieldName === this.parent.taskFields.duration ?
+                    parseInt(this.rowData[fieldName as string]) !== parseInt(controlObj.value as string) :
+                    this.rowData[fieldName as string] !== controlObj.value) {
+                    this.disableUndo = true;
                 }
                 if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
                     let read: Function = column.edit.read as Function;

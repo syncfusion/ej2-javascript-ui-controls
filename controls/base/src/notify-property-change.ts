@@ -350,8 +350,9 @@ function complexArrayDefinedCallback(
         switch (dFunc) {
         case 'push':
             for (let i: number = 0; i < newValue.length; i++) {
-                Array.prototype[`${dFunc}`].apply(prop, [newValue[parseInt(i.toString(), 10)]]);
-                const model: Object = getArrayModel(keyString + (prop.length - 1), newValue[parseInt(i.toString(), 10)], !this.controlParent, dFunc);
+                const newValueParse: Object = newValue[parseInt(i.toString(), 10)];
+                Array.prototype[`${dFunc}`].apply(prop, [newValueParse]);
+                const model: Object = getArrayModel(keyString + (prop.length - 1), newValueParse, !this.controlParent, dFunc);
                 this.serverDataBind(model, newValue[parseInt(i.toString(), 10)], false, dFunc);
             }
             break;

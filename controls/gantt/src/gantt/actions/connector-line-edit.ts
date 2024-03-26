@@ -685,14 +685,15 @@ export class ConnectorLineEdit {
         } else if (args.validateMode.preserveLinkWithEditing) {
             let connectedTaskId:any;
             if (this.parent.UpdateOffsetOnTaskbarEdit) {
-                this.calculateOffset(ganttRecord);
                 let taskId:any = ganttRecord.ganttProperties.taskId;
-                ganttRecord.ganttProperties.predecessor.forEach(predecessor => {
-                    if (taskId == predecessor.from) {
-                        connectedTaskId = predecessor.to
-                        return
-                    }
-                });
+                if (ganttRecord.ganttProperties.predecessor) {
+                    ganttRecord.ganttProperties.predecessor.forEach(predecessor => {
+                        if (taskId == predecessor.from) {
+                            connectedTaskId = predecessor.to
+                            return
+                        }
+                    });
+                }
             }
             this.parent.editModule.updateEditedTask(args.editEventArgs);
             this.processPredecessors(connectedTaskId)

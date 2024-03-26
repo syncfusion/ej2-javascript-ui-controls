@@ -94,7 +94,7 @@ describe('RTE BASIC PROPERTIES - enableRtl - ', () => {
                 expect(item.classList.contains('e-rtl')).toBe(true);
                 item.click();
                 let dropDown: HTMLElement = document.getElementById(controlId + "_quick_FontColor-popup");
-                expect(dropDown.querySelector('.e-rte-fontcolor-colorpicker').classList.contains('e-rtl')).toBe(false);
+                expect(dropDown.querySelector('.e-rte-fontcolor-colorpicker').classList.contains('e-rtl')).toBe(true);
                 item.click();
                 done();
             });
@@ -104,7 +104,7 @@ describe('RTE BASIC PROPERTIES - enableRtl - ', () => {
                 expect(item.classList.contains('e-rtl')).toBe(true);
                 item.click();
                 let dropDown: HTMLElement = document.getElementById(controlId + "_quick_BackgroundColor-popup");
-                expect(dropDown.querySelector('.e-rte-backgroundcolor-colorpicker').classList.contains('e-rtl')).toBe(false);
+                expect(dropDown.querySelector('.e-rte-backgroundcolor-colorpicker').classList.contains('e-rtl')).toBe(true);
                 item.click();
                 done();
             });
@@ -322,7 +322,7 @@ describe('RTE BASIC PROPERTIES - enableRtl - ', () => {
                     expect(item.classList.contains('e-rtl')).toBe(true);
                     item.click();
                     let dropDown: HTMLElement = document.getElementById(controlId + "_quick_FontColor-popup");
-                    expect(dropDown.querySelector('.e-rte-fontcolor-colorpicker').classList.contains('e-rtl')).toBe(false);
+                    expect(dropDown.querySelector('.e-rte-fontcolor-colorpicker').classList.contains('e-rtl')).toBe(true);
                     item.click();
                     done();
                 }, 500);
@@ -338,7 +338,7 @@ describe('RTE BASIC PROPERTIES - enableRtl - ', () => {
                     expect(item.classList.contains('e-rtl')).toBe(true);
                     item.click();
                     let dropDown: HTMLElement = document.getElementById(controlId + "_quick_BackgroundColor-popup");
-                    expect(dropDown.querySelector('.e-rte-backgroundcolor-colorpicker').classList.contains('e-rtl')).toBe(false);
+                    expect(dropDown.querySelector('.e-rte-backgroundcolor-colorpicker').classList.contains('e-rtl')).toBe(true);
                     done();
                 }, 500);
             });

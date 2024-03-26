@@ -832,3 +832,7 @@ export const FREEZED_CELL: string = 'e-leftfreeze';
 export const PIVOT_CONTENT_LOADER: string = 'e-pivot-content-loader';
 /** @hidden */
 export const PIVOT_HIDE_LOADER: string = 'e-hide-loader';
+/** @hidden */
+export const COLLAPSIBLE: string = 'e-icon-collapsible';
+/** @hidden */
+export const EXPANDABLE: string = 'e-icon-expandable';

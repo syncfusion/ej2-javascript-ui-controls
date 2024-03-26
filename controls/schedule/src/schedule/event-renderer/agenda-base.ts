@@ -161,20 +161,33 @@ export class AgendaBase extends ViewBase {
         }
     }
 
-    public calculateResourceTableElement(tBody: Element, noOfDays: number, agendaDate: Date): void {
+    public calculateResourceTableElement(tBody: Element, noOfDays: number, agendaDate: Date, agendaEnd: Date = null): void {
         if (isNullOrUndefined(this.parent.resourceBase.lastResourceLevel)) {
             const level: TdData[] = this.getDateSlots(this.renderDates, this.parent.activeViewOptions.workDays);
             this.parent.resourceBase.generateResourceLevels(level);
         }
-        const agendaLastDate: Date = util.addDays(new Date(agendaDate.getTime()), noOfDays);
+        let agendaLastDate: Date = util.addDays(new Date(agendaDate.getTime()), noOfDays);
         const days: number = (this.parent.activeViewOptions.group.byDate || this.parent.currentView === 'MonthAgenda') ? noOfDays : 1;
         const resColl: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
         const resData: TdData[] = this.parent.resourceBase.lastResourceLevel;
-        const initialDate: Date = agendaDate;
+        const agendaStart: Date = agendaDate;
+        let initialDate: Date = agendaDate;
+        const showWeekend: boolean = this.parent.activeViewOptions.showWeekend;
         for (let i: number = 0; i < days; i++) {
             const lastLevelInfo: TdData[][] = []; const tempLastLevelInfo: TdData[] = []; let tempIndex: number = 0;
             let eventObj: AgendaSlotData; let dateObj: TdData;
-            const firstDate: Date = util.addDays(initialDate, i);
+            let firstDate: Date = util.addDays(initialDate, i);
+            if (this.parent.currentView === 'Agenda' && this.parent.activeViewOptions.group.byDate &&
+                this.parent.activeViewOptions.allowVirtualScrolling && !showWeekend && !this.isWorkDay(firstDate)) {
+                do {
+                    firstDate = util.addDays(firstDate, 1);
+                    if (firstDate >= agendaEnd) { break; }
+                } while (!this.isWorkDay(firstDate) ||
+                    this.parent.eventBase.filterEvents(firstDate, util.addDays(firstDate, 1)).length < 1);
+                if (firstDate >= agendaEnd) { break; }
+                initialDate = util.addDays(firstDate, -i);
+                agendaLastDate = util.addDays(firstDate, 1);
+            }
             const finalDate: Date = (this.parent.activeViewOptions.group.byDate || this.parent.currentView === 'MonthAgenda')
                 ? util.addDays(firstDate, 1) : agendaLastDate;
             const agendaCollection: Record<string, any>[] = this.parent.eventBase.filterEvents(firstDate, finalDate);
@@ -189,7 +202,9 @@ export class AgendaBase extends ViewBase {
                         for (let r: number = 0; r < noOfDays; r++) {
                             // eslint-disable-next-line max-len
                             const resDayCollection: Record<string, any>[] = this.parent.eventBase.filterEvents(agendaDate, util.addDays(agendaDate, 1), resDataCollection, undefined);
-                            if (resDayCollection.length > 0 || !this.parent.hideEmptyAgendaDays ||
+                            if (((showWeekend || !showWeekend && (this.parent.group.byDate ? this.isWorkDay(agendaDate) :
+                                this.isWorkDay(agendaDate, resData[parseInt(res.toString(), 10)].workDays)))
+                                && (resDayCollection.length > 0 || !this.parent.hideEmptyAgendaDays)) ||
                                 this.parent.currentView === 'MonthAgenda') {
                                 data.push(resDayCollection[0]);
                                 eventObj = {
@@ -215,16 +230,18 @@ export class AgendaBase extends ViewBase {
                             agendaDate = util.addDays(agendaDate, 1);
                             if (agendaDate.getTime() >= agendaLastDate.getTime() || this.parent.activeViewOptions.group.byDate
                                 || this.parent.currentView === 'MonthAgenda') {
-                                lastLevelInfo[lastLevelInfo.length - 1][1].cssClass = cls.AGENDA_DAY_BORDER_CLASS;
-                                const tempObj: TdData = {
-                                    rowSpan: data.length, type: 'resourceColumn', resource: resColl[parseInt((resColl.length - 1).toString(), 10)],
-                                    groupOrder: resData[parseInt(res.toString(), 10)].groupOrder.slice(0, -1),
-                                    resourceData: resData[parseInt(res.toString(), 10)].resourceData,
-                                    groupIndex: (lastLevelInfo.length - data.length), className: [cls.RESOURCE_NAME],
-                                    date: agendaDate
-                                };
-                                lastLevelInfo[parseInt((lastLevelInfo.length - data.length).toString(), 10)].push(tempObj);
-                                tempLastLevelInfo.push(<TdData>extend({}, tempObj, null, true));
+                                if (data.length > 0) {
+                                    lastLevelInfo[lastLevelInfo.length - 1][1].cssClass = cls.AGENDA_DAY_BORDER_CLASS;
+                                    const tempObj: TdData = {
+                                        rowSpan: data.length, type: 'resourceColumn', resource: resColl[parseInt((resColl.length - 1).toString(), 10)],
+                                        groupOrder: resData[parseInt(res.toString(), 10)].groupOrder.slice(0, -1),
+                                        resourceData: resData[parseInt(res.toString(), 10)].resourceData,
+                                        groupIndex: (lastLevelInfo.length - data.length), className: [cls.RESOURCE_NAME],
+                                        date: agendaDate
+                                    };
+                                    lastLevelInfo[parseInt((lastLevelInfo.length - data.length).toString(), 10)].push(tempObj);
+                                    tempLastLevelInfo.push(<TdData>extend({}, tempObj, null, true));
+                                }
                                 break;
                             }
                         }
@@ -258,9 +275,9 @@ export class AgendaBase extends ViewBase {
                 this.createResourceTableRow(lastLevelInfo, tBody);
             }
         }
-        const totalCollection: Record<string, any>[] = this.parent.eventBase.filterEvents(initialDate, agendaLastDate);
+        const totalCollection: Record<string, any>[] = this.parent.eventBase.filterEvents(agendaStart, agendaLastDate);
         if (totalCollection.length === 0 && !this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) {
-            this.renderEmptyContent(tBody, initialDate);
+            this.renderEmptyContent(tBody, agendaStart);
         }
     }
 

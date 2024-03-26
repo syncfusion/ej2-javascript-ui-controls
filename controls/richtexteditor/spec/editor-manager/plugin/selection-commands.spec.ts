@@ -743,7 +743,7 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         SelectionCommands.applyFormat(document, 'underline', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'italic', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'bold', rteObj.inputElement, 'P');
-        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span class="focusNode" style="background-color: rgb(255, 255, 0);">RTE Content</span></span></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span class="focusNode" style="background-color: rgb(255, 255, 0);">​</span></span></em><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span class="focusNode" style="background-color: rgb(255, 255, 0);">​</span></span></strong><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span class="focusNode" style="background-color: rgb(255, 255, 0);">​</span></span></p>`);
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span class="focusNode" style="background-color: rgb(255, 255, 0);">RTE Content</span></span></span></em></strong><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span class="focusNode" style="background-color: rgb(255, 255, 0);">​</span></span></p>`);
         done();
     });
 });
@@ -772,7 +772,7 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         SelectionCommands.applyFormat(document, 'italic', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'bold', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', 'rgb(246, 198, 206)');
-        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">RTE Content</span></span><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">​</span></em><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">​</span></strong><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">RTE Content</span></span></em></strong><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
         done();
     });
 });
@@ -802,7 +802,7 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         SelectionCommands.applyFormat(document, 'bold', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'fontcolor', rteObj.inputElement, 'P', 'rgb(83, 129, 53)');
         SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', 'rgb(246, 198, 206)');
-        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(255, 255, 0);">​<strong>​<em>​<span class="focusNode" style="text-decoration: underline;">RTE Content</span>​</em>​</strong>​</span></span><span style="color: rgb(83, 129, 53); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(255, 255, 0);">​<strong>​<em>​<span class="focusNode" style="text-decoration: underline;">RTE Content</span></em></strong></span></span><span style="color: rgb(83, 129, 53); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
         done();
     });
 });
@@ -829,7 +829,7 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 11, 11);
         SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', 'rgb(246, 198, 206)');
         SelectionCommands.applyFormat(document, 'fontcolor', rteObj.inputElement, 'P', 'rgb(83, 129, 53)');
-        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(255, 255, 0);">​<strong>​<em>​<span class="focusNode" style="text-decoration: underline;">RTE Content</span></em></strong></span><span style="background-color: rgb(246, 198, 206);"><strong><em><span class="focusNode" style="text-decoration: underline;">​</span></em></strong></span></span><span style="color: rgb(83, 129, 53); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);"><strong><em><span class="focusNode" style="text-decoration: underline;">​</span></em></strong></span></span></p>`);
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><span style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(255, 255, 0);">​<strong>​<em>​<span class="focusNode" style="text-decoration: underline;">RTE Content</span></em></strong></span></span><span style="color: rgb(83, 129, 53); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);"><strong><em><span class="focusNode" style="text-decoration: underline;">​</span></em></strong></span></span></p>`);
         done();
     });
 });

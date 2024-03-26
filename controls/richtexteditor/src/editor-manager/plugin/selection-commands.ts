@@ -288,11 +288,15 @@ export class SelectionCommands {
             && range.endOffset === (range.startContainer as Text).length)) {
             const nodeIndex: number[] = [];
             let cloneNode: Node = nodes[index as number];
+            const clonedElement:Node = cloneNode;
             do {
                 nodeIndex.push(domSelection.getIndex(cloneNode));
                 cloneNode = cloneNode.parentNode;
             } while (cloneNode && (cloneNode !== formatNode));
             if (nodes[index as number].nodeName !== 'BR') {
+                if(clonedElement.nodeName === '#text' && clonedElement.textContent.includes('\u200B')) {
+                    (clonedElement as Element).remove();
+                }
                 cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
                     nodeCutter.SplitNode(range, formatNode as HTMLElement, true) as HTMLElement
                     : nodeCutter.GetSpliceNode(range, formatNode as HTMLElement) as HTMLElement;

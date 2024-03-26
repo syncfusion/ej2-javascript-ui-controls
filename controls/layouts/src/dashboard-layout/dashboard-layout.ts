@@ -3269,6 +3269,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     if (Array.isArray(getValue(key, this)) && key === 'panels') {
                         // eslint-disable-next-line
                         this.mergePanels(<Panel[]>dataObj[key], <Panel[]>this[key]);
+                        (<any>this)[key as keyof DashboardLayout] = dataObj[key as keyof DashboardLayout];
                     }
                 }
             }

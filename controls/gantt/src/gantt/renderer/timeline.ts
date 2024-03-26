@@ -722,7 +722,7 @@ export class Timeline {
         if (this.parent.enableTimelineVirtualization && (this.wholeTimelineWidth > this.parent.element.offsetWidth * 3)) {
             for (let count: number = 0; count < loopCount; count++) {
                 table = createElement('table', { className: cls.timelineHeaderTableContainer, styles: 'display: block;' });
-                table.setAttribute('role', 'presentation');
+                table.setAttribute('role', 'none');
                 thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
                 tr = createElement('tr', { innerHTML: this.createTimelineTemplate(tier) });
                 td = createElement('td');
@@ -752,7 +752,7 @@ export class Timeline {
         else {
             for (let count: number = 0; count < loopCount; count++) {
                 table = createElement('table', { className: cls.timelineHeaderTableContainer, styles: 'display: block;' });
-                table.setAttribute('role', 'presentation');
+                table.setAttribute('role', 'none');
                 thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
                 tr = createElement('tr', { innerHTML: this.createTimelineTemplate(tier) });
                 td = createElement('td');
@@ -1462,7 +1462,7 @@ export class Timeline {
                 startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
                 endDate = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0);
             } else if (tierMode === 'Week') {
-                const dayIndex: number = this.parent.timelineModule.customTimelineSettings.weekStartDay;
+                const dayIndex: number = !isNullOrUndefined(this.customTimelineSettings.weekStartDay) ? this.parent.timelineModule.customTimelineSettings.weekStartDay : 0;
                 const roundOffStartDate: number = startDate.getDay() < dayIndex ?
                     (startDate.getDate()) - (7 - dayIndex + startDate.getDay()) :
                     (startDate.getDate()) - startDate.getDay() + dayIndex;
@@ -1634,7 +1634,7 @@ export class Timeline {
                 } else {
                     minStartDate = this.timelineStartDate;
                 }
-                if (!isNullOrUndefined(maxEndLeft) && (maxEndLeft >= (this.totalTimelineWidth - this.bottomTierCellWidth) ||
+                if (!isNullOrUndefined(maxEndLeft) && (maxEndLeft >= ((this.parent.enableTimelineVirtualization ? this.wholeTimelineWidth : this.totalTimelineWidth) - this.bottomTierCellWidth) ||
                     maxEndLeft >= validEndLeft)) {
                     isChanged = isChanged === 'prevTimeSpan' ? 'both' : 'nextTimeSpan';
                     maxEndDate = maxEndDate < this.timelineEndDate ? this.timelineEndDate : maxEndDate;

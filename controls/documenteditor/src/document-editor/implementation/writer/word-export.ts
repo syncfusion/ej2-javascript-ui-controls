@@ -4664,6 +4664,11 @@ export class WordExport {
         //     }
         //     SerializeDocxProps(tempDocxProps, 'tblStyleRowBandSize');
         //     SerializeDocxProps(tempDocxProps, 'tblStyleColBandSize');  
+        if (!isNullOrUndefined(table[tableFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]])) {
+            writer.writeStartElement(undefined, "tblStyle", this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, table[tableFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]]);
+            writer.writeEndElement();
+        }
         this.serializeTablePositioning(writer, table);
         this.serializeTableWidth(writer, table);
         this.serializeTableAlignment(writer, table[tableFormatProperty[this.keywordIndex]]);
@@ -6148,7 +6153,7 @@ export class WordExport {
         for (let i: number = 0; i < this.mStyles.length; i++) {
             let style: any = this.mStyles[i];
             writer.writeStartElement(undefined, 'style', this.wNamespace);
-            let type: string = style[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Paragraph') ? 'paragraph' : 'character';
+            let type: string = this.getStyleType(style[typeProperty[this.keywordIndex]]);
             writer.writeAttributeString('w', 'type', this.wNamespace, type);
             writer.writeAttributeString('w', 'styleId', this.wNamespace, style[nameProperty[this.keywordIndex]]);
             //name
@@ -6185,7 +6190,9 @@ export class WordExport {
                 writer.writeEndElement();
             }
             // let value = (style.characterFormat as WCharacterFormat).newgetCharacterFormat();
-            this.serializeCharacterFormat(writer, style[characterFormatProperty[this.keywordIndex]]);
+            if (style[typeProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 2 : 'Table')) {
+                this.serializeCharacterFormat(writer, style[characterFormatProperty[this.keywordIndex]]);
+            }
             writer.writeEndElement(); //end of Style
         }
     }
@@ -6333,6 +6340,18 @@ export class WordExport {
             }
         }
         return color;
+    }
+    private getStyleType(styleType: any): string {
+        switch (styleType) {
+            case 'Character':
+            case 1:
+                return 'character';
+            case 'Table':
+            case 2:
+                return 'table';
+            default:
+                return 'paragraph';
+        }
     }
     // Get the underline style as string
     private getUnderlineStyle(underlineStyle: number | string): string {

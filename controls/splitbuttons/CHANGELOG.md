@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
-## 25.1.35 (2024-03-15)
+## 25.1.37 (2024-03-26)
+
+### DropDownButton
+
+#### Breaking Changes
+
+- Now, the default value of [`enableHtmlSanitizer`](https://helpej2.syncfusion.com/documentation/api/drop-down-button/#enablehtmlsanitizer) property is true to prevent the XSS attacks in the DropDownButton component.
+
+### ProgressButton
+
+#### Breaking Changes
+
+- Now, the default value of [`enableHtmlSanitizer`](https://helpej2.syncfusion.com/documentation/api/progress-button/#enablehtmlsanitizer) property is true to prevent the XSS attacks in the ProgressButton component.
+
+### SplitButton
+
+#### Breaking Changes
+
+- Now, the default value of [`enableHtmlSanitizer`](https://helpej2.syncfusion.com/documentation/api/split-button/#enablehtmlsanitizer) property is true to prevent the XSS attacks in the SplitButton component.
+
+## 24.2.7 (2024-02-20)
 
 ### ProgressButton
 

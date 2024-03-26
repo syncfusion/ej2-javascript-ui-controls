@@ -244,7 +244,9 @@ export class Render {
         this.parent['args'] = args;
         const columnModel: Column[] = getValue('columnModel', this.parent);
         const treeColumn: Column = columnModel[this.parent.treeColumnIndex];
-        if ((isNullOrUndefined(this.parent.rowTemplate) && !((<{ isReact?: boolean }>this.parent).isReact))) {
+        if ((isNullOrUndefined(this.parent.rowTemplate) && !((<{ isReact?: boolean }>this.parent).isReact))
+            || (((<{ isReact?: boolean }>this.parent).isReact) &&
+                !args.column['template'])) {
             this.parent.trigger(events.queryCellInfo, args);
         } else if ((((<{ isReact?: boolean }>this.parent).isReact) &&
             treeColumn.field !== args.column.field)) {

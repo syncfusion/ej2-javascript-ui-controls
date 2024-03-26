@@ -894,7 +894,11 @@ export type StyleType =
     /**
      * Character style.
      */
-    'Character';
+    'Character' |
+    /**
+     * Table style.
+     */
+    'Table';
 
 /**
  * Specifies table row placement.

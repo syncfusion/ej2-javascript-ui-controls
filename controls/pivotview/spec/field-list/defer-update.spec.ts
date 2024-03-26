@@ -32,6 +32,16 @@ describe('Pivot Field List Rendering - Defer Update', () => {
         }
     });
     describe('Check pivot button drag and drop Actions', () => {
+        let down: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        let up: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
         let fieldListObj: PivotFieldList;
         let pivotGridObj: PivotView;
         let pivotCommon: PivotCommon;
@@ -176,8 +186,9 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
-            util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-            expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
+            closest(checkEle[0], 'li').dispatchEvent(down);
+            closest(checkEle[0], 'li').dispatchEvent(up);
+            expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
         });
         it('Cancel button', (done: Function) => {
             document.getElementById('PivotFieldList_DeferUpdateButton2').click();
@@ -191,15 +202,16 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 expect(checkEle.length).toBeGreaterThan(0);
-                util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
+                closest(checkEle[0], 'li').dispatchEvent(down);
+                closest(checkEle[0], 'li').dispatchEvent(up);
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
                 done();
             });
         });
         it('Apply button', (done: Function) => {
             setTimeout(() => {
                 document.getElementById('PivotFieldList_DeferUpdateButton1').click();
-                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
                 done();
             });
         });
@@ -208,7 +220,8 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 expect(checkEle.length).toBeGreaterThan(0);
-                util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                closest(checkEle[0], 'li').dispatchEvent(down);
+                closest(checkEle[0], 'li').dispatchEvent(up);
                 expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
                 done();
             });
@@ -216,7 +229,7 @@ describe('Pivot Field List Rendering - Defer Update', () => {
         it('Cancel button', (done: Function) => {
             document.getElementById('PivotFieldList_DeferUpdateButton2').click();
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
                 done();
             });
         });
@@ -224,7 +237,8 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
-            util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+            closest(checkEle[0], 'li').dispatchEvent(down);
+            closest(checkEle[0], 'li').dispatchEvent(up);
             setTimeout(() => {
                 expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
                 done();
@@ -271,7 +285,8 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
             expect(allNode.classList.contains('e-small')).toBe(false);
-            util.checkTreeNode(treeObj, closest(allNode, 'li'));
+            closest(allNode, 'li').dispatchEvent(down);
+            closest(allNode, 'li').dispatchEvent(up);
             let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
             expect(checkEle.length).toEqual(2);
             (fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn') as HTMLElement).click();
@@ -309,7 +324,8 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
             expect(allNode.classList.contains('e-small')).toBe(false);
-            util.checkTreeNode(treeObj, closest(allNode, 'li'));
+            closest(allNode, 'li').dispatchEvent(down);
+            closest(allNode, 'li').dispatchEvent(up);
             let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
             expect(checkEle.length).toEqual(2);
             expect(fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);

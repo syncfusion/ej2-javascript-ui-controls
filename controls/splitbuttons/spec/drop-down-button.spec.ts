@@ -112,7 +112,7 @@ describe('DropDownButton', () => {
         });
 
         it('Enable Html Sanitizer', () => {
-            drpButton = new DropDownButton({ items: [{ text: 'cut<style>body{background:rgb(0, 0, 255)}</style>' }, { text: 'copy' }, { text: 'paste' }], enableHtmlSanitizer: true });
+            drpButton = new DropDownButton({ items: [{ text: 'cut<style>body{background:rgb(0, 0, 255)}</style>' }, { text: 'copy' }, { text: 'paste' }] });
             drpButton.appendTo('#drp-button');
             drpButton.toggle();
             const htmlele: Element = document.body;
@@ -121,7 +121,7 @@ describe('DropDownButton', () => {
         });
 
         it('Enable Html Sanitizer disabled', () => {
-            drpButton = new DropDownButton({ items: [{ text: 'cut<style>body{background:rgb(0, 0, 255)}</style>' }, { text: 'copy' }, { text: 'paste' }] });
+            drpButton = new DropDownButton({ items: [{ text: 'cut<style>body{background:rgb(0, 0, 255)}</style>' }, { text: 'copy' }, { text: 'paste' }], enableHtmlSanitizer: false });
             drpButton.appendTo('#drp-button');
             drpButton.toggle();
             const htmlele: Element = document.body;

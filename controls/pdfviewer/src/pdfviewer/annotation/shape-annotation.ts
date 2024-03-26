@@ -245,6 +245,9 @@ export class ShapeAnnotation {
                             annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                             // eslint-disable-next-line max-len
                             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
+                            if (annotation.IsLocked) {
+                                annotation.AnnotationSettings.isLock = annotation.IsLocked;
+                            }
                             // eslint-disable-next-line max-len
                             annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                             let left: number = annotation.Bounds.X ? annotation.Bounds.X : annotation.Bounds.x;
@@ -311,6 +314,9 @@ export class ShapeAnnotation {
                 else
                     this.pdfViewer.annotationModule.isFormFieldShape = false;
                 this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
+                if (shapeAnnotations) {
+                    shapeAnnotations.customData = annotationObject.customData;
+                }
                 this.pdfViewer.annotationModule.triggerAnnotationAdd(shapeAnnotations);
             }
         }
@@ -339,6 +345,7 @@ export class ShapeAnnotation {
         this.pdfViewerBase.disableTextSelectionMode();
         let author: string = 'Guest';
         let subject: string = "";
+        let customData: object;
         switch (type) {
         case 'Line':
             this.currentAnnotationMode = 'Line';
@@ -347,13 +354,14 @@ export class ShapeAnnotation {
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.lineSettings.author ? this.pdfViewer.lineSettings.author : 'Guest';
             subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.lineSettings.subject ? this.pdfViewer.lineSettings.subject : 'Line';
+            customData = !isNullOrUndefined(this.pdfViewer.annotationSettings.customData) ? this.pdfViewer.annotationSettings.customData : this.pdfViewer.lineSettings.customData ? this.pdfViewer.lineSettings.customData : null;
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: this.setShapeType('Line'), fillColor: this.lineFillColor, notes: '', strokeColor: this.lineStrokeColor, opacity: this.lineOpacity,
                 thickness: this.lineThickness, modifiedDate: modifiedDateLine, borderDashArray: this.lineDashArray.toString(),
                 // eslint-disable-next-line max-len
                 sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.lineStartHead.toString()), taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.lineEndHead.toString()),
-                author: author, subject: subject, lineHeadStart: this.lineStartHead, lineHeadEnd: this.lineEndHead, isCommentLock: false
+                author: author, subject: subject, lineHeadStart: this.lineStartHead, lineHeadEnd: this.lineEndHead, isCommentLock: false, customData: customData
             };
             this.pdfViewer.tool = 'Line';
             break;
@@ -363,6 +371,7 @@ export class ShapeAnnotation {
             const modifiedDateArrow: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.arrowSettings.author ? this.pdfViewer.arrowSettings.author : 'Guest';
             subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.arrowSettings.subject ? this.pdfViewer.arrowSettings.subject : 'Arrow';
+            customData = !isNullOrUndefined(this.pdfViewer.annotationSettings.customData) ? this.pdfViewer.annotationSettings.customData : this.pdfViewer.arrowSettings.customData ? this.pdfViewer.arrowSettings.customData : null;
             this.pdfViewer.drawingObject = {
                 shapeAnnotationType: this.setShapeType('Arrow'), opacity: this.arrowOpacity,
                 // eslint-disable-next-line max-len
@@ -372,7 +381,7 @@ export class ShapeAnnotation {
                 fillColor: this.arrowFillColor, strokeColor: this.arrowStrokeColor, notes: '', thickness: this.arrowThickness,
                 borderDashArray: this.arrowDashArray.toString(), author: author, subject: subject,
                 // eslint-disable-next-line max-len
-                modifiedDate: modifiedDateArrow, lineHeadStart: this.arrowStartHead, lineHeadEnd: this.arrowEndHead, isCommentLock: false
+                modifiedDate: modifiedDateArrow, lineHeadStart: this.arrowStartHead, lineHeadEnd: this.arrowEndHead, isCommentLock: false, customData: customData
             };
             this.pdfViewer.tool = 'Line';
             break;
@@ -383,11 +392,12 @@ export class ShapeAnnotation {
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.rectangleSettings.author ? this.pdfViewer.rectangleSettings.author : 'Guest';
             subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.rectangleSettings.subject ? this.pdfViewer.rectangleSettings.subject : 'Rectangle';
+            customData = !isNullOrUndefined(this.pdfViewer.annotationSettings.customData) ? this.pdfViewer.annotationSettings.customData : this.pdfViewer.rectangleSettings.customData ? this.pdfViewer.rectangleSettings.customData : null;
             this.pdfViewer.drawingObject = {
                 shapeAnnotationType: this.setShapeType('Rectangle'), strokeColor: this.rectangleStrokeColor,
                 fillColor: this.rectangleFillColor, opacity: this.rectangleOpacity, notes: '',
                 thickness: this.rectangleThickness, borderDashArray: '0', modifiedDate: modifiedDateRect,
-                author: author, subject: subject, isCommentLock: false
+                author: author, subject: subject, isCommentLock: false, customData: customData
             };
             this.pdfViewer.tool = 'DrawTool';
             break;
@@ -398,11 +408,12 @@ export class ShapeAnnotation {
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.circleSettings.author ? this.pdfViewer.circleSettings.author : 'Guest';
             subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.circleSettings.subject ? this.pdfViewer.circleSettings.subject : 'Circle';
+            customData = !isNullOrUndefined(this.pdfViewer.annotationSettings.customData) ? this.pdfViewer.annotationSettings.customData : this.pdfViewer.circleSettings.customData ? this.pdfViewer.circleSettings.customData : null;
             this.pdfViewer.drawingObject = {
                 shapeAnnotationType: this.setShapeType('Circle'), strokeColor: this.circleStrokeColor,
                 fillColor: this.circleFillColor, opacity: this.circleOpacity, notes: '',
                 thickness: this.circleThickness, borderDashArray: '0', modifiedDate: modifiedDateCir,
-                author: author, subject: subject, isCommentLock: false
+                author: author, subject: subject, isCommentLock: false, customData: customData
             };
             this.pdfViewer.tool = 'DrawTool';
             break;
@@ -413,11 +424,12 @@ export class ShapeAnnotation {
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.polygonSettings.author ? this.pdfViewer.polygonSettings.author : 'Guest';
             subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.polygonSettings.subject ? this.pdfViewer.polygonSettings.subject : 'Polygon';
+            customData = !isNullOrUndefined(this.pdfViewer.annotationSettings.customData) ? this.pdfViewer.annotationSettings.customData : this.pdfViewer.polygonSettings.customData ? this.pdfViewer.polygonSettings.customData : null;
             this.pdfViewer.drawingObject = {
                 strokeColor: this.polygonStrokeColor, fillColor: this.polygonFillColor,
                 opacity: this.polygonOpacity, thickness: this.polygonThickness, borderDashArray: '0',
                 notes: '', author: author, subject: subject,
-                modifiedDate: modifiedDatePolygon, borderStyle: '', isCommentLock: false
+                modifiedDate: modifiedDatePolygon, borderStyle: '', isCommentLock: false, customData: customData
             };
             this.pdfViewer.tool = 'Polygon';
             break;

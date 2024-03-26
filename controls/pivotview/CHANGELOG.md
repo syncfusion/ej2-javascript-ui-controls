@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I562279`,`#I565475`,`#I566747` - The pivot table will now be properly displayed after engine export.
+- `#I566095` - The filter text will now be properly displayed in the OLAP Pivot Table's filter field button.
+
 ## 25.1.35 (2024-03-15)
 
 ### PivotTable

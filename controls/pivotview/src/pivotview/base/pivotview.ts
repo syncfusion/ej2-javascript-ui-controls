@@ -4123,7 +4123,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.getEngine('onPageChange', null, null, null, null, null, null);
             } else {
                 this.engineModule.generateGridData(
-                    this.dataSourceSettings, true, this.engineModule.headerCollection);
+                    this.dataSourceSettings, true, false, this.engineModule.headerCollection);
             }
             this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
             this.enginePopulatedEventMethod('updateDataSource');
@@ -6061,7 +6061,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                 } else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
                             (pivot.dataSourceSettings.dataSource && (pivot.dataSourceSettings.dataSource as IDataSet[]).length > 0
-                            || this.engineModule.data.length > 0)) {
+                            || (this.engineModule.data && this.engineModule.data.length > 0))) {
                     if (pivot.dataType === 'pivot') {
                         this.hideWaitingPopup();
                         pivot.engineModule.data = pivot.dataSourceSettings.dataSource;

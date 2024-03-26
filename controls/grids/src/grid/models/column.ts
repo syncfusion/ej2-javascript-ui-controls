@@ -633,7 +633,15 @@ export class Column {
         //Angular two way binding
         const keys: string[] = Object.keys(column);
         for (let i: number = 0; i < keys.length; i++) {
-            this[keys[parseInt(i.toString(), 10)]] = column[keys[parseInt(i.toString(), 10)]];
+            if (keys[parseInt(i.toString(), 10)] === 'columns') {
+                const cols: Column[] = column[keys[parseInt(i.toString(), 10)]];
+                for (let j: number = 0; j < cols.length; j++) {
+                    ((this.columns as Column[]).find((col: Column) => { return col.field === cols[parseInt(j.toString(), 10)]
+                        .field; }) as Column).setProperties(cols[parseInt(j.toString(), 10)]);
+                }
+            } else {
+                this[keys[parseInt(i.toString(), 10)]] = column[keys[parseInt(i.toString(), 10)]];
+            }
             //Refresh the react columnTemplates on state change
             if (this.parent && this.parent.isReact) {
                 if (keys[parseInt(i.toString(), 10)] === 'template') {

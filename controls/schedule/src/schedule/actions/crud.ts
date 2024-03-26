@@ -56,6 +56,7 @@ export class Crud {
     private dataManagerSuccess(e: ReturnType): void {
         if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
         this.parent.trigger(events.dataBinding, e, (args: ReturnType) => {
+            if (args.cancel) { return; }
             const resultData: Record<string, any>[] = extend([], args.result, null, true) as Record<string, any>[];
             this.parent.eventsData = resultData.filter((data: Record<string, any>) => !data[this.parent.eventFields.isBlock]);
             this.parent.blockData = resultData.filter((data: Record<string, any>) => data[this.parent.eventFields.isBlock]);

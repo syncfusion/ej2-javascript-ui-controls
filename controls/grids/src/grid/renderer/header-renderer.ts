@@ -727,7 +727,8 @@ export class HeaderRender implements IRenderer {
                 btnObj.appendTo(button);
                 button.onclick = (e: MouseEvent) => {
                     if ((e.target as HTMLElement).classList.contains('e-ressort-btn')
-                        || (e.target as HTMLElement).classList.contains('e-ressort-icon')) {
+                        || (e.target as HTMLElement).classList.contains('e-ressort-icon') ||
+                        (e.target as HTMLElement).querySelector('.e-ressort-icon')) {
                         this.parent.showResponsiveCustomSort();
                     } else {
                         this.parent.showResponsiveCustomFilter();

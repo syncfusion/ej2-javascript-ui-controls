@@ -890,7 +890,7 @@
   }
 
   .e-ribbon-group-overflow-ddb {
-    &.e-dropdown-popup {
+    &.e-dropdown-popup:has(.e-ribbon-overflow-target) {
       min-width: 190px;
     }
     .e-ribbon-of-tab:not(.e-ribbon-active) {

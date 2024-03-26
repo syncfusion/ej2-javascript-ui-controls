@@ -4746,7 +4746,7 @@ export abstract class ElementBox {
      * @private
      */
     public contentControlProperties: ContentControlProperties;
-
+    
     /**
      * @private
      */

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I565340` - The issue with "Script error thrown when attempting to reopen a base64 URL using a custom toolbar in mobile mode" has been resolved.
+
 ## 25.1.35 (2024-03-15)
 
 ### Image Editor

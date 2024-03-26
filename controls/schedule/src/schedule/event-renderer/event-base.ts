@@ -1252,11 +1252,13 @@ export class EventBase {
     public createEventWrapper(type: string = '',  index: number = 0): HTMLElement {
         const tr: HTMLElement = createElement('tr');
         const levels: TdData[] = this.parent.activeView.colLevels.slice(-1)[0];
+        const className: string = (this.parent as any).isReact && this.parent.activeViewOptions.eventTemplate ?
+            ' ' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS : '';
         for (let i: number = 0, len: number = levels.length; i < len; i++) {
             const col: TdData = levels[parseInt(i.toString(), 10)];
             const appointmentWrap: HTMLElement = createElement('td', {
-                className: (type === 'allDay') ? cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS : (type === 'timeIndicator') ?
-                    cls.TIMELINE_WRAPPER_CLASS : cls.DAY_WRAPPER_CLASS, attrs: { 'data-date': col.date.getTime().toString() }
+                className: (type === 'allDay') ? cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS + className : (type === 'timeIndicator') ?
+                    cls.TIMELINE_WRAPPER_CLASS : cls.DAY_WRAPPER_CLASS + className, attrs: { 'data-date': col.date.getTime().toString() }
             });
             if (!isNullOrUndefined(col.groupIndex)) {
                 appointmentWrap.setAttribute('data-group-index', col.groupIndex.toString());

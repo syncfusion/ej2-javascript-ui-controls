@@ -386,7 +386,7 @@ export class RowDD {
                                 const fromRecord: IGanttData = this.parent.getRecordByID(droppedRecord.ganttProperties.predecessor[count as number].from);
                                 const toRecord: IGanttData = this.parent.getRecordByID(droppedRecord.ganttProperties.predecessor[count as number].to)
                                 const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
-                                if (droppedRecord.ganttProperties.predecessor && !validPredecessor) {
+                                if (droppedRecord.ganttProperties.predecessor && (!validPredecessor || !this.parent.allowParentDependency)) {
                                     this.parent.editModule.removePredecessorOnDelete(droppedRecord);
                                     droppedRecord.ganttProperties.predecessor.splice(0, 1);
                                     if (droppedRecord.ganttProperties.predecessorsName) {
@@ -733,6 +733,7 @@ export class RowDD {
                 this.parent.setRecordValue('level' , this.draggedRecord.level , this.draggedRecord);
                 this.updateChildRecordLevel(draggedRecord, level);
             }
+            droppedRecord.expanded = true;
         }
     }
     private deleteDragRow(): void {

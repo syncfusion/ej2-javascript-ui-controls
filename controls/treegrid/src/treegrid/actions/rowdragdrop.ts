@@ -1,6 +1,6 @@
 import { TreeGrid } from '../base/treegrid';
 import { Grid, RowDD as GridDragDrop, RowDropEventArgs, parentsUntil } from '@syncfusion/ej2-grids';
-import { EJ2Intance, RowDragEventArgs, getObject, Scroll } from '@syncfusion/ej2-grids';
+import { EJ2Intance, getObject, Scroll } from '@syncfusion/ej2-grids';
 import { closest, isNullOrUndefined, classList, setValue, extend, getValue, removeClass, addClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -8,6 +8,7 @@ import * as events from '../base/constant';
 import { editAction } from './crud-actions';
 import { getParentData, findChildrenRecords, isRemoteData, isOffline, isCountRequired } from '../utils';
 import { TreeActionEventArgs } from '../models';
+import { RowDragEventArgs } from '../base';
 
 /**
  * TreeGrid RowDragAndDrop module

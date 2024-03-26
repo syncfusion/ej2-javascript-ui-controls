@@ -285,7 +285,6 @@ export class CollaborativeEditingHandler {
         let currentEditMode: boolean = this.documentEditor.commentReviewPane.commentPane.isEditMode;
         let currenteditorHistory = this.documentEditor.editorHistoryModule.lastOperation;
         let currentTextArea: HTMLTextAreaElement;
-        let isFieldOperation: boolean = false;
         if (!isNullOrUndefined(this.documentEditor.commentReviewPane.commentPane.currentEditingComment)) {
             currentTextArea = this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea as HTMLTextAreaElement;
         }
@@ -297,7 +296,7 @@ export class CollaborativeEditingHandler {
                 this.documentEditor.currentUser = markerData.author;
             }
             if (!isNullOrUndefined(markerData) && !isNullOrUndefined(markerData.isSkipTracking) && markerData.isSkipTracking && this.documentEditor.enableTrackChanges) {
-                this.documentEditor.editorModule.isSkipOperationsBuild = true;
+                this.documentEditor.skipSettingsOps  = true;
                 this.documentEditor.enableTrackChanges = false;
             }
             if (action.operations[i].skipOperation || (!isNullOrUndefined(action.operations[i].markerData) && action.operations[i].markerData.skipOperation)) {
@@ -505,7 +504,7 @@ export class CollaborativeEditingHandler {
                         this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [element]);
                         this.documentEditor.editorModule.fireContentChange();
                     } else if (markerData.type && markerData.type === 'Field') {
-                        isFieldOperation = true;
+                        this.documentEditor.editor.isFieldOperation = true;
                         let type: number = op2.text === CONTROL_CHARACTERS.Marker_Start ? 0 : op2.text === CONTROL_CHARACTERS.Marker_End ? 1 : op2.text === CONTROL_CHARACTERS.Field_Separator ? 2 : undefined;
                         if (!isNullOrUndefined(type) && isNullOrUndefined(markerData.checkBoxValue)) {
                             var field = new FieldElementBox(type);
@@ -735,7 +734,7 @@ export class CollaborativeEditingHandler {
             }
             this.documentEditor.editorModule.revisionData = [];
             if(this.documentEditor.enableTrackChanges != trackingCurrentValue) {
-                this.documentEditor.editorModule.isSkipOperationsBuild = true;
+                this.documentEditor.skipSettingsOps  = true;
                 this.documentEditor.enableTrackChanges = trackingCurrentValue;
             }
             this.documentEditor.currentUser = currentUser;
@@ -761,9 +760,9 @@ export class CollaborativeEditingHandler {
                 this.documentEditor.optionsPaneModule.searchIconClickInternal();
             }
         }
-        if (isFieldOperation) {
+        if (this.documentEditor.editor.isFieldOperation) {
             this.documentEditor.editorModule.layoutWholeDocument();
-            isFieldOperation = false;
+            this.documentEditor.editor.isFieldOperation = false;
         }
         if (!isNullOrUndefined(this.rowWidget)) {
             let ownerTable: TableWidget = this.rowWidget.ownerTable.combineWidget(this.documentEditor.viewer) as TableWidget;
@@ -1465,8 +1464,10 @@ export class CollaborativeEditingHandler {
                 let data: ActionInfo = dataObject[i]
                 if (data.connectionId === this.connectionId) {
                     this.acknowledgementReceived();
+                    this.logMessage(this.isSyncServerChanges ? 'SignalR Server sync' + data.version : 'SignalR Same user sync:' + data.version);
                 } else {
                     this.handleRemoteOperation(data);
+                    this.logMessage('Received: ' + JSON.stringify(JSON.stringify(data)));
                 }
                 this.updateVersion(data.version);
                 this.logMessage('Server sync ack:' + data.version);

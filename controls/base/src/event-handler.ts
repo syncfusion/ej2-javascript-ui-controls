@@ -117,7 +117,8 @@ export class EventHandler {
         // eslint-disable-next-line
         copyData = extend([], copyData, eventData) as EventOptions[];
         for (let i: number = 0; i < copyData.length; i++) {
-            element.removeEventListener(<string>copyData[parseInt(i.toString(), 10)].name, <EventListener>copyData[parseInt(i.toString(), 10)].debounce);
+            const parseValue: EventOptions = copyData[parseInt(i.toString(), 10)];
+            element.removeEventListener(<string>parseValue.name, <EventListener>parseValue.debounce);
             eventData.shift();
         }
     }

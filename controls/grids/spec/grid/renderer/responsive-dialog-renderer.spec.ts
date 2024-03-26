@@ -920,4 +920,38 @@ describe('Adaptive renderer', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-873156 - If Sort option is clicked on the mobile device, Filter Pop up is being Opened', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    enableAdaptiveUI: true,
+                    rowRenderingMode: 'Vertical',
+                    allowFiltering: true,
+                    allowSorting: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Excel' },
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ]
+                }, done);
+        });
+
+        it('Ensuring the sorting popup', () => {
+            (document.getElementsByClassName('e-tbar-btn')[1]as HTMLElement).click();
+            expect(document.getElementsByClassName('e-ressortdiv').length).toBe(1);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -2,44 +2,6 @@
 
 ## [Unreleased]
 
-## 24.2.7 (2024-02-20)
-
-### Common
-
-#### Bug Fixes
-
-- `#I542405` - The issue with "component events remain after being destroyed through the template in the heap memory" has been resolved.
-
-## 24.2.5 (2024-02-13)
-
-### Common
-
-#### Bug Fixes
-
-- `#I495294` - The issue with content sanitization in the tooltip component has been resolved.
-
-## 24.2.3 (2024-01-31)
-
-### Common
-
-#### Bug Fixes
-
-- `#I547507` - The issue with "rendering the new line in the html template string" has been resolved.
-
-### Common
-
-#### Bug Fixes
-
-- `#I541838` - Resolved issue with time picker designator "pm" is automatically flips to "am".
-
-## 24.1.46 (2024-01-17)
-
-### Common
-
-#### Bug Fixes
-
-- `#I531468` - The issue with "rendering the html template string" has been resolved.
-
 ## 23.2.6 (2023-11-28)
 
 ### Common

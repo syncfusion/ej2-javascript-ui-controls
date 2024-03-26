@@ -1,0 +1,31 @@
+@include export-module('timeline-theme') {
+  .e-timeline {
+    .e-dot {
+      background-color: $timeline-dot-border-color;
+      border-color: $timeline-dot-border-color;
+      color: $timeline-dot-color;
+      outline-color: $timeline-dot-background-color;
+    }
+
+    &.e-outline .e-dot {
+      background-color: $timeline-dot-background-color;
+    }
+
+    .e-timeline-item.e-connector::after {
+      border-color: $timeline-dot-border-color;
+    }
+
+    .e-content {
+      color: $timeline-content-font-color;
+    }
+
+    .e-opposite-content {
+      color: $timeline-opposite-content-font-color;
+    }
+
+    .e-item-disabled .e-content,
+    .e-item-disabled .e-opposite-content {
+      color: $timeline-item-disabled-color;
+    }
+  }
+}

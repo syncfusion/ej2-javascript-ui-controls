@@ -126,18 +126,20 @@ export function getTaskData(
  */
 export function updateDates(record: IGanttData, parent: Gantt): void {
     // let startDate: Date = (record as IGanttData).taskData[parent.taskFields.startDate];
-    (record as IGanttData).taskData[parent.taskFields.startDate] = parent.dateValidationModule.remove(
-        (record as IGanttData).ganttProperties.startDate, parent.timezone);
-    if (parent.taskFields.endDate != null) {
-        (record as IGanttData).taskData[parent.taskFields.endDate] = parent.dateValidationModule.remove(
-            (record as IGanttData).ganttProperties.endDate, parent.timezone);
-    }
-    if (parent.taskFields.baselineEndDate || parent.taskFields.baselineStartDate) {
-        (record as IGanttData).taskData[parent.taskFields.baselineStartDate] = parent.dateValidationModule.remove(
-            (record as IGanttData).ganttProperties.baselineStartDate, parent.timezone);
+    if (record && !isNullOrUndefined((record as IGanttData).ganttProperties)) {
+        (record as IGanttData).taskData[parent.taskFields.startDate] = parent.dateValidationModule.remove(
+            (record as IGanttData).ganttProperties.startDate, parent.timezone);
+        if (parent.taskFields.endDate != null) {
+            (record as IGanttData).taskData[parent.taskFields.endDate] = parent.dateValidationModule.remove(
+                (record as IGanttData).ganttProperties.endDate, parent.timezone);
+        }
+        if (parent.taskFields.baselineEndDate || parent.taskFields.baselineStartDate) {
+            (record as IGanttData).taskData[parent.taskFields.baselineStartDate] = parent.dateValidationModule.remove(
+                (record as IGanttData).ganttProperties.baselineStartDate, parent.timezone);
 
-        (record as IGanttData).taskData[parent.taskFields.baselineEndDate] = parent.dateValidationModule.remove(
-            (record as IGanttData).ganttProperties.baselineEndDate, parent.timezone);
+            (record as IGanttData).taskData[parent.taskFields.baselineEndDate] = parent.dateValidationModule.remove(
+                (record as IGanttData).ganttProperties.baselineEndDate, parent.timezone);
+        }
     }
     return null;
 }

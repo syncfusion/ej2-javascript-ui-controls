@@ -3437,6 +3437,73 @@ describe('EJ2-44211- The focus class maintained after move the focus to another 
         }, 800);
     });
 });
+describe('875197', () => {
+    let listObj: MultiSelect;
+    let count: number = 0;
+    let mouseEventArgs: any = { preventDefault: function () { }, target: null, stopPropagation: function () {} };
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+    let datasource: { [key: string]: Object }[] = [
+        { Name: 'Australia', Code: 'AU' },
+        { Name: 'Bermuda', Code: 'BM' },
+        { Name: 'Canada', Code: 'CA' },
+        { Name: 'Cameroon', Code: 'CM' },
+        { Name: 'Denmark', Code: 'DK' },
+        { Name: 'France', Code: 'FR' },
+        { Name: 'Finland', Code: 'FI' },
+        { Name: 'Germany', Code: 'DE' },
+        { Name: 'Greenland', Code: 'GL' },
+        { Name: 'Hong Kong', Code: 'HK' },
+        { Name: 'India', Code: 'IN' },
+        { Name: 'Italy', Code: 'IT' },
+        { Name: 'Japan', Code: 'JP' },
+    ];
+    let originalTimeout: number;
+    beforeAll(() => {
+        for (let i = 0; i < 27; i++) {
+            const brElement = document.createElement('br');
+            document.body.appendChild(brElement);
+        }
+        document.body.appendChild(element);
+        listObj = new MultiSelect({
+            dataSource: datasource,
+            fields: { text: 'Name', value: 'Code' },
+            showDropDownIcon: true,
+            showSelectAll: true,
+            allowFiltering: true,
+            mode: 'CheckBox',
+        });
+        listObj.appendTo(element);
+    });
+    afterAll(() => {
+        for (let i = 0; i < 27; i++) {
+            const brElement = document.querySelector('br');
+            if (brElement) {
+                brElement.remove();
+            }
+        }
+        if (element) {
+            listObj.destroy();
+            element.remove();
+        }
+    });
+    it('when click the serach text to prevent the list selection', () => {
+        mouseEventArgs.type = 'mousedown';
+        mouseEventArgs.target = (<any>listObj).overAllWrapper;
+        (<any>listObj).wrapperClick(mouseEventArgs);
+        (<any>listObj).checkBoxSelectionModule.filterInput.value = "g";
+        keyboardEventArgs.altKey = false;
+        keyboardEventArgs.keyCode = 71;
+        (<any>listObj).keyDownStatus = true;
+        (<any>listObj).onInput(keyboardEventArgs);
+        (<any>listObj).keyUp(keyboardEventArgs);
+        (<any>listObj).checkBoxSelectionModule.clearText(mouseEventArgs);
+        mouseEventArgs.type = 'mouseup';
+        mouseEventArgs.target = (<any>listObj).popupWrapper;
+        (<any>listObj).checkBoxSelectionModule.preventListSelection(mouseEventArgs);
+        (<any>listObj).onMouseClick(mouseEventArgs);
+        expect((<any>listObj).list.querySelectorAll('.e-active').length).toBe(0);
+    });
+});
 describe('EJ2-54401- Select all checkbox is not displayed properly while selecting an item from the list ', () => {
     let listObj: any;
     let checkObj: any;

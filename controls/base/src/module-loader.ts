@@ -17,6 +17,10 @@ export interface ModuleDeclaration {
      */
     member: string;
     /**
+     * Specifies the name for module declaration.
+     */
+    name?: string;
+    /**
      * Specifies whether it is a property or not.
      */
     isProperty?: boolean;
@@ -82,6 +86,17 @@ export class ModuleLoader {
             }
         }
         this.loadedModules = [];
+    }
+
+    /**
+     * Returns the array of modules that are not loaded in the component library.
+     *
+     * @param {ModuleDeclaration[]} requiredModules - Array of modules to be required
+     * @returns {ModuleDeclaration[]} ?
+     * @private
+     */
+    public getNonInjectedModules(requiredModules: ModuleDeclaration[]): ModuleDeclaration[] {
+        return requiredModules.filter((module: ModuleDeclaration) => !this.isModuleLoaded(module.member));
     }
 
     /**

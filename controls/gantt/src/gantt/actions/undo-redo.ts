@@ -271,7 +271,7 @@ export class UndoRedo {
                 }
             }
             else if (updateAction['action'] === 'Add') {
-                const isShowDeleteConfirmDialog: boolean = extend([], this.parent.editSettings.showDeleteConfirmDialog, [], true)[0];
+                const isShowDeleteConfirmDialog: boolean = extend([], [this.parent.editSettings.showDeleteConfirmDialog], [], true)[0];
                 this.parent.editSettings.showDeleteConfirmDialog = false;
                 let deleteRec: IGanttData = updateAction['addedRecords'];
                 if (this.parent.viewType === 'ResourceView' && updateAction['addedRecords'].length == 1 && (updateAction['addedRecords'][0] as IGanttData).parentItem) {
@@ -534,7 +534,7 @@ export class UndoRedo {
                         }
                     }
                 }
-                const isShowDeleteConfirmDialog: boolean = extend([], this.parent.editSettings.showDeleteConfirmDialog, [], true)[0];
+                const isShowDeleteConfirmDialog: boolean = extend([], [this.parent.editSettings.showDeleteConfirmDialog], [], true)[0];
                 this.parent.editSettings.showDeleteConfirmDialog = false;
                 this.parent.deleteRecord(updateAction['deleteRecords']);
                 this.parent.editSettings.showDeleteConfirmDialog = isShowDeleteConfirmDialog;

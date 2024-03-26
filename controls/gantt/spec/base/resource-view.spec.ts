@@ -3098,3 +3098,92 @@ describe("Project view duration editing", () => {
         expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(null);
       });    
   });
+describe('CR-Task:875889-Exception when resource ID mapping is empty', () => {
+    let ganttObj: Gantt;
+    let resourceCollection = [
+        { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team' },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Project initiation',
+                    StartDate: new Date('03/29/2019'),
+                    EndDate: new Date('04/02/2019'),
+                    subtasks: []
+                },
+                {
+                    TaskID: 5,
+                    TaskName: 'Project estimation',
+                    StartDate: new Date('03/29/2019'),
+                    EndDate: new Date('04/21/2019')
+                }
+            ],
+            resources: resourceCollection,
+            viewType: 'ResourceView',
+            showOverAllocation: true,
+            enableContextMenu: true,
+            allowSorting: true,
+            allowReordering: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                child: 'subtasks'
+            },
+            resourceFields: {
+                id: 'resourceId'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resourceGroup', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            splitterSettings: {
+                columnIndex: 3
+            },
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            allowResizing: true,
+            allowFiltering: true,
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '550px'
+        }, done);
+    });
+    it('Checking unassigned childrecords length', () => {
+        expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe("Unassigned Task");
+        expect(ganttObj.currentViewData[1].childRecords.length).toBe(2);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});

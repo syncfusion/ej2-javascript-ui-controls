@@ -231,9 +231,18 @@ export class LayoutRender extends MobileLayout {
 
     private initializeSwimlaneTree(): void {
         if (this.parent.swimlaneSettings.keyField && this.parent.isAdaptive && this.parent.kanbanData.length !== 0) {
+            const swimlaneHeaderName: HTMLElement = this.parent.element.querySelector('.' + cls.TOOLBAR_SWIMLANE_NAME_CLASS);
             this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
             this.renderSwimlaneTree();
-            this.parent.element.querySelector('.' + cls.TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
+            if (this.parent.swimlaneSettings.template) {
+                const cardCount: number =  this.swimlaneData[this.swimlaneRow[0].keyField].length;
+                const templateArgs: HeaderArgs = extend({}, this.swimlaneRow[0], { count: cardCount }, true) as HeaderArgs;
+                const swimlaneTemplate: HTMLElement[] = this.parent.templateParser(
+                    this.parent.swimlaneSettings.template)(templateArgs, this.parent, 'swimlaneTemplate', '', false);
+                swimlaneHeaderName.appendChild(swimlaneTemplate[0]);
+            } else {
+                swimlaneHeaderName.innerHTML = this.swimlaneRow[0].textField;
+            }
         }
     }
 

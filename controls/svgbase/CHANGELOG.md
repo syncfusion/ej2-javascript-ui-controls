@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### Svg Base
+
+- `#I528508` - The tooltip template div is now added based on the series count, and it renders properly.
+
 ## 24.1.47 (2024-01-23)
 
 ### Svg Base

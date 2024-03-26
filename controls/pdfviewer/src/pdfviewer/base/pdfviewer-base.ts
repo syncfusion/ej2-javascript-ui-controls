@@ -2828,7 +2828,7 @@ export class PdfViewerBase {
     private wireEvents(): void {
         this.isDeviceiOS = ((['iPad Simulator', 'iPhone Simulator', 'iPod Simulator', 'iPad', 'iPhone', 'iPod'] as any).includes(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document));
         this.isMacSafari = navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") === -1 && !this.isDeviceiOS;
-        this.isWebkitMobile = /Chrome/.test(navigator.userAgent) || /Google Inc/.test(navigator.vendor) || (navigator.userAgent.indexOf('Safari') !== -1);
+        this.isWebkitMobile = /Chrome/.test(navigator.userAgent) || /Google Inc/.test(navigator.vendor) || (navigator.userAgent.indexOf('Safari') !== -1) || (navigator.userAgent.indexOf('WebKit') !== -1);
         this.viewerContainer.addEventListener('scroll', this.viewerContainerOnScroll, true);
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.viewerContainer.addEventListener('touchmove', this.viewerContainerOnScroll, true);
@@ -5218,7 +5218,7 @@ export class PdfViewerBase {
                         topValue = this.pageGap;
                     }
                     // eslint-disable-next-line max-len
-                    const size: ISize = { width: parseFloat(pageSize[0]), height: parseFloat(pageSize[1]), top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) && pageValues.pageRotation.length > 0 ? pageValues.pageRotation[parseInt(i.toString(), 10)] : 0 };
+                    const size: ISize = { width: parseFloat(pageSize[0]), height: parseFloat(pageSize[1]), top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) && ((!isNullOrUndefined(pageValues.pageRotation.length) && pageValues.pageRotation.length > 0) || (!isNullOrUndefined(Object.keys(pageValues.pageRotation).length) && Object.keys(pageValues.pageRotation).length > 0)) ? pageValues.pageRotation[parseInt(i.toString(), 10)] : 0 };
                     this.pageSize.push(size);
                 } else {
                     if (pageValues.pageSizes[i - 1] !== null && i !== 0) {
@@ -5229,7 +5229,7 @@ export class PdfViewerBase {
                         topValue = this.pageGap;
                     }
                     // eslint-disable-next-line max-len
-                    const size: ISize = { width: (pageValues.pageSizes[parseInt(i.toString(), 10)].width ? pageValues.pageSizes[parseInt(i.toString(), 10)].width : pageValues.pageSizes[parseInt(i.toString(), 10)].Width), height: (pageValues.pageSizes[parseInt(i.toString(), 10)].height ? pageValues.pageSizes[parseInt(i.toString(), 10)].height : pageValues.pageSizes[parseInt(i.toString(), 10)].Height), top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) && pageValues.pageRotation.length > 0 ? pageValues.pageRotation[parseInt(i.toString(), 10)] : 0 };
+                    const size: ISize = { width: (pageValues.pageSizes[parseInt(i.toString(), 10)].width ? pageValues.pageSizes[parseInt(i.toString(), 10)].width : pageValues.pageSizes[parseInt(i.toString(), 10)].Width), height: (pageValues.pageSizes[parseInt(i.toString(), 10)].height ? pageValues.pageSizes[parseInt(i.toString(), 10)].height : pageValues.pageSizes[parseInt(i.toString(), 10)].Height), top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) && ((!isNullOrUndefined(pageValues.pageRotation.length) && pageValues.pageRotation.length > 0) || (!isNullOrUndefined(Object.keys(pageValues.pageRotation).length) && Object.keys(pageValues.pageRotation).length > 0)) ? pageValues.pageRotation[parseInt(i.toString(), 10)] : 0 };
                     this.pageSize.push(size);
                 }
                 if (this.pageSize[parseInt(i.toString(), 10)].height > this.pageSize[parseInt(i.toString(), 10)].width) {
@@ -5419,7 +5419,7 @@ export class PdfViewerBase {
                             topValue = proxy.pageGap + parseFloat(previousPageHeight) + topValue;
                         }
                         // eslint-disable-next-line max-len
-                        const size: ISize = { width: parseFloat(pageSize[0]), height: parseFloat(pageSize[1]), top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) && pageValues.pageRotation.length > 0 ? pageValues.pageRotation[parseInt(i.toString(), 10)] : 0 };
+                        const size: ISize = { width: parseFloat(pageSize[0]), height: parseFloat(pageSize[1]), top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) && ((!isNullOrUndefined(pageValues.pageRotation.length) && pageValues.pageRotation.length > 0) || (!isNullOrUndefined(Object.keys(pageValues.pageRotation).length) && Object.keys(pageValues.pageRotation).length > 0)) ? pageValues.pageRotation[parseInt(i.toString(), 10)] : 0 };
                         proxy.pageSize.push(size);
                     } else {
                         if (proxy.pageSize[i - 1] !== null && i !== 0) {
@@ -5427,7 +5427,7 @@ export class PdfViewerBase {
                             topValue = proxy.pageGap + parseFloat(previousPageHeight) + topValue;
                         }
                         // eslint-disable-next-line max-len
-                        const size: ISize = { width: (parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].width) ? parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].width) : parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].Width)), height: (parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].height) ? parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].height) : parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].Height)), top: topValue, rotation: pageValues.pageRotation[parseInt(i.toString(), 10)] };
+                        const size: ISize = { width: (parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].width) ? parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].width) : parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].Width)), height: (parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].height) ? parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].height) : parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].Height)), top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) && ((!isNullOrUndefined(pageValues.pageRotation.length) && pageValues.pageRotation.length > 0) || (!isNullOrUndefined(Object.keys(pageValues.pageRotation).length) && Object.keys(pageValues.pageRotation).length > 0)) ? pageValues.pageRotation[parseInt(i.toString(), 10)] : 0 };
                         proxy.pageSize.push(size);
                     }
                 }
@@ -7749,6 +7749,11 @@ export class PdfViewerBase {
                                                 break;
                                             case 'LoadedStamp':
                                                 proxy.pdfViewer.pdfRendererModule.renderer.initialPagesRendered(event.data);
+                                                break;
+                                            case 'textExtracted':
+                                                if (event.data.message === 'textExtracted') {
+                                                    proxy.pdfViewer.pdfRendererModule.textExtractionOnmessage(event);
+                                                }
                                                 break;
                                         }
                                     }
@@ -10852,6 +10857,16 @@ export class PdfViewerBase {
     }
 
     // eslint-disable-next-line
+    private setAnnotationSettings(annotation: any): void {
+        if(!isNullOrUndefined(annotation)) {
+            annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
+            if (annotation.IsLocked) {
+                annotation.AnnotationSettings.isLock = annotation.IsLocked;
+            }
+        }
+    }
+
+    // eslint-disable-next-line
     private drawPageAnnotations(annotation: any, pageIndex: number, isNewlyAdded?: boolean): void {
 
         if (isNewlyAdded) {
@@ -10894,6 +10909,9 @@ export class PdfViewerBase {
                                 annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
                             }
                         }
+                        if(annotationData) {
+                            this.setAnnotationSettings(annotationData[0]);
+                        }
                         annotation.textMarkupAnnotation = this.checkAnnotationCommentsCollections(annotation.textMarkupAnnotation, pageIndex);
                         this.pdfViewer.annotationModule.renderAnnotations(pageIndex, null, null, annotationData, null, true);
                         break;
@@ -10906,6 +10924,9 @@ export class PdfViewerBase {
                         if (storeObject) {
                             annotObject = JSON.parse(storeObject);
                             annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
+                        }
+                        if(annotationData) {
+                            this.setAnnotationSettings(annotationData[0]);
                         }
                         annotation.shapeAnnotation = this.checkAnnotationCommentsCollections(annotation.shapeAnnotation, pageIndex);
                         this.pdfViewer.annotationModule.renderAnnotations(pageIndex, annotationData, null, null, null, true);
@@ -10920,6 +10941,9 @@ export class PdfViewerBase {
                             annotObject = JSON.parse(storeObject);
                             annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
                         }
+                        if(annotationData) {
+                            this.setAnnotationSettings(annotationData[0]);
+                        }
                         annotation.measureShapeAnnotation = this.checkAnnotationCommentsCollections(annotation.measureShapeAnnotation, pageIndex);
                         this.pdfViewer.annotationModule.renderAnnotations(pageIndex, null, annotationData, null, null, true);
                         break;
@@ -10931,6 +10955,9 @@ export class PdfViewerBase {
                         if (storeObject) {
                             annotObject = JSON.parse(storeObject);
                             annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
+                        }
+                        if(annotationData) {
+                            this.setAnnotationSettings(annotationData[0]);
                         }
                         annotation.stampAnnotations = this.checkAnnotationCommentsCollections(annotation.stampAnnotations, pageIndex);
                         this.pdfViewer.annotationModule.stampAnnotationModule.renderStampAnnotations(annotationData, pageIndex, null, true);
@@ -10945,6 +10972,9 @@ export class PdfViewerBase {
                             annotObject = JSON.parse(storeObject);
                             annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
                         }
+                        if(annotationData) {
+                            this.setAnnotationSettings(annotationData[0]);
+                        }
                         annotation.freeTextAnnotation = this.checkAnnotationCommentsCollections(annotation.freeTextAnnotation, pageIndex);
                         this.pdfViewer.annotationModule.freeTextAnnotationModule.renderFreeTextAnnotations(annotationData, pageIndex, true);
                         break;
@@ -10957,12 +10987,18 @@ export class PdfViewerBase {
                             annotObject = JSON.parse(storeObject);
                             annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
                         }
+                        if(annotationData) {
+                            this.setAnnotationSettings(annotationData[0]);
+                        }
                         annotation.stickyNotesAnnotation = this.checkAnnotationCommentsCollections(annotation.stickyNotesAnnotation, pageIndex);
                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderStickyNotesAnnotations(annotationData, pageIndex);
                         break;
                     case 'signature':
                         storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_sign');
                         annotObject = JSON.parse(storeObject);
+                        if(annotationData) {
+                            this.setAnnotationSettings(annotationData[0]);
+                        }
                         if (annotObject) {
                             annotation.signatureAnnotation = this.checkSignatureCollections(annotObject, annotationData, pageIndex);
                         }
@@ -10977,6 +11013,9 @@ export class PdfViewerBase {
                         if (storeObject) {
                             annotObject = JSON.parse(storeObject);
                             annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
+                        }
+                        if(annotationData) {
+                            this.setAnnotationSettings(annotationData[0]);
                         }
                         annotation.signatureInkAnnotation = this.checkAnnotationCommentsCollections(annotation.signatureInkAnnotation, pageIndex);
                         this.pdfViewer.annotationModule.inkAnnotationModule.renderExistingInkSignature(annotationData, pageIndex, true);
@@ -11599,6 +11638,7 @@ export class PdfViewerBase {
 
     public deleteAnnotations(): void {
         if (this.pdfViewer.annotationModule) {
+            this.updateAnnotationsUndoRedo();
             this.pdfViewer.annotations = [];
             this.pdfViewer.zIndexTable = [];
             this.pdfViewer.annotationCollection = [];
@@ -11608,14 +11648,6 @@ export class PdfViewerBase {
             this.annotationComments = annotationCollection;
             this.documentAnnotationCollections = annotationCollection;
             this.annotationRenderredList = [];
-            window.sessionStorage.removeItem(this.documentId + '_annotations_shape');
-            window.sessionStorage.removeItem(this.documentId + '_annotations_shape_measure');
-            window.sessionStorage.removeItem(this.documentId + '_annotations_stamp');
-            window.sessionStorage.removeItem(this.documentId + '_annotations_sticky');
-            window.sessionStorage.removeItem(this.documentId + '_annotations_textMarkup');
-            window.sessionStorage.removeItem(this.documentId + '_annotations_freetext');
-            window.sessionStorage.removeItem(this.documentId + '_annotations_sign');
-            window.sessionStorage.removeItem(this.documentId + '_annotations_ink');
             for (let i: number = 0; i < this.pageCount; i++) {
                 this.pdfViewer.annotationModule.renderAnnotations(i, null, null, null);
                 this.pdfViewer.renderDrawing(undefined, i);
@@ -11647,6 +11679,44 @@ export class PdfViewerBase {
             this.isAnnotationCollectionRemoved = true;
         } else {
             this.getModuleWarningMessage("Annotation")
+        }
+    }
+
+    // eslint-disable-next-line
+    private updateAnnotationsUndoRedo(): void {
+        for (let j: number = 0; j < this.pdfViewer.annotationCollection.length; j++) {
+            let currentAnnotation: any = null;
+            let proxy: any = this;
+            if (proxy.pdfViewer.annotationCollection[j].shapeAnnotationType === "textMarkup") {
+                currentAnnotation = proxy.pdfViewer.annotationCollection[parseInt(j.toString(), 10)];
+                let pageAnnotations: any = proxy.pdfViewer.annotation.textMarkupAnnotationModule.getAnnotations(currentAnnotation.pageNumber, null);
+                if (pageAnnotations) {
+                    for (let i: number = 0; i < pageAnnotations.length; i++) {
+                        if (currentAnnotation.annotationId === pageAnnotations[parseInt(i.toString(), 10)].annotName) {
+                            let deletedAnnotation: any = pageAnnotations.splice(parseInt(i.toString(), 10), 1)[0];
+                            proxy.pdfViewer.annotation.addAction(currentAnnotation.pageNumber, parseInt(i.toString(), 10), deletedAnnotation, 'Text Markup Deleted', null);
+                            proxy.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(deletedAnnotation, 'textMarkup');
+                            let removeDiv: any = document.getElementById(deletedAnnotation.annotName);
+                            if (removeDiv) {
+                                if (removeDiv.parentElement.childElementCount === 1) {
+                                    proxy.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAccordionContainer(removeDiv);
+                                }
+                                else {
+                                    removeDiv.remove();
+                                }
+                            }
+                        }
+                    }
+                }
+                proxy.pdfViewer.annotation.textMarkupAnnotationModule.manageAnnotations(pageAnnotations, currentAnnotation.pageNumber);
+            }
+            else {
+                currentAnnotation = proxy.pdfViewer.annotations.filter(function (s: { annotName: any; }) { return s.annotName === proxy.pdfViewer.annotationCollection[parseInt(j.toString(), 10)].annotationId; })[0];
+                let undoElement: any = proxy.pdfViewer.annotation.modifyInCollections(currentAnnotation, 'delete');
+                proxy.pdfViewer.annotation.undoCommentsElement.push(undoElement);
+                proxy.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Delete', '', undoElement, currentAnnotation);
+                proxy.pdfViewer.annotation.textMarkupAnnotationModule.manageAnnotations(currentAnnotation, currentAnnotation.pageNumber);
+            }
         }
     }
 

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I560783` - Fixed issue where clearing the searched value would automatically select another value.
+
+- `#I524283` - Fixed issue where popup was not aligned properly when opening on top of the component.
+
+- `#I565659` - Fixed an issue in Multiselect Checkbox mode where the height of the dropdown input would change when selecting and unselecting items.
+
 ## 25.1.35 (2024-03-15)
 
 ### ComboBox

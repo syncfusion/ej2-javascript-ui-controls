@@ -1196,7 +1196,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
 
     private createDropUploader(): void {
         const uploadObj: Uploader = new Uploader({
-            dropArea: document.getElementsByClassName('e-canvas-wrapper')[0] as HTMLElement,
+            dropArea: this.element.getElementsByClassName('e-canvas-wrapper')[0] as HTMLElement,
             allowedExtensions: '.jpg, .jpeg, .png,.svg',
             multiple: false,
             selected: (args: ChangeEventArgs) => {
@@ -1485,7 +1485,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     private notifyResetForAllModules(): void {
         const modules: ModuleDeclaration[] = this.requiredModules();
         for (let i: number = 0; i < modules.length; i++) {
-            this.notify(modules[i as number].member, { prop: 'reset', onPropertyChange: false});
+            const module: string = modules[i as number].member;
+            this.notify(module === 'toolbar-module' ? 'toolbar' : module, { prop: 'reset', onPropertyChange: false});
         }
     }
 
@@ -2293,8 +2294,19 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('shape', { prop: 'selectShape', onPropertyChange: false, value: {id: setting.id, obj: obj }});
             this.notify('selection', { prop: 'getFreehandDrawEditing', onPropertyChange: false, value: {obj: freehandObj }});
             if (obj['isSelected']) {
+                const tempFontSize: number = this.activeObj.textSettings.fontSize;
                 this.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
                     value: {shapeSettings: setting }});
+                if (this.activeObj.shape === 'text' && tempFontSize) {
+                    const diff: number = this.activeObj.textSettings.fontSize - tempFontSize;
+                    if (diff !== 0) {
+                        this.activeObj.activePoint.height += diff;
+                        this.activeObj.activePoint.startY -= (diff / 2);
+                        this.activeObj.activePoint.endY += (diff / 2);
+                        this.notify('draw', { prop: 'updateActiveObject', onPropertyChange: false, value: { actPoint: this.activeObj.activePoint, obj: this.activeObj,
+                            isMouseMove: null, x: null, y: null } });
+                    }
+                }
                 const activeObj: SelectionPoint = extend({}, this.activeObj, {}, true) as SelectionPoint;
                 this.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
                 this.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: null } });

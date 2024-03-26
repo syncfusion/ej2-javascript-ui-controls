@@ -843,7 +843,7 @@ export class Drawing {
                     options: (obj as any).options, isChecked: (obj as any).isChecked, isSelected: (obj as any).isSelected
                 };
                 this.pdfViewer.fireFormFieldRemoveEvent('formFieldRemove', field, obj.pageIndex);
-                this.pdfViewer.formDesignerModule.removeFieldsFromAnnotationCollections(obj.id);
+                this.pdfViewer.formDesignerModule.removeFieldsFromAnnotationCollections(obj.id, field.name);
             }
         }
         this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);

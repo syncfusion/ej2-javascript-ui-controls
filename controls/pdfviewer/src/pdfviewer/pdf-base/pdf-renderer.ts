@@ -174,7 +174,7 @@ export class PdfRenderer {
                 this.m_formFields.showDigitalSignatureAppearance = jsonObject["showDigitalSignatureAppearance"];
             }
         }
-        if (!isNullOrUndefined(this.m_formFields) && this.pageCount <= 100) {
+        if (!isNullOrUndefined(this.m_formFields) && this.pageSizes && Object.keys(this.pageSizes).length <=100) {
             this.m_formFields.GetFormFields();
             pdfRenderedFormFields = this.m_formFields.PdfRenderedFormFields;
         }
@@ -1139,45 +1139,50 @@ export class PdfRenderer {
 
     // eslint-disable-next-line max-len
     private textExtraction(pageIndex: number, isLayout: boolean, isRenderText?: boolean): Promise<any> {
-        let extractedText: string = '';
-        let textDataCollection: TextData[] = [];
-        let proxy: PdfRenderer = this;
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner)) {
                 this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'extractText', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: true });
-                this.pdfViewerBase.pdfViewerRunner.onmessage = function (event: any) {
-                    if (event.data.message === 'textExtracted') {
-                        const characterDetails: any = event.data.characterBounds;
-                        for (let i: number = 0; i < characterDetails.length; i++) {
-                            if (!isLayout && (characterDetails[parseInt(i.toString(), 10)].Text as string).indexOf('\r') !== -1) {
-                                extractedText += '';
-                            }
-                            else {
-                                extractedText += characterDetails[parseInt(i.toString(), 10)].Text;
-                            }
-                            const cropBox: number[] = proxy.loadedDocument.getPage(pageIndex).cropBox;
-                            // eslint-disable-next-line max-len
-                            const bound: AnnotBounds = new AnnotBounds(proxy.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].X), proxy.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Y + cropBox[1]), proxy.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Width), proxy.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Height));
-                            textDataCollection.push(new TextData(characterDetails[parseInt(i.toString(), 10)].Text, bound));
-                        }
-                        let result: any = {};
-                        if (isRenderText) {
-                            result.extractedTextDetails = { textDataCollection: textDataCollection, extractedText: extractedText };
-                            result.textBounds = event.data.textBounds;
-                            result.textContent = event.data.textContent;
-                            result.rotation = event.data.rotation;
-                            result.pageText = event.data.pageText;
-                            result.characterBounds = event.data.characterBounds;
-                        }
-                        else{
-                            result = { textDataCollection: textDataCollection, extractedText: extractedText };
-                        }
-                        resolve(result);
-                    }
-                };
             }
             else {
                 resolve(null);
+            }
+        });
+    }
+
+    /**
+     * @private
+     */
+    public textExtractionOnmessage(event: any) {
+        let extractedText: string = '';
+        let textDataCollection: TextData[] = [];
+        return new Promise((resolve: Function, reject: Function) => {
+            if (event.data.message === 'textExtracted') {
+                const characterDetails: any = event.data.characterBounds;
+                for (let i: number = 0; i < characterDetails.length; i++) {
+                    if (!event.data.isLayout && (characterDetails[parseInt(i.toString(), 10)].Text as string).indexOf('\r') !== -1) {
+                        extractedText += '';
+                    }
+                    else {
+                        extractedText += characterDetails[parseInt(i.toString(), 10)].Text;
+                    }
+                    const cropBox: number[] = this.loadedDocument.getPage(event.data.pageIndex).cropBox;
+                    // eslint-disable-next-line max-len
+                    const bound: AnnotBounds = new AnnotBounds(this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].X), this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Y + cropBox[1]), this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Width), this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Height));
+                    textDataCollection.push(new TextData(characterDetails[parseInt(i.toString(), 10)].Text, bound));
+                }
+                let result: any = {};
+                if (event.data.isRenderText) {
+                    result.extractedTextDetails = { textDataCollection: textDataCollection, extractedText: extractedText };
+                    result.textBounds = event.data.textBounds;
+                    result.textContent = event.data.textContent;
+                    result.rotation = event.data.rotation;
+                    result.pageText = event.data.pageText;
+                    result.characterBounds = event.data.characterBounds;
+                }
+                else{
+                    result = { textDataCollection: textDataCollection, extractedText: extractedText };
+                }
+                resolve(result);
             }
         });
     }

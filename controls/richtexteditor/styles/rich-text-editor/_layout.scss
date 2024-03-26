@@ -2130,10 +2130,6 @@
       box-shadow: $rte-table-popup-box;
     }
 
-    .e-rte-elements.e-rte-quick-popup .e-toolbar .e-toolbar-items.e-toolbar-multirow:not(.e-tbar-pos) .e-toolbar-item:first-child {
-      margin-left: 6px;
-    }
-
     .e-rte-elements.e-rte-quick-popup .e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn.e-btn .e-icons.e-btn-icon {
       min-width: 24px;
     }
@@ -2254,5 +2250,9 @@
     .e-toolbar .e-toolbar-pop.e-toolbar-extended.e-popup-open {
       display: block;
     }
+  }
+  // Used to hide the Color picker during the rendering at the initial stage. Removed the class in the created event.
+  .e-rte-picker-init {
+    display: none !important; /* stylelint-disable-line declaration-no-important */
   }
 }

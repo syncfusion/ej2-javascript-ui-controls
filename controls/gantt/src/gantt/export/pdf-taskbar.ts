@@ -107,7 +107,6 @@ export class PdfGanttTaskbarCollection {
     public indicators: IIndicator[];
     public labelSettings: ILabel;
     public taskbarTemplate : ITemplateDetails;
-    public rightLabelBoundsTemplates: number;
     public previousWidthofLeftValue: number;
     public previousWidthofLeftImage: number;
     public totalLeftWidth: number;
@@ -187,29 +186,19 @@ export class PdfGanttTaskbarCollection {
         let font: PdfFont = new PdfStandardFont(this.fontFamily, 9, PdfFontStyle.Regular);
         const fontColor: PdfPen = null;
         const fontBrush: PdfBrush = new PdfSolidBrush(this.progressFontColor);
-        let customizedFont : PdfFont;
-        let customizedFontBrush : PdfBrush;
-        let customizedFontColor : PdfPen;
-        if(!isNullOrUndefined(taskbar.taskbarTemplate.value)){
-            if(taskbar.taskbarTemplate.fontStyle.fontFamily && taskbar.taskbarTemplate.fontStyle.fontSize){
-                customizedFont = new PdfStandardFont(taskbar.taskbarTemplate.fontStyle.fontFamily,taskbar.taskbarTemplate.fontStyle.fontSize,taskbar.taskbarTemplate.fontStyle.fontStyle);
-            }else{
-                customizedFont = font;
-            }
-            if(taskbar.taskbarTemplate.fontStyle.fontColor){
-                customizedFontBrush = new PdfSolidBrush(taskbar.taskbarTemplate.fontStyle.fontColor);
-            }
-            else{
-                customizedFontBrush = fontBrush;
-            }
-            if(taskbar.taskbarTemplate.fontStyle.fontBrush){
-                customizedFontColor =  new PdfPen(taskbar.taskbarTemplate.fontStyle.fontBrush);
-            }
-            else{
-                customizedFontColor = fontColor;
-            }
-        }
-        if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) && 
+        let customizedFont: PdfFont;
+        let customizedFontBrush: PdfBrush;
+        let customizedFontColor: PdfPen;
+        customizedFont = !isNullOrUndefined(taskbar.taskbarTemplate.value) && taskbar.taskbarTemplate.fontStyle && taskbar.taskbarTemplate.fontStyle.fontFamily && taskbar.taskbarTemplate.fontStyle.fontSize
+            ? new PdfStandardFont(taskbar.taskbarTemplate.fontStyle.fontFamily, taskbar.taskbarTemplate.fontStyle.fontSize, taskbar.taskbarTemplate.fontStyle.fontStyle)
+            : font;
+        customizedFontBrush = !isNullOrUndefined(taskbar.taskbarTemplate.value) && taskbar.taskbarTemplate.fontStyle && taskbar.taskbarTemplate.fontStyle.fontColor
+            ? new PdfSolidBrush(taskbar.taskbarTemplate.fontStyle.fontColor)
+            : fontBrush;
+        customizedFontColor = !isNullOrUndefined(taskbar.taskbarTemplate.value) && taskbar.taskbarTemplate.fontStyle && taskbar.taskbarTemplate.fontStyle.fontBrush
+            ? new PdfPen(taskbar.taskbarTemplate.fontStyle.fontBrush)
+            : fontColor;
+        if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
             this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
             font = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font;
         }

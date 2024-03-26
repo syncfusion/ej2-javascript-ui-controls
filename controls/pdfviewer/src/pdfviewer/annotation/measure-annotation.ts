@@ -308,6 +308,9 @@ export class MeasureAnnotation {
                             }
                             // eslint-disable-next-line max-len
                             annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
+                            if (annotation.IsLocked) {
+                                annotation.AnnotationSettings.isLock = annotation.IsLocked;
+                            }
                             // eslint-disable-next-line max-len
                             annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                             let isPrint: boolean = annotation.IsPrint;
@@ -369,7 +372,7 @@ export class MeasureAnnotation {
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                                 labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                                 annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
-                                isPrint: isPrint, isCommentLock: annotationObject.isCommentLock
+                                isPrint: isPrint, isCommentLock: annotationObject.isCommentLock, customData: annotationObject.customData
                             };
                             this.pdfViewer.annotation.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
                             if(this.isAddAnnotationProgramatically)
@@ -388,6 +391,10 @@ export class MeasureAnnotation {
                 const annotationObject: IMeasureShapeAnnotation = this.createAnnotationObject(shapeAnnotations);
                 this.pdfViewer.annotationModule.isFormFieldShape = false;
                 this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
+                if(shapeAnnotations)
+                {
+                    shapeAnnotations.customData = annotationObject.customData;
+                }
                 this.pdfViewer.annotationModule.triggerAnnotationAdd(shapeAnnotations);
             }
         }
@@ -414,6 +421,7 @@ export class MeasureAnnotation {
     public setAnnotationType(type: AnnotType): void {
         let author: string = 'Guest';
         let subject: string = "";
+        let customData: object;
         this.updateMeasureproperties();
         this.pdfViewerBase.disableTextSelectionMode();
         switch (type) {
@@ -423,13 +431,14 @@ export class MeasureAnnotation {
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.distanceSettings.author ? this.pdfViewer.distanceSettings.author : 'Guest';
             subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.distanceSettings.subject ? this.pdfViewer.distanceSettings.subject : 'Distance calculation';
+            customData = !isNullOrUndefined(this.pdfViewer.annotationSettings.customData) ? this.pdfViewer.annotationSettings.customData : this.pdfViewer.distanceSettings.customData ? this.pdfViewer.distanceSettings.customData : null;
             this.pdfViewer.drawingObject = {
                 sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.distanceStartHead),
                 taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.distanceEndHead), measureType: 'Distance',
                 fillColor: this.distanceFillColor, notes: '', strokeColor: this.distanceStrokeColor, leaderHeight: this.leaderLength,
                 opacity: this.distanceOpacity, thickness: this.distanceThickness, borderDashArray: this.distanceDashArray.toString(),
                 // eslint-disable-next-line max-len
-                shapeAnnotationType: 'Distance', author: author, subject: subject, isCommentLock: false
+                shapeAnnotationType: 'Distance', author: author, subject: subject, isCommentLock: false, customData: customData
             };
             this.pdfViewer.tool = 'Distance';
             break;
@@ -470,11 +479,12 @@ export class MeasureAnnotation {
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.radiusSettings.author ? this.pdfViewer.radiusSettings.author : 'Guest';
             subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.radiusSettings.subject ? this.pdfViewer.radiusSettings.subject : 'Radius calculation';
+            customData = !isNullOrUndefined(this.pdfViewer.annotationSettings.customData) ? this.pdfViewer.annotationSettings.customData : this.pdfViewer.radiusSettings.customData ? this.pdfViewer.radiusSettings.customData : null;
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: 'Radius', fillColor: this.radiusFillColor, notes: '', strokeColor: this.radiusStrokeColor, opacity: this.radiusOpacity,
                 thickness: this.radiusThickness, measureType: 'Radius', modifiedDate: modifiedDateRad, borderStyle: '', borderDashArray: '0',
-                author: author, subject: subject, isCommentLock: false
+                author: author, subject: subject, isCommentLock: false, customData: customData
             };
             this.pdfViewer.tool = 'DrawTool';
             break;

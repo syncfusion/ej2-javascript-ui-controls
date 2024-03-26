@@ -197,6 +197,8 @@ export function PdfiumRunner(): void {
                 let ImageData: any = event.data;
                 let data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null, ImageData.textDetailsId);
                 (data as any).message = 'textExtracted';
+                (data as any).isLayout = event.data.isLayout;
+                (data as any).isRenderText = event.data.isRenderText;
                 ctx.postMessage(data);
             }
             else if (event.data.message === 'renderThumbnail') {

@@ -119,8 +119,17 @@ export class HistoryInfo extends BaseHistoryInfo {
                     }
                 } else {
                     if (this.editorHistory.isUndoing) {
-                        for (let i: number = 0; i < 3; i++) {
-                            operations.push(this.getDeleteOperation('Delete'));
+                        for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                            let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                            currentHistory.endIndex = currentHistory.startIndex;
+                            //Basically for pagebreak and column break there will three paragraph difference. So for transformation we sended three backspace operation.
+                            operations.push(currentHistory.getDeleteOperation('Delete'));
+                            operations.push(currentHistory.getDeleteOperation('Delete'));
+                            operations.push(currentHistory.getDeleteOperation('Delete'));
+                            if (currentHistory.isRemovedNodes) {
+                                let operationCollection: Operation[] = currentHistory.getDeleteContent('BackSpace');
+                                operations = [...operations, ...operationCollection];
+                            }
                         }
                     } else {
                         for (let i: number = 0; i < this.modifiedActions.length; i++) {
@@ -129,9 +138,12 @@ export class HistoryInfo extends BaseHistoryInfo {
                                 operations.push(currentHistory.getDeleteOperation(action));
                             }
                         }
-                        operations.push(this.getInsertOperation('Enter'));
+                        let operation: Operation = this.getInsertOperation('Enter');
+                        operation.markerData = { skipOperation: true };
+                        //Basically for pagebreak and column break there will three paragraph difference. So for transformation we sended three insert operation.
+                        operations.push(operation);
                         operations.push(this.getInsertOperation(action));
-                        operations.push(this.getInsertOperation('Enter'));
+                        operations.push(operation);
                     }
                 }
                 break;

@@ -127,6 +127,26 @@ export class WCharacterStyle extends WStyle {
 /**
  * @private
  */
+export class WTableStyle extends WStyle {
+    public constructor(node?: Object) {
+        super();
+        this.ownerBase = node;
+    }
+    /**
+     * Disposes the internal objects which are maintained.
+     * @private
+     */
+    public destroy(): void {
+        this.ownerBase = undefined;
+        this.name = undefined;
+        this.next = undefined;
+        this.basedOn = undefined;
+        this.link = undefined;
+    }
+}
+/**
+ * @private
+ */
 export class WStyles {
     public collection: Object[] = [];
     public get length(): number {
@@ -160,7 +180,7 @@ export class WStyles {
                 let style: Object = this.collection[parseInt(i.toString(), 10)];
                 if (style instanceof WCharacterStyle) {
                     (style as WCharacterStyle).clear();
-                } else {
+                } else if (style instanceof WParagraphStyle) {
                     (style as WParagraphStyle).clear();
                 }
             }
@@ -195,12 +215,14 @@ export class WStyles {
         for (const style of styles) {
             const returnStyle: any = {};
             const returnStyleObject: any = {};
-            if(type == "Paragraph") {
+            if (type == "Paragraph") {
                 returnStyleObject.paragraphFormat = {};
                 HelperMethods.writeParagraphFormat(returnStyleObject.paragraphFormat, true, (style as any).paragraphFormat);
             }
-            returnStyleObject.characterFormat = {};
-            HelperMethods.writeCharacterFormat(returnStyleObject.characterFormat, true, (style as any).characterFormat);
+            if (type !== "Table") {
+                returnStyleObject.characterFormat = {};
+                HelperMethods.writeCharacterFormat(returnStyleObject.characterFormat, true, (style as any).characterFormat);
+            }
             returnStyle.name = style.name;
             returnStyle.style = JSON.stringify(returnStyleObject);
             if (!isNullOrUndefined(type)) {
@@ -224,8 +246,10 @@ export class WStyles {
                 let style: Object = this.collection[parseInt(i.toString(), 10)];
                 if (style instanceof WCharacterStyle) {
                     (style as WCharacterStyle).destroy();
-                } else {
+                } else if (style instanceof WParagraphStyle) {
                     (style as WParagraphStyle).destroy();
+                } else if (style instanceof WTableStyle) {
+                    (style as WTableStyle).destroy();
                 }
             }
         }

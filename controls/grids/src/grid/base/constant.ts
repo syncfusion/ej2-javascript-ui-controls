@@ -576,3 +576,5 @@ export const renderResponsiveChangeAction: string = 'render-Responsive-Change-Ac
 export const renderResponsiveColumnChooserDiv: string = 'render-Responsive-Column-Chooser-Div';
 /** @hidden */
 export const showAddNewRowFocus: string = 'show-Add-New-Row-Focus';
+/** @hidden */
+export const infiniteScrollComplete: string = 'infinitescroll-complete';

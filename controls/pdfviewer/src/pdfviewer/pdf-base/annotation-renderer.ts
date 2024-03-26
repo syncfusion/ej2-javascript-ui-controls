@@ -1075,7 +1075,7 @@ export class AnnotationRenderer {
                 let appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
                 const dictionary: _PdfDictionary = new _PdfDictionary(page._crossReference);
                 const state: PdfGraphicsState = graphics.save();
-                let template: PdfTemplate = new PdfTemplate();
+                let template: PdfTemplate = new PdfTemplate(stampAnnotation.template, dictionary._crossReference);
                 template._isExported = true;
                 template._appearance = stampAnnotation.template;
                 template._crossReference = dictionary._crossReference;

@@ -97,7 +97,12 @@ export class VerticalEvent extends EventBase {
         if (isDragging) {
             this.parent.crudModule.crudObj.isCrudAction = false;
         }
-        this.parent.renderTemplates();
+        this.parent.renderTemplates(() => {
+            if ((this.parent as any).isReact && this.parent.activeViewOptions.eventTemplate) {
+                const wraps: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS));
+                removeClass(wraps, cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS);
+            }
+        });
     }
 
     public initializeValues(): void {

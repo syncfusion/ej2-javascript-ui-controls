@@ -66,6 +66,7 @@ export class Edit {
     public taskbarEditModule: TaskbarEdit;
     public dialogModule: DialogEdit;
     public isResourceTaskDeleted: boolean = false;
+    private editedRecord: IGanttData;
     constructor(parent?: Gantt) {
         this.parent = parent;
         this.parent.predecessorModule.validatedChildItems = [];
@@ -932,6 +933,7 @@ export class Edit {
      */
     public updateEditedTask(args: ITaskbarEditedEventArgs): void {
         const ganttRecord: IGanttData = args.data;
+        this.editedRecord = ganttRecord;
         if (this.parent.autoCalculateDateScheduling) {
             this.updateParentChildRecord(ganttRecord);
         }
@@ -941,6 +943,9 @@ export class Edit {
                 const child: IGanttData = this.parent.predecessorModule.validatedChildItems[i as number];
                 if (child.ganttProperties.predecessor && child.ganttProperties.predecessor.length > 0) {
                     this.parent.editedTaskBarItem = child;
+                    if (!this.isValidatedEditedRecord) {
+                        this.isFirstCall = true;
+                    }
                     this.parent.predecessorModule.validatePredecessor(child, [], '');
                 }
             }
@@ -956,12 +961,12 @@ export class Edit {
                    this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
                 }
                 this.isValidatedEditedRecord = false;
-                this.parent.predecessorModule.isValidatedParentTaskID = '';
             }
-            if (this.parent.allowParentDependency && ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
+            if (this.parent.allowParentDependency && this.parent.predecessorModule.isValidatedParentTaskID != ganttRecord.ganttProperties.taskId && ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
                 (args.action === "DrawConnectorLine")) {
                 this.parent.predecessorModule['updateChildItems'](ganttRecord);
             }
+            this.parent.predecessorModule.isValidatedParentTaskID = '';
             if(this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
                 for (let i: number = 0; i < ganttRecord.childRecords.length; i++) {
                     if (ganttRecord.childRecords[i as number].ganttProperties.predecessor) {
@@ -1683,20 +1688,10 @@ export class Edit {
                 for (let j: number = 0; j < this.dialogModule['indexes'].deletedIndexes.length; j++) {
                     if (this.dialogModule['indexes'].deletedIndexes[j as number].data.parentUniqueID == draggedRecord.parentUniqueID && draggedRecord.ganttProperties.taskId == this.dialogModule['indexes'].deletedIndexes[j as number].data.ganttProperties.taskId) {
                         let toIndex: number = this.dialogModule['indexes'].deletedIndexes[j as number].index;
-                        if (this.dialogModule['indexes'].deletedIndexes[j as number].position == 'above') {
-                            childRecordsLength = toIndex;
-                        }
-                        else {
-                            childRecordsLength = toIndex + 1;
-                        }
+                        this.dialogModule['indexes'].deletedIndexes[j as number].position == 'above' ? (childRecordsLength = toIndex) : (childRecordsLength = toIndex + 1);
                         for (let i: number = 0; i < droppedRecord.childRecords.length; i++) {
                             if ('T' + droppedRecord.childRecords[i as number].ganttProperties.taskId == this.dialogModule['indexes'].deletedIndexes[j as number].id) {
-                                if (this.dialogModule['indexes'].deletedIndexes[j as number].position == 'above') {
-                                    spliceIndex = i;
-                                }
-                                else {
-                                    spliceIndex = i + 1;
-                                }
+                                this.dialogModule['indexes'].deletedIndexes[j as number].position == 'above' ? (spliceIndex = i) : spliceIndex = i + 1;
                                 break;
                             }
                         }
@@ -2305,7 +2300,9 @@ export class Edit {
                 if (isRemoteData(this.parent.dataSource)) {
                     const data: DataManager = this.parent.dataSource as DataManager;
                     if (this.parent.timezone) {
-                        updateDates(eventArg.modifiedTaskData as IGanttData, this.parent);
+                        (eventArg.modifiedRecords as IGanttData[]).forEach((modifiedRecord: IGanttData) => {
+                            updateDates(modifiedRecord, this.parent);
+                        });
                     }
                     const updatedData: object = {
                         deletedRecords: getTaskData(eventArg.data as IGanttData[], null, null, this.parent), // to check
@@ -3948,7 +3945,7 @@ export class Edit {
                             const fromRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].from);
                             const toRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].to);
                             const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
-                            if (droppedRec.ganttProperties.predecessor && !validPredecessor) {
+                            if (droppedRec.ganttProperties.predecessor && (!validPredecessor || !this.parent.allowParentDependency)) {
                                 this.parent.editModule.removePredecessorOnDelete(droppedRec);
                                 droppedRec.ganttProperties.predecessor.splice(count, 1);
                                 droppedRec.ganttProperties.predecessorsName = null;

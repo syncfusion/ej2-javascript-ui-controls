@@ -1712,9 +1712,7 @@ describe('RTE CR issues', () => {
             const tileItems: NodeList = ( row[0] as HTMLElement ).querySelectorAll('.e-tile');
             ( tileItems[9] as HTMLElement ).click();
             // Background color
-            (document.querySelectorAll('.e-control.e-colorpicker')[1] as any).ej2_instances[0].inline = true;
-            (document.querySelectorAll('.e-control.e-colorpicker')[1] as any).ej2_instances[0].dataBind();
-            ( document.body.querySelector('.e-apply') as HTMLElement).click();
+            (rteObject.element.querySelector('.e-background-color') as HTMLElement).click();
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
             ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size

@@ -512,6 +512,9 @@
 
   .e-ie-finetune-slider-wrap {
     top: calc(50% - 15px) !important; /* stylelint-disable-line declaration-no-important */
+    @if $skin-name == 'Material3' or $skin-name == 'tailwind' {
+      top: calc(50% - 14px) !important; /* stylelint-disable-line declaration-no-important */
+    }
   }
 
   .e-transparency-slider-wrap {

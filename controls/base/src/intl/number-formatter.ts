@@ -25,6 +25,7 @@ export interface CommonOptions {
     minusSymbol?: string;
     isCustomFormat?: boolean;
 }
+/* eslint-disable */
 /**
  * Interface for currency processing
  */
@@ -33,6 +34,7 @@ interface CurrencyOptions {
     symbol?: string;
     currencySpace?: boolean;
 }
+/* eslint-enable */
 /**
  * Interface for grouping process
  */
@@ -46,13 +48,9 @@ const errorText: Object = {
     'mf': 'minimumFractionDigits',
     'lf': 'maximumFractionDigits'
 };
-const integerError: string = 'minimumIntegerDigits';
 const percentSign: string = 'percentSign';
 const minusSign: string = 'minusSign';
-const spaceRegex: RegExp = /\s/;
 const mapper: string[] = ['infinity', 'nan', 'group', 'decimal', 'exponential'];
-const infinity: string = 'infinity';
-const nan: string = 'nan';
 /**
  * Module for number formatting.
  *
@@ -224,9 +222,11 @@ export class NumberFormat {
      * @param {number} value ?
      * @param {base.GenericFormatOptions} fOptions ?
      * @param {CommonOptions} dOptions ?
+     * @param {NumberFormatOptions} [option] ?
      * @returns {string} ?
      */
-    private static intNumberFormatter(value: number, fOptions: base.GenericFormatOptions, dOptions: CommonOptions, option ?: NumberFormatOptions): string {
+    private static intNumberFormatter(value: number, fOptions: base.GenericFormatOptions, dOptions: CommonOptions,
+                                      option ?: NumberFormatOptions): string {
         let curData: base.NegativeData;
         if (isUndefined(fOptions.nData.type)) {
             return undefined;
@@ -270,7 +270,7 @@ export class NumberFormat {
                 fValue = fValue.replace('e', dOptions.numberMapper.numberSymbols[mapper[4]]);
             }
             fValue = fValue.replace('.', (<any>dOptions).numberMapper.numberSymbols[mapper[3]]);
-            fValue = curData.format === "#,###,,;(#,###,,)" ? this.customPivotFormat(parseInt(fValue)) : fValue;
+            fValue = curData.format === '#,###,,;(#,###,,)' ? this.customPivotFormat(parseInt(fValue, 10)) : fValue;
             if (curData.useGrouping) {
                 /* eslint-disable  @typescript-eslint/no-explicit-any */
                 fValue = this.groupNumbers(
@@ -281,7 +281,7 @@ export class NumberFormat {
             if (curData.nlead === 'N/A') {
                 return curData.nlead;
             } else {
-                if (fValue === '0' && option && option.format=== '0') {
+                if (fValue === '0' && option && option.format === '0') {
                     return fValue + curData.nend;
                 }
                 return curData.nlead + fValue + curData.nend;
@@ -342,6 +342,7 @@ export class NumberFormat {
      * @param {number} value ?
      * @param {number} min ?
      * @param {number} max ?
+     * @param {NumberFormatOptions} [option] ?
      * @returns {string} ?
      */
     private static processFraction(value: number, min: number, max: number, option ?: NumberFormatOptions): string {
@@ -362,10 +363,10 @@ export class NumberFormat {
         } else if (!isNullOrUndefined(max) && (length > max || max === 0)) {
             return value.toFixed(max);
         }
-        let str=value+'';
-        if(str[0]==='0' && option && option.format==='###.00')
+        let str: string = value + '';
+        if (str[0] === '0' && option && option.format === '###.00')
         {
-            str=str.slice(1);
+            str = str.slice(1);
         }
         return str;
     }
@@ -393,16 +394,18 @@ export class NumberFormat {
      * Returns custom format for pivot table
      *
      * @param {number} value ?
+     * @returns {string} ?
      */
     private static customPivotFormat(value: number): string {
         if (value >= 500000) {
             value /= 1000000;
-            const [integer, decimal] = value.toString().split(".");
+            // eslint-disable-next-line
+            const [integer, decimal] = value.toString().split('.');
             return decimal && +decimal.substring(0, 1) >= 5
-            ? Math.ceil(value).toString()
-            : Math.floor(value).toString();
-            }
-            return "";
+                ? Math.ceil(value).toString()
+                : Math.floor(value).toString();
+        }
+        return '';
     }
 
 }

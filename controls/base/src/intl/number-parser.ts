@@ -3,6 +3,7 @@ import { extend, isNullOrUndefined, isBlazor, getValue } from '../util';
 import { ParserBase as parser, NumericOptions } from './parser-base';
 import { IntlBase as base } from './intl-base';
 const regExp: RegExpConstructor = RegExp;
+// eslint-disable-next-line
 const parseRegex: RegExp = new regExp('^([^0-9]*)' + '(([0-9,]*[0-9]+)(\.[0-9]+)?)' + '([Ee][+-]?[0-9]+)?([^0-9]*)$');
 const groupRegex: RegExp = /,/g;
 
@@ -24,6 +25,7 @@ export interface NumericParts {
 /**
  * interface for numeric parse options
  */
+// eslint-disable-next-line
 interface NumberParseOptions {
     parseRegex: string;
     numbericMatcher: Object;

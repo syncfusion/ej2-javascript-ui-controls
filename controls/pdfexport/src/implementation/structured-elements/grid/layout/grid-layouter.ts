@@ -1590,14 +1590,16 @@ export class PdfGridLayouter extends ElementLayouter {
             // }
         }
         for (let i : number = this.cellStartIndex; i <= this.cellEndIndex; i++) {
+            let gridColumnWidth: number = this.Grid.columns.getColumn(i).width;
             let cancelSpans : boolean = ((row.cells.getCell(i).columnSpan + i > this.cellEndIndex + 1) &&
                                         (row.cells.getCell(i).columnSpan > 1));
-            // if (!cancelSpans) {
-            //     for (let k : number = 1; k < row.cells.getCell(i).columnSpan; k++) {
-            //         row.cells.getCell(i + k).isCellMergeContinue = true;
-            //     }
-            //}
-            let size : SizeF = new SizeF(this.Grid.columns.getColumn(i).width, this.gridHeight > 0.0 ? this.gridHeight :
+            if (!cancelSpans) {
+                for (let k : number = 1; k < row.cells.getCell(i).columnSpan; k++) {
+                    row.cells.getCell(i + k).isCellMergeContinue = true;
+                    gridColumnWidth += this.Grid.columns.getColumn(i + k).width;
+                }
+            }
+            let size : SizeF = new SizeF(gridColumnWidth, this.gridHeight > 0.0 ? this.gridHeight :
                                             this.currentPageBounds.height);
             // if (size.width === 0) {
             //     size = new SizeF(row.cells.getCell(i).width, size.height);

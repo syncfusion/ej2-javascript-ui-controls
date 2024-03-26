@@ -2449,17 +2449,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (!this.dataColl.length && values.length) {
             isValues = true;
         }
-        let fieldValue: string = this.selectedRule.field;
-        const isNested: number = this.selectedRule.field.indexOf(this.separator);
-        if (isNested !== 0 && this.fieldMode !== 'DropdownTree') {
-            const nest: string[] = this.selectedRule.field.split(this.separator);
-            fieldValue = nest[nest.length - 1];
-        }
         let multiSelectValue: MultiSelectModel;
         multiSelectValue = {
             dataSource: isValues ? values : (isFetched ? ds as { [key: string]: object }[] : this.dataManager),
             query: new Query([rule.field]),
-            fields: { text: fieldValue, value: fieldValue },
+            fields: { text: this.selectedRule.field, value: this.selectedRule.field },
             placeholder: this.l10n.getConstant('SelectValue'),
             value: selectedValue,
             mode: 'CheckBox',
@@ -5139,6 +5133,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     public cloneRule(ruleID: string, groupID: string, index: number): void {
         const getRule: RuleModel = this.getRule(ruleID.replace(this.element.id + '_', ''));
+        let isCloneRule: boolean = this.showButtons.cloneRule;
         groupID = groupID.replace(this.element.id + '_', '');
         this.ruleIndex = index;
         this.cloneRuleBtnClick = true;
@@ -5149,7 +5144,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }], groupID);
         this.ruleIndex = -1;
         this.cloneRuleBtnClick = false;
-        this.showButtons.cloneRule = false;
+        this.showButtons.cloneRule = isCloneRule;
+        isCloneRule = false;
     }
 
     /**
@@ -5163,6 +5159,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public cloneGroup(groupID: string, parentGroupID: string, index: number): void {
         parentGroupID = parentGroupID.replace(this.element.id + '_', '');
         const group: RuleModel = this.getGroup(parentGroupID);
+        let isCloneGroup: boolean = this.showButtons.cloneGroup;    
         groupID = groupID.replace(this.element.id + '_', '');
         this.groupIndex = index;
         this.cloneGrpBtnClick = true;
@@ -5170,7 +5167,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.addGroups([{ 'condition': group.condition, 'not': group.not, 'rules': group.rules }], groupID);
         this.groupIndex = -1;
         this.cloneGrpBtnClick = false;
-        this.showButtons.cloneGroup = false;
+        this.showButtons.cloneGroup = isCloneGroup;
+        isCloneGroup = false;
     }
 
     /**
@@ -5180,6 +5178,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @returns {void}
      */
     public lockRule(ruleID: string): void {
+        if (ruleID.indexOf(this.element.id) < 0) {
+            ruleID = this.element.id + '_' + ruleID;
+        }
         const target: Element =  document.getElementById(ruleID).querySelectorAll('.e-lock-rule-btn')[0];
         this.ruleLock(target);
     }
@@ -5191,6 +5192,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @returns {void}
      */
     public lockGroup(groupID: string): void {
+        if (groupID.indexOf(this.element.id) < 0) {
+            groupID = this.element.id + '_' + groupID;
+        }
         const target: Element =  document.getElementById(groupID).querySelectorAll('.e-lock-grp-btn')[0];
         this.groupLock(target);
     }

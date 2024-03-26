@@ -67,7 +67,7 @@ export function compile(template: string | Function, helper?: Object, ignorePref
     } else {
         const argName: string = 'data';
         const evalExpResult: string = evalExp(template, argName, helper, ignorePrefix);
-        // eslint-disable-next-line
+        /* eslint-disable */
         const condtion = `var valueRegEx = (/value=\\'([A-Za-z0-9 _]*)((.)([\\w)(!-;?-■\\s]+)['])/g);
         var hrefRegex = (/(?:href)([\\s='"./]+)([\\w-./?=&\\\\#"]+)((.)([\\w)(!-;/?-■\\s]+)['])/g);
         if(str.match(valueRegEx)){
@@ -98,6 +98,7 @@ export function compile(template: string | Function, helper?: Object, ignorePref
         }
         `;
         const fnCode: string = 'var str=\"' + evalExpResult + '\";' + condtion + ' return str;';
+        /* eslint-enable */
         const fn: Function = new Function(argName, fnCode);
         return fn.bind(helper);
     }
@@ -254,7 +255,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
  * @returns {string} ?
  */
 function addNameSpace(str: string, addNS: boolean, nameSpace: string, ignoreList: string[], ignorePrefix: boolean): string {
-    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1 && !ignorePrefix && str !== "true" && str !== "false") ? nameSpace + '.' + str : str);
+    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1 && !ignorePrefix && str !== 'true' && str !== 'false') ? nameSpace + '.' + str : str);
 }
 
 /**

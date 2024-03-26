@@ -6529,6 +6529,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public resetIndentWidth(): void {
+        if (this.isDestroyed) { return; }
         if (ispercentageWidth(this)) {
             this.getHeaderTable().querySelector('.e-emptycell').removeAttribute('indentRefreshed');
             this.widthService.setWidthToColumns();
@@ -7346,8 +7347,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 (ariaOwns)) !== (e.target as Element).getAttribute('aria-owns')))
             && !this.keyPress && this.isEdit && !Browser.isDevice) {
             if (this.editSettings.mode === 'Batch' && !(((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
-                parentsUntil(relatedTarget, 'e-multi-select-list-wrapper')) && parentsUntil(relatedTarget, 'e-input-group'))
-                && (parentsUntil(relatedTarget, 'e-uploader') || !(relatedTarget &&
+                (parentsUntil(relatedTarget, 'e-multi-select-list-wrapper') || parentsUntil(relatedTarget, 'e-input-filter'))) &&
+                parentsUntil(relatedTarget, 'e-input-group')) && (parentsUntil(relatedTarget, 'e-uploader') || !(relatedTarget &&
                 isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))))) {
                 this.editModule.saveCell();
                 this.notify(events.editNextValCell, {});

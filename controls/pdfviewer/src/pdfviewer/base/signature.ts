@@ -1608,6 +1608,7 @@ export class Signature {
     };
     private renderSignatureText(): void {
         let maximumWidth: number = 750;
+        let enableButtons: boolean;
         // eslint-disable-next-line
         let fontDiv: any = document.getElementById(this.pdfViewer.element.id + '_font_appearance');
         // eslint-disable-next-line
@@ -1628,8 +1629,14 @@ export class Signature {
             let clickSign: any = document.getElementById('_font_signature' + i + '');
             clickSign.addEventListener('click', this.typeSignatureclick.bind(this));
         }
-        this.enableCreateButton(false);
-        this.enableClearbutton(false);
+        if (textBox.value.trim() === "") {
+            enableButtons = true;
+        }
+        else {
+            enableButtons = false;
+        }
+        this.enableCreateButton(enableButtons);
+        this.enableClearbutton(enableButtons);
         if (this.pdfViewer.element.offsetWidth < maximumWidth)
            this.updateCanvasSize();
            this.drawSignOnTabSwitch();
@@ -1637,21 +1644,23 @@ export class Signature {
     private typeSignatureclick(): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         // eslint-disable-next-line
-        let createButton: any = document.getElementsByClassName('e-pv-createbtn')[0];
-        createButton.disabled = false;
-        for (let i: number = 0; i < 4; i++) {
-            // eslint-disable-next-line
-            let fontElement: any = document.getElementById('_font_signature' + i + '');
-            if (fontElement) {
-                fontElement.style.borderColor = '';
+        if (eventTarget.textContent.trim() !== "") {
+            let createButton: any = document.getElementsByClassName('e-pv-createbtn')[0];
+            createButton.disabled = false;
+            for (let i: number = 0; i < 4; i++) {
+                // eslint-disable-next-line
+                let fontElement: any = document.getElementById('_font_signature' + i + '');
+                if (fontElement) {
+                    fontElement.style.borderColor = '';
+                }
             }
-        }
-        eventTarget.style.borderColor = 'red';
-        this.outputString = eventTarget.textContent;
-        try {
-            this.fontName = JSON.parse(eventTarget.style.fontFamily);
-        } catch (e) {
-            this.fontName = eventTarget.style.fontFamily;
+            eventTarget.style.borderColor = 'red';
+            this.outputString = eventTarget.textContent;
+            try {
+                this.fontName = JSON.parse(eventTarget.style.fontFamily);
+            } catch (e) {
+                this.fontName = eventTarget.style.fontFamily;
+            }
         }
     }
     /**

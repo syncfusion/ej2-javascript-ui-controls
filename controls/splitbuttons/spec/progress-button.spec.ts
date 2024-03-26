@@ -282,7 +282,7 @@ describe('Progress Button', () => {
     });
 
     it('Enable Html Sanitizer', () => {
-        new ProgressButton({ content: 'Progress<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true }, '#progressbtn17');
+        new ProgressButton({ content: 'Progress<style>body{background:rgb(0, 0, 255)}</style>' }, '#progressbtn17');
         const htmlele: Element = document.body;
         expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
     });
@@ -290,7 +290,7 @@ describe('Progress Button', () => {
     it('Enable Html Sanitizer disabled', () => {
         const ele: any = createElement('button', { id: 'progressbtn17' });
         document.body.appendChild(ele);
-        const button: ProgressButton = new ProgressButton({ content: 'Progress<style>body{background:rgb(0, 0, 255)}</style>' }, '#progressbtn17');
+        const button: ProgressButton = new ProgressButton({ content: 'Progress<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: false }, '#progressbtn17');
         const htmlele: Element = document.body;
         expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         button.destroy();

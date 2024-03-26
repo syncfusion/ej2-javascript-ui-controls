@@ -122,13 +122,14 @@ export class EditRender {
             this.focus.onClick({ target: closest(elem, 'td') }, true);
         } else {
             const isFocus: boolean = (this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && this.parent.editSettings.mode === 'Normal' ? false : true;
+            const focusElement: HTMLElement = elem.parentElement.classList.contains('e-ddl') ? elem.parentElement : elem;
             if ((isFocus || ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && this.parent.editSettings.newRowPosition === 'Bottom'
                 && parentsUntil(elem, literals.addedRow))) && (!this.parent.editSettings.showAddNewRow ||
                     (this.parent.editSettings.showAddNewRow && (!parentsUntil(elem, literals.addedRow)) || this.parent.addNewRowFocus))) {
-                elem.focus();
+                focusElement.focus();
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (elem as any).focus({ preventScroll: true });
+                (focusElement as any).focus({ preventScroll: true });
             }
         }
         if (elem.classList.contains('e-defaultcell')) {

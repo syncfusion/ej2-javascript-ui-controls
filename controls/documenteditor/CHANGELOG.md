@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I545513` - Added the preservation support for table style property in Document editor.
+- `#I548396` - Resolved the page number not refreshed issue while delete page.
+- `#I549835` - Resolved the document lagging issue.
+- `#I553758` - Resolved the editing issue in the attached document, which contains a chart.
+- `#I556874` - Resolved the script error issue when performing undo action on table.
+- `#I558460` - Resolved the tab rendering issue in the attached document.
+- `#I558529` - Resolved the form field editing issue in read only mode.
+- `#I558289` - Resolved the list numbering issue.
+- `#I558259` - Resolved the content formatting issue when removing hyperlink.
+- `#I559197` - Resolved the drag and drop issue.
+- `#I559912` - Resolved the image removed issue when selecting an image and perform enter action.
+- `#I561716` - Resolved the duplicate image string added to sfdt issue while drag and drop.
+- `#I561052` - Resolved the cursor position issue in mobile mode.
+- `#I563837` - Resolved the table overlapping issue in the attached document.
+- `#F186648` - Resolved the script error issue while opening a attached document.
+- `#F186745` - Resolved the table splitting issue in the merge cell.
+
 ## 25.1.35 (2024-03-15)
 
 ### DocumentEditor

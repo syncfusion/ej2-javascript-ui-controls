@@ -8137,5 +8137,75 @@ describe('ImageEditor', () => {
                 done();
             }, 100);
         });
+        it('Coverage improvement - random combinations 1', (done) => {
+            imageEditor = new ImageEditor({
+               height: '450px',
+               toolbarUpdating: function (args) {
+                if (args.toolbarType === 'rectangle') {
+                    args.toolbarItems = ['strokeColor'];
+                }
+            }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                setTimeout(() => {
+                    imageEditor.cloneShape('shape_1');
+                    imageEditor.getShapeSettings();
+                }, 500);
+                imageEditor.drawImage('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', 500, 100, 200, 80, false, 90);
+                done();
+            }, 100);
+        });
+        it('Coverage improvement - random combinations 2', (done) => {
+            imageEditor = new ImageEditor({
+               height: '450px',
+               zoomSettings: { minZoomFactor: 0.1, maxZoomFactor: 50 },
+               toolbarUpdating: function (args) {
+                if (args.toolbarType === 'rectangle') {
+                    args.toolbarItems = ['strokeColor'];
+                }
+            }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawRectangle(350, 200, 650, 400, 15, 'red', 'green');
+                    imageEditor.select('custom');
+                    imageEditor.rotate(90);
+                    imageEditor.zoom(1.5);
+                    imageEditor.crop();
+                    imageEditor.reset();
+                    imageEditor.drawText(350, 100, 'Syncfusion', 'Arial', 70, true, true, '#40e040');
+                    imageEditor.selectShape('shape_1');
+                    imageEditor.enableTextEditing();
+                    imageEditor.reset();
+                    imageEditor.select('custom');
+                    imageEditor.rotate(90);
+                    imageEditor.crop();
+                    imageEditor.straightenImage(10);
+                    imageEditor.select('custom');
+                    imageEditor.select('3:4');
+                    imageEditor.crop();
+                    imageEditor.reset();
+                    imageEditor.zoom(0.8);
+                    const finetuneBtn: any = document.querySelectorAll('#image-editor_adjustment')[0];
+                    finetuneBtn.click();
+                    setTimeout(() => {});
+                    imageEditor.reset();
+                    imageEditor.drawText(350, 100, 'Syncfusion', 'Arial', 70, true, true, '#40e040', true);
+                    imageEditor.enableTextEditing();
+                    imageEditor.reset();
+                    imageEditor.drawLine(350, 300, 300, 100, 20, 'red');
+                    expect(imageEditor.objColl[imageEditor.objColl.length - 1].shape).toEqual('line');
+                    imageEditor.drawArrow(350, 300, 300, 100, 20, 'red', 'Arrow', 'SolidArrow');
+                    expect(imageEditor.objColl[imageEditor.objColl.length - 1].shape).toEqual('arrow');
+                    imageEditor.drawPath([{x: 400, y: 300}, {x: 600, y: 400}, {x: 700, y: 300}], 20, 'red');
+                    expect(imageEditor.objColl[imageEditor.objColl.length - 1].shape).toEqual('path');
+                    imageEditor.getShapeSettings();
+                    imageEditor.getImageFilter('Invert');
+                    imageEditor.canUndo();
+                    imageEditor.canRedo();
+                done();
+            }, 100);
+        });
    });
 });

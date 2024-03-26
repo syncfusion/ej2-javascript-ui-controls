@@ -393,16 +393,16 @@ export class DateTime extends NiceInterval {
         switch (axis.actualIntervalType) {
         case 'Years':
             const year: number = Math.floor(Math.floor(sResult.getFullYear() / intervalSize) * intervalSize);
-            sResult = new Date(year, sResult.getMonth(), sResult.getDate(), 0, 0, 0);
+            sResult = new Date(year, sResult.getMonth(), sResult.getDate(), sResult.getHours(), sResult.getMinutes(), sResult.getSeconds());
             return sResult;
         case 'Months':
             const month: number = Math.floor(Math.floor((sResult.getMonth()) / intervalSize) * intervalSize);
-            sResult = new Date(sResult.getFullYear(), month, sResult.getDate(), 0, 0, 0);
+            sResult = new Date(sResult.getFullYear(), month, sResult.getDate(), sResult.getHours(), sResult.getMinutes(), sResult.getSeconds());
             return sResult;
 
         case 'Days':
             const day: number = Math.floor(Math.floor((sResult.getDate()) / intervalSize) * intervalSize);
-            sResult = new Date(sResult.getFullYear(), sResult.getMonth(), day, 0, 0, 0);
+            sResult = new Date(sResult.getFullYear(), sResult.getMonth(), day, sResult.getHours(), sResult.getMinutes(), sResult.getSeconds());
             return sResult;
 
         case 'Hours':

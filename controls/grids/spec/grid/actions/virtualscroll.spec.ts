@@ -1575,3 +1575,24 @@ describe('EJ2-859411-Scroll using the down arrow key by focusing the template, t
         grid = dataBound = null;
     });
 });
+
+describe('EJ2-873384-When the Grid height is set in pixels, whitespaces are shown while scrolling up and down', () => {
+    let grid: Grid;
+    beforeAll((done: Function) => {
+        grid = createGrid(
+            {
+                dataSource: largeDataset.slice(0,60),
+                columns: [{ field: 'Field0', headerText: 'Field0', width: 120 }],
+                enableVirtualization: true,
+                height: '600px'
+            },done);
+    });
+    it('ensure pageSize', (done: Function) => {
+            expect(grid.pageSettings.pageSize).toBeGreaterThan(12);
+            done();
+    });
+    afterAll(() => {
+        destroy(grid);
+        grid = null;
+    });
+});

@@ -93,11 +93,13 @@ export class AnnotationBase {
             const stockChart: StockChart = (this.control as Chart).stockChart;
             let xAxis: Axis; let yAxis: Axis;
             let xValue: number;
-
             for (const axis of chart.axisCollections) {
                 if (xAxisName === axis.name || (xAxisName == null && axis.name === 'primaryXAxis')) {
                     xAxis = axis;
-                    if (xAxis.valueType.indexOf('Category') > -1) {
+                    if (xAxis.isIndexed) {
+                        xValue = Number(annotation.x);
+                    }
+                    else if (xAxis.valueType.indexOf('Category') > -1) {
                         const xAnnotation: string =  xAxis.valueType === 'DateTimeCategory' ? ((annotation.x as Date).getTime()).toString() :
                                                                                             <string>annotation.x;
                         if (xAxis.labels.indexOf(xAnnotation) < 0) {

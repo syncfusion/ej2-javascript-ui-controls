@@ -3410,14 +3410,25 @@ export class FormDesigner {
     /**
      * @private
      */
-    public removeFieldsFromAnnotationCollections(annotationId: string): any {
+    public removeFieldsFromAnnotationCollections(annotationId: string, fieldName: string): any {
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
+        let sessiondata : string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        let sessionformFields: any = JSON.parse(sessiondata);
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].Key.split("_")[0] === annotationId) {
                 formFieldsData.splice(i, 1);
                 this.pdfViewerBase.formFieldCollection.splice(i, 1);
                 break;
+            }
+        }
+        if (!isNullOrUndefined(sessionformFields)) {
+            for (let i: number = 0; i < sessionformFields.length; i++) {
+                if (sessionformFields[i].FieldName === fieldName) {
+                    sessionformFields.splice(parseInt(i.toString(), 10), 1);
+                    sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', JSON.stringify(sessionformFields));
+                    break;
+                }
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');

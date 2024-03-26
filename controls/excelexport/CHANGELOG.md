@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 24.2.4 (2024-02-06)
-
-### Excel Export
-
-#### Bug Fixes
-
-- Fixed the new line character after end row being rendered improperly in CSV export.
-
-## 24.1.41 (2023-12-18)
+## 25.1.35 (2024-03-15)
 
 ### Excel Export
 
@@ -23,6 +15,8 @@
 - Fixed the file corruption issue due to currency symbol in Grid to CSV export.
 
 - Fixed the text with double quotes being rendered improperly in CSV export.
+
+- Fixed the New line character being rendered improperly in CSV export.
 
 ## 21.1.35 (2023-03-23)
 

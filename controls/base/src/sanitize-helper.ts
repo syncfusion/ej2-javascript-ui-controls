@@ -2,6 +2,7 @@
  * SanitizeHtmlHelper for sanitize the value.
  */
 import { detach } from './dom';
+import { isNullOrUndefined } from './util';
 
 interface BeforeSanitizeHtml {
     /** Illustrates whether the current action needs to be prevented or not. */
@@ -152,6 +153,7 @@ export class SanitizeHtmlHelper {
         };
     }
     public static sanitize(value: string): string {
+        if (isNullOrUndefined(value)) { return value; }
         const item: BeforeSanitizeHtml = this.beforeSanitize();
         const output: string = this.serializeValue(item, value);
         return output;
@@ -167,6 +169,7 @@ export class SanitizeHtmlHelper {
         this.removeXssAttrs();
         const tempEleValue: string = this.wrapElement.innerHTML;
         this.removeElement();
+        this.wrapElement = null;
         return tempEleValue.replace(/&amp;/g, '&');
     }
 

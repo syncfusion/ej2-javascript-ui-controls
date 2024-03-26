@@ -41,6 +41,7 @@ export class SfdtExport {
     private startColumnIndex: number = undefined;
     private endColumnIndex: number = undefined;
     private lists: number[] = undefined;
+    private images: number[] = undefined;
     private document: any = undefined;
     private writeInlineStyles: boolean = undefined;
     private nextBlock: any;
@@ -105,6 +106,7 @@ export class SfdtExport {
         this.startLine = undefined;
         this.endLine = undefined;
         this.lists = undefined;
+        this.images = undefined;
         this.document = undefined;
         this.endCell = undefined;
         this.startColumnIndex = undefined;
@@ -331,6 +333,7 @@ export class SfdtExport {
      */
     public Initialize(): void {
         this.lists = [];
+        this.images = [];
         this.document = {};
         this.document.optimizeSfdt = this.owner.documentEditorSettings.optimizeSfdt;
         this.document[sectionsProperty[this.keywordIndex]] = [];
@@ -943,6 +946,7 @@ export class SfdtExport {
             this.writeChart(element, inline);
         } else if (element instanceof ImageElementBox) {
             inline[imageStringProperty[this.keywordIndex]] = element.imageString;
+            this.images.push(parseInt(element.imageString, 10));
             inline[metaFileImageStringProperty[this.keywordIndex]] = element.metaFileImageString;
             inline[isMetaFileProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.isMetaFile, this.keywordIndex);
             inline[isCompressedProperty[this.keywordIndex]] = element.isCompressed;
@@ -2001,6 +2005,9 @@ export class SfdtExport {
             wStyle[typeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getStyleTypeEnumValue(style.type) : style.type;
             wStyle[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat((style as any).characterFormat, this.keywordIndex);
         }
+        if (style.type === 'Table') {
+            wStyle[typeProperty[this.keywordIndex]] = this.keywordIndex == 1 ? this.getStyleTypeEnumValue(style.type) : style.type;
+        }
         if (!isNullOrUndefined(style.basedOn)) {
             wStyle[basedOnProperty[this.keywordIndex]] = style.basedOn.name;
         }
@@ -2052,10 +2059,11 @@ export class SfdtExport {
     }
     public writeImages(documentHelper: DocumentHelper): void {
         this.document[imagesProperty[this.keywordIndex]] = {};
-        documentHelper.images.keys.forEach(key => {
-            let base64ImageString: string[] = this.documentHelper.images.get(key);
+        for (let i = 0; i < this.images.length; i++) {
+            let key: number = this.images[i];
+            let base64ImageString: string[] = documentHelper.images.get(key);
             this.document[imagesProperty[this.keywordIndex]][key] = base64ImageString;
-        });
+        }
     }
     private writeComment(comments: CommentElementBox): any {
         let comment: any = {};
@@ -2397,6 +2405,8 @@ export class SfdtExport {
                 return 0;
             case 'Character':
                 return 1;
+            case 'Table':
+                return 2;
         }
     }
     private getProtectionTypeEnumValue(protectionType: ProtectionType): number {
@@ -2872,6 +2882,7 @@ export class SfdtExport {
      */
     public destroy(): void {
         this.lists = undefined;
+        this.images = undefined;
         this.endLine = undefined;
         this.startLine = undefined;
         this.endOffset = undefined;

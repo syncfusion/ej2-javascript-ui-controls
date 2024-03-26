@@ -129,7 +129,7 @@ export interface GanttModel extends ComponentModel{
     /**
      * `undoRedoActions` Defines action items that retain for undo and redo operation.
      * 
-     * @default null 
+     * @default ['Sorting','Add','ColumnReorder','ColumnResize','ColumnState','Delete','Edit','Filtering','Indent','Outdent','NextTimeSpan','PreviousTimeSpan','RowDragAndDrop','Search'] 
      */ 
     undoRedoActions?: GanttAction[]; 
 

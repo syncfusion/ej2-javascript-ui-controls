@@ -140,8 +140,8 @@ export class Ribbon {
                 { template: document.getElementById(`${id}_fill_color_picker`), tooltipText: l10n.getConstant('FillColor'),
                     id: id + '_fill_color_picker' },
                 { template: this.getBordersDBB(id), tooltipText: l10n.getConstant('Borders'), id: id + '_borders' },
-                { template: this.getMergeSplitBtn(id), tooltipText: l10n.getConstant('MergeCells'),
-                    htmlAttributes: { 'aria-label': l10n.getConstant('MergeCells') }, id: id + '_merge_cells', disabled: true },
+                { template: this.getMergeSplitBtn(id), tooltipText: l10n.getConstant('MergeCells'), id: id + '_merge_cells',
+                    disabled: true },
                 { type: 'Separator', id: id + '_separator_7' },
                 { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id: id + '_text_align' },
                 { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align' },
@@ -1576,7 +1576,9 @@ export class Ribbon {
                 }
             },
             created: (): void => {
-                this.mergeSplitBtn.element.title = l10n.getConstant('MergeCells');
+                const mergeCellTitle: string = l10n.getConstant('MergeCells');
+                this.mergeSplitBtn.element.title = mergeCellTitle;
+                this.mergeSplitBtn.element.setAttribute('aria-label', mergeCellTitle);
                 (this.mergeSplitBtn.element.nextElementSibling as HTMLButtonElement).title = l10n.getConstant('SelectMergeType');
             },
             beforeOpen: (args: MenuEventArgs) => args.element.setAttribute('aria-label', l10n.getConstant('MergeCells'))

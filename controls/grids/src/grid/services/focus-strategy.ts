@@ -1351,6 +1351,10 @@ export class ContentFocus implements IFocus {
             !info.element.classList.contains('e-detailcell') ? this.getFocusable(info.element) : info.element;
         info.elementToFocus = info.element.classList.contains('e-detailcell') && info.element.querySelector('.e-childgrid')
             ? info.element.querySelector('.e-childgrid') : info.elementToFocus;
+        if (this.parent.editSettings.mode === 'Batch' && this.parent.isEdit && info.elementToFocus.tagName.toLowerCase() === 'input'
+            && info.elementToFocus.parentElement.classList.contains('e-ddl')) {
+            info.elementToFocus = info.elementToFocus.parentElement;
+        }
         info.outline = true;
         info.uid = info.element.parentElement.getAttribute('data-uid');
         return info;

@@ -211,7 +211,7 @@ export class InkAnnotation {
             let isLock: boolean = this.pdfViewer.inkAnnotationSettings.isLock ? this.pdfViewer.inkAnnotationSettings.isLock : this.pdfViewer.annotationSettings.isLock;
             const author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.inkAnnotationSettings.author ? this.pdfViewer.inkAnnotationSettings.author : 'Guest';
             const subject: string = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.inkAnnotationSettings.subject ? this.pdfViewer.inkAnnotationSettings.subject : 'Ink';
-            const customData: object = this.pdfViewer.inkAnnotationSettings.customData;
+            const customData: object = !isNullOrUndefined(this.pdfViewer.annotationSettings.customData) ?this.pdfViewer.annotationSettings.customData : this.pdfViewer.inkAnnotationSettings.customData ? this.pdfViewer.inkAnnotationSettings.customData : null;
             const isPrint: boolean = this.pdfViewer.inkAnnotationSettings.isPrint;
             // eslint-disable-next-line
             let allowedInteractions: any = this.pdfViewer.inkAnnotationSettings.allowedInteractions ? this.pdfViewer.inkAnnotationSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;

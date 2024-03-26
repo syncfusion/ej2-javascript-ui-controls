@@ -2035,5 +2035,78 @@ describe('Overview', () => {
         });
 
     });
+
+    describe('872140-Dragging HTML nodes in a diagram leaves shadows on the overview', () => {
+        let diagram: Diagram;
+        let overview: Overview;
+        let ele: HTMLElement;
+        let ove: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramShadow', styles: "width:74%;height: 500px; float:left" });
+            document.body.appendChild(ele);
+            ove = createElement('div', { id: 'overviewShadow', styles: "width:25%;height:200px;float:left; border-color:lightgray;border-style:solid;" });
+            document.body.appendChild(ove);
+
+            let nodes:NodeModel[] = [
+                { id: "Node1",offsetX: 400,offsetY: 250,width: 100,height: 100,shape: {
+                      type: "HTML",
+                      content: '<div style="width: 100px; height: 100px; border: 2px solid blue;">'
+                    }
+                },
+                { id: "Node2",offsetX: 400,offsetY: 250,width: 100,height: 100
+                },
+
+            ];
+            diagram = new Diagram({
+                width: '100%',
+                height: '700px',
+                rulerSettings:{showRulers:true},
+                nodes:nodes,
+                getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
+                    obj.height = 100;
+                    return obj;
+                }
+            });
+            diagram.appendTo('#diagramShadow');
+
+            let overview: Overview = new Overview({
+                sourceID: 'diagramShadow',
+            });
+            overview.appendTo('#overviewShadow');
+
+
+        });
+
+        afterAll((): void => {
+            overview.destroy();
+            diagram.destroy();
+            ele.remove();
+            ove.remove();
+        });
+
+        it('Drag the html node in diagram', (done: Function) => {
+            let html = diagram.nameTable['Node1'];
+            let overview = (document.getElementById('overviewShadow') as any).ej2_instances[0];
+            let overviewRect = document.getElementById(overview.canvas.id + 'overviewrect');
+            let x = Number(overviewRect.getAttribute('x'));
+            let y = Number(overviewRect.getAttribute('y'));
+            let width = Number(overviewRect.getAttribute('width'));
+            let height = Number(overviewRect.getAttribute('height'));
+            diagram.select([html]);
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseMoveEvent(diagramCanvas,html.offsetX,html.offsetY);
+            mouseEvents.mouseDownEvent(diagramCanvas,html.offsetX,html.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas,html.offsetX + 10,html.offsetY + 10);
+            mouseEvents.mouseUpEvent(diagramCanvas,html.offsetX + 10,html.offsetY + 10);
+            let curX = Number(overviewRect.getAttribute('x'));
+            let curY = Number(overviewRect.getAttribute('y'));
+            let curWidth = Number(overviewRect.getAttribute('width'));
+            let curHeight = Number(overviewRect.getAttribute('height'));
+            expect(x === curX && y === curY && width === curWidth && height === curHeight).toBe(true);
+            done();
+        });
+
+    });
     
 });

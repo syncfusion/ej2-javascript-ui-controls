@@ -976,6 +976,10 @@
         position: relative;
       }
 
+      .e-appointment-wrapper-hidden {
+        visibility: hidden;
+      }
+
       .e-all-day-appointment-wrapper .e-appointment:not(.e-schedule-event-clone) {
         cursor: default;
       }

@@ -161,8 +161,9 @@ export class TaskProcessor extends DateProcessor {
             this.constructResourceViewDataSource(resources, hierarchicalData, unassignedTasks);
             if (unassignedTasks.length > 0) {
                 const record: Object = {};
+                let resourceName: string = this.parent.resourceFields.name || 'resourceName';
                 record[this.parent.resourceFields.id] = 0;
-                record[this.parent.resourceFields.name] = this.parent.localeObj.getConstant('unassignedTask');
+                record[resourceName as string] = this.parent.localeObj.getConstant('unassignedTask');
                 record[this.parent.taskFields.child] = unassignedTasks;
                 resources.push(record);
             }
@@ -385,7 +386,12 @@ export class TaskProcessor extends DateProcessor {
             }
         } else if (!isNullOrUndefined(data[resourceFields.id])) {
             id = data[resourceFields.id];
-            name = data[resourceFields.name];
+            if (isNullOrUndefined(data[resourceFields.name]) && data['resourceName'] === "Unassigned Task"){
+                name = data['resourceName'];
+            }
+            else{
+                name = data[resourceFields.name];
+            }
             this.addTaskData(ganttData, data, false);
         }
         this.parent.setRecordValue('taskId', id, ganttProperties, true);
@@ -697,7 +703,7 @@ export class TaskProcessor extends DateProcessor {
     public updateWorkWithDuration(ganttData: IGanttData): void {
         const resources: Object[] = ganttData.ganttProperties.resourceInfo;
         let work: number = 0;
-        if (!isNullOrUndefined(resources)) {
+        if (!isNullOrUndefined(resources) && !ganttData.hasChildRecords) {
             const resourcesLength: number = resources.length;
             let index: number;
             let resourceUnit: number;
@@ -1342,11 +1348,11 @@ export class TaskProcessor extends DateProcessor {
             this.parent.ganttChartModule.scrollObject['isSetScrollLeft'])) && !isFromTimelineVirtulization) {
             isValid = false;
         }
-        if (!this.parent.editModule && this.parent.enableTimelineVirtualization && isValid && !this.parent.timelineModule['performedTimeSpanAction']) {
+        if (this.parent.enableTimelineVirtualization && isValid && !this.parent.timelineModule['performedTimeSpanAction']) {
            leftValueForStartDate = (this.parent.enableTimelineVirtualization && this.parent.ganttChartModule.scrollObject.element.scrollLeft != 0)
                 ? this.parent.ganttChartModule.scrollObject.getTimelineLeft() : null;
         }
-        const timelineStartDate: Date = (this.parent.editModule && this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
+        const timelineStartDate: Date = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
                 ? new Date((this.parent.timelineModule['dateByLeftValue'](leftValueForStartDate)).toString()) : new Date(this.parent.timelineModule.timelineStartDate);
         if (timelineStartDate) {
             let leftValue: number =  (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;

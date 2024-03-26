@@ -394,22 +394,26 @@ export class AnnotationToolbar {
                     if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                         id = this.pdfViewer.element.id + '_underlineIcon';
                     }
-                    else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
-                        id = this.pdfViewer.element.id + '_annotation_freeTextEdit';
-                        // eslint-disable-next-line max-len
-                    } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Stamp' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'StickyNotes' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image') {
-                        id = this.pdfViewer.element.id + '_annotation_stamp';
-                        // eslint-disable-next-line max-len
-                    } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText') {
-                        id = this.pdfViewer.element.id + '_annotation_handwrittenSign';
-                    } else if(this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage'){
-                        id = this.pdfViewer.element.id + '_annotation_handwrittenImage';
-                    }else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path') {
-                        id = this.pdfViewer.element.id + '_annotation_inkIcon';
-                    } else if (shapeType === 'Highlight' || shapeType === 'Underline' || shapeType === 'Strikethrough') {
-                        id = this.pdfViewer.element.id + '_highlightIcon';
-                    } else {
-                        id = this.pdfViewer.element.id + '_annotation_shapesIcon';
+                    else {
+                        if (this.pdfViewer.selectedItems.annotations[0]) {
+                            if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
+                                id = this.pdfViewer.element.id + '_annotation_freeTextEdit';
+                                // eslint-disable-next-line max-len
+                            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Stamp' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'StickyNotes' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image') {
+                                id = this.pdfViewer.element.id + '_annotation_stamp';
+                                // eslint-disable-next-line max-len
+                            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText') {
+                                id = this.pdfViewer.element.id + '_annotation_handwrittenSign';
+                            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage') {
+                                id = this.pdfViewer.element.id + '_annotation_handwrittenImage';
+                            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path') {
+                                id = this.pdfViewer.element.id + '_annotation_inkIcon';
+                            } else if (shapeType === 'Highlight' || shapeType === 'Underline' || shapeType === 'Strikethrough') {
+                                id = this.pdfViewer.element.id + '_highlightIcon';
+                            } else {
+                                id = this.pdfViewer.element.id + '_annotation_shapesIcon';
+                            }
+                        }
                     }
                     this.pdfViewer.toolbarModule.annotationToolbarModule.mobileColorpicker(id);
                 }

@@ -7858,10 +7858,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 case 'toolbarSettings':
                     if (!Browser.isDevice || this.enableDesktopMode) {
                         this.toolbar.applyToolbarSettings();
-                        if (!isNullOrUndefined(this.toolbar.annotationToolbarModule) && !isNullOrUndefined(this.toolbar.formDesignerToolbarModule)) {
-                        this.toolbar.annotationToolbarModule.applyAnnotationToolbarSettings();
-                        this.toolbar.formDesignerToolbarModule.applyFormDesignerToolbarSettings();
-                    }
+                        if (!isNullOrUndefined(this.toolbar.annotationToolbarModule)) {
+                            this.toolbar.annotationToolbarModule.applyAnnotationToolbarSettings();
+                        }
+                        if (!isNullOrUndefined(this.toolbar.formDesignerToolbarModule)) {
+                            this.toolbar.formDesignerToolbarModule.applyFormDesignerToolbarSettings();
+                        }
                     }
                     else {
                         this.toolbar.applyToolbarSettingsForMobile();

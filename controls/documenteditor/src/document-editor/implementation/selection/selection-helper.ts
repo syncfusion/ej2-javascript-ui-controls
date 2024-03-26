@@ -326,6 +326,17 @@ export class TextPosition {
         return this.paragraph === textPosition.paragraph;
     }
     /**
+     * Return true if start and end is in same list
+     *
+     * @private
+     */
+    public isInSameListParagraph(textPosition: TextPosition): boolean {
+        if (isNullOrUndefined(textPosition)) {
+            throw new Error('textPosition is undefined.');
+        }
+        return this.paragraph.paragraphFormat.listFormat.listId === textPosition.paragraph.paragraphFormat.listFormat.listId;
+    }
+    /**
      * Return true is current text position exist before given text position
      *
      * @private

@@ -3620,11 +3620,16 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private focusIn(): void {
         if(!this.mouseDownStatus){
         let focusedElement: Element = this.getFocusedNode();
-        focusedElement.setAttribute("tabindex","0");
-        addClass([focusedElement], FOCUS);
-        EventHandler.add(focusedElement, 'blur', this.focusOut, this);
+            if (focusedElement.classList.contains('e-disable')) {
+                focusedElement.setAttribute("tabindex", "-1");
+                this.navigateNode(true);
+            } else {
+                focusedElement.setAttribute("tabindex","0");
+                addClass([focusedElement], FOCUS);
+                EventHandler.add(focusedElement, 'blur', this.focusOut, this);
+            }
+            this.mouseDownStatus = false;
         }
-        this.mouseDownStatus = false;
     }
 
     private focusOut(event: Event): void {

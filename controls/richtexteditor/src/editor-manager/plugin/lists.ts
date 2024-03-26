@@ -745,20 +745,32 @@ export class Lists {
 
     private cleanNode(): void {
         const liParents: Element[] = <Element[] & NodeListOf<Element>>this.parent.editableElement.querySelectorAll('ol + ol, ul + ul');
+        let listStyleType: string;
+        let firstNodeOL: Element;
         for (let c: number = 0; c < liParents.length; c++) {
             const node: Element = liParents[c as number];
-            if (this.domNode.isList(node.previousElementSibling  as Element) &&
-                this.domNode.openTagString(node) === this.domNode.openTagString(node.previousElementSibling  as Element)) {
+            let toFindtopOlUl: boolean = true;
+            if (toFindtopOlUl && (liParents[c as number].parentElement.parentElement.nodeName === 'OL' || liParents[c as number].parentElement.parentElement.nodeName === 'UL')) {
+                toFindtopOlUl = false;
+                const preElement: HTMLElement = liParents[c as number].parentElement.parentElement;
+                listStyleType = preElement.style.listStyleType;
+                firstNodeOL = node.previousElementSibling;
+            }
+            if (this.domNode.isList(node.previousElementSibling as Element) &&
+                this.domNode.openTagString(node) === this.domNode.openTagString(node.previousElementSibling as Element)) {
                 const contentNodes: Node[] = this.domNode.contents(node);
                 for (let f: number = 0; f < contentNodes.length; f++) {
-                    node.previousElementSibling .appendChild(contentNodes[f as number]);
+                    node.previousElementSibling.appendChild(contentNodes[f as number]);
                 }
                 node.parentNode.removeChild(node);
-            } else if (!isNOU(node.getAttribute('level'))){
-                if (node.tagName === node.previousElementSibling.tagName){
+            } else if (!isNOU(node.getAttribute('level'))) {
+                if (node.tagName === node.previousElementSibling.tagName) {
                     (node.previousElementSibling.lastChild as HTMLElement).append(node);
                 }
             }
+        }
+        if (firstNodeOL) {
+            (firstNodeOL as HTMLElement).style.listStyleType = listStyleType;
         }
     }
     private findUnSelected(temp: HTMLElement[], elements: HTMLElement[]): void {

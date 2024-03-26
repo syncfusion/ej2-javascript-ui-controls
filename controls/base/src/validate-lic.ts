@@ -1,11 +1,11 @@
 import { createElement } from './dom';
 import { getValue, containerObject, setValue, isNullOrUndefined } from './util';
-export let componentList: string[] = ['grid', 'pivotview', 'treegrid', 'spreadsheet', 'rangeNavigator', 'DocumentEditor', 'listbox', 'inplaceeditor', 'PdfViewer', 'richtexteditor', 'DashboardLayout', 'chart', 'stockChart', 'circulargauge', 'diagram', 'heatmap', 'lineargauge', 'maps', 'slider', 'smithchart', 'barcode', 'sparkline', 'treemap', 'bulletChart', 'kanban', 'daterangepicker', 'schedule', 'gantt', 'signature', 'query-builder', 'drop-down-tree', 'carousel', 'filemanager', 'uploader', 'accordion', 'tab', 'treeview'];
+export const componentList: string[] = ['grid', 'pivotview', 'treegrid', 'spreadsheet', 'rangeNavigator', 'DocumentEditor', 'listbox', 'inplaceeditor', 'PdfViewer', 'richtexteditor', 'DashboardLayout', 'chart', 'stockChart', 'circulargauge', 'diagram', 'heatmap', 'lineargauge', 'maps', 'slider', 'smithchart', 'barcode', 'sparkline', 'treemap', 'bulletChart', 'kanban', 'daterangepicker', 'schedule', 'gantt', 'signature', 'query-builder', 'drop-down-tree', 'carousel', 'filemanager', 'uploader', 'accordion', 'tab', 'treeview'];
 
 const bypassKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105,
     111, 110, 46, 105, 115, 76, 105, 99, 86, 97, 108,
     105, 100, 97, 116, 101, 100];
-let accountURL: string; 
+let accountURL: string;
 /**
  * License validation module
  *
@@ -14,7 +14,7 @@ let accountURL: string;
 class LicenseValidator {
     private isValidated: boolean = false;
     public isLicensed: boolean = true;
-    public version: string = '24';
+    public version: string = '25';
     public platform: RegExp = /JavaScript|ASPNET|ASPNETCORE|ASPNETMVC|FileFormats|essentialstudio/i;
     private errors: IErrorType = {
         noLicense: '<span>This application was built using a trial version of Syncfusion Essential Studio.' +
@@ -72,11 +72,13 @@ class LicenseValidator {
 
     /**
      * To validate the provided license key.
-    */
+     *
+     * @returns {boolean} ?
+     */
     public validate(): boolean {
-        let contentKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105, 111, 110, 46,
+        const contentKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105, 111, 110, 46,
             108, 105, 99, 101, 110, 115, 101, 67, 111, 110, 116, 101, 110, 116];
-        let URLKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105, 111, 110, 46,
+        const URLKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105, 111, 110, 46,
             99, 108, 97, 105, 109, 65, 99, 99, 111, 117, 110, 116, 85, 82, 76];
         if (!this.isValidated && (containerObject && !getValue(convertToChar(bypassKey), containerObject) && !getValue('Blazor', containerObject))) {
             let validateMsg: string;
@@ -105,7 +107,7 @@ class LicenseValidator {
                     validateMsg = this.errors.invalidKey;
                 }
             } else {
-                let licenseContent: string = getValue(convertToChar(contentKey), containerObject);
+                const licenseContent: string = getValue(convertToChar(contentKey), containerObject);
                 validateURL = getValue(convertToChar(URLKey), containerObject);
                 if (licenseContent && licenseContent !== '') {
                     validateMsg = licenseContent;
@@ -114,13 +116,13 @@ class LicenseValidator {
                 }
             }
             if (validateMsg && typeof document !== 'undefined' && !isNullOrUndefined(document)) {
-                 accountURL = (validateURL && validateURL !== '')?  validateURL : "https://www.syncfusion.com/account/claim-license-key?pl=SmF2YVNjcmlwdA==&vs=MjQ=&utm_source=es_license_validation_banner&utm_medium=listing&utm_campaign=license-information";
+                accountURL = (validateURL && validateURL !== '') ?  validateURL : 'https://www.syncfusion.com/account/claim-license-key?pl=SmF2YVNjcmlwdA==&vs=MjU=&utm_source=es_license_validation_banner&utm_medium=listing&utm_campaign=license-information';
                 const errorDiv: HTMLElement = createElement('div', {
                     innerHTML: `<img src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzE5OV80KSI+CjxwYXRoIGQ9Ik0xMiAyMUMxNi45NzA2IDIxIDIxIDE2Ljk3MDYgMjEgMTJDMjEgNy4wMjk0NCAxNi45NzA2IDMgMTIgM0M3LjAyOTQ0IDMgMyA3LjAyOTQ0IDMgMTJDMyAxNi45NzA2IDcuMDI5NDQgMjEgMTIgMjFaIiBzdHJva2U9IiM3MzczNzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0xMS4yNSAxMS4yNUgxMlYxNi41SDEyLjc1IiBmaWxsPSIjNjE2MDYzIi8+CjxwYXRoIGQ9Ik0xMS4yNSAxMS4yNUgxMlYxNi41SDEyLjc1IiBzdHJva2U9IiM3MzczNzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0xMS44MTI1IDlDMTIuNDMzOCA5IDEyLjkzNzUgOC40OTYzMiAxMi45Mzc1IDcuODc1QzEyLjkzNzUgNy4yNTM2OCAxMi40MzM4IDYuNzUgMTEuODEyNSA2Ljc1QzExLjE5MTIgNi43NSAxMC42ODc1IDcuMjUzNjggMTAuNjg3NSA3Ljg3NUMxMC42ODc1IDguNDk2MzIgMTEuMTkxMiA5IDExLjgxMjUgOVoiIGZpbGw9IiM3MzczNzMiLz4KPC9nPgo8ZGVmcz4KPGNsaXBQYXRoIGlkPSJjbGlwMF8xOTlfNCI+CjxyZWN0IHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0id2hpdGUiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4K' style="top: 6px;
                     position: absolute;
                     left: 16px;
                     width: 24px;
-                    height: 24px;"/>`+validateMsg + ' '+'<a style="text-decoration: none;color: #0D6EFD;font-weight: 500;" href=' + accountURL + '>Claim your free account</a>'
+                    height: 24px;"/>` + validateMsg + ' ' + '<a style="text-decoration: none;color: #0D6EFD;font-weight: 500;" href=' + accountURL + '>Claim your free account</a>'
                 });
                 errorDiv.setAttribute('style', `position: fixed;
                 top: 10px;
@@ -191,7 +193,7 @@ class LicenseValidator {
                     const charKey: string = decodeStr[decodeStr.length - 1];
                     const decryptedKey: number[] = [];
                     for (let i: number = 0; i < decodeStr.length; i++) {
-                        decryptedKey[parseInt(i.toString(), 10)] = decodeStr[parseInt(i.toString(), 10)].charCodeAt(0) - charKey.charCodeAt(0);
+                        decryptedKey[`${i}`] = decodeStr[`${i}`].charCodeAt(0) - charKey.charCodeAt(0);
                     }
                     for (let i: number = 0; i < decryptedKey.length; i++) {
                         buffr += String.fromCharCode(decryptedKey[parseInt(i.toString(), 10)]);
@@ -226,7 +228,7 @@ let licenseValidator: LicenseValidator = new LicenseValidator();
  * Converts the given number to characters.
  *
  * @param {number} cArr - Specifies the license key as number.
- * @returns {string}
+ * @returns {string} ?
  */
 function convertToChar(cArr: number[]): string {
     let ret: string = '';
@@ -259,7 +261,7 @@ export const getVersion: Function = (): string => {
 // Method for create overlay over the sample
 
 export const createLicenseOverlay: Function = (): void => {
-    let bannerTemplate: string = `
+    const bannerTemplate: string = `
     <div style="
     position: fixed;
     width: 100%;

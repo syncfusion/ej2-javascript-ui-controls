@@ -1,5 +1,5 @@
 import { Column } from '../models/column';
-import { SaveEventArgs, DataStateChangeEventArgs as GridDataStateChangeEventArgs, ExcelExportProperties } from '@syncfusion/ej2-grids';
+import { SaveEventArgs, DataStateChangeEventArgs as GridDataStateChangeEventArgs, ExcelExportProperties, RowDragEventArgs as GridRowDragEventArgs } from '@syncfusion/ej2-grids';
 import { PdfExportProperties } from '@syncfusion/ej2-grids';
 /**
  * Specifies FlatData interfaces.
@@ -181,4 +181,7 @@ export interface DataStateChangeEventArgs extends GridDataStateChangeEventArgs {
     requestType?: string;
     /** Defines the resolve function for the promise. */
     childDataBind?: Function;
+}
+export interface RowDragEventArgs extends GridRowDragEventArgs {
+    dropPosition: string;
 }

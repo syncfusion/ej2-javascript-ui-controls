@@ -865,12 +865,7 @@ export class Renderer {
                 let lastPara: ParagraphWidget = this.documentHelper.selection.getLastParagraph(widget) as ParagraphWidget;
                 let lastLine: LineWidget = lastPara.lastChild as LineWidget;
                 let position: Point = this.documentHelper.selection.getEndPosition(lastPara);
-                if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
-                    let xLeft = this.documentHelper.textHelper.getWidth(String.fromCharCode(164), lastLine.paragraph.characterFormat) + position.x;
-                    this.renderBookmark(this.getScaledValue(xLeft, 1), this.getScaledValue(position.y, 2), this.getScaledValue(lastLine.height - lastLine.margin.bottom), 1);
-                } else {
-                    this.renderBookmark(this.getScaledValue(position.x, 1), this.getScaledValue(position.y, 2), this.getScaledValue(lastLine.height - lastLine.margin.bottom), 1);
-                }
+                this.renderBookmark(this.getScaledValue(position.x, 1), this.getScaledValue(position.y, 2), this.getScaledValue(lastLine.height - lastLine.margin.bottom), 1);
             }
         }
     }
@@ -2052,6 +2047,7 @@ export class Renderer {
                 tabString = '-';
                 break;
             case 'Underscore':
+            case 'Single':
                 tabString = '_';
                 break;
         }

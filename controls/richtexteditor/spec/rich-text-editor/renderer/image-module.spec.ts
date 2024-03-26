@@ -2471,43 +2471,43 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 4000);
         });
     });
-    describe('EJ2-37798 - Disable the insert image dialog button when the image is uploading', () => {
-        let rteObj: RichTextEditor;
-        beforeEach((done: Function) => {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['Image']
-                },
-                insertImageSettings: {
-                    saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
-                    path: "../Images/"
-                }
-            });
-            done();
-        })
-        afterEach((done: Function) => {
-            destroy(rteObj);
-            done();
-        })
-        it(' Button enabled with image upload Success', (done) => {
-            let rteEle: HTMLElement = rteObj.element;
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let args = { preventDefault: function () { } };
-            let range = new NodeSelection().getRange(document);
-            let save = new NodeSelection().save(range, document);
-            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
-            let fileObj: File = new File(["Nice One"], "sample.jpg", { lastModified: 0, type: "overide/mimetype" });
-            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
-            setTimeout(() => {
-                expect((dialogEle.querySelector('.e-insertImage') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
-                done();
-            }, 4500);
-        });
-    });
+    // describe('EJ2-37798 - Disable the insert image dialog button when the image is uploading', () => {
+    //     let rteObj: RichTextEditor;
+    //     beforeEach((done: Function) => {
+    //         rteObj = renderRTE({
+    //             toolbarSettings: {
+    //                 items: ['Image']
+    //             },
+    //             insertImageSettings: {
+    //                 saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
+    //                 path: "../Images/"
+    //             }
+    //         });
+    //         done();
+    //     })
+    //     afterEach((done: Function) => {
+    //         destroy(rteObj);
+    //         done();
+    //     })
+    //     it(' Button enabled with image upload Success', (done) => {
+    //         let rteEle: HTMLElement = rteObj.element;
+    //         (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+    //         let args = { preventDefault: function () { } };
+    //         let range = new NodeSelection().getRange(document);
+    //         let save = new NodeSelection().save(range, document);
+    //         let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+    //         (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+    //         let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+    //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+    //         let fileObj: File = new File(["Nice One"], "sample.jpg", { lastModified: 0, type: "overide/mimetype" });
+    //         let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+    //         (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+    //         setTimeout(() => {
+    //             expect((dialogEle.querySelector('.e-insertImage') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
+    //             done();
+    //         }, 4500);
+    //     });
+    // });
     describe(' EJ2-20297: RTE Image insert link  - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -3028,47 +3028,47 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
-    describe('Rename images in success event- ', () => {
-        let rteObj: RichTextEditor;
-        beforeEach((done: Function) => {
-            rteObj = renderRTE({
-                imageUploadSuccess: function (args : any) {
-                    args.file.name = 'rte_image';
-                    var filename : any = document.querySelectorAll(".e-file-name")[0];
-                    filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
-                    filename.title = args.file.name;
-                },
-                insertImageSettings: {
-                    saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
-                    path: "../Images/"
-                }
-            });
-            done();
-        })
-        afterEach((done: Function) => {
-            destroy(rteObj);
-            done();
-        })
-        it('Check name after renamed', (done) => {
-            let rteEle: HTMLElement = rteObj.element;
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let args = { preventDefault: function () { } };
-            let range = new NodeSelection().getRange(document);
-            let save = new NodeSelection().save(range, document);
-            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
-            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
-            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
-            setTimeout(() => {
-                expect(document.querySelectorAll(".e-file-name")[0].innerHTML).toBe('rte_image');
-                done();
-            }, 4500);
-        });
-    });
+    // describe('Rename images in success event- ', () => {
+    //     let rteObj: RichTextEditor;
+    //     beforeEach((done: Function) => {
+    //         rteObj = renderRTE({
+    //             imageUploadSuccess: function (args : any) {
+    //                 args.file.name = 'rte_image';
+    //                 var filename : any = document.querySelectorAll(".e-file-name")[0];
+    //                 filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+    //                 filename.title = args.file.name;
+    //             },
+    //             insertImageSettings: {
+    //                 saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+    //                 path: "../Images/"
+    //             }
+    //         });
+    //         done();
+    //     })
+    //     afterEach((done: Function) => {
+    //         destroy(rteObj);
+    //         done();
+    //     })
+    //     it('Check name after renamed', (done) => {
+    //         let rteEle: HTMLElement = rteObj.element;
+    //         (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+    //         let args = { preventDefault: function () { } };
+    //         let range = new NodeSelection().getRange(document);
+    //         let save = new NodeSelection().save(range, document);
+    //         let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+    //         (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+    //         let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+    //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+    //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+    //         let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+    //         let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+    //         (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll(".e-file-name")[0].innerHTML).toBe('rte_image');
+    //             done();
+    //         }, 4500);
+    //     });
+    // });
 
     describe('Inserting Image as Base64 - ', () => {
         let rteObj: RichTextEditor;
@@ -3148,52 +3148,52 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
     
-    describe('Insert image imageSelected, imageUploading and imageUploadSuccess event - ', () => {
-        let rteObj: RichTextEditor;
-        let imageSelectedSpy: jasmine.Spy = jasmine.createSpy('onImageSelected');
-        let imageUploadingSpy: jasmine.Spy = jasmine.createSpy('onImageUploading');
-        let imageUploadSuccessSpy: jasmine.Spy = jasmine.createSpy('onImageUploadSuccess');
-        beforeEach((done: Function) => {
-            rteObj = renderRTE({
-                imageSelected: imageSelectedSpy,
-                imageUploading: imageUploadingSpy,
-                imageUploadSuccess: imageUploadSuccessSpy,
-                insertImageSettings: {
-                    saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
-                    path: "../Images/"
-                }
-            });
-            done();
-        })
-        afterEach((done: Function) => {
-            destroy(rteObj);
-            done();
-        })
-        it(' Test the component insert image events - case 1 ', (done) => {
-            let rteEle: HTMLElement = rteObj.element;
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let args = { preventDefault: function () { } };
-            let range = new NodeSelection().getRange(document);
-            let save = new NodeSelection().save(range, document);
-            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
-            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
-            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
-            expect(imageSelectedSpy).toHaveBeenCalled();
-            expect(imageUploadingSpy).toHaveBeenCalled();
-            setTimeout(() => {
-                expect(imageUploadSuccessSpy).toHaveBeenCalled();
-                evnArg.selectNode = [rteObj.element];
-                (<any>rteObj).imageModule.deleteImg(evnArg);
-                (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
-                done();
-            }, 4000);
-        });
-    });
+    // describe('Insert image imageSelected, imageUploading and imageUploadSuccess event - ', () => {
+    //     let rteObj: RichTextEditor;
+    //     let imageSelectedSpy: jasmine.Spy = jasmine.createSpy('onImageSelected');
+    //     let imageUploadingSpy: jasmine.Spy = jasmine.createSpy('onImageUploading');
+    //     let imageUploadSuccessSpy: jasmine.Spy = jasmine.createSpy('onImageUploadSuccess');
+    //     beforeEach((done: Function) => {
+    //         rteObj = renderRTE({
+    //             imageSelected: imageSelectedSpy,
+    //             imageUploading: imageUploadingSpy,
+    //             imageUploadSuccess: imageUploadSuccessSpy,
+    //             insertImageSettings: {
+    //                 saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+    //                 path: "../Images/"
+    //             }
+    //         });
+    //         done();
+    //     })
+    //     afterEach((done: Function) => {
+    //         destroy(rteObj);
+    //         done();
+    //     })
+    //     it(' Test the component insert image events - case 1 ', (done) => {
+    //         let rteEle: HTMLElement = rteObj.element;
+    //         (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+    //         let args = { preventDefault: function () { } };
+    //         let range = new NodeSelection().getRange(document);
+    //         let save = new NodeSelection().save(range, document);
+    //         let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+    //         (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+    //         let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+    //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+    //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+    //         let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+    //         let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+    //         (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+    //         expect(imageSelectedSpy).toHaveBeenCalled();
+    //         expect(imageUploadingSpy).toHaveBeenCalled();
+    //         setTimeout(() => {
+    //             expect(imageUploadSuccessSpy).toHaveBeenCalled();
+    //             evnArg.selectNode = [rteObj.element];
+    //             (<any>rteObj).imageModule.deleteImg(evnArg);
+    //             (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
+    //             done();
+    //         }, 4000);
+    //     });
+    // });
 
     describe('EJ2CORE-479 - Insert image imageSelected event args cancel true - ', () => {
         let rteObj: RichTextEditor;

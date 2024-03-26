@@ -377,7 +377,7 @@ export class Tooltip extends BaseTooltip {
         }
         this.removeText();
         const argument: ISharedTooltipRenderEventArgs = {
-            text: [], cancel: false, name: sharedTooltipRender, data: [], point: [], series: [], headerText: '', textStyle: this.textStyle, template: ''
+            text: [], cancel: false, name: sharedTooltipRender, data: [], point: [], series: [], headerText: '', textStyle: this.textStyle, template: []
         };
         let i: number = 0;
         for (const series of chart.visibleSeries) {
@@ -402,6 +402,9 @@ export class Tooltip extends BaseTooltip {
                 argument.point[i as number] = data.point;
                 argument.headerText = this.findHeader(data);
                 (<PointData[]>this.currentPoints).push(data);
+                if (this.template != null) {
+                    argument.template.push(this.template.toString())
+                };
                 argument.text.push(this.getTooltipText(data));
                 pointXValue = (!chart.requireInvertedAxis) ? chart.mouseX - data.series.clipRect.x : chart.mouseY - data.series.clipRect.y;
                 pointYValue = chart.mouseY - data.series.clipRect.y;
@@ -453,7 +456,7 @@ export class Tooltip extends BaseTooltip {
     private triggerSharedTooltip(
         argument: ISharedTooltipRenderEventArgs, point: PointData, extraPoints: PointData[], chart: Chart, isFirst: boolean, dataCollection: PointData[]
     ): void {
-        let tooltipTemplate: string;
+        let tooltipTemplate: string[] = argument.template;
         const argsData: ISharedTooltipRenderEventArgs = {
             cancel: false, name: sharedTooltipRender, text: argument.text, headerText: argument.headerText,
             textStyle: argument.textStyle, template: tooltipTemplate,
@@ -482,6 +485,17 @@ export class Tooltip extends BaseTooltip {
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = argsData.text;
                 this.headerText = argsData.headerText;
+                if (typeof(argsData.template) != 'object') {
+                    argsData.template = (argsData.template as string).split(',');
+                    if (argsData.template.length > currentPoints.length ) {
+                        argsData.template = argsData.template.splice(argsData.template.length - 1);
+                    }
+                   }
+                   else {
+                    if (argsData.template.length > currentPoints.length ) {
+                        argsData.template.splice(argsData.template.length - 1);
+                    }
+                }
                 const tooltip: TooltipSettingsModel = this.chart.tooltip
                 this.findMouseValue(point, this.chart);
                 let location: ChartLocation = this.findSharedLocation();
@@ -496,7 +510,7 @@ export class Tooltip extends BaseTooltip {
                     new Rect(borderWidth, (chart.stockChart ? (toolbarHeight + titleHeight + borderWidth) : borderWidth), this.chart.availableSize.width - padding - borderWidth * 2, this.chart.availableSize.height - padding - borderWidth * 2),
                     this.chart.crosshair.enable, extraPoints,
                     this.template ? this.getTemplateText(dataCollection) : null,
-                    this.template ? argsData.template : ''
+                    this.template ? argsData.template.join('') : ''
                 );
                 point = null;
             } else {

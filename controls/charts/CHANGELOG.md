@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### AccumulationChart
+
+#### Bug Fixes
+
+- `#I564804` - Now, the `textWrap` property in the legend is working properly.
+
+### Chart
+
+#### Bug Fixes
+
+- `#I528508` - The tooltip template div is now added based on the series count, and it renders properly.
+- `#I563227` - Now, datalabel does not take the y value in place of a null value, and it renders properly.
+- `#I562333` - Now, annotations are rendered corresponding to their series point while enabling the `isIndexed` property
+- `#I566633` - Now, the first axis label is properly displayed on the x-axis.
+
 ## 25.1.35 (2024-03-15)
 
 ### Chart

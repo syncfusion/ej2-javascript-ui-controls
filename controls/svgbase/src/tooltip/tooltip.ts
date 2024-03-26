@@ -1077,8 +1077,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     let sharedTemplateElement: HTMLCollection = this.templateFn(this.data[i], this.controlInstance, elem.id, elem.id + '_blazorTemplate', '');
                     if (i === 0) {
                         templateElement = sharedTemplateElement;
-                    } else {
-                        templateElement[templateElement.length - 1].outerHTML += sharedTemplateElement[0].outerHTML;
+                    }
+                    else {
+                        if (sharedTemplateElement.length > 1) {
+                            templateElement[i].outerHTML = sharedTemplateElement[i].outerHTML || sharedTemplateElement[i].textContent;
+                        }
+                        else {
+                            templateElement[templateElement.length - 1].outerHTML += sharedTemplateElement[0].outerHTML;
+                        }
                     }
                 }
             }

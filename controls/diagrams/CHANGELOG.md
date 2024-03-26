@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I555965` - Now, the overview updated properly without any shadows while dragging html nodes.
+- `#I562959` - Now, drawing connector from group node port works properly.
+
 ## 25.1.35 (2024-03-15)
 
 ### Diagram

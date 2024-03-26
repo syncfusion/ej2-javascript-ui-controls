@@ -558,30 +558,42 @@ export class PdfDocument {
         pageDictionary.objId = pageReference.toString();
         pageDictionary.update('Parent', sectionReference);
         sectionDictionary.update('Kids', [pageReference]);
-        const lastPage: PdfPage = this.getPage(pageIndex === this.pageCount ? (pageIndex - 1) : pageIndex);
-        if (lastPage && lastPage._pageDictionary) {
-            const parentReference: _PdfReference = lastPage._pageDictionary._get('Parent');
-            const parentDictionary: _PdfDictionary = this._crossReference._fetch(parentReference);
-            if (parentDictionary && parentDictionary.has('Kids')) {
-                let kids: _PdfReference[] = parentDictionary.get('Kids');
-                if (kids) {
-                    if (pageIndex === this.pageCount) {
-                        kids.push(sectionReference);
-                    } else {
-                        const newKids: _PdfReference[] = [];
-                        kids.forEach((entry: _PdfReference) => {
-                            if (entry === lastPage._ref) {
-                                newKids.push(sectionReference);
-                            }
-                            newKids.push(entry);
-                        });
-                        kids = newKids;
-                        this._updatePageCache(pageIndex);
+        if (this.pageCount === 0) {
+            let parentReference: _PdfReference = this._catalog._catalogDictionary._get('Pages');
+            if (parentReference && this._catalog._topPagesDictionary) {
+                this._catalog._topPagesDictionary.update('Kids', [sectionReference]);
+                sectionDictionary.update('Parent', parentReference);
+            } else {
+                this._catalog._catalogDictionary.update('Pages', sectionReference);
+            }
+            this._pages = new Map<number, PdfPage>();
+            this._pageCount = 1;
+        } else {
+            const lastPage: PdfPage = this.getPage(pageIndex === this.pageCount ? (pageIndex - 1) : pageIndex);
+            if (lastPage && lastPage._pageDictionary) {
+                const parentReference: _PdfReference = lastPage._pageDictionary._get('Parent');
+                const parentDictionary: _PdfDictionary = this._crossReference._fetch(parentReference);
+                if (parentDictionary && parentDictionary.has('Kids')) {
+                    let kids: _PdfReference[] = parentDictionary.get('Kids');
+                    if (kids) {
+                        if (pageIndex === this.pageCount) {
+                            kids.push(sectionReference);
+                        } else {
+                            const newKids: _PdfReference[] = [];
+                            kids.forEach((entry: _PdfReference) => {
+                                if (entry === lastPage._ref) {
+                                    newKids.push(sectionReference);
+                                }
+                                newKids.push(entry);
+                            });
+                            kids = newKids;
+                            this._updatePageCache(pageIndex);
+                        }
+                        parentDictionary.update('Kids', kids);
+                        sectionDictionary.update('Parent', parentReference);
+                        this._updatePageCount(parentDictionary, 1);
+                        this._pageCount = this.pageCount + 1;
                     }
-                    parentDictionary.update('Kids', kids);
-                    sectionDictionary.update('Parent', parentReference);
-                    this._updatePageCount(parentDictionary, 1);
-                    this._pageCount = this.pageCount + 1;
                 }
             }
         }
@@ -713,16 +725,18 @@ export class PdfDocument {
         }
     }
     _removeParent(referenceToRemove: _PdfReference, dictionary: _PdfDictionary): void {
-        const parentReference: _PdfReference = dictionary._get('Parent');
-        const parentDictionary: _PdfDictionary = this._crossReference._fetch(parentReference);
-        if (parentDictionary && parentDictionary.has('Kids')) {
-            let kids: _PdfReference[] = parentDictionary.get('Kids');
-            if (kids.length === 1 && parentDictionary && parentDictionary.get('Type').name === 'Pages') {
-                this._removeParent(parentReference, parentDictionary);
-            } else {
-                kids = kids.filter((item: _PdfReference) => item !== referenceToRemove);
-                parentDictionary.update('Kids', kids);
-                this._updatePageCount(parentDictionary, -1);
+        if (dictionary.has('Parent')) {
+            const parentReference: _PdfReference = dictionary._get('Parent');
+            const parentDictionary: _PdfDictionary = this._crossReference._fetch(parentReference);
+            if (parentDictionary && parentDictionary.has('Kids')) {
+                let kids: _PdfReference[] = parentDictionary.get('Kids');
+                if (kids.length === 1 && parentDictionary && parentDictionary.get('Type').name === 'Pages') {
+                    this._removeParent(parentReference, parentDictionary);
+                } else {
+                    kids = kids.filter((item: _PdfReference) => item !== referenceToRemove);
+                    parentDictionary.update('Kids', kids);
+                    this._updatePageCount(parentDictionary, -1);
+                }
             }
         }
     }

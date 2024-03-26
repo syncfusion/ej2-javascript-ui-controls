@@ -39,6 +39,7 @@ export class CheckBoxSelection {
     public list: HTMLElement;
     private activeLi: HTMLElement[] = [];
     private activeEle: HTMLElement[] = [];
+    private boundPreventListSelection: () => void;
     public constructor(parent?: IMulitSelect) {
         this.parent = parent;
         this.removeEventListener();
@@ -326,12 +327,20 @@ export class CheckBoxSelection {
         if (this.parent.allowFiltering && (this.parent.targetInputElement as HTMLInputElement).value === '') {
             this.parent.search(null);
         }
-        this.parent.refreshPopup();
         this.parent.refreshListItems(null);
+        this.parent.refreshPopup();
         (this.clearIconElement as HTMLElement).style.visibility = 'hidden';
         this.filterInput.focus();
         this.setReorder(e);
+        this.boundPreventListSelection = this.preventListSelection.bind(this);
+        this.parent.popupWrapper.addEventListener('mouseup', this.boundPreventListSelection, true);
         e.preventDefault();
+    }
+
+    private preventListSelection(e: MouseEvent): void {
+        e.stopPropagation();
+        this.parent.popupWrapper.removeEventListener('mouseup', this.boundPreventListSelection, true);
+        this.boundPreventListSelection = null;
     }
 
     private setDeviceSearchBox(): void {

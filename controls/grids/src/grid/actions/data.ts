@@ -75,11 +75,8 @@ export class Data implements IDataProcessor {
             gObj.setProperties({ query: new Query() }, true);
         } else {
             this.isQueryInvokedFromData = true;
-            if (gObj.isVue) {
-                gObj.setProperties({ query: gObj.query instanceof Query ? gObj.query : new Query() }, true);
-            }
-            else {
-                gObj.query = gObj.query instanceof Query ? gObj.query : new Query();
+            if (!(gObj.query instanceof Query)) {
+                gObj.query = new Query();
             }
         }
     }

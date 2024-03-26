@@ -736,26 +736,6 @@ export class UndoRedo {
         parent.currObjType.isCustomCrop = false;
     }
 
-    private getImageAction(operation: string): string {
-        if (['brightness', 'contrast', 'saturation', 'opacity', 'blur', 'hue'].indexOf(operation) !== -1) {
-            return 'FinetuneApplied';
-        } else if (['chrome', 'cold', 'warm', 'grayscale', 'blackandwhite', 'sepia', 'invert'].indexOf(operation) !== -1) {
-            return 'FilterApplied';
-        } else if (operation === 'frame') {
-            return 'FrameApplied';
-        } else if (operation === 'resize') {
-            return 'ImageResized';
-        } else if (['deleteFreehandDrawing', 'deleteObj'].indexOf(operation) !== -1) {
-            return 'ShapeDeleted';
-        } else if (operation === 'crop') {
-            return 'Cropped';
-        } else if (['shapeInsert', 'freehanddraw', 'freehand-draw'].indexOf(operation) !== -1) {
-            return 'ShapeInserted';
-        } else {
-            return 'ShapeCustomized';
-        }
-    }
-
     private updateUrc(operation: string, previousObj: CurrentObject, previousObjColl: SelectionPoint[],
                       previousPointColl: Point[], previousSelPointColl: Point[],
                       previousCropObj: CurrentObject, previousText?: string,

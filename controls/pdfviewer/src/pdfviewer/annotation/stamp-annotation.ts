@@ -136,10 +136,12 @@ export class StampAnnotation {
     // eslint-disable-next-line
     public renderStampAnnotations(stampAnnotations: any, pageNumber: number, canvass?: any, isImport?: boolean,  isAnnotOrderAction?: boolean): void {
         let isStampAdded: boolean = false;
-        for (let p: number = 0; p < this.stampPageNumber.length; p++) {
-            if (this.stampPageNumber[p] === pageNumber && !isNullOrUndefined(isImport)){
-                isStampAdded = true;
-                break;
+        if (!isImport) {
+            for (let p: number = 0; p < this.stampPageNumber.length; p++) {
+                if (this.stampPageNumber[p] === pageNumber) {
+                    isStampAdded = true;
+                    break;
+                }
             }
         }
         if (isImport) {
@@ -170,6 +172,9 @@ export class StampAnnotation {
                 let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
                 // eslint-disable-next-line
                 annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
+                if (annotation.IsLocked) {
+                    annotation.AnnotationSettings.isLock = annotation.IsLocked;
+                }
                 // eslint-disable-next-line
                 let isImageStamp : boolean = this.stampImageData(annotation);
                 if (stampName && annotation['IconName'] && annotation['IconName'] !== 'Draft' && !isImageStamp && (isNullOrUndefined(annotation.template) || annotation.template === "")) {
@@ -1184,6 +1189,9 @@ export class StampAnnotation {
         // eslint-disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_stamp');
         let index: number = 0;
+        if (this.pdfViewerBase.isStorageExceed) {
+            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_stamp'];
+        }
         if (!storeObject) {
             this.pdfViewer.annotationModule.storeAnnotationCollections(annotation, pageNumber);
             let shapeAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };

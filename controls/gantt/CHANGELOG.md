@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#F187206` - The delete action not working in remote data when `timezone` using in sample.
+- `#I566491` - The exception is thrown when the resource ID mapping is empty issue has been fixed.
+- `#I565418` - Start date defaulting to incorrect value when remove the start Date in add dialog.
+- `#I566632` - Duration calculations are incorrect in edit or add dialog in decimals issue has been fixed.
+- `#I565751` - The chart does not refresh when any record is edited by cell editing issue has been fixed.
+- `#I566333` - Gantt chart disappeared while insert action with `timlineVirtualization` issue has been fixed.
+- `#F186355` - Taskbar template not showing in resource view issue has been fixed.
+- `#I562492` - `actionBegin` arguments miss the last record while dragging issue has been fixed.
+- `#I556547` - Top and bottom tier shows null when using custom zooming level issue has been fixed.
+- `#I566539` - Console error occurs while saving data in add dialog box with validation rule issue has been
+fixed.
+- `#I553748` - Timeline dates validated wrongly after cell editing with timeline virtualization enabled issue has been fixed.
+- `#I565439` - Work calculations are incorrect for parent task in project view issue has been fixed.
+- `#I553710`,`#I565824` - Weekends are not highlighted while `timlineVirtualization` is enabled issue has been fixed.
+- `#I565359` - When `allowEditing` is disabled in a resource view, a console error is thrown issue has been fixed.
+- `#I560166` - The context menu using "add child" for any task, dependency line validation is not working properly.
+
 ## 25.1.35 (2024-03-15)
 
 ### GanttChart

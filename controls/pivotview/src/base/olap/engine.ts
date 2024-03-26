@@ -3491,11 +3491,16 @@ export class OlapEngine {
                 const currentItems: string[] = [];
                 for (const selectedElement of filter.items) {
                     // currentItems.push(selectedElement.replace(/\&/g, '&amp;'));
+                    let filterCaption: string;
+                    if (!isMembersAvail && filter.items.length === 1) {
+                        this.getMembers(this.dataSourceSettings, filter.name, undefined, undefined, undefined, filter.items[0]);
+                        filterCaption = this.fieldList[filter.name].actualFilter[0];
+                    }
                     currentItems.push(selectedElement);
                     if (isMembersAvail) {
                         this.fieldList[filter.name].filter.push(members[selectedElement as string].caption);
                     } else {
-                        this.fieldList[filter.name].filter.push(selectedElement);
+                        this.fieldList[filter.name].filter.push(filterCaption ? filterCaption : selectedElement);
                     }
                 }
                 this.filterMembers[filter.name] = currentItems;
@@ -3684,16 +3689,19 @@ export class OlapEngine {
         return filterQuery;
     }
     public getMembers(dataSourceSettings: IDataOptions, fieldName: string, isAllFilterData?: boolean,
-                      filterParentQuery?: string, loadLevelMember?: boolean): void {
+                      filterParentQuery?: string, loadLevelMember?: boolean, filterItemName?: string): void {
         // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
         const dimProp: string = 'DIMENSION PROPERTIES PARENT_UNIQUE_NAME, HIERARCHY_UNIQUE_NAME, CHILDREN_CARDINALITY, MEMBER_TYPE, MEMBER_VALUE';
         let mdxQuery: string;
         const hasAllMember: boolean = this.fieldList[fieldName as string].hasAllMember;
         const hierarchy: string = (hasAllMember ? fieldName : fieldName + '.LEVELS(0)').replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');  /* eslint-disable-line no-useless-escape */
-        if (!isAllFilterData) {
+        if (!isAllFilterData && !filterItemName) {
             mdxQuery = 'SELECT ({' + (filterParentQuery ?
                 filterParentQuery : (hasAllMember ? hierarchy + ', ' + hierarchy + '.CHILDREN' : hierarchy + '.ALLMEMBERS')) + '})' +
                 dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
+        } else if (filterItemName) {
+            filterItemName = filterItemName.replace(/\&/g, '&amp;'); /* eslint-disable-line no-useless-escape */
+            mdxQuery = 'SELECT {' + filterItemName + '} ON 0 FROM [' + dataSourceSettings.cube + '] WHERE {}';
         } else {
             mdxQuery = 'SELECT ({' + hierarchy + '.ALLMEMBERS})' + dimProp + ' ON 0 FROM [' + dataSourceSettings.cube + ']';
         }
@@ -3707,9 +3715,16 @@ export class OlapEngine {
             this.fieldList[fieldName as string].members = {};
             this.fieldList[fieldName as string].currrentMembers = {};
         }
-        this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, loadLevelMembers: loadLevelMember, action: 'fetchMembers' });
+        this.doAjaxPost('POST', connectionString.url, xmla, filterItemName ? this.getOlapFilterText.bind(this) : this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, loadLevelMembers: loadLevelMember, action: 'fetchMembers' });
         if (this.errorInfo) {
             throw this.errorInfo;
+        }
+    }
+    private getOlapFilterText(xmlDoc: Document, request: Ajax, customArgs: FieldData): void{
+        const fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('Axis[name="Axis0"] Tuple'));
+        if (fields.length > 0 && this.fieldList[customArgs.fieldName] && fields[fields.length - 1].getElementsByTagName('Caption')
+            && fields[fields.length - 1].getElementsByTagName('Caption')[0]) {
+            this.fieldList[customArgs.fieldName].actualFilter[0] = fields[fields.length - 1].getElementsByTagName('Caption')[0].textContent;
         }
     }
     public getChildMembers(dataSourceSettings: IDataOptions, memberUQName: string, fieldName: string): void {

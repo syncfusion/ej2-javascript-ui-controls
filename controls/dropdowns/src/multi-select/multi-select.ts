@@ -3,7 +3,7 @@
 import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';
 import { FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings, ResultData } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
-import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { isCollide, Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, FloatLabelType, Input } from '@syncfusion/ej2-inputs';
 import { attributes, setValue, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';
@@ -3391,6 +3391,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         }
                     }
                 });
+                this.checkCollision(this.popupWrapper);
                 this.popupContentElement = this.popupObj.element.querySelector('.e-content');
                 
                 if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
@@ -3399,6 +3400,15 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.popupObj.close();
                 this.popupWrapper.style.visibility = '';
             }
+        }
+    }
+    private checkCollision(popupEle: HTMLElement): void {
+        if (!(this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering)) {
+            const collision: string[] = isCollide(popupEle);
+            if (collision.length > 0) {
+                popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
+            }
+            this.popupObj.resolveCollision();
         }
     }
     private setHeaderTemplate(): void {

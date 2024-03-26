@@ -192,10 +192,12 @@ export class Observer {
      * @returns {void} ?
      */
     public offIntlEvents(): void {
-        let eventsArr: any = this.boundedEvents['notifyExternalChange'];
+        // eslint-disable-next-line
+        const eventsArr: any = this.boundedEvents['notifyExternalChange'];
         if (eventsArr) {
             for (let i: number = 0; i < eventsArr.length; i++) {
-                let curContext: any = eventsArr[`${i}`].context;
+                // eslint-disable-next-line
+                const curContext: any = eventsArr[`${i}`].context;
                 if (curContext && curContext.detectFunction && curContext.randomId && !curContext.isRendered) {
                     this.off('notifyExternalChange', curContext.detectFunction, curContext.randomId);
                     i--;

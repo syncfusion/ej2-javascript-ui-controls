@@ -182,7 +182,7 @@ export class DataLabel {
                 (point.symbolLocations.length && point.symbolLocations[0]) ||
                 (series.type === 'BoxAndWhisker' && point.regions.length)
             ) {
-                labelText = getLabelText(point, series, chart);
+                labelText = point.text !== null ? getLabelText(point, series, chart) : [];
                 labelLength = labelText.length;
                 for (let i: number = 0; i < labelLength; i++) {
                     argsData = {

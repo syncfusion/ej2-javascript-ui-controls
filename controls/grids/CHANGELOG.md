@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### Grid
+
+#### Bug fixes
+
+- `#I565411` - Resolved the issue where the action complete event was not being triggered in the Infinite Scrolling.
+- `#I553471` - The issue of misleading text in Grid toolbar search when focus is lost has been resolved.
+- `#I562553` - The `getRows` method returning undefined for all the rows in the `rowTemplate` feature has been resolved.
+- `#I559289` - Resolved the issue where the validation message displayed immediately upon opening the dropdown instead of on focus out.
+- `#I558905` - The issue of white spaces being shown when the virtual scroll grid's height is set in pixels has been resolved.
+- `#I566680` - Resolved the Hierarchy grid export issue when the child grid's enable filter property is enabled.
+- `#I540683` - The issue of a script error being thrown when the last column contains auto width and `minWidth` in a Grid with `allowResizing` has been fixed.
+- `#I558576` - Resolved the issue where the sorting `popup` did not open when clicking the sort icon has been fixed.
+- `#FB51479` - The issue where the cell was automatically saved when opening the dropdown in Batch edit mode has been fixed.
+
 ## 25.1.35 (2024-03-15)
 
 ### Grid

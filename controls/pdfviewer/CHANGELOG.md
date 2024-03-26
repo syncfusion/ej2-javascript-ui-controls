@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I562878` - Now, the custom data is not missing from deleted annotation properties when initializing settings with custom data.
+- `#I565199` - Now, the annotation custom data is not missing in `AnnotationSelect` events.
+- `#I563333` - Now, the comments cannot be edited when the annotation is locked.
+- `#I874338` - Now, the locked annotations are preserved properly when importing the annotation.
+- `#I561320` - Now, the undo has restored the programmatically deleted annotations.
+- `#I566765` - Now, the create and clear buttons are not enabled if the text box is empty in the text signature tab.
+- `#I564309` - Now, the script error not occurred when dynamically updating toolbar items without annotation module.
+- `#I564643` - Now, the form fields are rendered properly after deleting it from the customer document.
+
+#### Features
+ 
+- `#I531005` - Now, provided the option to turn off the autocomplete option for comments in the comment panel.
+
 ## 25.1.35 (2024-03-15)
 
 ### PDF Viewer

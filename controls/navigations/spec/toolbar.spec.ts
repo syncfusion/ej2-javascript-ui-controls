@@ -13025,6 +13025,68 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             expect(document.activeElement).toBe(firstElement);
         });
     });
+    
+    describe('Extended overflow mode in toolbar items ', () => {
+        let toolbar: any;
+        beforeEach((): void => {
+            toolbar = undefined;
+            const ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('Extended popup width testing', () => {
+            const element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                overflowMode: 'Extended',
+                width: '200px',
+                items: [
+                    { prefixIcon: 'e-cut-icon', tooltipText: 'Cut' },
+                    { prefixIcon: 'e-copy-icon', tooltipText: 'Copy' },
+                    { prefixIcon: 'e-paste-icon', tooltipText: 'Paste' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-bold-icon', tooltipText: 'Bold' },
+                    { prefixIcon: 'e-underline-icon', tooltipText: 'Underline' },
+                    { prefixIcon: 'e-italic-icon', tooltipText: 'Italic' },
+                    { prefixIcon: 'e-color-icon', tooltipText: 'Color-Picker' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-alignleft-icon', tooltipText: 'Align-Left' },
+                    { prefixIcon: 'e-alignjustify-icon', tooltipText: 'Align-Justify' },
+                    { prefixIcon: 'e-alignright-icon', tooltipText: 'Align-Right' },
+                    { prefixIcon: 'e-aligncenter-icon', tooltipText: 'Align-Center' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-bullets-icon', tooltipText: 'Bullets' },
+                    { prefixIcon: 'e-numbering-icon', tooltipText: 'Numbering' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-ascending-icon', tooltipText: 'Sort A - Z' },
+                    { prefixIcon: 'e-descending-icon', tooltipText: 'Sort Z - A' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-upload-icon', tooltipText: 'Upload' },
+                    { prefixIcon: 'e-download-icon', tooltipText: 'Download' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-indent-icon', tooltipText: 'Text Indent' },
+                    { prefixIcon: 'e-outdent-icon', tooltipText: 'Text Outdent' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-clear-icon', tooltipText: 'Clear' },
+                    { prefixIcon: 'e-reload-icon', tooltipText: 'Reload' },
+                    { prefixIcon: 'e-export-icon', tooltipText: 'Export' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-undo-icon', tooltipText: 'Undo', text: 'Undo' },
+                    { prefixIcon: 'e-redo-icon', tooltipText: 'Redo', text: 'Redo' }
+                ]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            let toolbarWidth: number = element.offsetWidth;
+            let extendedToolbar: HTMLElement = element.querySelector('.e-toolbar-extended');
+            extendedToolbar.style.display = "block";
+            expect(extendedToolbar.offsetWidth).toEqual(toolbarWidth);        
+        });
+    });
 
     it('memory leak', () => {     
         profile.sample();

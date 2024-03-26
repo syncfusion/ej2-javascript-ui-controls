@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I570321` - The issue with the focus on first item in TreeView if it is disabled mode has been resolved.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I553624` - An issue with expanded toolbar items not align properly when change the mouse and touch modes has been fixed.
+
 ## 25.1.35 (2024-03-15)
 
 ### ContextMenu

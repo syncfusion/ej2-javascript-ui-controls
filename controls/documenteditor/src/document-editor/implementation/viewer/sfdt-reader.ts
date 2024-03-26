@@ -5,7 +5,7 @@ import { WListLevel } from '../list/list-level';
 import { WAbstractList } from '../list/abstract-list';
 import { WLevelOverride } from '../list/level-override';
 import { WCharacterFormat, WListFormat, WParagraphFormat, WCellFormat, WTableFormat, WSectionFormat, WRowFormat, WColumnFormat } from '../format/index';
-import { WBorder, WBorders, WShading, WCharacterStyle, WParagraphStyle, WStyles, WStyle, WTabStop } from '../format/index';
+import { WBorder, WBorders, WShading, WCharacterStyle, WParagraphStyle, WStyles, WStyle, WTabStop, WTableStyle } from '../format/index';
 import { LayoutViewer, DocumentHelper } from './viewer';
 import {
     Widget, LineWidget, ParagraphWidget, ImageElementBox, BodyWidget, TextElementBox, TableCellWidget,
@@ -310,7 +310,7 @@ export class SfdtReader {
                         revisionCheck = false;
                     }
                 }
-                if (revisionCheck) {
+                if (revisionCheck && !this.documentHelper.owner.editorModule.isRemoteAction) {
                     revisions.push(revision);
                 }
             }
@@ -341,6 +341,9 @@ export class SfdtReader {
                         revision.range.push(item);
                     }
                     item.revisions.push(revision);
+                    if (this.isPaste && this.documentHelper.owner.editorModule.isRemoteAction && item instanceof WRowFormat) {
+                        this.documentHelper.owner.editorModule.remotePasteRevision.push(revision);
+                    }
                 }
             }
         }
@@ -446,6 +449,10 @@ export class SfdtReader {
                 wStyle = new WCharacterStyle();
                 wStyle.type = 'Character';
             }
+            if (this.getStyleType(style[typeProperty[this.keywordIndex]]) === 'Table') {
+                wStyle = new WTableStyle();
+                wStyle.type = 'Table';
+            }
             if (!isNullOrUndefined(style[nameProperty[this.keywordIndex]])) {
                 wStyle.name = style[nameProperty[this.keywordIndex]];
             }
@@ -469,7 +476,7 @@ export class SfdtReader {
                     } else {
                         if (wStyle.type === 'Paragraph') {
                             styleString = JSON.parse('{"type":"Paragraph","name":"Normal","next":"Normal"}');
-                        } else {
+                        } else if (wStyle.type === 'Character') {
                             styleString = JSON.parse('{"type": "Character","name": "Default Paragraph Font"}');
                         }
                     }
@@ -549,7 +556,7 @@ export class SfdtReader {
         if (!isNullOrUndefined(resetKeyIndex) && resetKeyIndex) {
             this.keywordIndex = keyIndex;
         }
-        if(!isNullOrUndefined(wStyle)) {
+        if (!isNullOrUndefined(wStyle) && wStyle.type !== 'Table') {
             this.documentHelper.addToStylesMap(wStyle);
         }
     }
@@ -733,7 +740,7 @@ export class SfdtReader {
                     if (block[inlinesProperty[this.keywordIndex]].length > 0) {
                         hasValidElmts = this.parseParagraph(block[inlinesProperty[this.keywordIndex]], paragraph, writeInlineFormat, undefined, isFootnoteEndnote && i === 0);
                         if (block.hasOwnProperty(isCreatedUsingHtmlSpanTagProperty[this.keywordIndex])) {
-                            paragraph.isCreatedUsingHtmlSpanTag = block[isCreatedUsingHtmlSpanTagProperty[this.keywordIndex]];
+                            paragraph.isCreatedUsingHtmlSpanTag = HelperMethods.parseBoolValue(block[isCreatedUsingHtmlSpanTagProperty[this.keywordIndex]]);
                         }
                     }
                     if (!(isSectionBreak && block === data[data.length - 1] && block[inlinesProperty[this.keywordIndex]].length === 0 && !hasValidElmts)) {
@@ -1102,7 +1109,7 @@ export class SfdtReader {
             isContentControl = true;
         }
         if (data.hasOwnProperty(isCreatedUsingHtmlSpanTagProperty[this.keywordIndex])) {
-            paragraph.isCreatedUsingHtmlSpanTag = data[isCreatedUsingHtmlSpanTagProperty[this.keywordIndex]];
+            paragraph.isCreatedUsingHtmlSpanTag = HelperMethods.parseBoolValue(data[isCreatedUsingHtmlSpanTagProperty[this.keywordIndex]]);
         }
         let hasValidElmts: boolean = false;
         let revision: Revision;
@@ -2913,6 +2920,8 @@ export class SfdtReader {
                 return 'Paragraph';
             case 1:
                 return 'Character';
+            case 2:
+                return 'Table';
             default:
                 return styleType as StyleType;
         }

@@ -1095,7 +1095,7 @@ export class ImageResizer {
         this.currentImageElementBox.height = parseFloat(this.imageResizerDiv.style.height) / this.documentHelper.zoomFactor;
         this.owner.isShiftingEnabled = true;
         this.owner.editorModule.setOffsetValue(this.owner.selectionModule);
-        this.documentHelper.layout.reLayoutParagraph(this.currentImageElementBox.line.paragraph, 0, 0);
+        this.documentHelper.layout.layoutBodyWidgetCollection(this.currentImageElementBox.line.paragraph.index, this.currentImageElementBox.line.paragraph.containerWidget, this.currentImageElementBox.line.paragraph, false);
         this.updateHistoryForImageResizer();
         this.owner.editorModule.reLayout(this.owner.selectionModule, true);
         this.viewer.updateScrollBars();

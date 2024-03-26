@@ -262,7 +262,7 @@ export class AccumulationLegend extends BaseLegend {
                 option.textCollection = textWrap(
                     option.text,
                     (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (bounds.width - textPadding)) :
-                        (bounds.width - textPadding)), legend.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.legendLabelFont
+                        (bounds.width - textPadding)), legend.textStyle, this.chart.enableRtl, legend.textWrap === 'AnyWhere', null, this.chart.themeStyle.legendLabelFont
                 );
             } else {
                 option.textCollection.push(option.text);

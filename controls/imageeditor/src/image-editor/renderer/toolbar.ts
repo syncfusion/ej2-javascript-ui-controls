@@ -275,12 +275,6 @@ export class ToolbarModule {
         case 'setSelectedFreehandColor':
             this.selFhdColor = args.value['color'];
             break;
-        case 'getCurrentFilter':
-            args.value['obj']['currentFilter'] = parent.currentFilter;
-            break;
-        case 'setCurrentFilter':
-            parent.currentFilter = args.value['filter'];
-            break;
         case 'setInitialAdjustmentValue':
             parent.initialAdjustmentValue = args.value['value'];
             break;
@@ -303,9 +297,6 @@ export class ToolbarModule {
         case 'refreshSlider':
             this.refreshSlider();
             break;
-        case 'renderSlider':
-            this.renderSlider(args.value['type']);
-            break;
         case 'getCurrAdjustmentValue':
             parent.getCurrAdjustmentValue(args.value['type']);
             break;
@@ -314,18 +305,6 @@ export class ToolbarModule {
             break;
         case 'refreshShapeDrawing':
             this.refreshShapeDrawing();
-            break;
-        case 'getCropToolbar':
-            args.value['obj']['isCropToolbar'] = parent.isCropToolbar;
-            break;
-        case 'getPrevCurrSelectionPoint':
-            args.value['obj']['prevCurrSelectionPoint'] = parent.prevCurrSelectionPoint;
-            break;
-        case 'setPrevCurrSelectionPoint':
-            parent.prevCurrSelectionPoint = args.value['point'];
-            break;
-        case 'updateCropTransformItems':
-            parent.updateCropTransformItems();
             break;
         case 'setEnableDisableUndoRedo':
             this.preventEnableDisableUr = args.value['isPrevent'];
@@ -373,7 +352,7 @@ export class ToolbarModule {
 
     private reset(): void {
         const parent: ImageEditor = this.parent;
-        this.defToolbarItems = []; this.toolbarHeight = 46; parent.prevCurrSelectionPoint = null;
+        this.toolbarHeight = 46; parent.prevCurrSelectionPoint = null;
         this.zoomBtnHold = null; this.currToolbar = ''; parent.cxtTbarHeight = null;
         this.currentToolbar = 'main'; this.selFhdColor = '#42a5f5'; parent.currentFilter = '';
         this.preventZoomBtn = parent.isCropToolbar = this.preventEnableDisableUr = this.isFrameToolbar = false;

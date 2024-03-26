@@ -2,6 +2,9 @@
 
   /*! Excel-Filter layout */
   .sf-grid .e-excelfilter {
+    &.e-dialog .e-dlg-content {
+      padding-left: 0;
+    }
     .e-dlg-content {
       overflow: visible;
       padding: 0;
@@ -471,7 +474,7 @@
       user-select: none;
     }
 
-    & :not(.sf-grid) .e-dialog .e-dlg-content {
+    &.e-dialog .e-dlg-content {
       padding-left: $grid-checkbox-content-padding-left;
       @if $grid-xlfl-skin == 'material3' {
         padding-right: 16px;

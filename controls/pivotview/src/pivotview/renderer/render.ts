@@ -1675,8 +1675,9 @@ export class Render {
             this.parent.resizedValue = (this.parent.showGroupingBar && this.parent.resizedValue < 250) ? 250 : this.parent.resizedValue;
         }
         this.resColWidth = !isNullOrUndefined(this.parent.resizedValue) ? this.parent.resizedValue : this.resColWidth;
-        const offsetWidth: number = this.parent.element.offsetWidth ? this.parent.element.offsetWidth :
-            this.parent.element.getBoundingClientRect().width;
+        const offsetWidth: number = this.parent.grid ? this.parent.grid.element.offsetWidth ? this.parent.grid.element.offsetWidth :
+            this.parent.grid.element.getBoundingClientRect().width : this.parent.element.offsetWidth ?
+                this.parent.element.offsetWidth : this.parent.element.getBoundingClientRect().width;
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
             ((parseFloat(this.parent.width.toString()) / 100) * offsetWidth) : offsetWidth) :
             Number(this.parent.width);

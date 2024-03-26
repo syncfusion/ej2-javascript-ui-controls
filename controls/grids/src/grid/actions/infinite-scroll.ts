@@ -119,6 +119,7 @@ export class InfiniteScroll implements IAction {
         this.parent.on(events.contentReady, this.selectNewRow, this);
         this.parent.on(events.captionActionComplete, this.captionActionComplete, this);
         this.parent.on(events.setVirtualPageQuery, this.setGroupCollapsePageQuery, this);
+        this.parent.on(events.infiniteScrollComplete, this.onActionComplete, this);
         this.actionBeginFunction = this.actionBegin.bind(this);
         this.actionCompleteFunction = this.actionComplete.bind(this);
         this.dataBoundFunction = this.dataBound.bind(this);
@@ -159,6 +160,7 @@ export class InfiniteScroll implements IAction {
         this.parent.off(events.contentReady, this.selectNewRow);
         this.parent.off(events.captionActionComplete, this.captionActionComplete);
         this.parent.off(events.setVirtualPageQuery, this.setGroupCollapsePageQuery);
+        this.parent.off(events.infiniteScrollComplete, this.onActionComplete);
         this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunction);
         this.parent.removeEventListener(events.dataBound, this.dataBoundFunction);
@@ -664,6 +666,18 @@ export class InfiniteScroll implements IAction {
                 (<{ previousVirtualData?: Object }>this.parent.editModule).previousVirtualData = {};
             }
         }
+    }
+
+    /**
+     * The function used to trigger onActionComplete
+     *
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
+     * @hidden
+     */
+    public onActionComplete(e: NotifyArgs): void {
+        const args: Object = { type: events.actionComplete };
+        this.parent.trigger(events.actionComplete, extend(e, args));
     }
 
     private resetInfiniteEdit(): void {

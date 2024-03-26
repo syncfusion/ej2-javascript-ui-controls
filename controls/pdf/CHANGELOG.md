@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an exception encountered while removing all pages from PDF document.
+
 ## 25.1.35 (2024-03-15)
 
 ### PDF Parser

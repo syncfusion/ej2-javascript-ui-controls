@@ -542,6 +542,9 @@ export class BatchEdit {
             this.saveCell();
             this.parent.notify(events.editNextValCell, {});
         }
+        if (this.validateFormObj()) {
+            return;
+        }
         if (this.initialRender) {
             const visibleColumns: Column[] = gObj.getVisibleColumns();
             for (let i: number = 0; i < visibleColumns.length; i++) {

@@ -720,6 +720,8 @@ export class Shape {
             endX: parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width,
             endY: parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height,
             width: selectionSettings.width, height: selectionSettings.height };
+        parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width;
+        parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
     }
 
     private updateShapeChangeEventArgs(shapeSettings: ShapeSettings): void {
@@ -775,6 +777,7 @@ export class Shape {
                 if (shapeSettings.degree) {
                     parent.activeObj.rotatedAngle = shapeSettings.degree * (Math.PI / 180);
                 }
+                this.updateFontRatio(parent.activeObj);
                 break;
             case 'rectangle':
             case 'image':

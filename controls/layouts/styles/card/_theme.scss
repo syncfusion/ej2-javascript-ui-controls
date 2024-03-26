@@ -61,25 +61,45 @@
 
       .e-card-btn,
       a {
-        background-color: $card-action-btn-bg-color;
+        @if $skin-name == 'Material3' {
+          background: $card-action-btn-bg-color;
+        }
+        @else {
+          background-color: $card-action-btn-bg-color;
+        }
         border: $card-action-btn-border;
         color: $card-action-btn-font-color;
         outline: 0;
 
         &:hover {
-          background-color: $card-action-btn-hover-bg;
+          @if $skin-name == 'Material3' {
+            background: $card-action-btn-hover-bg;
+          }
+          @else {
+            background-color: $card-action-btn-hover-bg;
+          }
           border: $card-action-btn-hover-border;
           color: $card-action-btn-hover-font;
         }
 
         &:focus {
-          background-color: $card-action-btn-focus-bg;
+          @if $skin-name == 'Material3' {
+            background: $card-action-btn-focus-bg;
+          }
+          @else {
+            background-color: $card-action-btn-focus-bg;
+          }
           border: $card-action-btn-focus-border;
           color: $card-action-btn-focus-font;
         }
 
         &:active {
-          background-color: $card-action-btn-pressed-bg;
+          @if $skin-name == 'Material3' {
+            background: $card-action-btn-pressed-bg;
+          }
+          @else {
+            background-color: $card-action-btn-pressed-bg;
+          }
           border: $card-action-btn-pressed-border;
           color: $card-action-btn-pressed-font;
         }

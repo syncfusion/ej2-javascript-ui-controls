@@ -51,7 +51,7 @@ export class MsWordPaste {
         'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx'];
     private lowerGreekNumber: string[] = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ',
         'μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω'];
-    private removableElements: string[] = ['o:p', 'style'];
+    private removableElements: string[] = ['o:p', 'style', 'w:sdt'];
     private listContents: string[] = [];
     private addEventListener(): void {
         this.parent.observer.on(EVENTS.MS_WORD_CLEANUP_PLUGIN, this.wordCleanup, this);
@@ -422,7 +422,7 @@ export class MsWordPaste {
         let innerElement: string = elm.innerHTML;
         for (let i: number = 0; i < this.removableElements.length; i++) {
             // eslint-disable-next-line security/detect-non-literal-regexp
-            const regExpStartElem: RegExp = new RegExp('<' + this.removableElements[i as number] + '>', 'g');
+            const regExpStartElem: RegExp = new RegExp('<' + this.removableElements[i as number] + '\\s*[^>]*>', 'g');
             // eslint-disable-next-line security/detect-non-literal-regexp
             const regExpEndElem: RegExp = new RegExp('</' + this.removableElements[i as number] + '>', 'g');
             innerElement = innerElement.replace(regExpStartElem, '');

@@ -353,6 +353,9 @@ export class FreeTextAnnotation {
                         }
                         // eslint-disable-next-line max-len
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
+                        if (annotation.IsLocked) {
+                            annotation.AnnotationSettings.isLock = annotation.IsLocked;
+                        }
                         let annot: PdfAnnotationBaseModel;
                         let paddingValue: number = 0.5;
                         let annotationBoundsX: number = !isNullOrUndefined(annotation.Bounds.X) ? annotation.Bounds.X - paddingValue : annotation.Bounds.x;

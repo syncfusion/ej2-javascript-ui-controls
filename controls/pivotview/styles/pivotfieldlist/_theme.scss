@@ -828,6 +828,9 @@
 
         .e-field-list-container {
           height: 369px;
+          @if ($skin-name == 'FluentUI') {
+            height: 394px;
+          }
 
           /* stylelint-disable */
           .e-field-table {

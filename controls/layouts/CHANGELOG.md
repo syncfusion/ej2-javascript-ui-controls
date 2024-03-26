@@ -2,13 +2,31 @@
 
 ## [Unreleased]
 
-## 24.2.4 (2024-02-06)
+## 25.1.37 (2024-03-26)
 
-### Dashboard Layout
+### DashboardLayout
 
 #### Bug Fixes
 
-- `#FB49154` - The console error in the Dashboard Layout component when resizing the browser window has been resolved.
+- `#I564184` - Resolved the issue with the dynamically added panel not being persisted when `enablePersistence` is enabled in the Dashboard Layout.
+
+## 25.1.35 (2024-03-15)
+
+### Timeline
+
+The Timeline control enables users to display a series of data in chronological order, providing a visually compelling and user-friendly experience. This showcases user activities, tracking progress, narrating historical timelines, and more.
+
+#### Key features
+
+- **Orientation** - Display items in a horizontal or vertical orientation.
+
+- **Opposite content** - Display additional information opposite to the item content.
+
+- **Items alignment** - Items' content and opposite content can be aligned - before, after, alternate, or alternate reverse.
+
+- **Reverse timeline** - Shows the timeline items in the reverse order.
+
+- **Templates** - Customize the default appearance, including styling the dot item, templated content, and more.
 
 ## 20.4.48 (2023-02-01)
 

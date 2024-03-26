@@ -206,7 +206,7 @@ export class VirtualScroll {
                             this.parent.getEngine('onScroll', null, null, null, null, null, null);
                         } else {
                             this.parent.engineModule.generateGridData(
-                                this.parent.dataSourceSettings, true, this.parent.engineModule.headerCollection);
+                                this.parent.dataSourceSettings, true, false, this.parent.engineModule.headerCollection);
                             rowStartPos = this.parent.engineModule.rowStartPos;
                         }
                     } else {
@@ -251,7 +251,7 @@ export class VirtualScroll {
                         if (this.parent.dataSourceSettings.mode === 'Server') {
                             this.parent.getEngine('onScroll', null, null, null, null, null, null);
                         } else {
-                            pivot.engineModule.generateGridData(pivot.dataSourceSettings, true, pivot.engineModule.headerCollection);
+                            pivot.engineModule.generateGridData(pivot.dataSourceSettings, true, false, pivot.engineModule.headerCollection);
                             colStartPos = pivot.engineModule.colStartPos;
                         }
                     } else {

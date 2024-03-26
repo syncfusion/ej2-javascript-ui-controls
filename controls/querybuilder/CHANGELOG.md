@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I568017` - Issue with QueryBuilder 'In' or 'Not in' Operator results in value field as empty list when using fieldMode as default mode has been fixed.
+
 ## 25.1.35 (2024-03-15)
 
 ### QueryBuilder

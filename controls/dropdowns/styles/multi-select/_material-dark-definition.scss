@@ -228,3 +228,14 @@ $ddl-multiselect-filled-float-input-min-height-bigger: 36px !default;
 $ddl-multiselect-filled-floatlabel-fontsize-bigger: 12px !default;
 $filled-multiselect-chip-bg-color: $grey-800 !default;
 $filled-multiselect-chip-hover-bg-color: $grey-700 !default;
+
+@include export-module('multiselect-material-dark') {
+  .e-multiselect.e-input-group.e-checkbox .e-multi-select-wrapper input[type = 'text'] {
+    padding: 1px 0;
+  }
+
+  .e-small .e-multiselect.e-input-group.e-checkbox .e-multi-select-wrapper input[type = 'text'],
+  .e-small.e-multiselect.e-input-group.e-checkbox .e-multi-select-wrapper input[type = 'text'] {
+    padding: 0;
+  }
+}

@@ -142,9 +142,18 @@ export class Agenda extends AgendaBase implements IRenderer {
         const firstDate: Date = new Date(agendaDate.getTime());
         const isObject: Record<string, any>[] = this.appointmentFiltering(firstDate, lastDate);
         if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) {
-            agendaDate = isObject[0][fieldMapping.startTime] as Date;
-            agendaDate = new Date(new Date(agendaDate.getTime()).setHours(0, 0, 0, 0));
-            this.updateHeaderText(isObject[0][fieldMapping.startTime] as Date);
+            if (!this.parent.activeViewOptions.showWeekend && !this.isAgendaWorkDay(isObject[0][fieldMapping.startTime])) {
+                for (const event of isObject) {
+                    if (this.isAgendaWorkDay(event[fieldMapping.startTime])) {
+                        agendaDate = new Date(new Date(event[fieldMapping.startTime].getTime()).setHours(0, 0, 0, 0));
+                        this.updateHeaderText(event[fieldMapping.startTime]);
+                        break;
+                    }
+                }
+            } else {
+                agendaDate = new Date(new Date(isObject[0][fieldMapping.startTime].getTime()).setHours(0, 0, 0, 0));
+                this.updateHeaderText(isObject[0][fieldMapping.startTime]);
+            }
         }
         let endDate: Date;
         if (!this.parent.hideEmptyAgendaDays || (this.parent.agendaDaysCount > 0 && isObject.length > 0)) {
@@ -158,17 +167,22 @@ export class Agenda extends AgendaBase implements IRenderer {
                         this.parent.headerModule.updateHeaderItems('remove');
                     }
                 }
-                this.calculateResourceTableElement(tBody, this.parent.agendaDaysCount, date);
+                this.calculateResourceTableElement(tBody, this.parent.agendaDaysCount, date, lastDate);
             } else {
                 for (let day: number = 0; day < this.parent.agendaDaysCount; day++) {
-                    const filterData: Record<string, any>[] = this.appointmentFiltering(agendaDate);
-                    const nTr: Element = this.createTableRowElement(agendaDate, 'data');
-                    if (this.element.querySelector('tr[data-row-index="' + parseInt(nTr.getAttribute('data-row-index'), 10) + '"]')) {
+                    const nTr: HTMLElement = this.createTableRowElement(agendaDate, 'data') as HTMLElement;
+                    const virtualContent: HTMLElement = this.element.querySelector('tr[data-row-index="' + (+(nTr.dataset.rowIndex)) + '"]');
+                    if (virtualContent || !this.parent.activeViewOptions.showWeekend && !this.isAgendaWorkDay(agendaDate)) {
                         agendaDate = util.addDays(agendaDate, 1);
+                        if (!virtualContent && this.parent.activeViewOptions.allowVirtualScrolling) {
+                            day--;
+                        }
+                        if (agendaDate.getTime() > lastDate.getTime()) { break; }
                         continue;
                     }
                     const dTd: Element = nTr.children[0];
                     const aTd: Element = nTr.children[1];
+                    const filterData: Record<string, any>[] = this.appointmentFiltering(agendaDate);
                     if (filterData.length > 0 || (!this.parent.hideEmptyAgendaDays && filterData.length === 0)) {
                         const elementType: string = (!this.parent.hideEmptyAgendaDays && filterData.length === 0) ? 'noEvents' : 'data';
                         dTd.appendChild(this.createDateHeaderElement(agendaDate));
@@ -189,6 +203,14 @@ export class Agenda extends AgendaBase implements IRenderer {
             endDate = new Date(agendaDate.getTime() - util.MS_PER_DAY);
         }
         this.agendaDates = { start: firstDate, end: endDate };
+    }
+
+    private isAgendaWorkDay(date: Date): boolean {
+        if (this.parent.uiStateValues.isGroupAdaptive && !this.parent.group.byDate) {
+            return this.isWorkDay(date, this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex].workDays);
+        } else {
+            return this.isWorkDay(date);
+        }
     }
 
     private agendaScrolling(event: Event): void {
@@ -295,8 +317,11 @@ export class Agenda extends AgendaBase implements IRenderer {
         const lastDate: Date = this.getEndDateFromStartDate(date);
         let daysCount: number = 0;
         do {
-            const filterData: Record<string, any>[] = this.appointmentFiltering(currentDate);
-            if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) { daysCount++; }
+            if (this.parent.activeViewOptions.showWeekend || !this.parent.activeViewOptions.showWeekend &&
+                this.isAgendaWorkDay(currentDate)) {
+                const filterData: Record<string, any>[] = this.appointmentFiltering(currentDate);
+                if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) { daysCount++; }
+            }
             currentDate = util.addDays(currentDate, (type === 'next') ? 1 : -1);
             if (currentDate < firstDate || currentDate > lastDate) { break; }
         } while (daysCount !== this.parent.agendaDaysCount);

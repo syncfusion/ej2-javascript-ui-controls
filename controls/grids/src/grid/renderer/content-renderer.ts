@@ -488,7 +488,7 @@ export class ContentRender implements IRenderer {
                             thisRef.parent.trigger(events.rowDataBound, arg);
                             if (modelData[parseInt(i.toString(), 10)].isDataRow || (thisRef.parent.enableVirtualization &&
                                 thisRef.parent.groupSettings.enableLazyLoading)) {
-                                thisRef.rowElements.push(tr);
+                                thisRef.rowElements.push(arg.row);
                             }
                             thisRef.ariaService.setOptions(thisRef.parent.element, {
                                 colcount: gObj.getColumns().length.toString() });
@@ -532,7 +532,11 @@ export class ContentRender implements IRenderer {
             }
             if (modelData[parseInt(i.toString(), 10)].isDataRow || (this.parent.enableVirtualization &&
                 this.parent.groupSettings.enableLazyLoading)) {
-                this.rowElements.push(tr);
+                if (!isNullOrUndefined(gObj.rowTemplate) && (gObj.isAngular || gObj.isVue3 || gObj.isVue)) {
+                    this.rowElements.push(trElement ? trElement : tr);
+                } else {
+                    this.rowElements.push(tr);
+                }
             }
             this.ariaService.setOptions(this.parent.element, { colcount: gObj.getColumns().length.toString() });
         }

@@ -5252,8 +5252,8 @@ describe('Splitter Control', () => {
             splitterObj.paneSettings[0].size = '200px';
             splitterObj.dataBind();
             expect(splitterObj.allPanes[0].style.flexBasis).toBe('200px');
-            expect(splitterObj.allPanes[1].style.flexBasis).toBe('149px');
-            expect(splitterObj.allPanes[2].style.flexBasis).toBe('149px');
+            expect(splitterObj.allPanes[1].style.flexBasis).toBe('');
+            expect(splitterObj.allPanes[2].style.flexBasis).toBe('');
             splitterObj.destroy();
         });
         it('Check flexible pane size -Pixel -one flexible pane', function () {
@@ -5266,7 +5266,7 @@ describe('Splitter Control', () => {
             splitterObj.dataBind();
             expect(splitterObj.allPanes[0].style.flexBasis).toBe('200px');
             expect(splitterObj.allPanes[1].style.flexBasis).toBe('100px');
-            expect(splitterObj.allPanes[2].style.flexBasis).toBe('298px');
+            expect(splitterObj.allPanes[2].style.flexBasis).toBe('');
             splitterObj.destroy();
         });
         it('Check flexible pane size -Percentage - Two flexible pane', function () {
@@ -5278,8 +5278,8 @@ describe('Splitter Control', () => {
             splitterObj.paneSettings[0].size = '50%';
             splitterObj.dataBind();
             expect(splitterObj.allPanes[0].style.flexBasis).toBe('50%');
-            expect(splitterObj.allPanes[1].style.flexBasis).toBe('124px');
-            expect(splitterObj.allPanes[2].style.flexBasis).toBe('124px');
+            expect(splitterObj.allPanes[1].style.flexBasis).toBe('');
+            expect(splitterObj.allPanes[2].style.flexBasis).toBe('');
             splitterObj.destroy();
         });
         it('Check flexible pane size -Percentage - one flexible pane', function () {
@@ -5292,7 +5292,7 @@ describe('Splitter Control', () => {
             splitterObj.dataBind();
             expect(splitterObj.allPanes[0].style.flexBasis).toBe('50%');
             expect(splitterObj.allPanes[1].style.flexBasis).toBe('20%');
-            expect(splitterObj.allPanes[2].style.flexBasis).toBe('248px');
+            expect(splitterObj.allPanes[2].style.flexBasis).toBe('');
             splitterObj.destroy();
         });
     });

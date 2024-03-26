@@ -240,6 +240,14 @@ export class Editor {
     private combineLastBlock: boolean = false;
     /**
      * @private
+     */
+    public remotePasteRevision: Revision[] = [];
+    /**
+     * @private
+     */
+    public isFieldOperation: boolean = false;
+    /**
+     * @private
      * @returns {boolean} - Returns the restrict formatting
      */
     public get restrictFormatting(): boolean {
@@ -2493,7 +2501,7 @@ export class Editor {
                 this.editorHistory.updateHistory();
                 this.editorHistory.updateComplexHistory();
             }
-            if (isNullOrUndefined(revisionType) || revisionType === 'Insertion') {
+            if ((isNullOrUndefined(revisionType) || revisionType === 'Insertion') && !this.isFieldOperation) {
                 this.reLayout(selection);
             }
             this.documentHelper.isTextInput = false;
@@ -2700,8 +2708,8 @@ export class Editor {
             let currentRevision: Revision = revisions[i];
             if (!this.isRevisionAlreadyIn(elementToInclude, currentRevision) || elementToInclude instanceof WCharacterFormat) {
                 elementToInclude.revisions.splice(0, 0, currentRevision);
-                if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
-                    // this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(undefined, undefined, currentRevision));
+                if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.markerData.length === 0) {
+                    this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(undefined, undefined, currentRevision));
                 }
                 if (elementToInclude instanceof FootnoteElementBox) {
                     this.insertRevisionForFootnoteWidget(elementToInclude, currentRevision);
@@ -3091,7 +3099,11 @@ export class Editor {
             item.revisions.push(revision);
             revision.range.push(item);
         }
-        this.updateRevisionCollection(revision);
+        if (this.isRemoteAction && this.documentHelper.owner.parser.isPaste) {
+            this.remotePasteRevision.push(revision);
+        } else {
+            this.updateRevisionCollection(revision);
+        }
         return revision;
     }
 
@@ -3448,6 +3460,13 @@ export class Editor {
         return lastPara;
     }
 
+    private updatePasteRevision(): void {
+        for (let i: number = 0; i < this.remotePasteRevision.length; i++) {
+            this.updateRevisionCollection(this.remotePasteRevision[i]);
+        }
+        this.remotePasteRevision = [];
+    }
+
     private updateRevisionCollection(revision: Revision): void {
         let isInserted: boolean = false;
         let paraIndex: TextPosition = undefined;
@@ -3521,17 +3540,6 @@ export class Editor {
             if (!isInserted) {
                 this.owner.revisions.changes.push(revision);
                 if (!(revision.range[0] instanceof WRowFormat)) {
-                    let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this.owner.trackChangesPane);
-                    this.owner.trackChangesPane.changesInfoDiv.appendChild(currentChangeView.createSingleChangesDiv(revision));
-                    this.owner.trackChangesPane.revisions.push(revision);
-                    this.owner.trackChangesPane.changes.add(revision, currentChangeView);
-                    this.owner.trackChangesPane.renderedChanges.add(revision, currentChangeView);
-                }
-            }
-            this.documentHelper.updateAuthorIdentity();
-        } else {
-            if (this.isRemoteAction) {
-                if (this.owner.trackChangesPane.revisions.indexOf(revision) < 0) {
                     let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this.owner.trackChangesPane);
                     this.owner.trackChangesPane.changesInfoDiv.appendChild(currentChangeView.createSingleChangesDiv(revision));
                     this.owner.trackChangesPane.revisions.push(revision);
@@ -4444,7 +4452,7 @@ export class Editor {
         if (selection.start.paragraph.isEmpty()) {
             return selection.start.paragraph.characterFormat;
         } else {
-            let info: ElementInfo = selection.start.currentWidget.getInline(selection.start.offset, 0);
+            let info: ElementInfo = selection.start.currentWidget.getInline(selection.start.offset + 1, 0);
             return info.element.characterFormat;
         }
     }
@@ -5329,7 +5337,11 @@ export class Editor {
                         if (!isNullOrUndefined(parser.revisionCollection)) {
                             parser.revisionCollection = undefined;
                         }
-                        parser.revisionCollection = new Dictionary<string, Revision>();
+                        if (this.isRemoteAction) {
+                            parser.revisionCollection = this.documentHelper.revisionsInternal;
+                        } else {
+                            parser.revisionCollection = new Dictionary<string, Revision>();
+                        }
                         let revisionCollection: Dictionary<string, Revision> = parser.revisionCollection;
                         if (!(this.documentHelper.owner.sfdtExportModule.copyWithTrackChange && parser.isCutPerformed)) {
                             if (pasteContent[revisionsProperty[this.keywordIndex]].length >= 1) {
@@ -5343,7 +5355,7 @@ export class Editor {
                                                 }
                                             }
                                         }
-                                        if (revisionCheck) {
+                                        if (revisionCheck && !this.isRemoteAction) {
                                             let revision: Revision = revisionCollection.get(pasteContent[revisionsProperty[this.keywordIndex]][i][revisionIdProperty[this.keywordIndex]]);
                                             revisionChanges.push(revision);
                                         }
@@ -5658,6 +5670,10 @@ export class Editor {
             this.documentHelper.owner.parser.parseImages(images);
         }
         this.pasteContentsInternal(this.getBlocks(content, true), true, currentFormat);
+        if (this.isRemoteAction) {
+            this.updatePasteRevision();
+            this.owner.trackChangesPane.updateTrackChanges();
+        }
         if (content[commentsProperty[this.keywordIndex]] && content[commentsProperty[this.keywordIndex]].length > 0) {
             this.documentHelper.layout.layoutComments(this.documentHelper.comments);
         }
@@ -5728,7 +5744,7 @@ export class Editor {
         //if (!this.isSkipHistory) {
         this.initHistory('Paste');
         //}
-        if (!selection.isEmpty || this.documentHelper.isListTextSelected) {
+        if ((!selection.isEmpty && (!this.owner.documentHelper.isDragging || !this.owner.selection.isImageSelected)) || this.documentHelper.isListTextSelected) {
             isRemoved = this.removeSelectedContentInternal(selection, selection.start, selection.end);
         }
         if (isRemoved) {
@@ -6218,7 +6234,7 @@ export class Editor {
                     this.owner.enableLocalPaste? 
                         isNullOrUndefined((widget as ParagraphWidget).isCreatedUsingHtmlSpanTag)? false: !(widget as ParagraphWidget).isCreatedUsingHtmlSpanTag
                         : (widget as ParagraphWidget).isCreatedUsingHtmlSpanTag);
-                if (widget instanceof ParagraphWidget && (isPara || (j === widgets.length - 1 && (this.isInsertingTOC || isConsiderLastBlock || this.owner.documentHelper.isDragging)))
+                if (widget instanceof ParagraphWidget && (isPara || (j === widgets.length - 1 && (this.isInsertingTOC || isConsiderLastBlock || this.owner.documentHelper.isDragging || this.isRemoteAction)))
                     && (!isNullOrUndefined(widget.paragraphFormat.listFormat)
                         && isNullOrUndefined(widget.paragraphFormat.listFormat.list)
                         && widget.paragraphFormat.listFormat.listId === -1)) {
@@ -6388,17 +6404,23 @@ export class Editor {
         } else {
             owner = table.containerWidget;
         }
-        
+        if (table.isInsideTable) {
+            owner = owner.combineWidget(this.owner.viewer);
+        }
         //remove old table revisions if it is present.
         this.constructRevisionsForTable(table, false);
         if (!skipRemoving) {
             this.removeBlock(table, true);
         }
         this.removeRevisionFromTable(table);
-        //Inserts table in the current table position.        
+        if (owner instanceof TableCellWidget) {
+            owner = owner.combineWidget(this.owner.viewer);
+        } else {
+            let curretBlock: BlockWidget = this.documentHelper.layout.checkAndGetBlock(owner, insertIndex);
+            insertIndex = owner.childWidgets.indexOf(curretBlock);
+        }
+        //Inserts table in the current table position.
         let blockAdvCollection: IWidget[] = owner.childWidgets;
-        let curretBlock: BlockWidget = this.documentHelper.layout.checkAndGetBlock(owner, insertIndex);
-        insertIndex = owner.childWidgets.indexOf(curretBlock);
         blockAdvCollection.splice(insertIndex, 0, newTable);
         newTable.index = table.index;
         table.containerWidget = undefined;
@@ -6784,6 +6806,25 @@ export class Editor {
         }
 
         if (this.isPaste) {
+            if (this.isRemoteAction) {
+                let revision: Revision[] = (paragraphFormat.ownerBase as ParagraphWidget).characterFormat.revisions;
+                let isBreak: boolean = false;
+                for (let i: number = 0; i < revision.length; i++) {
+                    paragraph.characterFormat.revisions.push(revision[i]);
+                    let range: object[] = revision[i].range;
+                    for (let j: number = 0; j < range.length; j++) {
+                        if (range[j] instanceof WCharacterFormat && (range[j] as WCharacterFormat) == (paragraphFormat.ownerBase as ParagraphWidget).characterFormat) {
+                            range.splice(j, 1);
+                            range.push(paragraph.characterFormat);
+                            isBreak = true;
+                            break;
+                        }
+                    }
+                    if (isBreak) {
+                        break;
+                    }
+                }
+            }
             this.viewer.updateClientAreaForBlock(paragraph, true);
             paragraph.x = this.viewer.clientActiveArea.x;
         }
@@ -10562,7 +10603,7 @@ export class Editor {
                 this.insertRevision(currentElement, 'Insertion');
             }
         }
-        if (isNullOrUndefined(value)) {
+        if (isNullOrUndefined(value) && isNullOrUndefined(property)) {
             format.clearFormat();
             if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                 this.editorHistory.currentBaseHistoryInfo.insertedFormat = format[property];
@@ -15054,7 +15095,7 @@ export class Editor {
             startListLevel = this.documentHelper.layout.getListLevel(tempList, levelNumber);
             if (levelNumber > 0) {
                 initialListLevel = this.documentHelper.layout.getListLevel(tempList, 0);
-                isSameList = !isNullOrUndefined(initialListLevel) && levelNumber > 0 && selection.start.isInSameParagraph(selection.end);
+                isSameList = !isNullOrUndefined(initialListLevel) && levelNumber > 0 && selection.start.isInSameListParagraph(selection.end);
             }
             let abstractList: WAbstractList = tempList.abstractList;
             if (!abstractList) {
@@ -15114,7 +15155,7 @@ export class Editor {
                 selection.paragraphFormat.listLevelNumber = 0;
             }
             selection.paragraphFormat.setList(list);
-        } else if (isSameList && !isNullOrUndefined(list)) {
+        } else if (isSameList && !isNullOrUndefined(list) && !isUpdate) {
             let tempList: WList = this.documentHelper.getListById(currentParagraph.paragraphFormat.listFormat.listId);
             let listLevel: WListLevel = this.documentHelper.layout.getListLevel(tempList, levelNumber);
             if (listLevelPattern === 'Bullet') {
@@ -15261,11 +15302,16 @@ export class Editor {
         let commentStartToInsert = this.checkAndRemoveComments();
         this.initHistory('Enter');
         let isRemoved: boolean = true;
-        if (!selection.isEmpty) {
+        if (!selection.isEmpty && !selection.isImageSelected) {
             // this.initHistoryWithSelection(selection, 'Enter');
             isRemoved = this.removeSelectedContents(selection);
         }
         if (isRemoved) {
+            if (selection.isImageSelected && !selection.isForward) {
+                let start = selection.start;
+                selection.start = selection.end;
+                selection.end = start;
+            }
             selection.owner.isShiftingEnabled = true;
             this.updateInsertPosition();
             let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
@@ -17746,7 +17792,7 @@ export class Editor {
             } else if (elementBox instanceof FootnoteElementBox) {
                 this.editorHistory.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Marker_Start;
                 this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(elementBox));
-            } else if (elementBox instanceof BookmarkElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof FieldElementBox || elementBox instanceof TextElementBox) {
+            } else if (elementBox instanceof BookmarkElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof FieldElementBox || elementBox instanceof TextElementBox && elementBox.removedIds.length == 0) {
                 this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(elementBox, this.editorHistory.isUndoing));
                 if (elementBox instanceof FieldElementBox && elementBox.fieldType === 0) {
                     this.editorHistory.currentBaseHistoryInfo.fieldBegin = elementBox;
@@ -18697,16 +18743,24 @@ export class Editor {
             }
         }
         if (this.owner.enableTrackChanges && !isNullOrUndefined(revision)) {
-            if (isNullOrUndefined(markerData)) {
-                markerData = {};
-            }
-            markerData.revisionId = revision.revisionID;
-            markerData.revisionType = revision.revisionType;
-            markerData.author = revision.author;
-            markerData.date = revision.date;
-            markerData.skipOperation = skip;
-            markerData.isAcceptOrReject = isAcceptOrReject;
+            markerData = this.getRevisionMarkerData(markerData, revision, skip, isAcceptOrReject);
         }
+        return markerData;
+    }
+    /**
+     * @private
+     * @returns {any}
+     */
+    public getRevisionMarkerData(markerData: any, revision: Revision, skip?: boolean, isAcceptOrReject?: string): any {
+        if (isNullOrUndefined(markerData)) {
+            markerData = {};
+        }
+        markerData.revisionId = revision.revisionID;
+        markerData.revisionType = revision.revisionType;
+        markerData.author = revision.author;
+        markerData.date = revision.date;
+        markerData.skipOperation = skip;
+        markerData.isAcceptOrReject = isAcceptOrReject;
         return markerData;
     }
     /**

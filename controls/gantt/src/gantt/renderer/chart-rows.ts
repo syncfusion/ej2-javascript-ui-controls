@@ -39,6 +39,7 @@ export class ChartRows extends DateProcessor {
     private refreshedTr: Element[] = [];
     private refreshedData: IGanttData[] = [];
     private isUpdated: boolean = true;
+    private taskBaselineTemplateNode: NodeList = null;
     constructor(ganttObj?: Gantt) {
         super(ganttObj);
         this.parent = ganttObj;
@@ -1506,25 +1507,42 @@ export class ChartRows extends DateProcessor {
      */
     public getGanttChartRow(i: number, tempTemplateData: IGanttData): Node {
         this.templateData = tempTemplateData;
-        let taskBaselineTemplateNode: NodeList = null;
         const parentTrNode: NodeList = this.getTableTrNode(i);
         const leftLabelNode: NodeList = this.getLeftLabelNode(i);
-        const taskbarContainerNode: NodeList = this.taskbarContainer();
+        let taskbarContainerNode: NodeList | NodeList[] = this.taskbarContainer();
         (<HTMLElement>taskbarContainerNode[0]).setAttribute('aria-label', this.generateAriaLabel(this.templateData));
         (<HTMLElement>taskbarContainerNode[0]).setAttribute('rowUniqueId', this.templateData.ganttProperties.rowUniqueID);
         let connectorLineLeftNode: NodeList;
-        if (!this.templateData.hasChildRecords && !this.parent.allowParentDependency) {
-            const connectorLineLeftNode: NodeList = this.getLeftPointNode();
+        let connectorLineRightNode: NodeList;
+        connectorLineLeftNode = this.getLeftPointNode();
+        if ((this.templateData.ganttProperties.isAutoSchedule && this.parent.viewType === 'ProjectView') || !this.templateData.hasChildRecords) {
             taskbarContainerNode[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
         }
-        else if (this.parent.allowParentDependency) {
-            connectorLineLeftNode = this.getLeftPointNode();
-            if ((this.templateData.ganttProperties.isAutoSchedule && this.parent.viewType === 'ProjectView') || !this.templateData.hasChildRecords) {
-                taskbarContainerNode[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
-            }
-        }
         if (this.templateData.hasChildRecords) {
-            const parentTaskbarTemplateNode: NodeList = this.getParentTaskbarNode(i, taskbarContainerNode);
+            let parentTaskbarTemplateNode: NodeList;
+            if (!this.parent.enableMultiTaskbar || (this.parent.enableMultiTaskbar && this.templateData.expanded)) {
+                parentTaskbarTemplateNode = this.getParentTaskbarNode(i, taskbarContainerNode);
+            }
+            else {
+                taskbarContainerNode = [];
+                for (let j: number = 0; j < this.templateData.childRecords.length; j++) {
+                    this.templateData = this.templateData.childRecords[j as number];
+                    let taskbarContainerNode1: NodeList | NodeList[] = this.taskbarContainer();
+                    (<HTMLElement>taskbarContainerNode1[0]).setAttribute('aria-label', this.generateAriaLabel(this.templateData));
+                    (<HTMLElement>taskbarContainerNode1[0]).setAttribute('rowUniqueId', this.templateData.ganttProperties.rowUniqueID);
+                    if (!this.parent.allowParentDependency) {
+                        connectorLineLeftNode = this.getLeftPointNode();
+                        taskbarContainerNode1[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
+                    }
+                    else {
+                        connectorLineLeftNode = this.getLeftPointNode();
+                        if ((this.templateData.ganttProperties.isAutoSchedule) || !this.templateData.hasChildRecords) {
+                            taskbarContainerNode1[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
+                        }
+                    }
+                    this.appendChildTaskbars(tempTemplateData,i,taskbarContainerNode1,connectorLineRightNode,taskbarContainerNode);
+                }
+            }
             if (!this.templateData.ganttProperties.isAutoSchedule) {
                 const manualTaskbar: NodeList = this.getManualTaskbar();
                 if (!isNullOrUndefined(manualTaskbar[0])) {
@@ -1533,130 +1551,68 @@ export class ChartRows extends DateProcessor {
                         const connectorLineRightNode: NodeList = this.getRightPointNode();
                         manualTaskbar[0].appendChild([].slice.call(connectorLineRightNode)[0]);
                     }
-                    taskbarContainerNode[0].appendChild([].slice.call(manualTaskbar)[0]);
+                    (taskbarContainerNode[0] as any).appendChild([].slice.call(manualTaskbar)[0]);
                 }
             }
             if ((this.templateData.ganttProperties.autoDuration !== 0) && !this.templateData.ganttProperties.isMilestone && parentTaskbarTemplateNode && parentTaskbarTemplateNode.length > 0) {
                 append(parentTaskbarTemplateNode, taskbarContainerNode[0] as Element);
             }
             else if((this.templateData.ganttProperties.duration === 0 && this.templateData.ganttProperties.isMilestone && this.templateData.ganttProperties.isAutoSchedule)){
-                const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
+                const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode as NodeList);
                 if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
                     append(milestoneTemplateNode, taskbarContainerNode[0] as Element);
                 }
             }
             if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
                 this.templateData.ganttProperties.baselineEndDate) {
-                taskBaselineTemplateNode = ((this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.baselineEndDate.getTime()) || (
+                this.taskBaselineTemplateNode = ((this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.baselineEndDate.getTime()) || (
                     (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined(this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.startDate.getTime()))
                     && (!isNullOrUndefined(this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined(this.templateData.ganttProperties.endDate) && (this.templateData.ganttProperties.baselineEndDate.getTime() === this.templateData.ganttProperties.endDate.getTime())) &&
                     this.templateData.ganttProperties.isMilestone))
                     ? this.getMilestoneBaselineNode() : this.getTaskBaselineNode();
             }
-        } else if (this.templateData.ganttProperties.isMilestone) {
-            const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
-            if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
-               append(milestoneTemplateNode, taskbarContainerNode[0] as Element);
+          if (!this.parent.enableMultiTaskbar || (this.parent.enableMultiTaskbar && this.templateData.expanded)) {
+            if (this.parent.allowParentDependency && ((this.templateData.ganttProperties.isAutoSchedule && this.parent.viewType === 'ProjectView') || !this.templateData.hasChildRecords)) {
+                connectorLineRightNode = this.getRightPointNode();
+                (taskbarContainerNode[0] as any).appendChild([].slice.call(connectorLineRightNode)[0]);
             }
-            if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
-                this.templateData.ganttProperties.baselineEndDate) {
-                taskBaselineTemplateNode = ((this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.baselineEndDate.getTime()) || (
-                    (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined(this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.startDate.getTime()))
-                    && (!isNullOrUndefined(this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined(this.templateData.ganttProperties.endDate) && (this.templateData.ganttProperties.baselineEndDate.getTime() === this.templateData.ganttProperties.endDate.getTime())) &&
-                    this.templateData.ganttProperties.isMilestone))
-                    ? this.getMilestoneBaselineNode() : this.getTaskBaselineNode();
+            else if (!this.parent.allowParentDependency) {
+                connectorLineRightNode = this.getRightPointNode();
+                (taskbarContainerNode[0] as any).appendChild([].slice.call(connectorLineRightNode)[0]);
             }
+        }
         } else {
-            const scheduledTask: Boolean = isScheduledTask(this.templateData.ganttProperties);// eslint-disable-line
-            let childTaskbarProgressResizeNode: NodeList = null; let childTaskbarRightResizeNode: NodeList = null;
-            let childTaskbarLeftResizeNode: NodeList = null;
-            if (!isNullOrUndefined(scheduledTask)) {
-                if (scheduledTask || this.templateData.ganttProperties.duration) {
-                    if (scheduledTask && (isNullOrUndefined(this.templateData.ganttProperties.segments)
-                        || this.templateData.ganttProperties.segments.length <= 0)) {
-                        childTaskbarProgressResizeNode = this.childTaskbarProgressResizer();
-                        childTaskbarLeftResizeNode = this.childTaskbarLeftResizer();
-                        childTaskbarRightResizeNode = this.childTaskbarRightResizer();
-                    }
-                }
-                const childTaskbarTemplateNode: NodeList = this.getChildTaskbarNode(i, taskbarContainerNode);
-                if (childTaskbarLeftResizeNode) {
-                    taskbarContainerNode[0].appendChild([].slice.call(childTaskbarLeftResizeNode)[0]);
-                }
-                if (childTaskbarTemplateNode && childTaskbarTemplateNode.length > 0) {
-                    if (this.templateData.ganttProperties.segments && this.templateData.ganttProperties.segments.length > 0) {
-                        const length: number = this.templateData.ganttProperties.segments.length;
-                        const connector: string = ('<div class="e-gantt-split-container-line"></div>');
-                        let segmentConnector: NodeList = null;
-                        segmentConnector = this.createDivElement(connector);
-                        taskbarContainerNode[0].appendChild([].slice.call(segmentConnector)[0]);
-                        for (let i: number = 0; i < length; i++) {
-                            append(childTaskbarTemplateNode, taskbarContainerNode[0] as Element);
-                        }
-                    } else {
-                        append(childTaskbarTemplateNode, taskbarContainerNode[0] as Element);
-                    }
-                }
-                if (childTaskbarProgressResizeNode) {
-                    taskbarContainerNode[0].appendChild([].slice.call(childTaskbarProgressResizeNode)[0]);
-                }
-                if (childTaskbarRightResizeNode) {
-                    taskbarContainerNode[0].appendChild([].slice.call(childTaskbarRightResizeNode)[0]);
-                }
-            }
-            if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
-                this.templateData.ganttProperties.baselineEndDate) {
-                taskBaselineTemplateNode = ((this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.baselineEndDate.getTime()) || (
-                    (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined(this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.startDate.getTime()))
-                    && (!isNullOrUndefined(this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined(this.templateData.ganttProperties.endDate) && (this.templateData.ganttProperties.baselineEndDate.getTime() === this.templateData.ganttProperties.endDate.getTime())) &&
-                    this.templateData.ganttProperties.isMilestone))
-                    ? this.getMilestoneBaselineNode() : this.getTaskBaselineNode();
-            }
-        }
-        let connectorLineRightNode: NodeList;
-        if (this.parent.allowParentDependency && ((this.templateData.ganttProperties.isAutoSchedule && this.parent.viewType === 'ProjectView') || !this.templateData.hasChildRecords)) {
-            connectorLineRightNode = this.getRightPointNode();
-            taskbarContainerNode[0].appendChild([].slice.call(connectorLineRightNode)[0]);
-        }
-        else if (!this.parent.allowParentDependency) {
-            connectorLineRightNode = this.getRightPointNode();
-            taskbarContainerNode[0].appendChild([].slice.call(connectorLineRightNode)[0]);
+            this.appendChildTaskbars(tempTemplateData,i,taskbarContainerNode,connectorLineRightNode);
         }
         const rightLabelNode: NodeList = this.getRightLabelNode(i);
-        parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(leftLabelNode)[0]);
-        parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskbarContainerNode)[0]);
-        if (this.templateData.ganttProperties.indicators && this.templateData.ganttProperties.indicators.length > 0) {
-            let taskIndicatorNode: NodeList;
-            let taskIndicatorTextFunction: Function;
-            let taskIndicatorTextNode: NodeList;
-            const indicators: IIndicator[] = this.templateData.ganttProperties.indicators;
-            for (let indicatorIndex: number = 0; indicatorIndex < indicators.length; indicatorIndex++) {
-                taskIndicatorNode = this.getIndicatorNode(indicators[indicatorIndex as number]);
-                (<HTMLElement>taskIndicatorNode[0]).setAttribute('aria-label',indicators[indicatorIndex as number].name);
-                if (indicators[indicatorIndex as number].name.indexOf('$') > -1 || indicators[indicatorIndex as number].name.indexOf('#') > -1) {
-                    taskIndicatorTextFunction = this.templateCompiler(indicators[indicatorIndex as number].name);
-                    taskIndicatorTextNode = taskIndicatorTextFunction(
-                        extend({ index: i }, this.templateData), this.parent, 'indicatorLabelText');
-                } else {
-                    const text: HTMLElement  = createElement('Text');
-                    text.innerHTML = indicators[indicatorIndex as number].name;
-                    if (this.parent.enableHtmlSanitizer && typeof (indicators[indicatorIndex as number].name) === 'string') {
-                        indicators[indicatorIndex as number].name = SanitizeHtmlHelper.sanitize(indicators[indicatorIndex as number].name);
-                    }
-                    taskIndicatorTextNode = text.childNodes;
-                }
-                taskIndicatorNode[0].appendChild([].slice.call(taskIndicatorTextNode)[0]);
-                (taskIndicatorNode[0] as HTMLElement).title =
-                    !isNullOrUndefined(indicators[indicatorIndex as number].tooltip) ? indicators[indicatorIndex as number].tooltip : '';
-                parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskIndicatorNode)[0]);
+        if (this.parent.enableMultiTaskbar && this.templateData.hasChildRecords && !this.templateData.expanded) {
+            const collapseParent: HTMLElement = createElement('div', {
+                className: 'e-collapse-parent'
+            });
+            parentTrNode[0].childNodes[0].childNodes[0].appendChild(collapseParent);
+            for (let j:number = 0; j < taskbarContainerNode.length; j++) {
+                addClass([taskbarContainerNode[j as number] as HTMLElement], 'collpse-parent-border');
+                parentTrNode[0].childNodes[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskbarContainerNode)[j as number]);
+            }
+            parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(leftLabelNode)[0]);
+            if (this.templateData.ganttProperties.indicators && this.templateData.ganttProperties.indicators.length > 0) {
+                this.appendIndicators(i,parentTrNode);
             }
         }
-        if (rightLabelNode && rightLabelNode.length > 0) {
-            parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(rightLabelNode)[0]);
+        else {
+            parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(leftLabelNode)[0]);
+            parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskbarContainerNode)[0]);
+            if (this.templateData.ganttProperties.indicators && this.templateData.ganttProperties.indicators.length > 0) {
+                this.appendIndicators(i,parentTrNode);
+            }
+            if (rightLabelNode && rightLabelNode.length > 0) {
+                parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(rightLabelNode)[0]);
+            }
         }
-        if (!isNullOrUndefined(taskBaselineTemplateNode)) {
-            parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskBaselineTemplateNode)[0]);
+        if (!isNullOrUndefined(this.taskBaselineTemplateNode)) {
+            parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(this.taskBaselineTemplateNode)[0]);
         }
+        this.taskBaselineTemplateNode = null;
         const tRow: Node = parentTrNode[0].childNodes[0];
         this.setAriaRowIndex(tempTemplateData, tRow);
         return tRow;
@@ -1715,6 +1671,112 @@ export class ChartRows extends DateProcessor {
             } else if (trElement) {
                 this.triggerQueryTaskbarInfoByIndex(trElement, data);
             }
+        }
+    }
+
+    private appendIndicators(i: number, parentTrNode: NodeList) {
+        let taskIndicatorNode: NodeList;
+        let taskIndicatorTextFunction: Function;
+        let taskIndicatorTextNode: NodeList;
+        const indicators: IIndicator[] = this.templateData.ganttProperties.indicators;
+        for (let indicatorIndex: number = 0; indicatorIndex < indicators.length; indicatorIndex++) {
+            taskIndicatorNode = this.getIndicatorNode(indicators[indicatorIndex as number]);
+            (<HTMLElement>taskIndicatorNode[0]).setAttribute('aria-label', indicators[indicatorIndex as number].name);
+            if (indicators[indicatorIndex as number].name.indexOf('$') > -1 || indicators[indicatorIndex as number].name.indexOf('#') > -1) {
+                taskIndicatorTextFunction = this.templateCompiler(indicators[indicatorIndex as number].name);
+                taskIndicatorTextNode = taskIndicatorTextFunction(
+                    extend({ index: i }, this.templateData), this.parent, 'indicatorLabelText');
+            } else {
+                const text: HTMLElement = createElement('Text');
+                text.innerHTML = indicators[indicatorIndex as number].name;
+                if (this.parent.enableHtmlSanitizer && typeof (indicators[indicatorIndex as number].name) === 'string') {
+                    indicators[indicatorIndex as number].name = SanitizeHtmlHelper.sanitize(indicators[indicatorIndex as number].name);
+                }
+                taskIndicatorTextNode = text.childNodes;
+            }
+            taskIndicatorNode[0].appendChild([].slice.call(taskIndicatorTextNode)[0]);
+            (taskIndicatorNode[0] as HTMLElement).title =
+                !isNullOrUndefined(indicators[indicatorIndex as number].tooltip) ? indicators[indicatorIndex as number].tooltip : '';
+            parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskIndicatorNode)[0]);
+        }
+    }
+
+    private appendChildTaskbars(tempTemplateData: IGanttData, i: number, taskbarContainerNode: NodeList, connectorLineRightNode: NodeList, taskbarCollection?: NodeList | NodeList[]) {
+        if (this.templateData.ganttProperties.isMilestone) {
+            const milestoneTemplateNode: NodeList = this.getMilestoneNode(i, taskbarContainerNode);
+            if (milestoneTemplateNode && milestoneTemplateNode.length > 0) {
+                append(milestoneTemplateNode, taskbarContainerNode[0] as Element);
+            }
+            if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
+                this.templateData.ganttProperties.baselineEndDate) {
+                this.taskBaselineTemplateNode = ((this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.baselineEndDate.getTime()) || (
+                    (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined(this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.startDate.getTime()))
+                    && (!isNullOrUndefined(this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined(this.templateData.ganttProperties.endDate) && (this.templateData.ganttProperties.baselineEndDate.getTime() === this.templateData.ganttProperties.endDate.getTime())) &&
+                    this.templateData.ganttProperties.isMilestone))
+                    ? this.getMilestoneBaselineNode() : this.getTaskBaselineNode();
+            }
+            if (taskbarCollection) {
+                (taskbarCollection as any).push(taskbarContainerNode[0]);
+                this.templateData = tempTemplateData;
+            }
+        } else {
+            const scheduledTask: Boolean = isScheduledTask(this.templateData.ganttProperties);// eslint-disable-line
+            let childTaskbarProgressResizeNode: NodeList = null; let childTaskbarRightResizeNode: NodeList = null;
+            let childTaskbarLeftResizeNode: NodeList = null;
+            if (!isNullOrUndefined(scheduledTask)) {
+                if (scheduledTask || this.templateData.ganttProperties.duration) {
+                    if (scheduledTask && (isNullOrUndefined(this.templateData.ganttProperties.segments)
+                        || this.templateData.ganttProperties.segments.length <= 0)) {
+                        childTaskbarProgressResizeNode = this.childTaskbarProgressResizer();
+                        childTaskbarLeftResizeNode = this.childTaskbarLeftResizer();
+                        childTaskbarRightResizeNode = this.childTaskbarRightResizer();
+                    }
+                }
+                const childTaskbarTemplateNode: NodeList = this.getChildTaskbarNode(i, taskbarContainerNode);
+                if (childTaskbarLeftResizeNode) {
+                    taskbarContainerNode[0].appendChild([].slice.call(childTaskbarLeftResizeNode)[0]);
+                }
+                if (childTaskbarTemplateNode && childTaskbarTemplateNode.length > 0) {
+                    if (this.templateData.ganttProperties.segments && this.templateData.ganttProperties.segments.length > 0) {
+                        const length: number = this.templateData.ganttProperties.segments.length;
+                        const connector: string = ('<div class="e-gantt-split-container-line"></div>');
+                        let segmentConnector: NodeList = null;
+                        segmentConnector = this.createDivElement(connector);
+                        taskbarContainerNode[0].appendChild([].slice.call(segmentConnector)[0]);
+                        for (let i: number = 0; i < length; i++) {
+                            append(childTaskbarTemplateNode, taskbarContainerNode[0] as Element);
+                        }
+                    } else {
+                        append(childTaskbarTemplateNode, taskbarContainerNode[0] as Element);
+                    }
+                }
+                if (childTaskbarProgressResizeNode) {
+                    taskbarContainerNode[0].appendChild([].slice.call(childTaskbarProgressResizeNode)[0]);
+                }
+                if (childTaskbarRightResizeNode) {
+                    taskbarContainerNode[0].appendChild([].slice.call(childTaskbarRightResizeNode)[0]);
+                }
+            }
+            if (this.parent.renderBaseline && this.templateData.ganttProperties.baselineStartDate &&
+                this.templateData.ganttProperties.baselineEndDate) {
+                this.taskBaselineTemplateNode = ((this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.baselineEndDate.getTime()) || (
+                    (!isNullOrUndefined(this.templateData.ganttProperties.baselineStartDate) && !isNullOrUndefined(this.templateData.ganttProperties.startDate) && (this.templateData.ganttProperties.baselineStartDate.getTime() === this.templateData.ganttProperties.startDate.getTime()))
+                    && (!isNullOrUndefined(this.templateData.ganttProperties.baselineEndDate) && !isNullOrUndefined(this.templateData.ganttProperties.endDate) && (this.templateData.ganttProperties.baselineEndDate.getTime() === this.templateData.ganttProperties.endDate.getTime())) &&
+                    this.templateData.ganttProperties.isMilestone))
+                    ? this.getMilestoneBaselineNode() : this.getTaskBaselineNode();
+            }
+        }
+        if (this.parent.allowParentDependency && ((this.templateData.ganttProperties.isAutoSchedule && this.parent.viewType === 'ProjectView') || !this.templateData.hasChildRecords)) {
+            connectorLineRightNode = this.getRightPointNode();
+            (taskbarContainerNode[0] as any).appendChild([].slice.call(connectorLineRightNode)[0]);
+        }
+        else if (!this.parent.allowParentDependency) {
+            connectorLineRightNode = this.getRightPointNode();
+            (taskbarContainerNode[0] as any).appendChild([].slice.call(connectorLineRightNode)[0]);
+        }
+        if (taskbarCollection) {
+            (taskbarCollection as any).push(taskbarContainerNode[0]);
+            this.templateData = tempTemplateData;
         }
     }
     /**
@@ -2211,7 +2273,10 @@ export class ChartRows extends DateProcessor {
                 else {
                     index = this.parent.currentViewData.indexOf(items[i as number]);
                 }
-                this.refreshRow(index, isValidateRange, isUndoRedo);
+                if (!this.parent.enableMultiTaskbar ||
+                    (this.parent.enableMultiTaskbar && (items[i as number].expanded || !this.parent.isLoad))) {
+                    this.refreshRow(index, isValidateRange, isUndoRedo);
+                }
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
         }

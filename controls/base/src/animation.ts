@@ -525,20 +525,20 @@ export function setGlobalAnimation(value: string | GlobalAnimationMode): void {
     animationMode = value;
 }
 
-/** 
- * Defines the global animation modes for all components. 
+/**
+ * Defines the global animation modes for all components.
  */
 export enum GlobalAnimationMode {
-    /** 
-    * Defines the global animation mode as Default. Animation is enabled or disabled based on the component's animation settings. 
-    */
+    /**
+     * Defines the global animation mode as Default. Animation is enabled or disabled based on the component's animation settings.
+     */
     Default = 'Default',
-    /** 
-    * Defines the global animation mode as Enable. Enables the animation for all components, regardless of the individual component's animation settings. 
-    */
+    /**
+     * Defines the global animation mode as Enable. Enables the animation for all components, regardless of the individual component's animation settings.
+     */
     Enable = 'Enable',
-    /** 
-    * Defines the global animation mode as Disable. Disables the animation for all components, regardless of the individual component's animation settings. 
-    */
+    /**
+     * Defines the global animation mode as Disable. Disables the animation for all components, regardless of the individual component's animation settings.
+     */
     Disable = 'Disable'
 }

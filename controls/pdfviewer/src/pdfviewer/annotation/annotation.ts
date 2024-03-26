@@ -2808,7 +2808,10 @@ export class Annotation {
     }
 
     // eslint-disable-next-line
-    private modifyInCollections(annotationBase: PdfAnnotationBaseModel, property: string): any {
+    /**
+     * @private
+     */
+    public modifyInCollections(annotationBase: PdfAnnotationBaseModel, property: string): any {
         // eslint-disable-next-line
         let returnObj: any;
         if (annotationBase.measureType === '' || isNullOrUndefined(annotationBase.measureType)) {

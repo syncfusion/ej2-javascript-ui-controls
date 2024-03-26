@@ -4647,6 +4647,44 @@ describe('EJ2-72030 - Batch Edited cell value not saved during tab out from last
         gridObj = null;
     });
 });
+describe('EJ2-871057 - Add button is not getting focused on first click in Batch Editing Sample =>', () => {
+    let gridObj: Grid;
+    let batchAdd: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 5),
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                allowPaging: true,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2', validationRules: { required: true } },
+                ],
+            }, done);
+    });
+
+    it('Add record 1', (done: Function) => {
+        batchAdd = (args?: Object): void => {
+            expect(gridObj.element.querySelectorAll('.e-insertedrow').length).toBe(1);
+            gridObj.batchAdd = null;
+            done();
+        };
+        gridObj.batchAdd = batchAdd;
+        gridObj.addRecord();
+    });
+    it('Add record 2', (done: Function) => {
+        gridObj.addRecord();
+        expect(gridObj.element.querySelectorAll('.e-insertedrow').length).toBe(1);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = batchAdd = null;
+    });
+});
 
 describe('EJ2-837195 - Inline and Batch Edit mode behave differently when column.allowEditing is false =>', () => {
     let gridObj: Grid;

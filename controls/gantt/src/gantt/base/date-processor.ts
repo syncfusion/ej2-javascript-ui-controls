@@ -114,7 +114,13 @@ export class DateProcessor {
         if (hour > this.parent.defaultEndTime) {
             this.setTime(this.parent.defaultEndTime, cloneEndDate);
         } else if (hour <= this.parent.defaultStartTime && !validateAsMilestone) {
-            cloneEndDate.setDate(cloneEndDate.getDate() - 1);
+            let taskfields = this.parent.taskFields;
+            if(this.parent.editModule && this.parent.editModule['editedRecord'] && (!this.parent.editModule['editedRecord'][taskfields.startDate] && this.parent.editModule['editedRecord'][taskfields.endDate])) {
+                cloneEndDate.setDate(cloneEndDate.getDate());
+            }
+            else {
+                cloneEndDate.setDate(cloneEndDate.getDate() - 1);
+            }
             this.setTime(this.parent.defaultEndTime, cloneEndDate);
         } else if (hour > this.parent.defaultStartTime && hour < this.parent.defaultEndTime) {
             for (let index: number = 0; index < this.parent.workingTimeRanges.length; index++) {

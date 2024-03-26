@@ -2037,7 +2037,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const gridContent: Element = this.element.getElementsByClassName('e-gridcontent')[0].childNodes[0] as HTMLElement;
         gridContent.setAttribute('tabindex', '0');
         const contentTable: Element = this.element.getElementsByClassName('e-content')[0].querySelector('.e-table') as HTMLElement;
-        contentTable.setAttribute('role', 'treegrid');
+        if (!isNullOrUndefined(contentTable)) {
+            contentTable.setAttribute('role', 'treegrid');
+        }
         if (this.isIndentEnabled) {
             this.refreshToolbarItems();
         }
@@ -3752,6 +3754,17 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private mergeColumns(storedColumn: Column[], columns: Column[]): void {
         const persist2: string = 'mergeColumns';
         this.grid[`${persist2}`].apply(this, [storedColumn, columns]);
+    }
+    private setFrozenCount(): void {
+        const persist3: string = 'setFrozenCount';
+        this.grid[`${persist3}`].apply(this);
+    }
+    private splitFrozenCount(columns: Column[]): void {
+        const persist4: string = 'splitFrozenCount';
+        this.grid[`${persist4}`].apply(this, [columns]);
+    }
+    private isFrozenGrid(): boolean {
+        return this.grid.isFrozenGrid();
     }
 
     private updateTreeGridModel() : void {

@@ -42,7 +42,7 @@ import { Snapping } from '../objects/snapping';
 import { LayoutAnimation } from '../objects/layout-animation';
 import { Container } from '../core/containers/container';
 import { Canvas } from '../core/containers/canvas';
-import { getDiagramElement, getAdornerLayerSvg, getHTMLLayer, getAdornerLayer, getSelectorElement } from '../utility/dom-util';
+import { getDiagramElement, getAdornerLayerSvg, getHTMLLayer, getAdornerLayer, getSelectorElement, setAttributeHtml } from '../utility/dom-util';
 import { Point } from '../primitives/point';
 import { Size } from '../primitives/size';
 import { getObjectType, getPoint, intersect2, getOffsetOfConnector, canShowCorner } from './../utility/diagram-util';
@@ -6000,10 +6000,41 @@ Remove terinal segment in initial
             }
             this.diagram.diagramActions = this.diagram.diagramActions & ~(DiagramAction.PreventZIndexOnDragging | DiagramAction.DragUsingMouse);
             this.diagram.refreshCanvasLayers();
+            //Bug 872140: Dragging HTML nodes in a diagram leaves shadows on the overview
+            this.checkHtmlObjectDrag(obj);
             return true;
         }
         return false;
-    }
+    };
+     // Checks if any HTML object is being dragged and reset the canvas to clear the shadow of the HTML node border.
+     private checkHtmlObjectDrag(obj: SelectorModel | NodeModel | ConnectorModel){
+        let isHtmlObjDragged = false;
+        if(this.diagram.views && this.diagram.views.length > 1){
+            if(obj instanceof Selector){
+                isHtmlObjDragged = obj.nodes.some(node => node.shape && node.shape.type === 'HTML');
+            } else if((obj as NodeModel).shape && (obj as NodeModel).shape.type === 'HTML') {
+                isHtmlObjDragged = true;
+            }
+            if(isHtmlObjDragged){
+                this.resetOverviewCanvas();
+            }
+        }
+    };
+    //Resetting Overview canvas  
+    private resetOverviewCanvas(){
+        for (const temp of this.diagram.views) {
+            const view: View = this.diagram.views[temp];
+            if (!(view instanceof Diagram)) {
+                const rect: HTMLElement = document.getElementById((view as any).canvas.id + 'overviewrect');
+                const x = Number(rect.getAttribute('x'));
+                const y = Number(rect.getAttribute('y'));
+                const width = Number(rect.getAttribute('width'));
+                const height = Number(rect.getAttribute('height'));
+                const attr: Object = { x: x, y: y, width: Math.max(1, width), height: Math.max(1, height) };
+                setAttributeHtml(rect, attr);
+            }
+        }
+    };
     /** @private */
     public scaleSelectedItems(sx: number, sy: number, pivot: PointModel): boolean {
         let obj: SelectorModel | NodeModel | ConnectorModel = this.diagram.selectedItems;

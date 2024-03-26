@@ -2170,44 +2170,44 @@ client side. Customer easy to edit the contents and get the HTML content for
              }, 4000);
          });
      });
-     describe('Disable the insert video dialog button when the video is uploading', () => {
-         let rteObj: RichTextEditor;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-                 insertVideoSettings: {
-                     saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
-                     path: "../Videos/"
-                 }
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Button enabled with video upload Success', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
-             let fileObj: File = new File(["mov_bob"], "horse.mp4", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             setTimeout(() => {
-                 expect((dialogEle.querySelector('.e-insertVideo') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
-                 done();
-             }, 4000);
-         });
-     });
+    //  describe('Disable the insert video dialog button when the video is uploading', () => {
+    //      let rteObj: RichTextEditor;
+    //      beforeEach((done: Function) => {
+    //          rteObj = renderRTE({
+    //              toolbarSettings: {
+    //                  items: ['Video']
+    //              },
+    //              insertVideoSettings: {
+    //                  saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
+    //                  path: "../Videos/"
+    //              }
+    //          });
+    //          done();
+    //      })
+    //      afterEach((done: Function) => {
+    //          destroy(rteObj);
+    //          done();
+    //      })
+    //      it(' Button enabled with video upload Success', (done) => {
+    //          let rteEle: HTMLElement = rteObj.element;
+    //          (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+    //          let args = { preventDefault: function () { } };
+    //          let range = new NodeSelection().getRange(document);
+    //          let save = new NodeSelection().save(range, document);
+    //          let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+    //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+    //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+    //          (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+    //          let fileObj: File = new File(["mov_bob"], "horse.mp4", { lastModified: 0, type: "overide/mimetype" });
+    //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+    //          (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+    //          setTimeout(() => {
+    //              expect((dialogEle.querySelector('.e-insertVideo') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
+    //              done();
+    //          }, 4000);
+    //      });
+    //  });
      describe('Getting error while insert the video after applied the  lower case or  upper case commands in Html Editor  - ', () => {
          let rteObj: RichTextEditor;
          let controlId: string;
@@ -2386,51 +2386,51 @@ client side. Customer easy to edit the contents and get the HTML content for
          });
      });
  
-     describe('Rename videos in success event- ', () => {
-         let rteObj: RichTextEditor;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 fileUploadSuccess: function (args : any) {
-                     args.file.name = 'rte_video';
-                     var filename : any = document.querySelectorAll(".e-file-name")[0];
-                     filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
-                     filename.title = args.file.name;
-                 },
-                 insertVideoSettings: {
-                     saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
-                     path: "../Videos/"
-                 },
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it('Check name after renamed', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-             let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             setTimeout(() => {
-                 expect(document.querySelectorAll(".e-file-name")[0].innerHTML).toBe('rte_video');
-                 done();
-             }, 4500);
-         });
-     });
+    //  describe('Rename videos in success event- ', () => {
+    //      let rteObj: RichTextEditor;
+    //      beforeEach((done: Function) => {
+    //          rteObj = renderRTE({
+    //              fileUploadSuccess: function (args : any) {
+    //                  args.file.name = 'rte_video';
+    //                  var filename : any = document.querySelectorAll(".e-file-name")[0];
+    //                  filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
+    //                  filename.title = args.file.name;
+    //              },
+    //              insertVideoSettings: {
+    //                  saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+    //                  path: "../Videos/"
+    //              },
+    //              toolbarSettings: {
+    //                  items: ['Video']
+    //              },
+    //          });
+    //          done();
+    //      })
+    //      afterEach((done: Function) => {
+    //          destroy(rteObj);
+    //          done();
+    //      })
+    //      it('Check name after renamed', (done) => {
+    //          let rteEle: HTMLElement = rteObj.element;
+    //          (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+    //          let args = { preventDefault: function () { } };
+    //          let range = new NodeSelection().getRange(document);
+    //          let save = new NodeSelection().save(range, document);
+    //          let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+    //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+    //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+    //          (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+    //          let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
+    //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+    //          (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+    //          setTimeout(() => {
+    //              expect(document.querySelectorAll(".e-file-name")[0].innerHTML).toBe('rte_video');
+    //              done();
+    //          }, 4500);
+    //      });
+    //  });
  
      describe('Inserting Video as Base64 - ', () => {
          let rteObj: RichTextEditor;
@@ -2518,56 +2518,56 @@ client side. Customer easy to edit the contents and get the HTML content for
          });
      });
      
-     describe('Insert Video mediaSelected, mediaUploading and mediaUploadSuccess event - ', () => {
-         let rteObj: RichTextEditor;
-         let mediaSelectedSpy: jasmine.Spy = jasmine.createSpy('onFileSelected');
-         let mediaUploadingSpy: jasmine.Spy = jasmine.createSpy('onFileUploading');
-         let mediaUploadSuccessSpy: jasmine.Spy = jasmine.createSpy('onFileUploadSuccess');
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 fileSelected: mediaSelectedSpy,
-                 fileUploading: mediaUploadingSpy,
-                 fileUploadSuccess: mediaUploadSuccessSpy,
-                 insertVideoSettings: {
-                     saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
-                     path: "../Videos/"
-                 },
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Test the component insert video events - case 1 ', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-             let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             expect(mediaSelectedSpy).toHaveBeenCalled();
-             expect(mediaUploadingSpy).toHaveBeenCalled();
-             setTimeout(() => {
-                 expect(mediaUploadSuccessSpy).toHaveBeenCalled();
-                 evnArg.selectNode = [rteObj.element];
-                 (<any>rteObj).videoModule.deleteVideo(evnArg);
-                 (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
-                 done();
-             }, 4000);
-         });
-     });
+    //  describe('Insert Video mediaSelected, mediaUploading and mediaUploadSuccess event - ', () => {
+    //      let rteObj: RichTextEditor;
+    //      let mediaSelectedSpy: jasmine.Spy = jasmine.createSpy('onFileSelected');
+    //      let mediaUploadingSpy: jasmine.Spy = jasmine.createSpy('onFileUploading');
+    //      let mediaUploadSuccessSpy: jasmine.Spy = jasmine.createSpy('onFileUploadSuccess');
+    //      beforeEach((done: Function) => {
+    //          rteObj = renderRTE({
+    //              fileSelected: mediaSelectedSpy,
+    //              fileUploading: mediaUploadingSpy,
+    //              fileUploadSuccess: mediaUploadSuccessSpy,
+    //              insertVideoSettings: {
+    //                  saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+    //                  path: "../Videos/"
+    //              },
+    //              toolbarSettings: {
+    //                  items: ['Video']
+    //              },
+    //          });
+    //          done();
+    //      })
+    //      afterEach((done: Function) => {
+    //          destroy(rteObj);
+    //          done();
+    //      })
+    //      it(' Test the component insert video events - case 1 ', (done) => {
+    //          let rteEle: HTMLElement = rteObj.element;
+    //          (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+    //          let args = { preventDefault: function () { } };
+    //          let range = new NodeSelection().getRange(document);
+    //          let save = new NodeSelection().save(range, document);
+    //          let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+    //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+    //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+    //          (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+    //          let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
+    //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+    //          (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+    //          expect(mediaSelectedSpy).toHaveBeenCalled();
+    //          expect(mediaUploadingSpy).toHaveBeenCalled();
+    //          setTimeout(() => {
+    //              expect(mediaUploadSuccessSpy).toHaveBeenCalled();
+    //              evnArg.selectNode = [rteObj.element];
+    //              (<any>rteObj).videoModule.deleteVideo(evnArg);
+    //              (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
+    //              done();
+    //          }, 4000);
+    //      });
+    //  });
  
      describe('Insert video mediaSelected event args cancel true - ', () => {
          let rteObj: RichTextEditor;

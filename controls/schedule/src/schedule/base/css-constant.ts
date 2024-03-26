@@ -122,6 +122,8 @@ export const TIMELINE_WRAPPER_CLASS: string = 'e-timeline-wrapper';
 /** @private */
 export const APPOINTMENT_WRAPPER_CLASS: string = 'e-appointment-wrapper';
 /** @private */
+export const APPOINTMENT_WRAPPER_HIDDEN_CLASS: string = 'e-appointment-wrapper-hidden';
+/** @private */
 export const DAY_WRAPPER_CLASS: string = 'e-day-wrapper';
 /** @private */
 export const TOOLBAR_CONTAINER: string = 'e-schedule-toolbar-container';

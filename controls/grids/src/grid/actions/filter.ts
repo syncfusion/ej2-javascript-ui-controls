@@ -387,7 +387,10 @@ export class Filter implements IAction {
     }
 
     private refreshFilterValue(): void {
-        this.parent.removeEventListener(events.beforeDataBound, this.refreshFilterValueFn);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!isNullOrUndefined((this.parent as any).modelObserver.boundedEvents)) {
+            this.parent.removeEventListener(events.beforeDataBound, this.refreshFilterValueFn);
+        }
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.columns.length &&
             !this.parent.getCurrentViewRecords().length) {
             this.initialEnd();

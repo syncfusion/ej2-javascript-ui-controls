@@ -716,6 +716,11 @@ export class Toolbar {
 
     private onFocusOut(e: FocusEvent): void {
         (e.target as HTMLElement).tabIndex = -1;
+        if (e.target && (e.target as HTMLElement).id === this.parent.element.id + '_searchbar' &&
+            !(e.relatedTarget && ((e.relatedTarget as HTMLElement).id === this.parent.element.id + '_clearbutton' ||
+                (e.relatedTarget as HTMLElement).id === this.parent.element.id + '_searchbutton'))) {
+            this.search();
+        }
     }
 
     private setFocusToolbarItem(element: Element): void {

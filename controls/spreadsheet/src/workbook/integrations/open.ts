@@ -127,7 +127,7 @@ export class WorkbookOpen {
         this.parent.sheetNameCount = 1;
         this.parent.sheets = [];
         this.parent.notify(sheetsDestroyed, {});
-        workbookModel.activeSheetIndex  = workbookModel.activeSheetIndex  || 0;
+        workbookModel.activeSheetIndex  = workbookModel.activeSheetIndex  || workbookModel.sheets.findIndex(sheet => sheet.state !== 'Hidden');
         this.parent.setProperties(
             {
                 'isProtected': workbookModel.isProtected || false,

@@ -1918,10 +1918,10 @@ export class TextSelection {
             // eslint-disable-next-line max-len
             const topPositionValue: string = topClientValue + pageTopValue * this.pdfViewerBase.getZoomFactor() + (dropElementRect.height / 2) * this.pdfViewerBase.getZoomFactor() + 'px';
             this.dropDivElementLeft.style.top = topPositionValue;
-            this.dropDivElementLeft.style.left = rangePosition.left - (viewerLeftPosition + (dropElementRect.width)) + 'px';
+            this.dropDivElementLeft.style.left = rangePosition.left - (viewerLeftPosition + (dropElementRect.width)) + this.pdfViewerBase.viewerContainer.scrollLeft + 'px';
             this.dropDivElementRight.style.top = topPositionValue;
             // eslint-disable-next-line max-len
-            this.dropDivElementRight.style.left = rangePosition.left + rangePosition.width - viewerLeftPosition + 'px';
+            this.dropDivElementRight.style.left = rangePosition.left + rangePosition.width - viewerLeftPosition + this.pdfViewerBase.viewerContainer.scrollLeft + 'px';
             const currentPageLeft: number = this.pdfViewerBase.getElement('_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1)).getBoundingClientRect().left;
             const currentRangeLeft: number = rangePosition.left - currentPageLeft;
             // eslint-disable-next-line max-len
@@ -2032,12 +2032,14 @@ export class TextSelection {
             this.fireTextSelectEnd();
             let top: any = event.changedTouches[0].clientY + event.currentTarget.clientHeight;
             var spanBounds = this.getSpanBounds();
-            if ((spanBounds.bottom + this.contextMenuHeight + this.pdfViewerBase.toolbarHeight) > window.innerHeight) {
-                top = spanBounds.top - (this.contextMenuHeight + this.pdfViewerBase.toolbarHeight);
-            } else {
-                top = spanBounds.bottom + this.pdfViewerBase.toolbarHeight - topMargin;
+            if(spanBounds) {
+                if ((spanBounds.bottom + this.contextMenuHeight + this.pdfViewerBase.toolbarHeight) > window.innerHeight) {
+                    top = spanBounds.top - (this.contextMenuHeight + this.pdfViewerBase.toolbarHeight);
+                } else {
+                    top = spanBounds.bottom + this.pdfViewerBase.toolbarHeight - topMargin;
+                }
+                this.pdfViewerBase.contextMenuModule.open(top, (spanBounds.right - spanBounds.left) / 2, this.pdfViewerBase.viewerContainer);
             }
-            this.pdfViewerBase.contextMenuModule.open(top, (spanBounds.right - spanBounds.left) / 2, this.pdfViewerBase.viewerContainer);
         }
     }
 
@@ -2098,7 +2100,7 @@ export class TextSelection {
                     this.dropDivElementLeft.style.top = pageTopValue * this.pdfViewerBase.getZoomFactor() + topClientValue + 'px';
                     this.topStoreLeft = { pageTop: pageTopValue, topClientValue: this.getMagnifiedValue(topClientValue), pageNumber: this.pdfViewerBase.currentPageNumber - 1, left: this.getMagnifiedValue(currentRangeLeft), isHeightNeeded: false };
                     // eslint-disable-next-line max-len
-                    this.dropDivElementLeft.style.left = xTouch - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left - (elementClientRect.width / 2) + 'px';
+                    this.dropDivElementLeft.style.left = xTouch - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left - (elementClientRect.width / 2) + this.pdfViewerBase.viewerContainer.scrollLeft + 'px';
                     this.previousScrollDifference = currentDifference;
                 }
             }
@@ -2144,7 +2146,7 @@ export class TextSelection {
                     // eslint-disable-next-line max-len
                     this.topStoreRight = { pageTop: pageTopValue, topClientValue: this.getMagnifiedValue(topClientValue), pageNumber: this.pdfViewerBase.currentPageNumber - 1, left: this.getMagnifiedValue(currentRangeLeft), isHeightNeeded: false };
                     // eslint-disable-next-line max-len
-                    this.dropDivElementRight.style.left = touchX - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left - (elementClientRect.width / 2) + 'px';
+                    this.dropDivElementRight.style.left = touchX - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left - (elementClientRect.width / 2) + this.pdfViewerBase.viewerContainer.scrollLeft + 'px';
                     this.previousScrollDifference = currentDifference;
                 }
             }

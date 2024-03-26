@@ -814,7 +814,6 @@ export namespace IntlBase {
         const ret: NumericSkeleton = {};
         const pattern: string = matches[1].toUpperCase();
         ret.isAccount = (pattern === 'A');
-        // eslint-disable-next-line
         (<any>ret).type = patternMatcher[pattern];
         if (skeleton.length > 1) {
             ret.fractionDigits = parseInt(matches[2], 10);
@@ -898,7 +897,6 @@ export namespace IntlBase {
         const formatSplit: string[] = format.split(';');
         const data: string[] = ['pData', 'nData', 'zeroData'];
         for (let i: number = 0; i < formatSplit.length; i++) {
-            // eslint-disable-next-line
             (<any>options)[data[i]] = customNumberFormat(formatSplit[i], dOptions, obj);
         }
         if (isNullOrUndefined(options.nData)) {
@@ -958,7 +956,6 @@ export namespace IntlBase {
             const symbolPattern: string = getSymbolPattern(
                 cOptions.type, dOptions.numberMapper.numberSystem, numObject, false);
             if (cOptions.useGrouping) {
-                // eslint-disable-next-line
                 cOptions.groupSeparator = spaceGrouping? ' ' : (<any>dOptions).numberMapper.numberSymbols[mapper[2]];
                 cOptions.groupData = NumberFormat.getGroupingDetails(symbolPattern.split(';')[0]);
             }
@@ -982,9 +979,7 @@ export namespace IntlBase {
             const part: string = parts[parseInt(i.toString(), 10)];
             const loc: number = part.indexOf(actual);
             if ((loc !== -1) && ((loc < part.indexOf('\'')) || (loc > part.lastIndexOf('\'')))) {
-                // eslint-disable-next-line
                 (<any>options)[(<any>typeMapper)[i]] = part.substr(0, loc) + symbol + part.substr(loc + 1);
-                // eslint-disable-next-line
                 (<any>options)[(<any>typeMapper)[actual]] = true;
                 options.type = options.isCurrency ? 'currency' : 'percent';
                 break;
@@ -1022,7 +1017,6 @@ export namespace IntlBase {
         let actualPattern: string = options.format || getResultantPattern(options.skeleton, dependable.dateObject, options.type);
         if (isExcelFormat) {
             actualPattern = actualPattern.replace(patternRegex, (pattern: string): string => {
-                // eslint-disable-next-line
                 return (<any>patternMatch)[pattern];
             });
             if (actualPattern.indexOf('z') !== -1) {
@@ -1054,10 +1048,8 @@ export namespace IntlBase {
      * @param {any} option ?
      * @returns {any} ?
      */
-    // eslint-disable-next-line
     function processSymbol(actual: string, option: any): any {
         if (actual.indexOf(',') !== -1) {
-            // eslint-disable-next-line
             let split: any = actual.split(',');
             actual = (split[0] + getValue('numberMapper.numberSymbols.group', option) +
                 split[1].replace('.', getValue('numberMapper.numberSymbols.decimal', option)));

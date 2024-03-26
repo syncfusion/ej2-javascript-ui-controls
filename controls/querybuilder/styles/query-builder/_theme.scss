@@ -8,7 +8,9 @@
     }
 
     & .e-group-header .e-dropdown-btn.e-add-btn,
-    .e-deletegroup {
+    .e-deletegroup,
+    .e-clone-grp-btn,
+    .e-lock-grp-btn {
       @if $skin-name == 'bootstrap5' {
         background: $qrybldr-btngroup-bgcolor;
         box-shadow: none;

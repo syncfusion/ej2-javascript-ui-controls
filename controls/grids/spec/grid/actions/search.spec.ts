@@ -468,6 +468,50 @@ describe('Search module=>', () => {
         });
     });
 
+    describe('EJ2-872387- Misleading Text in Grid Toolbar Search when Focus is Lost', () => {
+        let gridObj: Grid;
+        let actionBegin: (args?: Object) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5),
+                    toolbar: ['Search'],
+                    columns: [
+                        {
+                            field: 'OrderID',
+                            headerText: 'OrderID',
+                            width: 140,
+                        },
+                        {
+                            field: 'CustomerID',
+                            headerText: 'Customer Name',
+                            width: 140,
+                        },
+                    ],
+                    height: 350,
+                }, done);
+        });
+        it('search on focus out', (done: Function) => {
+            actionBegin = (args: any): void => {
+                if (args.requestType === 'searching') {
+                    expect(args.searchString).toBe('vinet');
+                    gridObj.actionBegin = null;
+                    done();
+                }
+            };
+            gridObj.actionBegin = actionBegin;
+            let searchBar: HTMLInputElement = gridObj.element.querySelector('#' + gridObj.element.id + '_searchbar');
+            searchBar.focus();
+            searchBar.value = 'vinet';
+            gridObj.element.querySelector('th').click();
+            searchBar = null;
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = null;
+        });
+    });
+
     describe('846444 - Searching value with Trailing Zero not working', () => {
         let gridObj: Grid;
         let actionComplete: () => void;

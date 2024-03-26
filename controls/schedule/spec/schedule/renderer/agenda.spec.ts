@@ -1242,6 +1242,312 @@ describe('Agenda View', () => {
         });
     });
 
+    describe('ES-870019 - Hide/Show weekend and non working days based on showWeekend', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 10, 6),
+                views: [{ option: 'Agenda' }], showWeekend: false
+            };
+            schObj = createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('Checking initial rendering', () => {
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 06 - 12, 2017');
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
+        });
+
+        it('Checking previous navigation rendering', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 05 - 11, 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeFalsy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+                done();
+            };
+            const prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
+            prevEle.click();
+        });
+
+        it('Checking next navigation rendering', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 06 - 12, 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
+                done();
+            };
+            const nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
+            nextEle.click();
+        });
+
+        it('Checking showWeekend true rendering', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 06 - 12, 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeTruthy();
+                done();
+            };
+            schObj.showWeekend = true;
+            schObj.dataBind();
+        });
+
+        it('Checking previous navigation rendering showWeekend true', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 05 - 11, 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeTruthy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+                done();
+            };
+            const prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
+            prevEle.click();
+        });
+
+        it('Checking showWeekend with next navigation rendering showWeekend true', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 06 - 12, 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeTruthy();
+                done();
+            };
+            const nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
+            nextEle.click();
+        });
+
+        it('Checking rendering with virtual scrolling and showWeekend true', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeTruthy();
+                done();
+            };
+            schObj.views = [{ option: 'Agenda', allowVirtualScrolling: true }];
+            schObj.dataBind();
+        });
+
+        it('Checking previous navigation with virtual scrolling and showWeekend true', () => {
+            const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(scrollUp, 0);
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509753600000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeTruthy();
+        });
+
+        it('Checking next navigation with virtual scrolling and showWeekend true', () => {
+            const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(scrollUp, scrollUp.scrollHeight);
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509753600000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510963200000"]')).toBeTruthy();
+        });
+
+        it('Checking rendering with virtual scrolling and showWeekend false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
+                done();
+            };
+            schObj.showWeekend = false;
+            schObj.dataBind();
+        });
+
+        it('Checking previous navigation with virtual scrolling and showWeekend false', () => {
+            const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(scrollUp, 0);
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509753600000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
+        });
+
+        it('Checking next navigation with virtual scrolling and showWeekend false', () => {
+            const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(scrollUp, scrollUp.scrollHeight);
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509753600000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510963200000"]')).toBeFalsy();
+        });
+    });
+
+    describe('ES-870019 - Hide/Show weekend and non working days based on showWeekend for resources', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Work week appointment',
+            StartTime: new Date(2017, 0, 1, 10),
+            EndTime: new Date(2017, 0, 1, 12),
+            RecurrenceRule: 'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;INTERVAL=1;UNTIL=20181231T033000Z;',
+            OwnerId: [1, 2, 3]
+        }, {
+            Id: 2,
+            Subject: 'Week end appointment',
+            StartTime: new Date(2017, 0, 1, 10),
+            EndTime: new Date(2017, 0, 1, 12),
+            RecurrenceRule: 'FREQ=WEEKLY;BYDAY=SU,SA;INTERVAL=1;UNTIL=20181231T033000Z;',
+            OwnerId: [1, 2, 3]
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%', height: '500px', currentView: 'Agenda',
+                views: [{ option: 'Agenda' }],
+                selectedDate: new Date(2017, 10, 6),
+                showWeekend: false,
+                group: {
+                    resources: ['Owners']
+                },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+            };
+            schObj = createSchedule(schOptions, eventData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Checking initial rendering', () => {
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 06 - 12, 2017');
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
+        });
+
+        it('Checking previous navigation rendering', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 05 - 11, 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeFalsy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+                done();
+            };
+            const prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
+            prevEle.click();
+        });
+
+        it('Checking next navigation rendering', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 06 - 12, 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
+                done();
+            };
+            const nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
+            nextEle.click();
+        });
+
+        it('Checking showWeekend true rendering', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 06 - 12, 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeTruthy();
+                done();
+            };
+            schObj.showWeekend = true;
+            schObj.dataBind();
+        });
+
+        it('Checking previous navigation rendering showWeekend true', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 05 - 11, 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeTruthy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+                done();
+            };
+            const prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
+            prevEle.click();
+        });
+
+        it('Checking showWeekend with next navigation rendering showWeekend true', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 06 - 12, 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeTruthy();
+                done();
+            };
+            const nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
+            nextEle.click();
+        });
+
+        it('Checking rendering with virtual scrolling, showWeekend and group byDate true', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeTruthy();
+                done();
+            };
+            schObj.views = [{ option: 'Agenda', allowVirtualScrolling: true }];
+            schObj.group.byDate = true;
+            schObj.dataBind();
+        });
+
+        it('Checking previous navigation with virtual scrolling, showWeekend and group byDate true', () => {
+            const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(scrollUp, 0);
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+            // expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509753600000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeTruthy();
+        });
+
+        it('Checking next navigation with virtual scrolling and showWeekend true', () => {
+            const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(scrollUp, scrollUp.scrollHeight);
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+            // expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509753600000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510963200000"]')).toBeTruthy();
+        });
+
+        it('Checking rendering with virtual scrolling and showWeekend false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+                expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
+                done();
+            };
+            schObj.showWeekend = false;
+            schObj.dataBind();
+        });
+
+        it('Checking previous navigation with virtual scrolling and showWeekend false', () => {
+            const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(scrollUp, 0);
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509753600000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
+        });
+
+        it('Checking next navigation with virtual scrolling and showWeekend false', () => {
+            const scrollUp: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(scrollUp, scrollUp.scrollHeight);
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509753600000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1509840000000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510358400000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510444800000"]')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-agenda-cells[data-date="1510963200000"]')).toBeFalsy();
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();

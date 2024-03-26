@@ -1,10 +1,14 @@
 /**
  * Gantt base spec
  */
-import { Gantt, DayMarkers } from '../../src/index';
+import { Gantt, DayMarkers, Edit, Toolbar, ContextMenu, Sort, VirtualScroll,Selection } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
 import { baselineData,projectData  } from '../base/data-source.spec';
-import { createGantt, destroyGantt } from '../base/gantt-util.spec';
+import { createGantt, destroyGantt,triggerMouseEvent } from '../base/gantt-util.spec';
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
+
 describe('Gantt spec for non -working-day', () => {
     describe('Gantt base module', () => {
         Gantt.Inject(DayMarkers);
@@ -153,3 +157,115 @@ describe('Gantt spec for non -working-day', () => {
         });
     });
 });
+describe('874399 - weekend is not visible', function () {
+    Gantt.Inject(Edit, Toolbar,ContextMenu,Sort,Selection, VirtualScroll);
+    let ganttObj: Gantt;
+    let data: Object[] = [
+        { TaskID: 1, TaskName: 'Project Initiation_1', StartDate: new Date('04/02/2019'), EndDate: new Date('04/21/2019') },
+        { TaskID: 2, TaskName: 'Identify Site location_1', StartDate: new Date('03/29/2019'), Duration: 6, Progress: 70, ParentId: 1 },
+        { TaskID: 3, TaskName: 'Perform Soil test_1', StartDate: new Date('04/02/2019'), Duration: 7, Progress: 70, ParentId: 1 },
+        { TaskID: 4, TaskName: 'Soil test approval_1', StartDate: new Date('04/02/2019'), Duration: 8, Progress: 70, Predecessor: '2', ParentId: 1 },
+        { TaskID: 5, TaskName: 'Project Estimation_1', StartDate: new Date('04/02/2019'), EndDate: new Date('04/21/2019') },
+        { TaskID: 6, TaskName: 'Develop floor plan for estimation_1', StartDate: new Date('04/04/2019'), Duration: 9, Progress: 70, ParentId: 5 },
+        { TaskID: 7, TaskName: 'List materials_1', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 70, ParentId: 5 },
+        { TaskID: 8, TaskName: 'Estimation approval_1', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 70, ParentId: 5 }
+    ];
+    
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: data,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                notes: 'Notes',
+                parentID: 'ParentId'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID' },
+                { field: 'TaskName', width: 80 },
+                { field: 'StartDate', width: 120 },
+                { field: 'EndDate', width: 120 },
+                { field: 'Duration', width: 90 },
+                { field: 'TaskType', visible: false }
+            ],
+            enableTimelineVirtualization:true,
+            sortSettings: {
+                columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+            },
+            splitterSettings: {
+                columnIndex: 4
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',],
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            selectedRowIndex: 1,
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Single',
+                enableToggle: false
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            filterSettings: {
+                type: 'Menu'
+            },
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/24/2019'),
+            projectEndDate: new Date('07/06/2024')
+        }, done);
+    });
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('editing startdate', () => { 
+        ganttObj.dataBind();
+        let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(startDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate')as any).ej2_instances[0];
+        input.value = new Date('03/04/2024');
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        ganttObj.selectRow(0);
+        expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.weekend}`)['style'].left).toBe('0px');
+    });
+});	

@@ -453,9 +453,9 @@ export class Gantt extends Component<HTMLElement>
     /** 
      * `undoRedoActions` Defines action items that retain for undo and redo operation.
      * 
-     * @default null 
+     * @default ['Sorting','Add','ColumnReorder','ColumnResize','ColumnState','Delete','Edit','Filtering','Indent','Outdent','NextTimeSpan','PreviousTimeSpan','RowDragAndDrop','Search'] 
      */ 
-    @Property() 
+    @Property(['Sorting','Add','ColumnReorder','ColumnResize','ColumnState','Delete','Edit','Filtering','Indent','Outdent','NextTimeSpan','PreviousTimeSpan','RowDragAndDrop','Search']) 
     public undoRedoActions: GanttAction[]; 
 
     /**
@@ -2574,7 +2574,7 @@ export class Gantt extends Component<HTMLElement>
             },
             {
                 topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
-                bottomTier: { unit: 'Day', format: null, count: 1 }, timelineUnitSize: 33, level: 11,
+                bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 33, level: 11,
                 timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
@@ -3587,7 +3587,7 @@ export class Gantt extends Component<HTMLElement>
             zoomToFit: 'Zoom to fit',
             excelExport: 'Excel export',
             csvExport: 'CSV export',
-            pdfExport: 'Pdf export',
+            pdfExport: 'PDF export',
             expandAll: 'Expand all',
             collapseAll: 'Collapse all',
             nextTimeSpan: 'Next timespan',

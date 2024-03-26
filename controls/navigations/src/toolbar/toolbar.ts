@@ -945,16 +945,23 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 popObj.enableRtl = false;
                 popObj.position = { X: 'right', Y: 'top' };
             }
+            if (this.overflowMode === 'Extended') {
+                popObj.element.style.minHeight = '0px';
+                popObj.width = this.getToolbarPopupWidth(this.element);
+            }
             popObj.dataBind();
             popObj.refreshPosition();
             popObj.element.style.top = this.getElementOffsetY() + 'px';
-            if (this.overflowMode === 'Extended') {
-                popObj.element.style.minHeight = '0px';
-            }
             popupNav.classList.add(CLS_TBARNAVACT);
             popObj.show({ name: 'FadeIn', duration: 100 });
         }
     }
+    
+    private getToolbarPopupWidth(ele: HTMLElement) { 
+        var eleStyles = window.getComputedStyle(ele);
+        return parseFloat(eleStyles.width) + ((parseFloat(eleStyles.borderRightWidth)) * 2);
+    }
+
     /**
      * To Initialize the control rendering
      *
@@ -1333,7 +1340,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 position: this.enableRtl ? { X: 'left', Y: 'top' } : { X: 'right', Y: 'top' }
             });
             if (this.overflowMode === 'Extended') {
-                popup.width = parseFloat(eleStyles.width) + ((parseFloat(eleStyles.borderRightWidth)) * 2);
+                popup.width = this.getToolbarPopupWidth(this.element);
                 popup.offsetX = 0;
             }
             popup.appendTo(ele);
@@ -2309,8 +2316,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.popObj) {
             if (this.overflowMode === 'Extended') {
-                const eleStyles: CSSStyleDeclaration = window.getComputedStyle(this.element);
-                this.popObj.width = parseFloat(eleStyles.width) + ((parseFloat(eleStyles.borderRightWidth)) * 2);
+                this.popObj.width = this.getToolbarPopupWidth(this.element);
             }
             if (this.tbarAlign) {
                 this.removePositioning();

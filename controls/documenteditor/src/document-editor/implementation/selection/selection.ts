@@ -6805,6 +6805,9 @@ export class Selection {
                 this.extendBackward();
             }
         } else {
+            if (!isNullOrUndefined(this.owner.imageResizerModule)) {
+                this.owner.imageResizerModule.selectedImageWidget.clear();
+            }
             this.selectInternal(widget, element, index, caretPosition);
         }
     }
@@ -11788,7 +11791,6 @@ export class Selection {
                         }
                     }
                     offset += element.length;
-
                 }
             }
         }

@@ -288,15 +288,19 @@ describe('Infinite scroll cache mode compare with other features => ', () => {
     it('Single sort orderID asc testing', (done: Function) => {
         expect(gridObj.pageSettings.currentPage).not.toBe(1);
         let actionComplete = (args: any): any => {
-            expect(cols[0].querySelectorAll('.e-ascending').length).toBe(1);
-            expect(sortSettings.columns[0].field).toBe('FIELD2');
-            expect(sortSettings.columns[0].direction).toBe('Ascending');
-            expect(gridObj.getContent().firstElementChild.scrollTop).toBe(0);
-            expect(gridObj.pageSettings.currentPage).toBe(1);
-            expect((gridObj.infiniteScrollModule as any).infiniteCache[4]).toBeUndefined();
-            expect((gridObj.infiniteScrollModule as any).infiniteCache[3]).toBeDefined();
-            expect(gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(0);
-            done();
+            if (args.requestType === 'infiniteScroll') {
+                expect(gridObj.pageSettings.currentPage).toBe(4);
+            } else {
+                expect(cols[0].querySelectorAll('.e-ascending').length).toBe(1);
+                expect(sortSettings.columns[0].field).toBe('FIELD2');
+                expect(sortSettings.columns[0].direction).toBe('Ascending');
+                expect(gridObj.getContent().firstElementChild.scrollTop).toBe(0);
+                expect(gridObj.pageSettings.currentPage).toBe(1);
+                expect((gridObj.infiniteScrollModule as any).infiniteCache[4]).toBeUndefined();
+                expect((gridObj.infiniteScrollModule as any).infiniteCache[3]).toBeDefined();
+                expect(gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(0);
+                done();
+            }
         };
         let actionBegin = (args: any): any => {
             expect(args.target).not.toBeNull();

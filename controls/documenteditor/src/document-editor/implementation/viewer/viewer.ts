@@ -2400,7 +2400,7 @@ export class DocumentHelper {
             if (isNullOrUndefined(formField)) {
                 formField = this.selection.getCurrentFormField();
             }
-            if (!this.isDocumentProtected && this.owner.enableFormField) {
+            if (!this.isDocumentProtected && this.owner.enableFormField && !this.owner.isReadOnlyMode) {
                 const formatType: FormFieldType = this.selection.getFormFieldType(formField);
                 if (formatType) {
                     if (formatType.toString() !== '') {
@@ -3043,8 +3043,8 @@ export class DocumentHelper {
         if (isNullOrUndefined(touchOffsetValues)) {
             touchOffsetValues = event.changedTouches[0];
         }
-        let offsetX: number = touchOffsetValues.pageX - offset.left;
-        let offsetY: number = touchOffsetValues.pageY - offset.top;
+        let offsetX: number = touchOffsetValues.clientX - offset.left;
+        let offsetY: number = touchOffsetValues.clientY - offset.top;
         return new Point(offsetX, offsetY);
     }
     /**

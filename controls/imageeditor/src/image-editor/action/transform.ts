@@ -1453,8 +1453,9 @@ export class Transform {
                 toolbarHeight = obj['toolbarHeight'];
             }
         }
-        if (Browser.isDevice && straightenObj['bool']) {
-            cxtTbarHeight = parent.element.querySelector('#' + parent.element.id + '_contextualToolbarArea').clientHeight;
+        const ctxTbarArea: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_contextualToolbarArea');
+        if (Browser.isDevice && straightenObj['bool'] && ctxTbarArea) {
+            cxtTbarHeight = ctxTbarArea.clientHeight;
         }
         parent.notify('toolbar', { prop: 'setToolbarHeight', value: {height: toolbarHeight }});
         if (Browser.isDevice) {

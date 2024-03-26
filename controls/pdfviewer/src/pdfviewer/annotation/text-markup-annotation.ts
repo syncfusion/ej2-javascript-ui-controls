@@ -589,6 +589,9 @@ export class TextMarkupAnnotation {
                         annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                         // eslint-disable-next-line max-len
                         annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
+                        if (annotation.IsLocked) {
+                            annotation.AnnotationSettings.isLock = annotation.IsLocked;
+                        }
                         // eslint-disable-next-line max-len
                         annotationObject = {
                             textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, allowedInteractions: annotation.allowedInteractions, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
@@ -1943,10 +1946,10 @@ export class TextMarkupAnnotation {
 
     // eslint-disable-next-line
     private getAnnotationBounds(bounds: any, pageIndex: number): any {
-        let left: number = bounds.left ? bounds.left : bounds.Left;
-        let top: number = bounds.top ? bounds.top : bounds.Top;
-        const height: number = bounds.height ? bounds.height : bounds.Height;
-        const width: number = bounds.width ? bounds.width : bounds.Width;
+        let left: number = !isNullOrUndefined(bounds.left) ? bounds.left : bounds.Left;
+        let top: number = !isNullOrUndefined(bounds.top) ? bounds.top : bounds.Top;
+        const height: number = !isNullOrUndefined(bounds.height) ? bounds.height : bounds.Height;
+        const width: number = !isNullOrUndefined(bounds.width) ? bounds.width : bounds.Width;
         const pageDetails: ISize = this.pdfViewerBase.pageSize[pageIndex];
         left = left ? left : bounds.x;
         top = top ? top : bounds.y;

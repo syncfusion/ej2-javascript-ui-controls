@@ -913,7 +913,7 @@ export class ExcelExport {
                 if (!isNullOrUndefined(cell.attributes.index)) {
                     columnsDetails = this.parent.getColumnByIndex(cell.attributes.index as number);
                 }
-                if (cell.cellType === CellType.DetailFooterIntent || columnsDetails.type === 'checkbox') {
+                if (cell.cellType === CellType.DetailFooterIntent || columnsDetails.type === 'checkbox' || columnsDetails.commands) {
                     continue;
                 }
                 if ((cell.visible || this.includeHiddenColumn)) {

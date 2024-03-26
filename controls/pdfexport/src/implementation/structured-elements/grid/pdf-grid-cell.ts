@@ -638,7 +638,8 @@ export class PdfGridCell {
                 }
                    if (param.page != childGridResult.page) //&& (isWidthGreaterthanParent != true))
                     {
-                        childGridResult.bounds.height = this.row.rowBreakHeightValue;                        
+                        if (this.row.rowBreakHeightValue !== null && typeof this.row.rowBreakHeightValue !== 'undefined')
+                            childGridResult.bounds.height = this.row.rowBreakHeightValue;                   
                         if(this.row.rowBreakHeight == 0)
                             this.row.NestedGridLayoutResult = childGridResult;
                         else

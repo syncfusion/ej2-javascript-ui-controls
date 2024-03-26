@@ -2257,3 +2257,35 @@ describe('dateonly =>', () => {
         gridObj = null;
     });
 });
+
+// used for code coverage
+describe('EJ2-871826: Error when using Stacked Header with Column Template and updating dataSource dynamically in React =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    columns: [
+                        {
+                            field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120
+                        },
+                        {headerText: 'Details', textAlign: 'Center', columns:[
+                            {field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Center', width: '80'},
+                            {field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Center', width: '60'},
+                          ]},
+                    ],
+                }, done);
+    });
+    it('execute column setProperties method', (done: Function) => {
+        const col: Column = {headerText: 'Details', textAlign: 'Center', columns:[
+            {field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Center', width: '80'},
+            {field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Center', width: '100'},
+          ]} as Column;
+        (gridObj.columns[1] as Column).setProperties(col);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

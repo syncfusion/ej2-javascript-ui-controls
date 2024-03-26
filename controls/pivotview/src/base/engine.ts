@@ -170,8 +170,8 @@ export class PivotEngine {
      * @returns {void}
      * @hidden
      */
-    public clearProperties(): void {
-        if (!this.isPagingOrVirtualizationEnabled) {
+    public clearProperties(isExport?: boolean): void {
+        if (!this.isPagingOrVirtualizationEnabled && !isExport) {
             this.columnKeys = {};
             this.headerCollection = { rowHeaders: [], columnHeaders: [], rowHeadersCount: 0, columnHeadersCount: 0 };
         }
@@ -2108,7 +2108,7 @@ export class PivotEngine {
         this.generateGridData(dataSource);
         this.isEditing = false;
     }
-    public generateGridData(dataSource: IDataOptions, requireDatasourceUpdate: boolean = false, headerCollection?: HeaderCollection): void {
+    public generateGridData(dataSource: IDataOptions, requireDatasourceUpdate: boolean = false, isExport?: boolean, headerCollection?: HeaderCollection): void {
         this.updateDataSourceSettings(dataSource, requireDatasourceUpdate);
         const columns: IFieldOptions[] = dataSource.columns ? dataSource.columns : [];
         const data: IDataSet[] = this.data as IDataSet[];
@@ -2251,7 +2251,7 @@ export class PivotEngine {
         this.isEngineUpdated = true;
         this.isEmptyDataAvail(this.rMembers, this.cMembers);
         //  console.log(st1 - st2);
-        this.clearProperties();
+        this.clearProperties(isExport);
     }
     private updateHeaders(rowFlag?: boolean, columnFlag?: boolean): void {
         /* removing the row grant-total members */

@@ -167,6 +167,7 @@ export function getTemplateEngine(): (template: string, helper?: Object) => (dat
  * @returns {Function} ?
  * @private
  */
+// eslint-disable-next-line
 export function initializeCSPTemplate (template : Function, helper?: any): Function {
     let boundFunc : Function;
     template.prototype.CSPTemplate =  true;

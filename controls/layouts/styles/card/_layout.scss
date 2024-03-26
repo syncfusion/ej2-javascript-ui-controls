@@ -177,14 +177,14 @@
 
     &:hover {
       @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
-        border-width: 2px;
+        border-width: 1px;
         padding: 1px;
       }
     }
 
     &:active {
       @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
-        border-width: 2px;
+        border-width: 1px;
         padding: 0;
       }
     }
