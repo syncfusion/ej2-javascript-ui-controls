@@ -3187,3 +3187,135 @@ describe('CR-Task:875889-Exception when resource ID mapping is empty', () => {
         destroyGantt(ganttObj);
     });
 });
+describe("CR-876661:Baseline not showing in multitaskbar view when collapse", () => {
+    let ganttObj: Gantt;
+    let resourcesData: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+              {
+                TaskID: 2,
+                TaskName: 'Identify site location',
+                StartDate: new Date('03/29/2019'),
+                Duration: 3,
+                Progress: 30,
+                BaselineStartDate: new Date('03/29/2019'),
+                BaselineEndDate: new Date('04/21/2019'),
+                resources: [{ resourceId: 1, resourceUnit: 50 }],
+              },
+              {
+                TaskID: 3,
+                TaskName: 'Perform soil test',
+                StartDate: new Date('04/03/2019'),
+                Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 70 }],
+                Predecessor: 2,
+                Progress: 30,
+              },
+              {
+                TaskID: 4,
+                TaskName: 'Soil test approval',
+                StartDate: new Date('04/09/2019'),
+                Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 25 }],
+                Predecessor: 3,
+                Progress: 30
+              },
+            ],
+        } 
+    ];
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+            dataSource: resourcesData,
+            resources: [
+                {
+                    resourceId: 1,
+                    resourceName: 'Martin Tamer',
+                    resourceGroup: 'Planning Team',
+                    isExpand: false
+                }
+            ],
+            renderBaseline: true,
+            viewType: 'ResourceView',
+            enableMultiTaskbar: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                dependency: 'Predecessor',
+                progress: 'Progress',
+                resourceInfo: 'resources',
+                expandState: 'isExpand',
+                child: 'subtasks',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate',
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resourceGroup', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',  'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            splitterSettings: {
+                columnIndex: 3
+            },
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '550px',
+            projectStartDate: new Date('03/20/2019'),
+            projectEndDate: new Date('05/18/2019')
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 1000);
+    });
+    it("Verifying baseline class, when resource in collapse state", () => {
+        let chartRowElement: HTMLElement = ganttObj.element.querySelector('.e-chart-row-cell.e-chart-row-border');
+        let hasBaselineElement: boolean = chartRowElement.querySelector('div.e-baseline-bar') !== null;
+        expect(hasBaselineElement).toBe(true);
+      });    
+  });

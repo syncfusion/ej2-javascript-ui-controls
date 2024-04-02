@@ -2421,7 +2421,12 @@ export class Renderer {
             || (tableCell.cellFormat.rowSpan > 1
                 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan >= tableCell.ownerTable.childWidgets.length) ||
             !nextRowIsInCurrentTableWidget || previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length
-            && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan) {
+            && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan ||
+            ((!isNullOrUndefined(tableCell.cellFormat.borders.bottom) && tableCell.cellFormat.borders.bottom.lineStyle !== 'Cleared' && tableCell.cellFormat.rowSpan === 1 && !isBidiTable) &&
+                ((!isNullOrUndefined(nextRow) && cellWidget.x < ((nextRow.firstChild as TableCellWidget).x - (nextRow.firstChild as TableCellWidget).margin.left) &&
+                    nextRow.rowFormat.gridBefore > 0 && (nextRow.rowFormat.beforeWidth !== 0 || nextRow.rowFormat.gridBeforeWidth !== 0)) ||
+                    (!isNullOrUndefined(nextRow) && cellWidget.x + cellWidget.width > ((nextRow.lastChild as TableCellWidget).x + (nextRow.lastChild as TableCellWidget).width + (nextRow.lastChild as TableCellWidget).margin.right) &&
+                        nextRow.rowFormat.gridAfter > 0 && (nextRow.rowFormat.afterWidth !== 0 || nextRow.rowFormat.gridAfterWidth !== 0))))) {
             let bottomBorder: WBorder = tableCell.cellFormat.borders.bottom;
             if (!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'Cleared') {
                 border = TableCellWidget.getCellBottomBorder(tableCell);
@@ -2432,10 +2437,20 @@ export class Renderer {
                     //false part for remaining cases that has been handled inside method. 
                     : TableCellWidget.getCellBottomBorder(tableCell);
             }
+            let startX: number = cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2;
+            let endX: number = cellWidget.x + cellWidget.width + cellWidget.margin.right;
+            if (!(previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan) &&
+                !isNullOrUndefined(nextRow) && !isBidiTable && nextRow.rowFormat.gridAfter > 0 && (nextRow.rowFormat.afterWidth !== 0 || nextRow.rowFormat.gridAfterWidth !== 0) && !isNullOrUndefined(nextRow.lastChild) && !isNullOrUndefined(TableCellWidget.getCellTopBorder(nextRow.lastChild as TableCellWidget)) && TableCellWidget.getCellTopBorder(nextRow.lastChild as TableCellWidget).lineStyle !== "None" && cellWidget.x < (nextRow.lastChild as TableCellWidget).x + (nextRow.lastChild as TableCellWidget).width + (nextRow.lastChild as TableCellWidget).margin.right) {
+                startX = (nextRow.lastChild as TableCellWidget).x + (nextRow.lastChild as TableCellWidget).width + (nextRow.lastChild as TableCellWidget).margin.right;
+            }
+            if (!(previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan) &&
+                !isNullOrUndefined(nextRow) && !isBidiTable && nextRow.rowFormat.gridBefore > 0 && (nextRow.rowFormat.beforeWidth !== 0 || nextRow.rowFormat.gridBeforeWidth !== 0) && !isNullOrUndefined(nextRow.firstChild) && !isNullOrUndefined(TableCellWidget.getCellTopBorder(nextRow.firstChild as TableCellWidget)) && TableCellWidget.getCellTopBorder(nextRow.firstChild as TableCellWidget).lineStyle !== "None" && cellWidget.x + cellWidget.width > (nextRow.firstChild as TableCellWidget).x - (nextRow.firstChild as TableCellWidget).margin.left) {
+                endX = (nextRow.firstChild as TableCellWidget).x - (nextRow.firstChild as TableCellWidget).margin.left;
+            }
             // if (!isNullOrUndefined(border )) {
             //Renders the cell bottom border.
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
-            this.renderSingleBorder(border.color, cellWidget.x - cellWidget.margin.left - leftBorderWidth / 2, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, cellWidget.x + cellWidget.width + cellWidget.margin.right, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth, border.lineStyle);
+            this.renderSingleBorder(border.color, startX, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, endX, cellWidget.y + cellWidget.height + cellBottomMargin + lineWidth / 2, lineWidth, border.lineStyle);
             // }
         }
         border = layout.getCellDiagonalUpBorder(tableCell);

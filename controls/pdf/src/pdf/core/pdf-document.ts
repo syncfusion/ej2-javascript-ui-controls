@@ -559,7 +559,7 @@ export class PdfDocument {
         pageDictionary.update('Parent', sectionReference);
         sectionDictionary.update('Kids', [pageReference]);
         if (this.pageCount === 0) {
-            let parentReference: _PdfReference = this._catalog._catalogDictionary._get('Pages');
+            const parentReference: _PdfReference = this._catalog._catalogDictionary._get('Pages');
             if (parentReference && this._catalog._topPagesDictionary) {
                 this._catalog._topPagesDictionary.update('Kids', [sectionReference]);
                 sectionDictionary.update('Parent', parentReference);

@@ -240,6 +240,9 @@ export class WUniqueFormat {
         if (property === 'isLegalStyleNumbering') {
             return 6;
         }
+        if (property === 'paraStyleName') {
+            return 7;
+        }
         return 0;
     }
 
@@ -861,6 +864,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('numberFormat', source, modifiedProperty, modifiedValue, 9)) {
+            return false;
+        }
+        if (this.isNotEqual('paraStyleName', source, modifiedProperty, modifiedValue, 9)) {
             return false;
         }
         if (this.isNotEqual('restartLevel', source, modifiedProperty, modifiedValue, 9)) {

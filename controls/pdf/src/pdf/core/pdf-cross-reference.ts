@@ -29,6 +29,7 @@ export class _PdfCrossReference {
     _encrypt: _PdfEncryptor;
     _ids: string[];
     _permissionFlags: number;
+    _prevXRefOffset: number;
     constructor(document: PdfDocument, password?: string) {
         this._password = password;
         this._document = document;
@@ -41,6 +42,9 @@ export class _PdfCrossReference {
     _setStartXRef(startXRef: number): void {
         this._startXRefQueue = [startXRef];
         this._prevStartXref = startXRef;
+        if (typeof this._prevXRefOffset === 'undefined' || this._prevXRefOffset === null) {
+            this._prevXRefOffset = startXRef;
+        }
     }
     _parse(recoveryMode: boolean): void {
         let trailerDictionary: _PdfDictionary;
@@ -826,7 +830,7 @@ export class _PdfCrossReference {
     }
     _copyTrailer(newXref: _PdfDictionary): void {
         newXref.set('Size', this._nextReferenceNumber);
-        newXref.set('Prev', this._prevStartXref);
+        this._document._isEncrypted ? newXref.set('Prev', this._prevXRefOffset) : newXref.set('Prev', this._prevStartXref);
         const root: any = this._trailer.getRaw('Root'); // eslint-disable-line
         if (typeof root !== 'undefined' && root !== null) {
             newXref.set('Root', root);

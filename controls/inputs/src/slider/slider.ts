@@ -3095,6 +3095,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (args !== 'tooltip') {
             this.updateConfig();
         }
+        if (this.readonly) {
+            this.sliderContainer.classList.remove(classNames.readonly);
+            this.setReadOnly();
+        }
     }
 
     private changeRtl(): void {
@@ -3241,6 +3245,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 break;
             case 'tooltip':
                 if (!isNullOrUndefined(newProp.tooltip) && !isNullOrUndefined(oldProp.tooltip)) {
+                    this.initialTooltip = true;
                     this.setTooltip(prop);
                     if (!this.showButtons) {
                         this.wireEvents();

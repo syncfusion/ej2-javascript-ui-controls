@@ -4902,7 +4902,7 @@ export class Editor {
                 // When copy content from MS Word, the clipboard html content already have same namespace which cause duplicate namespace
                 // Here, removed the duplicate namespace.
                 result = result.replace('xmlns="http://www.w3.org/1999/xhtml"', '');
-                const substringToRemove: string = '<span>iscreatedusinghtmlspantag</span>';
+                const substringToRemove: string = 'iscreatedusinghtmlspantag';
                 if (result.indexOf(substringToRemove) !== -1) {
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(result, 'text/html');
@@ -18538,7 +18538,10 @@ export class Editor {
         }
     }
 
-    private getSelectionInfo(isBookmark?: boolean): SelectionInfo {
+    /**
+     * @private
+     */
+    public getSelectionInfo(isBookmark?: boolean): SelectionInfo {
         let start: TextPosition = this.selection.start;
         let end: TextPosition = this.selection.end;
         if (!this.selection.isForward) {
@@ -18592,22 +18595,7 @@ export class Editor {
         let info: SelectionInfo = this.getSelectionInfo(isBookmark);
         if (isBookmark) {
             if (!isNullOrUndefined((startElements[0] as BookmarkElementBox).properties) && (startElements[0] as BookmarkElementBox).bookmarkType == 0) {
-                let cells: any = this.selection.selectedWidgets.keys;
-                if (cells[0] instanceof TableCellWidget && cells[cells.length - 1] instanceof TableCellWidget) {
-                    if (cells.length > 0) {
-                        let firstcell: TableCellWidget = cells[0];
-                        let lastCell: TableCellWidget = cells[cells.length - 1];
-                        let firstrow: TableRowWidget = firstcell.ownerRow;
-                        let lastRow: TableRowWidget = lastCell.ownerRow;
-                        let startCell: TableCellWidget = firstrow.getCell(firstrow.rowIndex, 0);
-                        let firstPara: ParagraphWidget = this.documentHelper.getFirstParagraphInCell(startCell);
-                        info.start = this.documentHelper.selection.getHierarchicalIndex(firstPara, "0");
-                        let lastCellInRow: TableCellWidget = lastRow.getCell(lastRow.rowIndex, lastRow.childWidgets.length - 1);
-                        let lastPara: ParagraphWidget = this.selection.getLastParagraph(lastCellInRow);
-                        var offset: number = this.selection.getParagraphLength(lastPara);
-                        info.end = this.documentHelper.selection.getHierarchicalIndex(lastPara, offset.toString());
-                    }
-                }
+                info = this.owner.selection.updateSelectionInfo(info);
             }
         }
         if (!isNullOrUndefined(startElements)) {

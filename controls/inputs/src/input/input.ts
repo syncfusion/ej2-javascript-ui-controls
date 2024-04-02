@@ -100,7 +100,7 @@ export namespace Input {
         if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline') || parent.classList.contains('e-filled')) {
             parent.classList.add('e-input-focus');
         }
-        if (args.floatLabelType === 'Auto') {
+        if (args.floatLabelType !== 'Never') {
             setTimeout(() => {
                 Input.calculateWidth(args.element, parent);
             }, 80);
@@ -112,7 +112,7 @@ export namespace Input {
         if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline') || parent.classList.contains('e-filled')) {
             parent.classList.remove('e-input-focus');
         }
-        if (args.floatLabelType === 'Auto' && args.element.value === '') {
+        if (args.floatLabelType !== 'Never') {
             setTimeout(() => {
                 Input.calculateWidth(args.element, parent);
             }, 80);
@@ -541,7 +541,7 @@ export namespace Input {
     export function setValue(value: string, element: HTMLInputElement | HTMLTextAreaElement,
                              floatLabelType ?: string, clearButton?: boolean): void {
         element.value = value;
-        if (floatLabelType === 'Auto' && value === '') {
+        if (floatLabelType !== 'Never') {
         	calculateWidth(element, element.parentElement);
         }
         if ((!isNullOrUndefined(floatLabelType)) && floatLabelType === 'Auto') {

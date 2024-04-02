@@ -218,7 +218,7 @@ export interface InfiniteScrollSettingsModel {
     maxBlocks?: number;
 
     /**
-     * Defines the number of blocks will render at the initial Grid rendering while enableCache is enabled.
+     * Defines the number of blocks that will render at the initial Grid rendering.
      *
      * @default 3
      */

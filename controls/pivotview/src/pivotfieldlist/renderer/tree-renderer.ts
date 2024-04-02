@@ -35,7 +35,7 @@ export class TreeViewRenderer implements IAction {
     private nonSearchList: HTMLElement[];
     private isSearching: boolean = false;
     private parentIDs: string[] = [];
-    private isSpaceKey: boolean = true;
+    private isSpaceKey: boolean = false;
 
     /** Constructor for render module
      *

@@ -114,7 +114,9 @@ export class Toolbar {
             if (isNullOrUndefined(this.responsiveToolbarMenu)) {
                 this.renderResponsiveToolbarpopup();
             }
-            this.toolbar.refreshOverflow();
+            if (this.toolbar.element) {
+                this.toolbar.refreshOverflow();
+            }
         }
     }
 

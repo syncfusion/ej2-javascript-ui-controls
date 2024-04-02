@@ -295,6 +295,10 @@ export class QuickToolbar {
 
     private keyDownHandler(e: NotifyArgs): void {
         const preventHide: boolean = (e.args as KeyboardEvent).altKey;
+        if (this.parent.inlineMode.enable && (e.args as KeyboardEvent).metaKey && (e.args as KeyboardEvent).keyCode === 65) {
+            this.showInlineQTBar(this.offsetX, this.offsetY, (e.args as KeyboardEvent).target as HTMLElement);
+            return;
+        }
         if (!preventHide) {
             if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
                 && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {

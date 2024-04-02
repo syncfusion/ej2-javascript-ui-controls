@@ -3,6 +3,8 @@
  */
 import { createElement, detach, isNullOrUndefined, selectAll, Browser } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
+import { destroy, renderRTE } from '../../rich-text-editor/render.spec';
+import { RichTextEditor } from '../../../src';
 
 function setCursorPoint(element: Element, point: number) {
     let range: Range = document.createRange();
@@ -2505,5 +2507,61 @@ describe ('left indent testing', () => {
             let imgElem: Element = editNode.querySelectorAll( 'IMG' )[0];
             expect( imgElem != null ).toBe( true );
         } );
+    });
+
+    describe('874955 - List style type got changed when we try to remove a single list in RichTextEditor', () => {
+        let elem: HTMLElement;
+        let editorObj: RichTextEditor;
+        let endNode: HTMLElement;
+        let startNode: HTMLElement;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        beforeEach(() => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<ol style="list-style-image: none; list-style-type: upper-alpha;"><li>richtexteditor</li><li>richtexteditor</li><li>richtexteditor</li><li>richtexteditor</li><li>richtexteditor</li></ol>`
+            });
+        });
+        afterEach( () => {
+            destroy(editorObj);
+        } );
+
+        it( 'Check the list style type changing after revert the single list', () => {
+            startNode = editorObj.inputElement.querySelector( 'ol' ).querySelectorAll('li')[1];
+            endNode = editorObj.inputElement.querySelector( 'ol' ).querySelectorAll('li')[1];
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText( document, startNode,endNode,1,1 );
+            let numberlist: HTMLElement = editorObj.getToolbar().querySelector('[title="Numbered List (Ctrl+Shift+O)"]');
+            numberlist.click();
+            let result: string = `<ol style="list-style-image: none; list-style-type: upper-alpha;"><li>richtexteditor</li></ol><p>richtexteditor</p><ol style="list-style-image: none; list-style-type: upper-alpha;"><li>richtexteditor</li><li>richtexteditor</li><li>richtexteditor</li></ol>`
+            expect(editorObj.inputElement.innerHTML === result).toBe( true);
+        } );
+        it('Clear all content using backspace', () => {
+            startNode = editorObj.inputElement.querySelector( 'ol' ).querySelectorAll('li')[0];
+            endNode = editorObj.inputElement.querySelector( 'ol' ).querySelectorAll('li')[4];
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText( document, startNode.firstChild,endNode,0,1 );
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(editorObj.inputElement.innerHTML === '').toBe( true);
+        });
+        it('Clear all content using delete', () => {
+            startNode = editorObj.inputElement.querySelector( 'ol' ).querySelectorAll('li')[0];
+            endNode = editorObj.inputElement.querySelector( 'ol' ).querySelectorAll('li')[4];
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText( document, startNode.firstChild,endNode,0,1 );
+            keyBoardEvent.keyCode = 46;
+            keyBoardEvent.code = 'delete';
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(editorObj.inputElement.innerHTML === '').toBe( true);
+        });
+        it('Clear all content using Cut', () => {
+            startNode = editorObj.inputElement.querySelector( 'ol' ).querySelectorAll('li')[0];
+            endNode = editorObj.inputElement.querySelector( 'ol' ).querySelectorAll('li')[4];
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText( document, startNode.firstChild,endNode,0,1 );
+            keyBoardEvent.keyCode = 88;
+            keyBoardEvent.code = 'cut';
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(editorObj.inputElement.innerHTML === '').toBe( true);
+        });
     });
 });

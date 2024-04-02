@@ -1284,12 +1284,12 @@
         @if $skin-name =='bootstrap' or $skin-name =='botstrap-dark' {
           &:hover,
           &:focus{
-            padding: 6px 2px;
+            padding: 7px 3px;
           }
         }
 
         @if $skin-name =='material' or $skin-name =='material-dark' {
-          padding: 3px;
+          padding: 0 6px;
         }
 
         .e-tbar-btn-text {
@@ -1684,7 +1684,7 @@
     .e-rte-numberformatlist-dropdown.e-dropdown-btn.e-tbar-btn.e-btn.e-control,
     .e-rte-bulletformatlist-dropdown.e-dropdown-btn.e-tbar-btn.e-btn.e-control {
       @if $skin-name == 'tailwind' {
-        padding: 1px;
+        padding: 0;
       }
     }
   }

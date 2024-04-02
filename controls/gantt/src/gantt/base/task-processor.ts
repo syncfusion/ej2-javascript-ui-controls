@@ -1345,6 +1345,7 @@ export class TaskProcessor extends DateProcessor {
         let leftValueForStartDate: number;
         let isValid: boolean = true;
         if ((this.parent.editModule && ((this.parent.editModule.taskbarEditModule && this.parent.editModule.taskbarEditModule.taskBarEditAction) || (this.parent.editModule.dialogModule && this.parent.editModule.dialogModule['isEdit']) ||
+            (this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit) ||
             this.parent.ganttChartModule.scrollObject['isSetScrollLeft'])) && !isFromTimelineVirtulization) {
             isValid = false;
         }

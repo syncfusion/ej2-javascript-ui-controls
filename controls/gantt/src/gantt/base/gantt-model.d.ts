@@ -240,6 +240,7 @@ export interface GanttModel extends ComponentModel{
 
     /**
      * The task bar template that renders customized child task bars from the given template.
+     * {% codeBlock src='gantt/taskbarTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
      * @aspType string
@@ -248,6 +249,7 @@ export interface GanttModel extends ComponentModel{
 
     /**
      * The parent task bar template that renders customized parent task bars from the given template.
+     * {% codeBlock src='gantt/parentTaskbarTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
      * @aspType string

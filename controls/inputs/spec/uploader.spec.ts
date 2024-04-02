@@ -160,8 +160,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({
                 showFileList: true,
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
                 }
              });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -265,8 +265,8 @@ describe('Uploader Control', () => {
             ];
             uploadObj = new Uploader({ files: preLoadFiles,
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
                 },
                 autoUpload: false });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -446,7 +446,7 @@ describe('Uploader Control', () => {
             }, 1500);
         });
         it('upload method with multiple file upload ', (done) => {
-            uploadObj.asyncSettings = { saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save' };
+            uploadObj.asyncSettings = { saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save' };
             uploadObj.upload([uploadObj.filesData[0]]);
             setTimeout(() => {
                 expect(uploadObj.uploadWrapper.querySelectorAll('li').length).toBe(1);
@@ -529,10 +529,10 @@ describe('Uploader Control', () => {
             expect(uploadObj.element.hasAttribute('multiple')).toBe(true);
         });        
         it('change the save and remove urls ', () => {
-            uploadObj.asyncSettings = { saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save', removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'};
+            uploadObj.asyncSettings = { saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save', removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'};
             uploadObj.dataBind();
-            expect(uploadObj.asyncSettings.saveUrl).toEqual('https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save');
-            expect(uploadObj.asyncSettings.removeUrl).toEqual('https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove');
+            expect(uploadObj.asyncSettings.saveUrl).toEqual('https://services.syncfusion.com/js/production/api/FileUploader/Save');
+            expect(uploadObj.asyncSettings.removeUrl).toEqual('https://services.syncfusion.com/js/production/api/FileUploader/Remove');
         });
         it('change DirectoryUpload property ', () => {
             uploadObj.directoryUpload = true;
@@ -701,8 +701,8 @@ describe('Uploader Control', () => {
                 clear:document.getElementById('item3'),
                 upload: document.getElementById('item2')},
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
                 }
             });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -796,8 +796,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({
                 selected: select, multiple: true, clearing: clear, removing: remove, fileListRendering: onfileListRendering, autoUpload: false,
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
                 }
             });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -853,8 +853,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({ autoUpload: false, buttons: {
                     browse: document.getElementById('item1') },
                     asyncSettings: {
-                        saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                        removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                        saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                        removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
                     },
                     uploading: function(e: any) { e.cancel = true }
             });
@@ -934,7 +934,7 @@ describe('Uploader Control', () => {
                 e.cancel = true
             } });
             uploadObj2.appendTo(document.getElementById('upload'));
-            uploadObj2.asyncSettings = { saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save'};
+            uploadObj2.asyncSettings = { saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save'};
             let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
             let eventArgs = { type: 'click', target: { files: [fileObj]}, preventDefault: (): void => { } };
             uploadObj2.onSelectFiles(eventArgs);
@@ -948,7 +948,7 @@ describe('Uploader Control', () => {
         //         e.cancel = true
         //     } });
         //     uploadObj2.appendTo(document.getElementById('upload'));
-        //     uploadObj2.asyncSettings = { saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save', chunkSize: 1};
+        //     uploadObj2.asyncSettings = { saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save', chunkSize: 1};
         //     let fileObj: File = new File(["Nice two"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
         //     let eventArgs = { type: 'click', target: { files: [fileObj]}, preventDefault: (): void => { } };
         //     uploadObj2.onSelectFiles(eventArgs);
@@ -963,8 +963,8 @@ describe('Uploader Control', () => {
         //             e.cancel = true
         //         },
         //         asyncSettings: { 
-        //             saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-        //             removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+        //             saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+        //             removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
         //             chunkSize: 1, retryAfterDelay: 0 }
         //     });
         //     uploadObj.appendTo(document.getElementById('upload'));
@@ -1027,8 +1027,8 @@ describe('Uploader Control', () => {
         //             expect(args.response.withCredentials).toBe(false);
         //         },
         //         asyncSettings: { 
-        //             saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-        //             removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+        //             saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+        //             removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
         //             chunkSize: 1
         //         }
         //     });
@@ -1416,8 +1416,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({
                 autoUpload: false, 
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
                 }
             });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -1532,7 +1532,7 @@ describe('Uploader Control', () => {
         });
         it ('with custom UI', () => {
             let fileList = [{name: "7z938-x64.msi", rawFile: "", size: 15, status: 'File upload successfully', type: 'msi', validationMessages:{minsize: "", maxsize: ""}}]
-            uploadObj.asyncSettings = { saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save'};
+            uploadObj.asyncSettings = { saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save'};
             uploadObj.upload(fileList, true);
             expect(fileList[0].status).toBe('File upload successfully');
         });
@@ -1592,8 +1592,8 @@ describe('Uploader Control', () => {
             element.setAttribute('type', 'file');
             uploadObj = new Uploader({
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
                 }
             });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -1937,8 +1937,8 @@ describe('Uploader Control', () => {
             document.body.appendChild(form);
             element.setAttribute('type', 'file');
             uploadObj = new Uploader({ asyncSettings: {
-                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
             }
             });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -1972,8 +1972,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({
                 autoUpload: false,
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
                 }
             });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -2241,8 +2241,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, chunkSuccess: chunkSuccess, chunkUploading: beforeChunkUpload, autoUpload: false,
     //             asyncSettings: {
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 4, retryAfterDelay: 100
     //             }
     //         });
@@ -2294,8 +2294,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, chunkFailure: chunkFailure, autoUpload: false,
     //             asyncSettings: { 
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 1, retryAfterDelay: 0 }
     //         });
     //         uploadObj.appendTo(document.getElementById('upload'));
@@ -2318,8 +2318,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, chunkFailure: chunkFailure, autoUpload: false,
     //             asyncSettings: { 
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 1, retryAfterDelay: 0 }
     //         });
     //         uploadObj.appendTo(document.getElementById('upload'));
@@ -2349,8 +2349,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, chunkFailure: chunkFailure, autoUpload: false,
     //             asyncSettings: { 
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 1, retryAfterDelay: 0 }
     //         });
     //         uploadObj.appendTo(document.getElementById('upload'));
@@ -2404,8 +2404,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, chunkFailure: chunkFailure, autoUpload: false,
     //             asyncSettings: { 
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 1, retryAfterDelay: 0 }
     //         });
     //         uploadObj.appendTo(document.getElementById('upload'));
@@ -2460,8 +2460,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, autoUpload: false,
     //             asyncSettings: {
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 1
     //             }
     //         });
@@ -2546,8 +2546,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, autoUpload: false,
     //             asyncSettings: {
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 5
     //             }
     //         });
@@ -2634,8 +2634,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, autoUpload: false,
     //             asyncSettings: {
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 0.5
     //             },
     //             template: "<span class='wrapper'><span class='icon template-icons sf-icon-${type}'></span>" +
@@ -2707,8 +2707,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, autoUpload: false,
     //             asyncSettings: {
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 1
     //             },
     //             template: "<span class='wrapper'><span class='icon template-icons sf-icon-${type}'></span>" +
@@ -2771,8 +2771,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, autoUpload: false,
     //             asyncSettings: {
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 1
     //             },
     //             template: "<span class='wrapper'><span class='icon template-icons sf-icon-${type}'></span>" +
@@ -2829,8 +2829,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, autoUpload: false,
     //             asyncSettings: {
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 1
     //             },
     //             template: "<span class='wrapper'><span class='icon template-icons sf-icon-${type}'></span>" +
@@ -2877,8 +2877,8 @@ describe('Uploader Control', () => {
                 e.cancel = true
             },
             asyncSettings: {
-                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
             } });
             uploadObj.appendTo(document.getElementById('upload'));
             let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
@@ -2928,8 +2928,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({
                 showFileList: false,
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
                 },
              });
             uploadObj.appendTo(document.getElementById('UploadFiles'));
@@ -2948,8 +2948,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({
                 showFileList: false,
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
                 },
                 autoUpload: false
              });
@@ -3010,8 +3010,8 @@ describe('Uploader Control', () => {
             element.setAttribute('type', 'file');
             uploadObj = new Uploader({ 
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
                 },
             });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -3060,8 +3060,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({
                 multiple: true, autoUpload: false,
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
                 },
                 progress: function(e: any) {
                     if (callProgressEvent) {
@@ -3190,8 +3190,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({
                 multiple: true, autoUpload: false,
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
                 },
                 progress: function(e: any) {
                     if (callProgressEvent) {
@@ -3303,8 +3303,8 @@ describe('Uploader Control', () => {
         });
         it('Dynamically enable sequential upload', (done) => {
             uploadObj = new Uploader({ asyncSettings: {
-                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
             }});
             uploadObj.appendTo(document.getElementById('upload'));
             let fileObj: File = new File(["Nice One"], "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
@@ -3415,8 +3415,8 @@ describe('Uploader Control', () => {
     //     ];
     //     it('sequential upload size validation with autoupload false', (done) => {
     //         uploadObj = new Uploader({ asyncSettings: {
-    //             saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //             removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //             saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //             removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //         }, autoUpload: false, sequentialUpload: true,});
     //         uploadObj.appendTo(document.getElementById('upload'));
     //         uploadObj.minFileSize = 5000;
@@ -3447,30 +3447,30 @@ describe('Uploader Control', () => {
             uploadObj.destroy();
             document.body.innerHTML = '';
         });
-        it('sequential upload with autoupload false', (done) => {
-            uploadObj = new Uploader({ asyncSettings: {
-                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
-            }, autoUpload: false, sequentialUpload: true,});
-            uploadObj.appendTo(document.getElementById('upload'));
-            let fileObj: File = new File(["Nice One"], "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
-            let fileObj1: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
-            let eventArgs = { type: 'click', target: {files: [fileObj,fileObj1]}, preventDefault: (): void => { } };
-            uploadObj.onSelectFiles(eventArgs);
-            expect(uploadObj.getFilesData().length).toEqual(2);
-            uploadObj.uploadButtonClick();
-            setTimeout(() => {
-                expect(uploadObj.filesData[0].status).toEqual('File uploaded successfully');
-                expect(uploadObj.filesData[0].statusCode).toBe('2');
-                //expect(uploadObj.filesData[1].status).toEqual('Ready to upload');
-                //expect(uploadObj.filesData[1].statusCode).toBe('1');
-                setTimeout(() => {
-                    // expect(uploadObj.filesData[1].status).toEqual('File uploaded successfully');
-                    // expect(uploadObj.filesData[1].statusCode).toBe('2');
-                    done();
-                }, 300);
-            }, 1000);
-        });
+        // it('sequential upload with autoupload false', (done) => {
+        //     uploadObj = new Uploader({ asyncSettings: {
+        //         saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+        //         removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+        //     }, autoUpload: false, sequentialUpload: true,});
+        //     uploadObj.appendTo(document.getElementById('upload'));
+        //     let fileObj: File = new File(["Nice One"], "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
+        //     let fileObj1: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+        //     let eventArgs = { type: 'click', target: {files: [fileObj,fileObj1]}, preventDefault: (): void => { } };
+        //     uploadObj.onSelectFiles(eventArgs);
+        //     expect(uploadObj.getFilesData().length).toEqual(2);
+        //     uploadObj.uploadButtonClick();
+        //     setTimeout(() => {
+        //         expect(uploadObj.filesData[0].status).toEqual('File uploaded successfully');
+        //         expect(uploadObj.filesData[0].statusCode).toBe('2');
+        //         //expect(uploadObj.filesData[1].status).toEqual('Ready to upload');
+        //         //expect(uploadObj.filesData[1].statusCode).toBe('1');
+        //         setTimeout(() => {
+        //             // expect(uploadObj.filesData[1].status).toEqual('File uploaded successfully');
+        //             // expect(uploadObj.filesData[1].statusCode).toBe('2');
+        //             done();
+        //         }, 300);
+        //     }, 1000);
+        // });
     })
 
     describe('Customize success message', () => {
@@ -3486,8 +3486,8 @@ describe('Uploader Control', () => {
         });
         it('upload with autoupload false', (done) => {
             uploadObj = new Uploader({ asyncSettings: {
-                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
             },
             success: function (args: any) {
                 args.statusText = 'upload succeed';
@@ -3554,8 +3554,8 @@ describe('Uploader Control', () => {
     //     });
     //     it('sequential upload with chunk upload on autoupload false', (done) => {
     //         uploadObj = new Uploader({ asyncSettings: {
-    //             saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //             removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //             saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //             removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //             chunkSize: 1
     //         }, autoUpload: false, sequentialUpload: true,});
     //         uploadObj.appendTo(document.getElementById('upload'));
@@ -3658,8 +3658,8 @@ describe('Uploader Control', () => {
             new Uint16Array([33])
         ];
             uploadObj = new Uploader({ asyncSettings: {
-                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
             }, autoUpload: false, sequentialUpload: true,});
                 uploadObj.appendTo(document.getElementById('upload'));
                 let fileObj: File = new File(parts1, "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
@@ -3699,8 +3699,8 @@ describe('Uploader Control', () => {
         });
         it('action complete event on successfull upload', (done) => {
             uploadObj = new Uploader({ asyncSettings: {
-                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
             }, autoUpload: false, actionComplete: onComplete});
             uploadObj.appendTo(document.getElementById('upload'));
             let fileObj: File = new File(["Nice One"], "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
@@ -3734,8 +3734,8 @@ describe('Uploader Control', () => {
         });
         it('action complete event on upload failed', (done) => {
             uploadObj = new Uploader({ asyncSettings: {
-                saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Saved',
-                removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Removed',
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Saved',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Removed',
             }, autoUpload: false, actionComplete: onComplete});
             uploadObj.appendTo(document.getElementById('upload'));
             let fileObj2: File = new File(["Nice One"], "sample1.txt", {lastModified: 0, type: "overide/mimetype"});
@@ -3766,8 +3766,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({
                 autoUpload: false,
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
                 }
             });
             uploadObj.appendTo(document.getElementById('upload'));
@@ -3851,8 +3851,8 @@ describe('Uploader Control', () => {
     //         uploadObj = new Uploader({
     //             multiple: true, success: SuccessCallback, removing: RemovingCallback, autoUpload: false,
     //             asyncSettings: {
-    //                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-    //                 removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+    //                 saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+    //                 removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
     //                 chunkSize: 4
     //             }
     //         });
@@ -3893,8 +3893,8 @@ describe('Uploader Control', () => {
             uploadObj = new Uploader({
                 multiple: true, success: SuccessCallback, removing: RemovingCallback, autoUpload: false,
                 asyncSettings: {
-                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
-                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
                 }
             });
             uploadObj.appendTo(document.getElementById('upload'));

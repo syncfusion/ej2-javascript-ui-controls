@@ -218,22 +218,19 @@ export class InsertHtml {
             CONSTANT.TABLE_BLOCK_TAGS.indexOf((closestParentNode as Element).tagName.toLocaleLowerCase()) !== -1))
             || (node.nodeName.toLowerCase() === 'table' && closestParentNode &&
                 CONSTANT.TABLE_BLOCK_TAGS.indexOf((closestParentNode as Element).tagName.toLocaleLowerCase()) === -1))) {
-            if (isCollapsed) {
-                preNode = nodeCutter.SplitNode(range, closestParentNode as HTMLElement, true);
-            }
-            else {
-                preNode = nodeCutter.SplitNode(range, closestParentNode as HTMLElement, false);
-            }
-            sibNode = isNOU(preNode.previousSibling) ? preNode.parentNode.previousSibling : preNode.previousSibling;
-            if (nodes.length === 1) {
-                nodeSelection.setSelectionContents(docElement, preNode);
-                range = nodeSelection.getRange(docElement); isSingleNode = true;
-            } else {
-                lasNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1].parentElement as HTMLElement);
-                lasNode = isNOU(lasNode) ? preNode : lasNode;
-                nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
-                    lasNode.textContent.length : lasNode.childNodes.length);
-                range = nodeSelection.getRange(docElement); isSingleNode = false;
+            preNode = nodeCutter.GetSpliceNode(range, closestParentNode as HTMLElement);
+            if (!isNOU(preNode)) {
+                sibNode = isNOU(preNode.previousSibling) ? preNode.parentNode.previousSibling : preNode.previousSibling;
+                if (nodes.length === 1) {
+                    nodeSelection.setSelectionContents(docElement, preNode);
+                    range = nodeSelection.getRange(docElement); isSingleNode = true;
+                } else {
+                    lasNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1].parentElement as HTMLElement);
+                    lasNode = isNOU(lasNode) ? preNode : lasNode;
+                    nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
+                        lasNode.textContent.length : lasNode.childNodes.length);
+                    range = nodeSelection.getRange(docElement); isSingleNode = false;
+                }
             }
         }
         let containsBlockNode: boolean = false;

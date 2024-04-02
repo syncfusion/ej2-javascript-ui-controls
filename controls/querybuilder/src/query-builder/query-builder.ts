@@ -2108,7 +2108,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.GetRootColumnName(rule.field) === this.GetRootColumnName(this.previousColumn.field))) {
             const subField: ColumnsModel[] = this.selectedColumn.columns;
             for (let i: number = 0; i < subField.length; i++) {
-                if (rule.field === subField[i as number].field) {
+                if (rule.field === subField[i as number].field || rule.field.indexOf(subField[i as number].field + this.separator) > -1) {
                     dropDownList.value = subField[i as number].field;
                     this.selectedColumn = subField[i as number];
                     subFieldValue = true;
@@ -2577,7 +2577,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private renderStringValue(parentId: string, rule: RuleModel, operator: string, idx: number, ruleValElem: HTMLElement): void {
         let selectedVal: string[]; const columnData: ColumnsModel = this.getItemData(parentId); let selectedValue: string;
         const isTemplate: boolean = (typeof columnData.template === 'string');
-        if (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1 || this.isPublic || isTemplate) {
+        if (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1 || this.isPublic || isTemplate || rule.value != '') {
             selectedValue = rule.value as string;
         } else {
             selectedValue = this.setDefaultValue(parentId, false, false) as string;
@@ -2616,7 +2616,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const columnData: ColumnsModel = this.getItemData(parentId);
         const isTemplate: boolean = (typeof columnData.template === 'string');
         let selectedVal: number | number[] =
-        (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1 || this.isPublic || isTemplate) ? rule.value as number : this.setDefaultValue(parentId, false, true) as number;
+        (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1 || this.isPublic || isTemplate || typeof rule.value === 'number') ? rule.value as number : this.setDefaultValue(parentId, false, true) as number;
         if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
             selectedVal = (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1) ? rule.value as number[] : this.setDefaultValue(parentId, true, false) as number[];
             this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
@@ -2733,6 +2733,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         let format: string | FormatObject = itemData.format; let datepick: DatePicker; let datePicker: DatePickerModel;
                         const place: string = this.l10n.getConstant('SelectValue');
                         const isTemplate: boolean = (typeof itemData.template === 'string');
+                        if (rule.value && !isNullOrUndefined(format)) {
+                            selVal = (length > 1) ? rule.value[i as number] as string : rule.value as string;
+                            selectedValue = this.parseDate(selVal, format) || new Date();
+                        }
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         if (!itemData.field && !(itemData as any).key && itemData.value) {
                             if (itemData.value instanceof Date) {
@@ -2817,7 +2821,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else if (itemData.value) {
                 isCheck = values[i as number].toString().toLowerCase() === itemData.value.toString().toLowerCase();
             } else if (i === 0) {
-                isCheck = true;
+                if (typeof rule.value === 'boolean') {
+                    isCheck = rule.value ? true : false;
+                } else {
+                    isCheck = true;
+                }
+            }
+            if (typeof rule.value === 'boolean' && i === 1) {
+                isCheck = !rule.value ? true : false;
             }
             value = values[i as number].toString(); orgValue = values[i as number]; label = this.l10n.getConstant(['True', 'False'][i as number]);
         }
@@ -2832,7 +2843,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const radiobutton: RadioButton = new RadioButton(radioBtn);
         radiobutton.appendTo('#' + parentId + '_valuekey' + i);
         if (isCheck) {
-            this.updateRules(radiobutton.element, orgValue, 0);
+            this.updateRules(radiobutton.element, orgValue, 0, true);
         }
     }
     private getOperatorIndex(ddlObj: DropDownList, rule: RuleModel): number {
@@ -5287,9 +5298,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             return matchValue.length;
         }
         // eslint-disable-next-line
-        if (this.checkLiteral() && /^'?([a-z_][a-z0-9 _.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)'?/i.exec(sqlString)) {
+        if (this.checkLiteral() && /^'?([a-z_][a-z0-9 _.\[\]\(\)-]{0,}(\:(number|float|string|date|boolean))?)'?/i.exec(sqlString)) {
             // eslint-disable-next-line
-            matchValue = /^'?([a-z_][a-z0-9 _.\[\]\(\)]{0,}(\:(number|float|string|date|boolean))?)'?/i.exec(sqlString)[1];
+            matchValue = /^'?([a-z_][a-z0-9 _.\[\]\(\)-]{0,}(\:(number|float|string|date|boolean))?)'?/i.exec(sqlString)[1];
             this.parser.push(['Literal', matchValue]);
             return matchValue.length + 2;
         }

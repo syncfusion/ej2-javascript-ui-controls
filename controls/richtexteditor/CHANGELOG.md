@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## 25.1.38 (2024-04-02)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I564756` - Now, the list is applied properly to the selected content when continuously clicking the number or bullet list button in the Rich Text Editor.
+
+- `#F187199` - When using the keyboard action `ctrl + A` in RichTextEditor, the inline quick toolbar works properly.
+
+- `#I553375` - Now, list style is maintained properly when removing a single list in RichTextEditor.
+
+## 25.1.37 (2024-03-26)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I559868` - Now, paste using the clean or plain text option within the RichTextEditor, the XML tags aren't added.
+
+- `#I558265` - Now, when changing the formats using the toolbar in RichTextEditor, the cursor position is placed properly.
+
+- `#I564770` - Now, using indents on a numbered or bulleted list in RichTextEditor, it works properly.
+
+- `#I568007`, `#I568175` - Now, the Table Quick toolbar items are aligned properly in the Tailwind theme.
+
+- `#F186874` - Now, the background and font color popup's collision will function correctly upon initial click.
+
 ## 25.1.35 (2024-03-15)
 
 ### RichTextEditor

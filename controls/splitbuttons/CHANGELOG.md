@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.38 (2024-04-02)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- Issue in "keyboard action not working in DropDownButton when its append on span tag" has been resolved.
+
 ## 25.1.37 (2024-03-26)
 
 ### DropDownButton

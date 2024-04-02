@@ -5,7 +5,7 @@ import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations'
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ColorPicker, ColorPickerEventArgs, Uploader, Slider } from '@syncfusion/ej2-inputs';
-import { ImageEditor, SelectionPoint, ToolbarEventArgs, Point, ImageFilterEventArgs, ZoomTrigger, Transition, CurrentObject, FrameValue, ImageDimension, FrameSettings, FrameType, FrameLineStyle } from '../index';
+import { ImageEditor, SelectionPoint, ToolbarEventArgs, Point, ImageFilterEventArgs, ZoomTrigger, Transition, CurrentObject, FrameValue, ImageDimension, FrameSettings, FrameType, FrameLineStyle, ShapeSettings, ShapeChangeEventArgs, ShapeType } from '../index';
 import { QuickAccessToolbarEventArgs, ImageFilterOption } from '../index';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
@@ -1190,6 +1190,8 @@ export class ToolbarModule {
                 }
                 const obj: Object = {currentFreehandDrawIndex: null };
                 parent.notify('freehand-draw', {prop: 'getCurrentFreehandDrawIndex', value: {obj: obj }});
+                const prevObj: Object = {shapeSettingsObj: {} as ShapeSettings };
+                let shapeSettings: ShapeSettings; let shapeChangingArgs: ShapeChangeEventArgs;
                 drpDownBtn.iconCss = 'e-icons ' + this.getCurrentShapeIcon(args.item.id);
                 switch (args.item.id) {
                 case 'pen':
@@ -1197,6 +1199,12 @@ export class ToolbarModule {
                     parent.notify('draw', {prop: 'setTempCurrentFreehandDrawIndex', value: {tempCurrentFreehandDrawIndex: obj['currentFreehandDrawIndex'] }});
                     this.currentToolbar = 'pen';
                     parent.freeHandDraw(true);
+                    parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: prevObj}});
+                    shapeSettings = prevObj['shapeSettingsObj'];
+                    shapeSettings.type = ShapeType.FreehandDraw;
+                    shapeChangingArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
+                        currentShapeSettings: shapeSettings};
+                    parent.notify('freehand-draw', {prop: 'triggerShapeChanging', value: {shapeChangingArgs: shapeChangingArgs }});
                     break;
                 case 'text':
                     this.currentToolbar = 'text';
@@ -1212,6 +1220,12 @@ export class ToolbarModule {
                     parent.notify('selection', {prop: 'annotate', value: {shape: args.item.id }});
                     parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
                         isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    parent.notify('selection',{ prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: prevObj}});
+                    shapeSettings = prevObj['shapeSettingsObj'];
+                    shapeChangingArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
+                        currentShapeSettings: shapeSettings};
+                    parent.trigger('shapeChanging', shapeChangingArgs);
+                    parent.notify('shape', {prop: 'updateShapeChangeEventArgs', value: { shapeSettings: shapeChangingArgs.currentShapeSettings}});
                     break;
                 }
                 this.updateToolbarItems();
@@ -2575,6 +2589,7 @@ export class ToolbarModule {
             parent.element.querySelector('.e-template.e-pen-stroke-color').appendChild(parent.createElement('input', {
                 id: id + '_pen_stroke'
             }));
+            const presentVal: string = parent.activeObj.strokeSettings.strokeColor;
             const penColor: ColorPicker = new ColorPicker({
                 modeSwitcher: false, value: '#fff',
                 showButtons: false, mode: 'Palette', cssClass: 'e-pen-color',
@@ -2600,6 +2615,7 @@ export class ToolbarModule {
             }, '#' + id + '_penColorBtn');
             penColor.inline = true;
             penColor.value = penColor.getValue(parent.activeObj.strokeSettings.strokeColor, 'rgba');
+            if (penColor.value === 'null') { penColor.value = presentVal; }
             const obj: Object = {tempFreeHandDrawEditingStyles: null };
             parent.notify('freehand-draw', {prop: 'getTempFreeHandDrawEditingStyles', value: {obj: obj }});
             const indexObj: Object = {freehandSelectedIndex: null };

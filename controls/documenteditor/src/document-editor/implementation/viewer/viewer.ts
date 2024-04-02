@@ -1094,7 +1094,6 @@ export class DocumentHelper {
         characterFormat.fontFamilyBidi = 'Calibri';
         characterFormat.baselineAlignment = 'Normal';
         characterFormat.highlightColor = 'NoColor';
-        characterFormat.fontColor = '#00000000';
         characterFormat.allCaps = false;
     }
     private setDefaultParagraphValue(paragraphFormat: WParagraphFormat): void {
@@ -2624,8 +2623,12 @@ export class DocumentHelper {
     }
     private moveSelectedContent(): void {
         this.isDragStarted = false;
-        let dropSelectionStartParaInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
-        let dropSelectionEndParaInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.end);
+        let info = this.owner.editor.getSelectionInfo(true);
+        info = this.owner.selection.updateSelectionInfo(info);
+        let start: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(info.start);
+        let end: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(info.end);
+        let dropSelectionStartParaInfo: ParagraphInfo = this.selection.getParagraphInfo(start);
+        let dropSelectionEndParaInfo: ParagraphInfo = this.selection.getParagraphInfo(end);
         let dropSelectionStartParaIndex: string = this.selection.getHierarchicalIndex(dropSelectionStartParaInfo.paragraph, dropSelectionStartParaInfo.offset.toString());
         let dropSelectionEndParaIndex: string = this.selection.getHierarchicalIndex(dropSelectionEndParaInfo.paragraph, dropSelectionEndParaInfo.offset.toString());
         let dropSelectionStartPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(dropSelectionStartParaIndex);

@@ -1409,3 +1409,127 @@ describe('Annotation Alignment Issue in virtualisation', () => {
     });
 
 });
+
+describe('Text alignment to justify in annotations does not function properly when the textOverflow', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramAnnotationTestAlign' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+            id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 200,
+            annotations: [{ content: 'Ellipsis WrapWithOverflow CollapseSpace Justify annotation', style: {
+                textOverflow: 'Ellipsis',
+                textWrapping: 'WrapWithOverflow',
+                whiteSpace: 'CollapseSpace',
+                textAlign: 'Justify',
+            } ,offset:{x:0.5,y:0.5}}],
+        },
+        ]
+
+        diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes,});
+        diagram.appendTo('#diagramAnnotationTestAlign');
+
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Rendering node with annotation text align justify and WrapWithOverflow', (done: Function) => {
+
+       let node = diagram.nodes[0];
+       let textBounds = node.wrapper.children[1].bounds;
+       expect(textBounds.x === 150).toBe(true);
+        done();
+    });
+    it('Changing the annotation offset and checking bounds', (done: Function) => {
+        let node = diagram.nodes[0];
+        node.annotations[0].offset = {x:0.5,y:1};
+        diagram.dataBind();
+        let textBounds = node.wrapper.children[1].bounds;
+        expect(textBounds.x === 150 && textBounds.y > 220).toBe(true);
+        done();
+    });
+    it('Changing the annotation textOverflow and checking bounds', (done: Function) => {
+        let node = diagram.nodes[0];
+        node.annotations[0].style.textOverflow = 'Clip';
+        diagram.dataBind();
+        let textBounds = node.wrapper.children[1].bounds;
+        expect(textBounds.x === 150 && textBounds.y > 220).toBe(true);
+        done();
+    });
+    it('Changing the annotation text align to right', (done: Function) => {
+        let node = diagram.nodes[0];
+        node.annotations[0].style.textAlign = 'Right';
+        diagram.dataBind();
+        let textBounds = node.wrapper.children[1].bounds;
+        expect(textBounds.x === 150 && textBounds.y > 220).toBe(true);
+        done();
+    });
+
+});
+
+describe('Checking hyperlink for connector', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram53' });
+        document.body.appendChild(ele);
+        let nodes:any = [{
+            // Position of the node
+            offsetX: 100,
+            offsetY: 100,
+            // Size of the node
+            width: 100,
+            height: 100,
+            style: { fill: '#6BA5D7', strokeColor: 'white' },
+            annotations: [{ hyperlink: { link: 'https://hr.syncfusion.com/home' } }]
+                }]
+        
+        let connectors :any =[
+            {
+                id:"connector",
+                sourcePoint:{x:300,y:300},
+                targetPoint:{x:500,y:500},
+                annotations: [{ hyperlink: { link: 'https://hr.syncfusion.com/home' } }]
+            }
+        ]
+
+        diagram = new Diagram({ mode: 'SVG', width: 800, height: 500, nodes: nodes, connectors: connectors });
+        diagram.appendTo('#diagram53');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('checking hyperlink rendering in connector', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let element: HTMLElement = document.getElementById('diagram53content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 200, true);
+        mouseEvents.mouseUpEvent(diagramCanvas, 400, 200, true);
+        expect(element.style.cursor !== 'pointer').toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 451, 406, true);
+        mouseEvents.mouseUpEvent(diagramCanvas, 451, 406, true);
+        expect(element.style.cursor === 'pointer').toBe(true);
+        done();
+    });
+});

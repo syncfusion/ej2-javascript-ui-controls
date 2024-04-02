@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 25.1.38 (2024-04-02)
+
+### Grid
+
+#### Bug fixes
+
+- `#I557722` - Script error thrown when using toolbar template with Adaptive Grid has been fixed.
+- `#FB51847` - Frozen Grid content text overlap in `boostrap4` theme issue has been resolved.
+- `#I564949` - Fixed issue where exporting more than two grids to PDF with `AppendToPage` type in `PdfExportProperties` caused overlapping text.
+
 ## 25.1.37 (2024-03-26)
 
 ### Grid

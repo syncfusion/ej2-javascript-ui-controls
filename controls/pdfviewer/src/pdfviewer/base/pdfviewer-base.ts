@@ -1162,7 +1162,9 @@ export class PdfViewerBase {
             if (JSON.parse(data).redirectUrl === "" || JSON.parse(data).redirectUri === "") {
                 redirect = true;
             } else {
-                data.includes('redirectUrl') ? window.location.href = JSON.parse(data).redirectUrl : window.location.href = JSON.parse(data).redirectUri;
+                if (!isNullOrUndefined(JSON.parse(data).redirectUrl) || !isNullOrUndefined(JSON.parse(data).redirectUri)) {
+                    data.includes('redirectUrl') ? window.location.href = JSON.parse(data).redirectUrl : window.location.href = JSON.parse(data).redirectUri;
+                }
             }
         }
         return redirect;

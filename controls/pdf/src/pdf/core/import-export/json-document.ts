@@ -5,7 +5,7 @@ import { PdfPage } from './../pdf-page';
 import { PdfAnnotation, PdfLineAnnotation } from './../annotations/annotation';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
-import { _PdfBaseStream, _PdfContentStream } from './../base-stream';
+import { _PdfBaseStream, _PdfContentStream, _PdfStream } from './../base-stream';
 import { PdfForm } from './../form/form';
 import { PdfField } from './../form/field';
 import { PdfAnnotationFlag } from './../enumerator';
@@ -610,7 +610,18 @@ export class _JsonDocument extends _ExportHelper {
             const dataTable: Map<string, any> = new Map<string, any>(); // eslint-disable-line
             const streamTable: Map<string, any> = new Map<string, any>(); // eslint-disable-line
             const streamDictionary: _PdfDictionary = value.dictionary;
-            const data: string = value.getString(true);
+            let data: string;
+            let baseStream: any = value; // eslint-disable-line
+            let isImageStream: boolean = false;
+            if (streamDictionary.has('Subtype') && streamDictionary.get('Subtype').name === 'Image') {
+                isImageStream = true;
+            }
+            if (isImageStream && baseStream.stream && baseStream.stream instanceof _PdfStream) {
+                const stream: _PdfStream = baseStream.stream;
+                data = baseStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
+            } else {
+                data = value.getString(true);
+            }
             if (!streamDictionary.has('Length') && data && data !== '') {
                 streamDictionary.update('Length', value.length);
             }

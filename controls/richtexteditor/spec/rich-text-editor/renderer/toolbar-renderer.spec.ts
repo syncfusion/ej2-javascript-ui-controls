@@ -3,6 +3,7 @@
  */
 import { Browser, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { renderRTE,dispatchEvent, destroy } from './../render.spec';
+import { NodeSelection } from './../../../src/selection/index';
 
 describe('Toolbar - Renderer', () => {
 
@@ -171,6 +172,38 @@ describe('Toolbar - Renderer', () => {
             dispatchEvent(trgEle.firstElementChild, 'mousedown');
             let activeEle = (document.querySelector('.e-font-size-tbar-btn .e-item.e-active') as HTMLElement);
             expect(!isNullOrUndefined(activeEle)).toBe(true);
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+    });
+
+    describe('876793: list dropdown active state not working when drop down is opened', function () {
+        let rteObj : any;
+        let rteEle : any;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'BulletFormatList']
+                },
+                value: `<ol><li class="startFocus">List 1</li><li>List 2</li><li>List 3</li><li class="endFocus">List 4</li></ol>`
+            });
+            rteEle = rteObj.element;
+        });
+        it('Check the active state of the list dropdown ', function () {
+            let startNode = rteObj.contentModule.getDocument().querySelector('.startFocus');
+            let endNode = rteObj.contentModule.getDocument().querySelector('.endFocus');
+            let selection = new NodeSelection();
+            selection.setSelectionText(rteObj.contentModule.getDocument(), startNode.childNodes[0], endNode.childNodes[0], 0, 3);
+            let saveSelection: NodeSelection;
+            let ranges: Range;
+            ranges = selection.getRange(document);
+            saveSelection = selection.save(ranges, document);
+            rteObj.htmlEditorModule.onSelectionSave();
+            let trgEle : HTMLElement = rteEle.querySelectorAll(".e-toolbar-item")[0];
+            (trgEle.firstElementChild as HTMLElement).click();
+            dispatchEvent(trgEle.firstElementChild, 'mousedown');
+            expect((document.querySelector('.e-dropdown-popup .e-active') as HTMLElement).innerText === `Number`).toBe(true);
         });
         afterAll(function () {
             destroy(rteObj);

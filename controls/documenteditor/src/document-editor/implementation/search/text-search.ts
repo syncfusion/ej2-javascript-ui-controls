@@ -121,7 +121,14 @@ export class TextSearch {
                 previousElementCount += inlineElement.length;
             }
             if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {
-                break;
+                let splittedParagraph: ParagraphWidget = inlineElement.paragraph.nextSplitWidget as ParagraphWidget;
+                if (!isSpellCheck && !isNullOrUndefined(splittedParagraph) && splittedParagraph !== inlineElement.paragraph && splittedParagraph.childWidgets.length > 0 &&
+                    splittedParagraph.childWidgets[0] instanceof LineWidget && (splittedParagraph.childWidgets[0] as LineWidget).children.length > 0) {
+                    inlineElement = (splittedParagraph.childWidgets[0] as LineWidget).children[0] as ElementBox;
+                    continue;
+                } else {
+                    break;
+                }
             }
             if (!isNullOrUndefined(inlineElement)) {
                 if ((!isNullOrUndefined(includeNextLine) && !includeNextLine)) {
@@ -309,7 +316,7 @@ export class TextSearch {
             this.findInline(inlineEle, pattern, findOption, 0, isFirstMatch, results, selectionEnd);
             paragraphWidget = this.owner.selectionModule.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
             /* eslint-disable-next-line max-len */
-            while (!isNullOrUndefined(paragraphWidget) && (paragraphWidget.childWidgets.length === 1) && (paragraphWidget.childWidgets[0] as LineWidget).children.length === 0) {
+            while (!isNullOrUndefined(paragraphWidget) && (((paragraphWidget.childWidgets.length === 1) && (paragraphWidget.childWidgets[0] as LineWidget).children.length === 0) || !isNullOrUndefined(paragraphWidget.previousSplitWidget))) {
                 paragraphWidget = this.owner.selectionModule.getNextParagraphBlock(paragraphWidget) as ParagraphWidget;
             }
         }

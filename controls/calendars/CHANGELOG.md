@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#I15615` -  Fixed console error that occurred when using the format property while opening the time popup.
+
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

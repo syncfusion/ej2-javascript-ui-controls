@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 25.1.38 (2024-04-02)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I565875` - Now, the page does not navigate to undefined when loading the provided PDF document.
+- `#I559473` - Now, the thickness value is properly loaded when loading float thickness value annotations on the server side.
+- `#I567299` - Now, does not throw NullReferenceException when loading Empty PDF document.
+- `#I567306` - Now, the annotations are not shifted to the left in landscape documents.
+
 ## 25.1.37 (2024-03-26)
 
 ### PDF Viewer

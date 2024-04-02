@@ -7,6 +7,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='./node-base-model.d.ts'/>
+import { TextStyleModel } from '../core/appearance-model';
+import { HyperlinkModel } from './annotation-model';
 import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor, compile as baseTemplateCompiler } from '@syncfusion/ej2-base';
 import { Margin, ShapeStyle, StrokeStyle } from '../core/appearance';
 import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';
@@ -1874,8 +1876,23 @@ export class Connector extends NodeBase implements IElement {
             textele = getTemplateContent(textele, annotation, annotationTemplate, diagram);
         } else {
             textele = new TextElement();
-            textele.content = annotation.content;
-            textele.style.textOverflow = 'Wrap';
+            const style: TextStyleModel = annotation.style;
+            const link: HyperlinkModel = annotation.hyperlink.link ? annotation.hyperlink : undefined;
+            (textele as TextElement).style = {
+                fill: style.fill, strokeColor: style.strokeColor, strokeWidth: style.strokeWidth,
+                bold: style.bold, textWrapping: style.textWrapping,
+                color: link ? link.color || (textele as TextElement).hyperlink.color : style.color, whiteSpace: style.whiteSpace,
+                fontFamily: style.fontFamily, fontSize: style.fontSize, italic: style.italic, gradient: null, opacity: style.opacity,
+                strokeDashArray: style.strokeDashArray, textAlign: style.textAlign, textOverflow: 'Wrap',
+                textDecoration: link ? link.textDecoration ||
+                    (textele as TextElement).hyperlink.textDecoration : style.textDecoration
+            };
+            (textele as TextElement).hyperlink.link = annotation.hyperlink.link || undefined;
+            (textele as TextElement).hyperlink.hyperlinkOpenState = annotation.hyperlink.hyperlinkOpenState || undefined;
+            (textele as TextElement).hyperlink.content = annotation.hyperlink.content || undefined;
+            (textele as TextElement).hyperlink.textDecoration = annotation.hyperlink.textDecoration || undefined;
+            (textele as TextElement).content = link ? link.content ||
+                (textele as TextElement).hyperlink.link : annotation.content;
         }
         textele.constraints = annotation.constraints;
         textele.visible = annotation.visibility;
@@ -1892,7 +1909,6 @@ export class Connector extends NodeBase implements IElement {
         textele.id = this.id + '_' + annotation.id;
         if (bounds.width === 0) { bounds.width = this.style.strokeWidth; }
         if (bounds.height === 0) { bounds.height = this.style.strokeWidth; }
-        textele.style = annotation.style;
         // tslint:disable-next-line:no-any
         let wrapperContent: any;
         const description: Function = getFunction(getDescription);

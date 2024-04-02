@@ -4072,7 +4072,9 @@ export class Annotation {
             this.clearAnnotationStorage();
             this.pdfViewerBase.isStorageExceed = true;
             if(!(this.pdfViewerBase.isFormStorageExceed)){
-                this.pdfViewer.formFieldsModule.clearFormFieldStorage();
+                if (this.pdfViewer.formFieldsModule) {
+                    this.pdfViewer.formFieldsModule.clearFormFieldStorage();
+                }
             }
         }
         // eslint-disable-next-line
@@ -6835,7 +6837,9 @@ export class Annotation {
      */
     public destroy(): void {
         this.destroyPropertiesWindow();
-        this.textMarkupAnnotationModule.clear();
+        if (this.textMarkupAnnotationModule) {
+            this.textMarkupAnnotationModule.clear();
+        }
     }
 
     /**

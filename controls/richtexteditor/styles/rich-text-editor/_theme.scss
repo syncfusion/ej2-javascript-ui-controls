@@ -381,6 +381,27 @@
     .e-video-url-wrap textarea {
       height: 80px;
     }
+
+    @if $skin-name == 'FluentUI' {
+      .e-toolbar.e-extended-toolbar .e-toolbar-extended .e-toolbar-item .e-tbar-btn{
+        border: 1px solid transparent;
+        &:hover{
+          border: 1px solid transparent;
+        }
+      }
+      .e-toolbar .e-toolbar-item .e-tbar-btn{
+        border: 1px solid transparent;
+        &:hover{
+          border: 1px solid transparent;
+        }
+      }
+    }
+
+    @if $skin-name == 'bootstrap-dark' {
+      .e-toolbar-extended .e-toolbar-item:not(.e-active) .e-tbar-btn{
+        border: 1px solid transparent;
+      }
+    }
   }
 
   .e-rte-quick-popup {

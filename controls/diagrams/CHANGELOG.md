@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 25.1.38 (2024-04-02)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I562564` - Now, the connector connected properly to the node while moving the node to another layer.
+- `#F187022` - Now, Connection change event changed state is triggered for port change within same node.
+- `#I566420` - Now, the annotation aligns properly while setting text align as Justify with text overflow as Ellipsis.
+
 ## 25.1.37 (2024-03-26)
 
 ### Diagram

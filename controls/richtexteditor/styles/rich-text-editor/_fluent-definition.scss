@@ -36,7 +36,7 @@ $rte-big-tb-items-margin-left: 8px !default;
 $rte-tb-items-margin-left: 8px !default;
 $rte-big-tb-items-padding-left: 8px !default;
 $rte-tb-items-padding-left: 8px !default;
-$rte-active-tb-item-btn-padding: 0 !default;
+$rte-active-tb-item-btn-padding: 0 4px !default;
 $rte-split-btn-bar-size: 0 !default;
 $rte-split-btn-active-color-icon-line-height: 30px !default;
 $rte-big-split-btn-active-color-icon-line-height: 37px !default;
@@ -65,7 +65,7 @@ $rte-font-arrow-width: 12px !default;
 $rte-font-arrow-touch-width: 20px !default;
 $rte-font-icon-line-height: $leading-none !default;
 $rte-placeholder-line-height: $leading-normal !default;
-$rte-big-active-tb-item-btn-padding: 0 6px !default;
+$rte-big-active-tb-item-btn-padding: 0 8px !default;
 $rte-table-popup-padding: 10px !default;
 $rte-table-popup-border: 0 solid $gray30 !default;
 $rte-insert-dialog-label-padding-top: 12px !default;
@@ -116,7 +116,7 @@ $rte-big-formatlists-dropdown-line-height: 30px;
 //Layout Variables End
 
 //Theme Variables Start
-$rte-split-btn-active-border: 0 !default;
+$rte-split-btn-active-border: 1px solid $transparent !default;
 $rte-border-color: $border-light !default;
 $rte-content-bg: $content-bg-color !default;
 $rte-full-screen-bg: $content-bg-color !default;
@@ -145,7 +145,7 @@ $rte-quick-pop-item-focus-bg: $content-bg-color-alt4 !default;
 $rte-quick-tb-btn-hover: $content-bg-color-alt4 !default;
 $rte-tb-item-active-bg: $content-bg-color-alt5 !default;
 $rte-tb-active-font-color: $icon-color !default;
-$rte-tb-item-active-border: 0 solid $secondary-border-color-pressed !default;
+$rte-tb-item-active-border: 1px solid $transparent !default;
 $rte-expand-tb-border-bottom: $rte-border-size $rte-border-type $border-light !default;
 $rte-color-picker-active-bg: inherit !default;
 $rte-drop-btn-active-bg: $content-bg-color-alt5 !default;
@@ -162,7 +162,7 @@ $rte-split-btn-span-active-bg: $content-bg-color-alt3 !default;
 $rte-split-btn-bar-bg: $content-bg-color !default;
 $rte-split-btn-active-bar-bg: $content-bg-color !default;
 $rte-split-btn-bar-size: 0 !default;
-$rte-split-btn-active-border: 0 !default;
+$rte-split-btn-active-border: 1px solid $transparent !default;
 $rte-split-btn-active-color-icon-line-height: 40px !default;
 $rte-big-split-btn-active-color-icon-line-height: 48px !default;
 

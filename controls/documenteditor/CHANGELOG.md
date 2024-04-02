@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 25.1.38 (2024-04-02)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I558448` - Added the preservation support for the list's paragraph style property.
+- `#I543917` - Resolved the table layout and border rendering issue.
+
 ## 25.1.37 (2024-03-26)
 
 ### DocumentEditor

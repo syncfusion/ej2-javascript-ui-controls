@@ -7,7 +7,7 @@ import {
 import { Column } from './../models/column';
 import { Row } from './../models/row';
 import * as events from '../base/constant';
-import { PdfDocument, PdfPage, PdfGrid, PdfBorders, PdfImage, PdfPen, PdfFont, PdfPaddings , PdfGridCellStyle, PdfBrush, PdfLayoutResult } from '@syncfusion/ej2-pdf-export';
+import { PdfDocument, PdfPage, PdfGrid, PdfBorders, PdfImage, PdfPen, PdfFont, PdfPaddings , PdfGridCellStyle, PdfBrush, PdfLayoutResult, PdfGridLayoutFormat, PdfLayoutType, PdfLayoutBreakType } from '@syncfusion/ej2-pdf-export';
 import { PdfGridRow, PdfStandardFont, PdfFontFamily, PdfFontStyle, PdfBitmap } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfTextAlignment, PdfColor, PdfSolidBrush, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
 import { PdfVerticalAlignment, PdfGridCell, RectangleF, PdfPageTemplateElement } from '@syncfusion/ej2-pdf-export';
@@ -222,15 +222,20 @@ export class PdfExport {
             const xPosition: number = this.drawPosition['xPosition'];
             let yPosition: number;
             if (pdfDoc && pdfExportProperties && pdfExportProperties.multipleExport && pdfExportProperties.multipleExport.type === 'AppendToPage') {
-                yPosition = pdfDoc['result'].bounds.height;
+                yPosition = pdfDoc['result'].bounds.y + pdfDoc['result'].bounds.height;
                 if (pdfExportProperties.multipleExport.blankSpace) {
-                    yPosition = pdfDoc['result'].bounds.height + pdfDoc['result'].bounds.height;
+                    yPosition = pdfDoc['result'].bounds.y + pdfDoc['result'].bounds.height + pdfExportProperties.multipleExport.blankSpace;
                 }
             }
             else {
                 yPosition = this.drawPosition['yPosition'];
             }
-            const result: PdfLayoutResult = pdfGrid.draw(pdfPage, xPosition, yPosition);
+            let layoutFormat: PdfGridLayoutFormat = new PdfGridLayoutFormat();
+            layoutFormat.layout = PdfLayoutType.Paginate;
+            layoutFormat.break = PdfLayoutBreakType.FitPage;
+            //Set pagination bounds of PDF grid
+            layoutFormat.paginateBounds = new RectangleF(0,0,pdfPage.getClientSize().width,pdfPage.getClientSize().height);
+            const result: PdfLayoutResult = pdfGrid.draw(pdfPage, xPosition, yPosition, layoutFormat);
             this.drawHeader(pdfExportProperties);
             if (!isMultipleExport) {
                 // save the PDF

@@ -102,7 +102,7 @@ export class ColumnWidthService {
             if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
                 this.setMinwidthBycalculation(tgridWidth);
             }
-            if ((this.parent.allowResizing && module === 'resize')) {
+            if ((this.parent.allowResizing && module === 'resize') || (this.parent.getFrozenColumns() && this.parent.allowResizing)) {
                 this.setWidthToTable();
             }
             this.parent.notify(columnWidthChanged, { index: columnIndex, width: cWidth, column: column, module: module });

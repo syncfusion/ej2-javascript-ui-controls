@@ -1585,6 +1585,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private portCenterPoint:any = [];
     /** @private */
     public selectedObject: { helperObject: NodeModel, actualObject: NodeModel } = { helperObject: undefined, actualObject: undefined };
+    /** @private */
+   public deleteDependentConnector:boolean = true;
     /**
      * Constructor for creating the widget
      */
@@ -5064,7 +5066,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 groupAction = true;
                             }
                         }
-                        if (obj instanceof Node || obj instanceof Connector ) {
+                        //875087 - Restrict removing dependent connectors when moveing between layers
+                        if ((obj instanceof Node || obj instanceof Connector) && this.deleteDependentConnector) {
                             this.removeDependentConnector(obj);
                         }
                         if (!(obj as Node).isLane && !(obj as Node).isPhase) {

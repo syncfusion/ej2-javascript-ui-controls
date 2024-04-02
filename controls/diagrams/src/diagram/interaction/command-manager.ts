@@ -1077,6 +1077,19 @@ export class CommandHandler {
      * @private
      */
     public moveObjects(objects: string[], targetLayer?: string): void {
+        this.diagram.startGroupAction();
+        var connectorObjectsDetails = {};
+        let childNodes:any = [];
+            for(let i:number = 0; i < objects.length; i++){
+                let obj = this.diagram.nameTable[objects[parseInt(i.toString(), 10)]];
+                if(obj instanceof Node){
+                    let detail = {inEdges:obj.inEdges,outEdges:obj.outEdges}
+                    connectorObjectsDetails[`${obj.id}`] = cloneObject(detail);
+                }else if(obj instanceof Connector){
+                    let detail = {sourceID:obj.sourceID,targetID:obj.targetID,sourcePortID:obj.sourcePortID,targetPortID:obj.targetPortID}
+                    connectorObjectsDetails[`${obj.id}`] = cloneObject(detail);
+                }
+            }
         const layer: LayerModel = this.getLayer(targetLayer) || this.diagram.activeLayer;
         this.diagram.setActiveLayer(layer.id);
         let targerNodes: NodeModel | ConnectorModel;
@@ -1085,9 +1098,62 @@ export class CommandHandler {
             const index: number = layer.objects.indexOf(i);
             if (index > -1) {
                 targerNodes = this.diagram.nameTable[`${i}`];
+                childNodes = [];
+                if((targerNodes as Node).children){
+                   for(const node of (targerNodes as Node).children){
+                     childNodes.push(this.diagram.nameTable[`${node}`]);
+                   }
+                }
                 this.diagram.unSelect(targerNodes);
+                //875087 - Restrict removing dependent connectors when moveing between layers
+                this.diagram.deleteDependentConnector = false;
                 this.diagram.remove(this.diagram.nameTable[`${i}`]);
-                this.diagram.add(targerNodes);
+                this.diagram.deleteDependentConnector = true;
+                if(childNodes.length > 0){
+                    let addedObj;
+                    for(const node of childNodes){
+                        addedObj = this.diagram.add(node as NodeModel);
+                        this.setConnectorDetails(addedObj || node as NodeModel,connectorObjectsDetails);
+                        (targerNodes as Node).children.push(addedObj.id);
+                    }
+                    addedObj = this.diagram.add(targerNodes);
+                    this.setConnectorDetails(addedObj || targerNodes,connectorObjectsDetails);
+                }else{
+                    let addedObj = this.diagram.add(targerNodes);
+                    this.setConnectorDetails(addedObj || targerNodes,connectorObjectsDetails);
+                }
+                if((targerNodes as Node).parentId){
+                    let parentId = (targerNodes as Node).parentId;
+                    let group = this.diagram.nameTable[`${parentId}`];
+                    this.diagram.addChildToGroup(group,targerNodes.id);
+                }
+            }
+        }
+        this.diagram.endGroupAction();
+    };
+    private setConnectorDetails(obj: ConnectorModel | NodeModel,connectorObjectsDetails:object){
+        let details =  connectorObjectsDetails[obj.id];
+        if(obj instanceof Node){
+            if(details){
+                if(details.inEdges && details.inEdges.length > 0){
+                    for(let i:number =0;i<details.inEdges.length;i++){
+                        let con = this.diagram.nameTable[details.inEdges[parseInt(i.toString(), 10)]];
+                        con.targetID = obj.id;
+                    }
+               }
+               if(details.outEdges && details.outEdges.length > 0){
+                    for(let i:number =0;i<details.outEdges.length;i++){
+                        let con = this.diagram.nameTable[details.outEdges[parseInt(i.toString(), 10)]];
+                        con.sourceID = obj.id;
+                    }
+                }
+            }
+        }else if (obj instanceof Connector){
+            if(details){
+                obj.sourceID = details.sourceID;
+                obj.targetID = details.targetID;
+                obj.sourcePortID = details.sourcePortID;
+                obj.targetPortID = details.targetPortID;
             }
         }
     }

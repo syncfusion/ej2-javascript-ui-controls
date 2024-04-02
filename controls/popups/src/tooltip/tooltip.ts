@@ -5,7 +5,7 @@ import { attributes, closest, removeClass, addClass, remove } from '@syncfusion/
 import { NotifyPropertyChanges, INotifyPropertyChanged, Complex, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Popup } from '../popup/popup';
 import { OffsetPosition, calculatePosition } from '../common/position';
-import { isCollide, fit } from '../common/collision';
+import { isCollide, fit, destroy as collisionDestroy } from '../common/collision';
 import { TooltipModel, AnimationModel } from './tooltip-model';
 
 /**
@@ -390,11 +390,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Property()
     public cssClass: string;
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to display or remove the untrusted HTML values in the Tooltip component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
      * Allows additional HTML attributes such as tabindex, title, name, etc. to root element of the Tooltip popup, and
@@ -1288,7 +1289,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private scrollHandler(e: Event): void {
         if (this.tooltipEle && !this.isSticky) {
-            if (!(closest(e.target as HTMLElement, `.${TOOLTIP_WRAP}.${POPUP_LIB}.${POPUP_ROOT}`))) { this.close(); }
+            if (!(closest(e.target as HTMLElement, `.${TOOLTIP_WRAP}.${POPUP_LIB}.${POPUP_ROOT}`))
+                && !this.isSticky) {
+                this.close();
+            }
         }
     }
     /**
@@ -1623,6 +1627,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         super.destroy();
         if (this.tooltipEle) { remove(this.tooltipEle); }
         if (this.popupObj) { this.popupObj.destroy(); }
+        collisionDestroy();
         removeClass([this.element], ROOT);
         this.unwireEvents(this.opensOn);
         this.unwireMouseEvents(this.element);

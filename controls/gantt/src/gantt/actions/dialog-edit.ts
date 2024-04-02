@@ -489,6 +489,9 @@ export class DialogEdit {
             if (this.dialog && !this.dialogObj.isDestroyed) {
                 this.CustomformObj = null;
                 this.formObj = null;
+                this.storeValidTab = null
+                this.customFieldColumn = [];
+                this.taskFieldColumn = [];
                 this.dialogObj.hide();
                 this.dialogClose();
             }
@@ -542,6 +545,9 @@ export class DialogEdit {
             this.initiateDialogSave();
             this.CustomformObj = null;
             this.formObj = null;
+            this.storeValidTab = null;
+            this.customFieldColumn = [];
+            this.taskFieldColumn = [];
             target.style.pointerEvents = 'auto';
         }
     }
@@ -770,6 +776,9 @@ export class DialogEdit {
                 if (isValidateColumn) {
                     this.CustomformObj = null;
                     this.formObj = null;
+                    this.storeValidTab = null;
+                    this.customFieldColumn = [];
+                    this.taskFieldColumn = []
                     this.changeFormObj(actionCompleteArgs.element, false);
                 }
                 this.parent.trigger('actionComplete', actionCompleteArgs, (actionCompleteArg: CObject) => {
@@ -893,7 +902,7 @@ export class DialogEdit {
             });
         } else {
             storeColumn.forEach((column: { field: any }) => {
-                if (column.field.includes(this.parent.customColumns)) {
+                if (this.parent.customColumns.indexOf(column.field) !== -1) {
                     this.customFieldColumn.push(column);
                 } else {
                     this.taskFieldColumn.push(column);

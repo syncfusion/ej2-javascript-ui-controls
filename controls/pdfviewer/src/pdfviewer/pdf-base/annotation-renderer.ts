@@ -1762,7 +1762,8 @@ export class AnnotationRenderer {
             // Markup Text
             annotation.text = freeTextAnnotation.dynamicText.toString();
         }
-        annotation.rotationAngle = this.getRotateAngle(freeTextAnnotation.rotateAngle);
+        const rotateAngle = "RotateAngle" + Math.abs(freeTextAnnotation.rotateAngle);
+        annotation.rotationAngle = this.getRotateAngle(rotateAngle);
         const lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
         lineBorder.width = !isNullOrUndefined(freeTextAnnotation.thickness) ? freeTextAnnotation.thickness : 1;
         annotation.border = lineBorder;
@@ -3655,7 +3656,7 @@ export class AnnotationRenderer {
         return note;
     }
 
-    private getBounds(bounds: any, pageWidth: number, pageHeight: number, pageRotation: number): AnnotBounds {
+    private getBounds(bounds: any, pageHeight: number, pageWidth: number, pageRotation: number): AnnotBounds {
         let bound: AnnotBounds;
         if (pageRotation === 0) {
             // eslint-disable-next-line max-len

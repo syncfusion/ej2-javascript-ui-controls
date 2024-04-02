@@ -16,7 +16,7 @@ import {
     SelectionRowFormat, SelectionSectionFormat, SelectionTableFormat, SelectionImageFormat
 } from './selection-format';
 import { TextSizeInfo } from '../viewer/text-helper';
-import { PageLayoutViewer, LayoutViewer, DocumentHelper, WebLayoutViewer, WListLevel, WList, WRowFormat } from '../index';
+import { PageLayoutViewer, LayoutViewer, DocumentHelper, WebLayoutViewer, WListLevel, WList, WRowFormat, SelectionInfo } from '../index';
 import { isNullOrUndefined, createElement, L10n, Browser } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 import {
@@ -3933,8 +3933,10 @@ export class Selection {
         }
         if (!isNullOrUndefined(nextParagraphWidget) && !nextParagraphWidget.isEmpty()) {
             const lineWidget: LineWidget = nextParagraphWidget.childWidgets[0] as LineWidget;
-
-            text = text + '\r' + this.getTextInline(lineWidget.children[0] as ElementBox, endParagraphWidget, endInline, endIndex, includeObject);
+            if (isNullOrUndefined(nextParagraphWidget.previousSplitWidget)) {
+                text = text + '\r';
+            }
+            text = text + this.getTextInline(lineWidget.children[0] as ElementBox, endParagraphWidget, endInline, endIndex, includeObject);
         }
         return text;
     }
@@ -6759,7 +6761,7 @@ export class Selection {
         }
         let lineWidget: LineWidget = undefined;
         if (widget.childWidgets.length > 0) {
-            if ((widget.childWidgets[0] as Widget).y <= point.y) {
+            if ((widget.childWidgets[0] as Widget).y - widget.margin.top <= point.y) {
                 if ((widget.childWidgets[widget.childWidgets.length - 1] as Widget) instanceof ParagraphWidget) {
 
                     lineWidget = this.getLineWidgetParaWidget((widget.childWidgets[widget.childWidgets.length - 1] as ParagraphWidget), point);
@@ -8572,7 +8574,9 @@ export class Selection {
         }
         let blockAdv: BlockWidget = this.getNextRenderedBlock(table) as BlockWidget;
         // //Goto the next block.
-        this.getCharacterFormatForBlock(blockAdv, start, end);
+        if (!isNullOrUndefined(blockAdv)) {
+            this.getCharacterFormatForBlock(blockAdv, start, end);
+        }
     }
     /**
      * Get character format in selection
@@ -8936,6 +8940,28 @@ export class Selection {
         let top: number = this.getPageTop(page) + (widgetTop - offsetHeight);
         top = top > this.documentHelper.viewerContainer.scrollTop ? top : top + widget.height + offsetHeight;
         return new Point(left, top);
+    }
+    /**
+     * @private
+     */
+    public updateSelectionInfo(info: SelectionInfo): SelectionInfo {
+        let cells: any = this.selectedWidgets.keys;
+        if (cells[0] instanceof TableCellWidget && cells[cells.length - 1] instanceof TableCellWidget) {
+            if (cells.length > 0) {
+                let firstcell: TableCellWidget = cells[0];
+                let lastCell: TableCellWidget = cells[cells.length - 1];
+                let firstrow: TableRowWidget = firstcell.ownerRow;
+                let lastRow: TableRowWidget = lastCell.ownerRow;
+                let startCell: TableCellWidget = firstrow.getCell(firstrow.rowIndex, 0);
+                let firstPara: ParagraphWidget = this.owner.documentHelper.getFirstParagraphInCell(startCell);
+                info.start = this.owner.documentHelper.selection.getHierarchicalIndex(firstPara, "0");
+                let lastCellInRow: TableCellWidget = lastRow.getCell(lastRow.rowIndex, lastRow.childWidgets.length - 1);
+                let lastPara: ParagraphWidget = this.getLastParagraph(lastCellInRow);
+                var offset: number = this.getParagraphLength(lastPara);
+                info.end = this.owner.documentHelper.selection.getHierarchicalIndex(lastPara, offset.toString());
+            }
+        }
+        return info;
     }
     /**
      * @private
@@ -9694,7 +9720,12 @@ export class Selection {
     private copyToClipboard(htmlContent: string): boolean {
         window.getSelection().removeAllRanges();
         //Skip the copy operation Using shadow DOM if it is mobile device or IE browser.
-        let isMobileDeviceOrInternetExplorer: boolean = /Android|Windows Phone|iPhone|Trident|webOS/i.test(navigator.userAgent);
+        let isSafariOnMac = (navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
+        navigator.userAgent &&
+        navigator.userAgent.indexOf('Macintosh') > -1 &&
+        navigator.userAgent.indexOf('Safari') > -1 &&
+        navigator.userAgent.indexOf('Chrome') === -1);
+        let isMobileDeviceOrInternetExplorer: boolean = /Android|Windows Phone|iPhone|Trident|webOS/i.test(navigator.userAgent) || isSafariOnMac;
         let shadowRoot: HTMLDivElement;
         let div: HTMLDivElement = document.createElement('div');
         div.style.left = '-10000px';

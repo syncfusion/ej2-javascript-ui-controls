@@ -439,7 +439,9 @@ export class CheckBoxFilterBase {
             this.parent.notify(events.filterMenuClose, { field: this.options.field });
             this.unWireEvents();
             this.dialogObj.destroy();
-            remove(this.dlg);
+            if (this.dlg && this.dlg.parentElement) {
+                remove(this.dlg);
+            }
             this.dlg = null;
             this.parent.notify(events.filterDialogClose, {});
         }

@@ -236,7 +236,7 @@ describe('Tooltip Control', () => {
             }, '#tstooltip');
             tooltip.open(document.getElementById('tstooltip')); // Open the tooltip based on target element specified in optional parameter
             var ele = document.body;
-            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
+            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgba(0, 0, 0, 0)");
             tooltip.close();
         });
         it('enableHtmlParse as false, enableHtmlSanitizer as false and HTML script tag as string content', () => {

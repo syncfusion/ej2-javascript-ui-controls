@@ -471,7 +471,7 @@ export class DatePicker extends Calendar implements IInput {
     public render(): void {
         this.initialize();
         this.bindEvents();
-        if (this.floatLabelType === 'Auto') {
+        if (this.floatLabelType !== 'Never') {
             Input.calculateWidth(this.inputElement, this.inputWrapper.container);
         }
         if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {

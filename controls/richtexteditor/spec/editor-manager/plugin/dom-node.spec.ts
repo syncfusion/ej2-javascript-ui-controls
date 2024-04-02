@@ -460,4 +460,32 @@ describe('DOMNode plugin', () => {
             expect(tdElem.innerHTML === '<ul><li>The Rich<strong> Text</strong> Editor.</li></ul>').toBe(true);
         });
     });
+
+    describe('875147 - Number or Bullet format list not applied properly and throws error on continuous click in RichTextEditor', () => {
+        let editor: RichTextEditor;
+        const content: string = '<ol><li><p class="textPtag">Provides an option to customize the quick toolbar for an image </p></li></ol><p class="imgPtag"><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>';
+        beforeEach(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: content
+            });
+        });
+        afterEach(() => {
+            destroy(editor);
+        });
+
+        it('Check the unwanted empty elements maintain dom', () => { 
+            let textPtag: HTMLElement = editor.element.querySelector('.textPtag');
+            let imgPtag: HTMLElement =  editor.element.querySelector('img');
+            domSelection.setSelectionText(document,textPtag.firstChild,imgPtag.parentElement,0,1);
+            let numberlist: HTMLElement = editor.getToolbar().querySelector('[title="Numbered List (Ctrl+Shift+O)"]');
+            numberlist.click();
+            numberlist.click();
+            numberlist.click();
+            numberlist.click();
+            expect(editor.inputElement.innerHTML === `<p class="textptag">Provides an option to customize the quick toolbar for an image </p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`).toBe( true);
+        });
+    });
 });

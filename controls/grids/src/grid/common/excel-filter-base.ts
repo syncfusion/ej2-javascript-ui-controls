@@ -523,7 +523,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         this.dlgObj[`${isStringTemplate}`] = true;
         this.renderResponsiveDialog();
         this.dlgDiv.setAttribute('aria-label', this.getLocalizedLabel('CustomFilterDialogARIA'));
-        this.childRefs.push(this.dlgObj);
+        this.childRefs.unshift(this.dlgObj);
         this.dlgObj.appendTo(this.dlgDiv);
     }
 
@@ -726,7 +726,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 cssClass: this.parent.cssClass ? this.parent.cssClass : null
             },
             col.filter.params));
-        this.childRefs.push(dropOptr);
+        this.childRefs.unshift(dropOptr);
         const evt: object = { 'open': this.dropDownOpen.bind(this), 'change': this.dropDownValueChange.bind(this) };
         registerEventHandlers(optrInput.id, [literals.open, literals.change], evt, this);
         dropOptr.addEventListener(literals['open'], this.eventHandlers[optrInput.id][literals.open]);
@@ -856,7 +856,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             enableRtl: this.parent.enableRtl,
             cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
-        this.childRefs.push(andRadio);
+        this.childRefs.unshift(andRadio);
 
         // Initialize OR RadioButton component.
         const orRadio: RadioButton = new RadioButton({
@@ -865,7 +865,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             enableRtl: this.parent.enableRtl,
             cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
-        this.childRefs.push(orRadio);
+        this.childRefs.unshift(orRadio);
 
         const flValue: string = predicates && predicates.length === 2 ? predicates[1].predicate as string : 'and';
         if (flValue === 'and') {
@@ -1008,7 +1008,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             enableRtl: this.parent.enableRtl, checked: flValue,
             cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         });
-        this.childRefs.push(checkbox);
+        this.childRefs.unshift(checkbox);
 
         // Render initialized CheckBox.
         checkbox.appendTo(matchCaseInput);
@@ -1028,7 +1028,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 locale: this.parent.locale
             },
             options.column.filter.params));
-        this.childRefs.push(datePicker);
+        this.childRefs.unshift(datePicker);
         datePicker.appendTo(inputValue);
     }
 
@@ -1046,7 +1046,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 locale: this.parent.locale
             },
             options.column.filter.params));
-        this.childRefs.push(dateTimePicker);
+        this.childRefs.unshift(dateTimePicker);
         dateTimePicker.appendTo(inputValue);
     }
 
@@ -1066,7 +1066,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 cssClass: this.parent.cssClass ? this.parent.cssClass : null
             },
             options.column.filter.params));
-        this.childRefs.push(numericTextBox);
+        this.childRefs.unshift(numericTextBox);
         numericTextBox.appendTo(inputValue);
     }
 
@@ -1098,7 +1098,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 actObj.dataSource = new DataManager(e);
             });
         }
-        this.childRefs.push(actObj);
+        this.childRefs.unshift(actObj);
         const evt: object = { 'actionComplete': this.acActionComplete(actObj, column), 'focus': this.acFocus(actObj, column, options, inputValue) };
         registerEventHandlers(inputValue.id, [events.actionComplete, literals.focus], evt, this);
         actObj.addEventListener(literals.focus, this.eventHandlers[inputValue.id][literals.focus]);

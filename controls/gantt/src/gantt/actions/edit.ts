@@ -1267,6 +1267,9 @@ export class Edit {
                 } else {
                     this.saveSuccess(args);
                 }
+                if (this.parent.enableVirtualization && this.parent.enableTimelineVirtualization) {
+                    this.parent.ganttChartModule['setVirtualHeight']();
+                }
                 if (this.parent.undoRedoModule) {
                     this.parent.previousFlatData = extend([], this.parent.flatData, [], true) as IGanttData[];
                 }

@@ -168,7 +168,7 @@ describe('Link Module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-        it('insert link, editlink, openlink', () => {
+        it('insert link, editlink, openlink', (done) => {
             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
@@ -189,65 +189,74 @@ describe('Link Module', () => {
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle')).not.toBe(null);
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-checkbox-wrapper')).not.toBe(null);
             expect((<any>rteObj).linkModule.dialogObj.primaryButtonEle.classList.contains('e-insertLink')).toBe(true);
-            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = '';
-            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
-            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
-            expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor')).toBe(null);
-            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'insertlink';
-            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
-            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
-            expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor')).not.toBe(null);
-            let eventsArgs: any = { target: document, preventDefault: function () { } };
-            (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
-            (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
-            (rteObj as any).value = 'test';
-            (rteObj as any).dataBind();
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            args = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
-            event = { preventDefault: function () { } };
-            range = new NodeSelection().getRange(document);
-            save = new NodeSelection().save(range, document);
-            selectParent = new NodeSelection().getParentNodeCollection(range)
-            selectNode = new NodeSelection().getNodeCollection(range);
-            evnArg = {
-                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
-                selectParent: selectParent, selectNode: selectNode
-            };
-            (<any>rteObj).linkModule.linkDialog(evnArg);
-            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'http://data';
-            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
-            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
-            expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor')).not.toBe(null);
-            expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').title === 'http://data').toBe(true);
-            expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').innerHTML === 'http://data').toBe(true);
-            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').focus();
-            args = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
-            event = { preventDefault: function () { } };
-            range = new NodeSelection().getRange(document);
-            save = new NodeSelection().save(range, document);
-            selectParent = new NodeSelection().getParentNodeCollection(range);
-            selectNode = new NodeSelection().getNodeCollection(range);
-            evnArg = {
-                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save, selectNode: selectNode,
-                selectParent: selectParent
-            };
-            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '_blank';
-            (<any>rteObj).linkModule.editLink(evnArg);
-            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value === 'http://data').toBe(true);
-            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'http://data').toBe(true);
-            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value === 'http://data').toBe(true);
-            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
-            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
-            evnArg.args.item = {command: 'Links', subCommand: 'OpenLink'};
-            (<any>rteObj).linkModule.openLink(evnArg);
-            evnArg.args.item = { command: 'Links', subCommand: 'CreateLink'};
-            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '';
-            (<any>rteObj).linkModule.linkDialog(evnArg);
-            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle.nextElementSibling;
-            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.nextElementSibling.click(evnArg);
-            (<any>rteObj).linkModule.linkDialog(evnArg);
-            let eventArgs = { target: document, preventDefault: function () { } };
-            (<any>rteObj).linkModule.onIframeMouseDown();
+            setTimeout(() => {
+                (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = '';
+                evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+                (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+                expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor')).toBe(null);
+                (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'insertlink';
+                evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+                (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+                expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor')).not.toBe(null);
+                let eventsArgs: any = { target: document, preventDefault: function () { } };
+                (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
+                (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
+                (rteObj as any).value = 'test';
+                (rteObj as any).dataBind();
+                (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+                args = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+                event = { preventDefault: function () { } };
+                range = new NodeSelection().getRange(document);
+                save = new NodeSelection().save(range, document);
+                selectParent = new NodeSelection().getParentNodeCollection(range)
+                selectNode = new NodeSelection().getNodeCollection(range);
+                evnArg = {
+                    target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
+                    selectParent: selectParent, selectNode: selectNode
+                };
+                setTimeout(function () {
+                    (<any>rteObj).linkModule.linkDialog(evnArg);
+                    (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'http://data';
+                    evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+                    (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+                    expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor')).not.toBe(null);
+                    expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').title === 'http://data').toBe(true);
+                    expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').innerHTML === 'http://data').toBe(true);
+                    (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').focus();
+                    args = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+                    event = { preventDefault: function () { } };
+                    range = new NodeSelection().getRange(document);
+                    save = new NodeSelection().save(range, document);
+                    selectParent = new NodeSelection().getParentNodeCollection(range);
+                    selectNode = new NodeSelection().getNodeCollection(range);
+                    evnArg = {
+                        target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save, selectNode: selectNode,
+                        selectParent: selectParent
+                    };
+                    (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '_blank';
+                    (<any>rteObj).linkModule.editLink(evnArg);
+                    expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value === 'http://data').toBe(true);
+                    expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'http://data').toBe(true);
+                    expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value === 'http://data').toBe(true);
+                    evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+                    (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+                    evnArg.args.item = {command: 'Links', subCommand: 'OpenLink'};
+                    (<any>rteObj).linkModule.openLink(evnArg);
+                    evnArg.args.item = { command: 'Links', subCommand: 'CreateLink'};
+                    (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '';
+                    (<any>rteObj).linkModule.linkDialog(evnArg);
+                    setTimeout(() => {
+                        evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle.nextElementSibling;
+                        (<any>rteObj).linkModule.dialogObj.primaryButtonEle.nextElementSibling.click(evnArg);
+                        (<any>rteObj).linkModule.linkDialog(evnArg);
+                        setTimeout(() => {
+                            let eventArgs = { target: document, preventDefault: function () { } };
+                            (<any>rteObj).linkModule.onIframeMouseDown();
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
         });
     });
 
@@ -864,7 +873,7 @@ describe('Link Module', () => {
             destroy(rteObj);
             done();
         });
-        it(' Test - Click the CreateLink item - set the disable the new window option', () => {
+        it(' Test - Click the CreateLink item - set the disable the new window option', (done) => {
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_CreateLink');
@@ -873,10 +882,14 @@ describe('Link Module', () => {
             (dialogEle.querySelector('.e-rte-linkurl') as HTMLInputElement).value = 'https://ej2.syncfusion.com';
             let check: HTMLInputElement = dialogEle.querySelector('.e-rte-linkTarget');
             check.click();
-            (document.querySelector('.e-insertLink.e-primary') as HTMLElement).click();
-            pEle = rteObj.element.querySelector('#rte');
-            let anchor: HTMLAnchorElement = pEle.querySelector('a');
-            expect(anchor.hasAttribute('target')).toBe(false);
+            setTimeout(() => {
+                (document.querySelector('.e-insertLink.e-primary') as HTMLElement).click();
+                pEle = rteObj.element.querySelector('#rte');
+                let anchor: HTMLAnchorElement = pEle.querySelector('a');
+                expect(anchor.hasAttribute('target')).toBe(false);
+                done();
+            }, 100);
+            
         });
     })
 
@@ -1068,11 +1081,13 @@ describe('Link Module', () => {
                 let dialog: HTMLElement = document.getElementById(controlId + "_rtelink");
                 let checkbox: HTMLInputElement = dialog.querySelector('.e-checkbox-wrapper label');
                 checkbox.click();
-                let update: HTMLButtonElement = dialog.querySelector('.e-insertLink');
-                update.click();
-                let link: HTMLAnchorElement = rteObj.element.querySelector("#link");
-                expect(link.hasAttribute("target")).toBe(false);
-                done();
+                setTimeout(() => {
+                    let update: HTMLButtonElement = dialog.querySelector('.e-insertLink');
+                    update.click();
+                    let link: HTMLAnchorElement = rteObj.element.querySelector("#link");
+                    expect(link.hasAttribute("target")).toBe(false);
+                    done();
+                }, 100);
             }, 100);
         });
 

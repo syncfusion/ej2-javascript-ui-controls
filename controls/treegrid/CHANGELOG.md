@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 25.1.37 (2024-03-26)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F187000` - Resolved exception when the dataSource and the columns were not defined.
+- `#I560889` - Added dropPosition in `RowDragEventArgs` of `rowDrop` event.
+- `#I567688` - Resolved exception on refreshing the browser when persistence enabled.
+
 ## 25.1.35 (2024-03-15)
 
 ### Tree Grid

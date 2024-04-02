@@ -2,15 +2,30 @@
 
 ## [Unreleased]
 
+## 25.1.38 (2024-04-02)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I568017` - Issue with Sub field value is not set properly while setting rule for complex data binding has been fixed.
+
 ## 25.1.37 (2024-03-26)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
+- `#I873568` - Issue with `getSqlFromRules` method not working properly in boolean fields when calling validateFields within the `ruleChange` event has been fixed.
 - `#I568017` - Issue with QueryBuilder 'In' or 'Not in' Operator results in value field as empty list when using fieldMode as default mode has been fixed.
 
 ## 25.1.35 (2024-03-15)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I873624` - Issue with `getSqlFromRules` method is not working while using a field name like `Http Response Header Name-Verify` has been fixed.
 
 ### QueryBuilder
 

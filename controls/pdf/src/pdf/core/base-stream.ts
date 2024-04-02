@@ -1,5 +1,5 @@
 import { _PdfDictionary, _PdfReference } from './pdf-primitives';
-import { _byteArrayToHexString } from './utils';
+import { _byteArrayToHexString, _bytesToString } from './utils';
 export abstract class _PdfBaseStream {
     offset: number;
     dictionary: _PdfDictionary;
@@ -62,24 +62,14 @@ export abstract class _PdfBaseStream {
     moveStart(): void {
         return null;
     }
-    getString(isHex: boolean = false): string {
-        const bytes: Uint8Array = this.getBytes() as Uint8Array;
-        if (typeof bytes === 'undefined' || bytes === null || typeof bytes.length === 'undefined') {
-            throw new Error('Invalid argument for bytesToString');
+    getString(isHex: boolean = false, bytes?: Uint8Array): string {
+        if (typeof bytes === 'undefined' || bytes === null) {
+            bytes = this.getBytes() as Uint8Array;
         }
         if (isHex) {
             return _byteArrayToHexString(bytes);
         } else {
-            const len: number = bytes.length;
-            const max: number = 8192;
-            if (len < max) {
-                return String.fromCharCode.apply(null, bytes);
-            }
-            const stringBuffer: string[] = [];
-            for (let i: number = 0; i < len; i += max) {
-                stringBuffer.push(String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + max, len))));
-            }
-            return stringBuffer.join('');
+            return _bytesToString(bytes);
         }
     }
     skip(n?: number): void {

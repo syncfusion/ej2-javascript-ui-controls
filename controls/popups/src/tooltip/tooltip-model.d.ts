@@ -1,4 +1,4 @@
-import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation, animationMode } from '@syncfusion/ej2-base';import { isNullOrUndefined, getUniqueID, formatUnit, select, selectAll } from '@syncfusion/ej2-base';import { attributes, closest, removeClass, addClass, remove } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, Complex, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Popup } from '../popup/popup';import { OffsetPosition, calculatePosition } from '../common/position';import { isCollide, fit } from '../common/collision';
+import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation, animationMode } from '@syncfusion/ej2-base';import { isNullOrUndefined, getUniqueID, formatUnit, select, selectAll } from '@syncfusion/ej2-base';import { attributes, closest, removeClass, addClass, remove } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, Complex, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Popup } from '../popup/popup';import { OffsetPosition, calculatePosition } from '../common/position';import { isCollide, fit, destroy as collisionDestroy } from '../common/collision';
 import {TooltipAnimationSettings,Position,TipPointerPosition,TooltipEventArgs} from "./tooltip";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -207,9 +207,10 @@ export interface TooltipModel extends ComponentModel{
     cssClass?: string;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to display or remove the untrusted HTML values in the Tooltip component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
     enableHtmlSanitizer?: boolean;
 

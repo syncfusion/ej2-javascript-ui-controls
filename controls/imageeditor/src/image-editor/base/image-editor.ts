@@ -494,14 +494,19 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * If the property is defined as empty collection, the toolbar will not be rendered.
      * The preconfigured toolbar commands are
      * - Crop: helps to crop an image as ellipse, square, various ratio aspects, custom selection with resize, drag and drop.
+     * - Straightening: helps to rotate an image by a specified angle.
      * - Annotate: help to insert a shape on image that supports rectangle, ellipse, line, arrow, path, text, image and freehand drawing with resize, drag and drop, and customize its appearance.
      * - Transform: helps to rotate and flip an image.
      * - Finetunes: helps to perform adjustments on an image.
      * - Filters: helps to perform predefined color filters.
+     * - Frame: helps to add decorative borders or frames around images.
+     * - Resize: helps to modify the dimensions of an image.
      * - ZoomIn: performs zoom-in an image.
      * - ZoomOut: performs zoom-out an image.
      * - Save: save the modified image.
      * - Open: open an image to perform editing.
+     * - Undo: helps to revert the last action.
+     * - Redo: helps to redo the last action.
      * - Reset: reset the modification and restore the original image.
      *
      * {% codeBlock src='image-editor/toolbar/index.md' %}{% endcodeBlock %}

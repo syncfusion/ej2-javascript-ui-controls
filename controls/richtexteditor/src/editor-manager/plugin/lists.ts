@@ -220,6 +220,7 @@ export class Lists {
         endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
         startNode = startNode.nodeName !== 'LI' && !isNOU(startNode.closest('LI')) ? startNode.closest('LI') : startNode;
         endNode = endNode.nodeName !== 'LI' && endNode.nodeName !== '#text' && !isNOU(endNode.closest('LI')) ? endNode.closest('LI') : endNode;
+        const parentList: Element = (range.startContainer.nodeName === '#text') ? range.startContainer.parentElement.closest('li') : (range.startContainer as HTMLElement).closest('li');
         if (((range.commonAncestorContainer.nodeName === 'OL' || range.commonAncestorContainer.nodeName === 'UL' || range.commonAncestorContainer.nodeName === 'LI') &&
         isNOU(endNode.nextElementSibling) && endNode.textContent.length === range.endOffset &&
         isNOU(startNode.previousElementSibling) && range.startOffset === 0) ||
@@ -232,6 +233,11 @@ export class Lists {
             } else {
                 detach(range.commonAncestorContainer);
             }
+            e.event.preventDefault();
+        } else if (!isNOU(parentList) && parentList.textContent === range.startContainer.textContent && parentList.closest('li').previousElementSibling === null){
+            range.deleteContents();
+            this.parent.editableElement.querySelectorAll('li:empty').forEach((e: HTMLElement) => e.remove());
+            this.parent.editableElement.querySelectorAll('ol:empty').forEach((e: HTMLElement) => e.remove());
             e.event.preventDefault();
         }
     }
@@ -274,7 +280,7 @@ export class Lists {
         if (e.event.which === 8) {
             this.backspaceList(e);
         }
-        if (e.event.which === 46 && e.event.action === 'delete') {
+        if ((e.event.which === 46 && e.event.action === 'delete') || (e.event.which === 88 && e.event.action === 'cut')) {
             const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
             const commonAncestor: Node = range.commonAncestorContainer;
             const startEle: Node = range.startContainer;
@@ -856,7 +862,7 @@ export class Lists {
                     }
                 }
                 if (element.parentNode.insertBefore(this.closeTag(parentNode.tagName) as Element, element),
-                    'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
+                'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
                     'UL' === (parentNode.parentNode as Element).tagName) {
                     element.parentNode.insertBefore(this.closeTag('LI') as Element, element);
                 } else {
@@ -868,18 +874,19 @@ export class Lists {
                     if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
                         const wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
                             ' class="' + className + ' e-rte-wrap-inner"';
-                        let parentElement = parentNode as HTMLElement;
-                        if (!isNOU(parentElement.style.listStyleType)) {
-                            (parentNode as HTMLElement).style.removeProperty("list-style-type");
+                        const parentElement = parentNode as HTMLElement;
+                        if (elements.length === parentElement.querySelectorAll('li').length) {
+                            if (!isNOU(parentElement.style.listStyleType)) {
+                                (parentNode as HTMLElement).style.removeProperty('list-style-type');
+                            }
+                            if (!isNOU(parentElement.style.listStyleImage)) {
+                                (parentNode as HTMLElement).style.removeProperty('list-style-image');
+                            }
+                            if (parentElement.style.length === 0) {
+                                parentNode.removeAttribute('style');
+                            }
                         }
-                        if (!isNOU(parentElement.style.listStyleImage)) {
-                            (parentNode as HTMLElement).style.removeProperty("list-style-image");
-                        }
-                        if (parentElement.style.length === 0) {
-                            parentNode.removeAttribute("style");
-                        }
-                        const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass +
-                            this.domNode.attributes(parentElement) + '></' + CONSTANT.DEFAULT_TAG + '>';
+                        const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass + '></' + CONSTANT.DEFAULT_TAG + '>';
                         if (e.enterAction !== 'BR') {
                             this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
                         }

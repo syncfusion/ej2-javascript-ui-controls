@@ -6,7 +6,7 @@ import { Animation, AnimationModel, Property, Event, EmitType, Component } from 
 import { NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
 import { PopupModel, PositionDataModel } from './popup-model';
 import { EventHandler } from '@syncfusion/ej2-base';
-import { flip, fit, isCollide , CollisionCoordinates } from '../common/collision';
+import { flip, fit, isCollide , CollisionCoordinates, destroy as collisionDestroy } from '../common/collision';
 
 /**
  * Specifies the offset position values.
@@ -329,6 +329,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         }
         this.element.classList.remove(CLASSNAMES.ROOT, CLASSNAMES.RTL, CLASSNAMES.OPEN, CLASSNAMES.CLOSE);
         this.content = null; this.relateTo = null;
+        collisionDestroy();
         super.destroy();
     }
     /**
@@ -814,7 +815,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         let parent: HTMLElement = element.parentElement;
         while (parent && parent.tagName !== 'HTML') {
             const parentStyle: CSSStyleDeclaration = getComputedStyle(parent);
-            if (parentStyle.position === 'fixed' && !isNullOrUndefined(this.element) && this.element.offsetParent &&
+            if ((parentStyle.position === 'fixed' || parentStyle.position === 'sticky') && !isNullOrUndefined(this.element) && this.element.offsetParent &&
             this.element.offsetParent.tagName === 'BODY' && getComputedStyle(this.element.offsetParent).overflow !== 'hidden') {
                 this.element.style.top = window.scrollY > parseInt(this.element.style.top, 10) ?
                     formatUnit(window.scrollY - parseInt(this.element.style.top, 10))

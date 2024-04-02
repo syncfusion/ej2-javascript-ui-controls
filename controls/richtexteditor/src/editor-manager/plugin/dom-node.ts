@@ -600,7 +600,8 @@ export class DOMNode {
                 markerStart.parentElement.appendChild(start);
             }
         } else {
-            if (start.tagName === 'IMG') {
+            let tagName: string = !isNOU(start.parentElement)? start.parentElement.tagName.toLocaleLowerCase(): '';
+            if (start.tagName === 'IMG' && tagName !== 'p' && tagName !== 'div') {
                 const parNode: HTMLParagraphElement = document.createElement('p');
                 start.parentElement.insertBefore(parNode, start);
                 parNode.appendChild(start);

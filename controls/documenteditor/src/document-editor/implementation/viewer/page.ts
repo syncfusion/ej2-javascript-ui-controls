@@ -2375,7 +2375,7 @@ export class TableWidget extends BlockWidget {
             let cellWidth: number = 0;
             let sizeInfo: ColumnSizeInfo = new ColumnSizeInfo();
             let offset: number = 0;
-            if (rowFormat.gridBefore > 0 && (row.rowFormat.beforeWidth !== 0 || row.rowFormat.gridBeforeWidth !== 0) && ((this.bodyWidget.page.documentHelper.alignTablesRowByRow) ? row.ownerTable.tableFormat.tableAlignment === 'Left' : true)) {
+            if (rowFormat.gridBefore > 0 && (row.rowFormat.beforeWidth !== 0 || row.rowFormat.gridBeforeWidth !== 0) && ((this.bodyWidget.page.documentHelper.alignTablesRowByRow) ? row.ownerTable.tableFormat.tableAlignment === 'Left' || (this.bodyWidget.page.documentHelper.compatibilityMode === 'Word2003' && (row.ownerTable.firstChild as TableRowWidget).rowFormat.gridAfter > 0) : true)) {
                 cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, row.rowFormat.gridAfterWidthType, tableWidth, null);
                 sizeInfo.minimumWidth = cellWidth;
                 this.tableHolder.addColumns(columnSpan, columnSpan = rowFormat.gridBefore, cellWidth, sizeInfo, offset = cellWidth, 'Point');
@@ -3902,7 +3902,8 @@ export class TableCellWidget extends BlockWidget {
             if (ownerCell.columnIndex === 0 || (ownerCell.cellIndex === 0 && ownerCell.ownerRow.rowFormat.gridBefore > 0)) {
                 isFirstCell = true;
             }
-            if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None' && !(leftBorder.isBorderDefined && leftBorder.lineWidth !== 0)) || isNullOrUndefined(leftBorder)) {
+            const isRowBorderDefined: boolean = !isNullOrUndefined(rowBorders.left) && rowBorders.left.lineStyle !== 'None' && rowBorders.left.isBorderDefined;
+            if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None' && (!leftBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(leftBorder)) {
                 if (isFirstCell) {
                     leftBorder = rowBorders.left;
                     if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None') || isNullOrUndefined(leftBorder)) {
@@ -3996,7 +3997,8 @@ export class TableCellWidget extends BlockWidget {
                 || (ownerCell.cellIndex === ownerCell.ownerRow.childWidgets.length - 1)) {
                 isLastCell = true;
             }
-            if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' && !(rightBorder.isBorderDefined && rightBorder.lineWidth !== 0)) || isNullOrUndefined(rightBorder)) {
+            const isRowBorderDefined: boolean = !isNullOrUndefined(rowBorders.right) && rowBorders.right.lineStyle !== 'None' && rowBorders.right.isBorderDefined;
+            if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' && (!rightBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(rightBorder)) {
                 if (isLastCell) {
                     rightBorder = rowBorders.right;
                     if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None') || isNullOrUndefined(rightBorder)) {
@@ -4078,7 +4080,8 @@ export class TableCellWidget extends BlockWidget {
         let ownerCell: TableCellWidget = TableCellWidget.getCellOf(topBorder.ownerBase as WBorders);
         if (!isNullOrUndefined(ownerCell)) {
             let isFirstRow: boolean = isNullOrUndefined(ownerCell.ownerRow.previousWidget);
-            if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None' && !(topBorder.isBorderDefined && topBorder.lineWidth !== 0)) || isNullOrUndefined(topBorder)) {
+            const isRowBorderDefined: boolean = !isNullOrUndefined(rowBorders.top) && rowBorders.top.lineStyle !== 'None' && rowBorders.top.isBorderDefined;
+            if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None' && (!topBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(topBorder)) {
                 if (isFirstRow) {
                     topBorder = rowBorders.top;
                     if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None') || isNullOrUndefined(topBorder)) {
@@ -4170,7 +4173,8 @@ export class TableCellWidget extends BlockWidget {
         let ownerCell: TableCellWidget = TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders);
         if (!isNullOrUndefined(ownerCell)) {
             let isLastRow: boolean = isNullOrUndefined(ownerCell.ownerRow.nextWidget);
-            if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None' && !(bottomBorder.isBorderDefined && bottomBorder.lineWidth !== 0)) || isNullOrUndefined(bottomBorder)) {
+            const isRowBorderDefined: boolean = !isNullOrUndefined(rowBorders.bottom) && rowBorders.bottom.lineStyle !== 'None' && rowBorders.bottom.isBorderDefined;
+            if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None' && (!bottomBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(bottomBorder)) {
                 if (isLastRow) {
                     bottomBorder = rowBorders.bottom;
                     if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None') || isNullOrUndefined(bottomBorder)) {

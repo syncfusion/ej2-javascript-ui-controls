@@ -118,9 +118,6 @@ export class HtmlEditor {
 
     private onSelectionRestore(e: IToolbarOptions): void {
         this.parent.isBlur = false;
-        if (isNOU(this.saveSelection) || isNOU(closest(this.saveSelection.range.startContainer.parentElement, ".e-img-caption")) ? true : !((closest(this.saveSelection.range.startContainer.parentElement, ".e-img-caption") as Element).getAttribute("contenteditable") == "false")) {
-            (this.contentRenderer.getEditPanel() as HTMLElement).focus();
-        }
         if (isNullOrUndefined(e.items) || e.items) {
             this.saveSelection.restore();
         }

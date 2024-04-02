@@ -4679,8 +4679,25 @@ export class PdfSquareAnnotation extends PdfComment {
             }
         }
         if (isFlatten && this._appearanceTemplate) {
-            const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            const appearanceDictionary: _PdfDictionary = this._appearanceTemplate._content.dictionary;
+            const isValid: boolean = appearanceDictionary && appearanceDictionary.has('BBox') && !appearanceDictionary.has('CropBox') && !appearanceDictionary.has('MediaBox');
+            if (isValid && this.measure) {
+                const graphics: PdfGraphics = this._page.graphics;
+                const state: PdfGraphicsState = graphics.save();
+                if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                    graphics.setTransparency(this._opacity);
+                }
+                const point: { x: number, y: number, width: number, height: number } = this.bounds;
+                const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
+                point.x -= box[0];
+                point.y += box[1];
+                graphics.drawTemplate(this._appearanceTemplate, point);
+                graphics.restore(state);
+                this._removeAnnotationFromPage(this._page, this);
+            } else {
+                const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
+                this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            }
         }
         if (!isFlatten && this._setAppearance && !this.measure) {
             let appearance: _PdfDictionary;
@@ -4817,15 +4834,15 @@ export class PdfSquareAnnotation extends PdfComment {
         const converter: _PdfUnitConvertor = new _PdfUnitConvertor();
         let value: {graphicsUnit: _PdfGraphicsUnit , unitString: string };
         if (this.bounds.width === this.bounds.height) {
-            value = this._getEqualPdfGraphicsUnit(this._unit, this._unitString);
+            value = this._getEqualPdfGraphicsUnit(this.unit, this._unitString);
             this._unitString = value.unitString;
             const width: number = converter._convertUnits(this.bounds.width, _PdfGraphicsUnit.point, value.graphicsUnit);
             area = width * width;
         } else {
-            value = this._getEqualPdfGraphicsUnit(this._unit, this._unitString);
+            value = this._getEqualPdfGraphicsUnit(this.unit, this._unitString);
             this._unitString = value.unitString;
             const width: number = converter._convertUnits(this.bounds.width, _PdfGraphicsUnit.point, value.graphicsUnit);
-            value = this._getEqualPdfGraphicsUnit(this._unit, this._unitString);
+            value = this._getEqualPdfGraphicsUnit(this.unit, this._unitString);
             this._unitString = value.unitString;
             const height: number = converter._convertUnits(this.bounds.height, _PdfGraphicsUnit.point, value.graphicsUnit);
             area = width * height;

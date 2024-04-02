@@ -329,18 +329,21 @@ export class Render {
                 const cells: string = 'cells';
                 const rowIdx: string = 'index';
                 const rowsObj: Row<gridColumn>[] = this.parent.grid.getRowsObject();
+                const rows: Element[] = this.parent.getDataRows();
                 const indent: number = this.parent.grid.getIndentCount();
                 const cellIndex: number = this.parent.grid.getNormalizedColumnIndex(columnUid);
-                for (let j: number = 0; j < rowsObj.length; j++) {
-                    if (rowsObj[parseInt(j.toString(), 10)].isDataRow && !isNullOrUndefined(rowsObj[parseInt(j.toString(), 10)].index)) {
-                        const cell: Cell<gridColumn> = rowsObj[parseInt(j.toString(), 10)][`${cells}`][parseInt(cellIndex.toString(), 10)];
-                        const cellRenderer: CellRenderer = new CellRenderer(this.parent.grid as IGrid, this.parent.grid.serviceLocator);
-                        const td: Element = this.parent.getCellFromIndex(rowsObj[parseInt(j.toString(), 10)].index, cellIndex - indent);
-                        cellRenderer.refreshTD(td, cell, rowsObj[parseInt(j.toString(), 10)].data, { index: rowsObj[parseInt(j.toString(), 10)][`${rowIdx}`] });
-                        const treecell: Element =
-                        this.parent.getRows()[parseInt(j.toString(), 10)]
-                            .cells[parseInt(cellIndex.toString(), 10)];
-                        this.cellRender({data: rowsObj[parseInt(j.toString(), 10)].data, cell: treecell, column: cell.column });
+                if (rows.length !== 0) {
+                    for (let j: number = 0; j < rowsObj.length; j++) {
+                        if (rowsObj[parseInt(j.toString(), 10)].isDataRow && !isNullOrUndefined(rowsObj[parseInt(j.toString(), 10)].index)) {
+                            const cell: Cell<gridColumn> = rowsObj[parseInt(j.toString(), 10)][`${cells}`][parseInt(cellIndex.toString(), 10)];
+                            const cellRenderer: CellRenderer = new CellRenderer(this.parent.grid as IGrid, this.parent.grid.serviceLocator);
+                            const td: Element = this.parent.getCellFromIndex(rowsObj[parseInt(j.toString(), 10)].index, cellIndex - indent);
+                            cellRenderer.refreshTD(td, cell, rowsObj[parseInt(j.toString(), 10)].data, { index: rowsObj[parseInt(j.toString(), 10)][`${rowIdx}`] });
+                            const treecell: Element =
+                                this.parent.getRows()[parseInt(j.toString(), 10)]
+                                    .cells[parseInt(cellIndex.toString(), 10)];
+                            this.cellRender({ data: rowsObj[parseInt(j.toString(), 10)].data, cell: treecell, column: cell.column });
+                        }
                     }
                 }
             });

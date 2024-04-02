@@ -8,7 +8,7 @@ import { Connector } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, TextElement, PathAnnotation, BezierSegment, Rect, cloneObject } from '../../../src/diagram/index';
+import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, TextElement, PathAnnotation, BezierSegment, Rect, cloneObject, IConnectionChangeEventArgs } from '../../../src/diagram/index';
 import { getDiagramLayerSvg } from '../../../src/diagram/utility/dom-util';
 import { PortModel } from '../../../src/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
@@ -2237,5 +2237,114 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Connectionchange event not triggered for port change in same node', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let count: number = 0;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramConnectionEvent' });
+            document.body.appendChild(ele);
+            let ports: PointPortModel[] = [
+                {
+                    id: 'port1',
+                    offset: {
+                        x: 0,
+                        y: 0.5,
+                    },
+                    visibility: PortVisibility.Visible,
+                    constraints: PortConstraints.Default | PortConstraints.Draw,
+                },
+                {
+                    id: 'port2',
+                    offset: {
+                        x: 1,
+                        y: 0.5,
+                    },
+                    visibility: PortVisibility.Visible,
+                    constraints: PortConstraints.Default | PortConstraints.Draw,
+                },
+                {
+                    id: 'port3',
+                    offset: {
+                        x: 0.5,
+                        y: 0,
+                    },
+                    visibility: PortVisibility.Visible,
+                    constraints: PortConstraints.Default | PortConstraints.Draw,
+                },
+                {
+                    id: 'port4',
+                    offset: {
+                        x: 0.5,
+                        y: 1,
+                    },
+                    visibility: PortVisibility.Visible,
+                    constraints: PortConstraints.Default | PortConstraints.Draw,
+                },
+            ];
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 150, annotations: [{ content: 'Node1' }],
+                shape: { type: 'Basic', shape: 'Rectangle' },
 
+                ports: ports
+            };
+
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 150, annotations: [{ content: 'Node2' }],
+                shape: { type: 'Basic', shape: 'Rectangle' },
+                ports: ports
+            };
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector7', sourceID: "node1", targetID: "node2",
+                    sourcePortID: "port2", targetPortID: "port1",type:"Orthogonal"
+                }
+            ];
+
+            function connectionChange(args: IConnectionChangeEventArgs) {
+                if (args.state == "Changed") {
+                    count++;
+                }
+            }
+            diagram = new Diagram({
+
+                width: '1000px', height: '500px', nodes: [node1, node2], connectors: connectors,
+                connectionChange: connectionChange,
+
+            });
+            diagram.appendTo('#diagramConnectionEvent');
+
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking connection Change event - port change in same node', function (done: Function) {
+            var diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            let connector: ConnectorModel  = diagram.connectors[0];
+            diagram.select([connector]);
+            let portObj1:HTMLElement = document.getElementById('node2_port1')
+            let oldBounds: DOMRect = portObj1.getBoundingClientRect() as DOMRect;
+            let portObj2:HTMLElement = document.getElementById('node2_port4')
+            let newBounds: DOMRect = portObj2.getBoundingClientRect() as DOMRect;
+            mouseEvents.mouseDownEvent(diagramCanvas, oldBounds.x, oldBounds.y, false, false);
+            mouseEvents.mouseDownEvent(diagramCanvas, oldBounds.x, oldBounds.y, false, false);
+            mouseEvents.mouseMoveEvent(diagramCanvas, oldBounds.x, oldBounds.y, false, false);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 475, 175, false, false);
+            mouseEvents.mouseMoveEvent(diagramCanvas, newBounds.x, newBounds.y, false, false);
+            mouseEvents.mouseUpEvent(diagramCanvas, newBounds.x, newBounds.y, false, false);
+
+            expect(diagram.connectors[0].targetID == "node2" &&
+                diagram.connectors[0].targetPortID == "port4").toBe(true);
+            expect(count > 0).toBe(true);
+            done();
+        });
+    });
 });

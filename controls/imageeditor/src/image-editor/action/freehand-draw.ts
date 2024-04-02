@@ -191,6 +191,9 @@ export class FreehandDrawing {
         case 'reset':
             this.reset();
             break;
+        case 'triggerShapeChanging':
+            this.triggerShapeChanging(args.value['shapeChangingArgs'])
+            break;
         }
     }
 

@@ -1921,6 +1921,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     public getPersistData(): string {
         return this.addOnPersist(['width', 'height', 'position']);
     }
+
+    private removeAllChildren(element: HTMLElement): void {
+        while (element.children[0] as HTMLElement) {
+            this.removeAllChildren(element.children[0] as HTMLElement);
+            element.removeChild(element.children[0] as HTMLElement);
+        }
+    }
+
     /**
      * To destroy the widget
      *
@@ -1984,6 +1992,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         this.ftrTemplateContent = null;
         this.headerContent = null;
+        if (!isNullOrUndefined(this.contentEle)) {
+            this.removeAllChildren(this.contentEle);
+        }
         this.contentEle = null;
         if (!this.isBlazorServerRender()) {
             super.destroy();

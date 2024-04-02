@@ -766,6 +766,14 @@ export class ChartRows extends DateProcessor {
         return this.createDivElement(template);
     }
 
+    private updateTaskBaselineNode(childData: IGanttData): NodeList {
+        const template: string = '<div class="' + cls.baselineBar + ' ' + '" role="term" style="margin-top:' + this.baselineTop +
+            'px;'+ (this.parent.enableRtl?'right:':'left:') + childData.ganttProperties.baselineLeft + 'px;' +
+            'width:' + childData.ganttProperties.baselineWidth + 'px;height:' +
+            this.baselineHeight + 'px;' + (this.baselineColor ? 'background-color: ' + this.baselineColor + ';' : '') + '"></div>';
+        return this.createDivElement(template);
+    }
+
     /**
      * To get milestone baseline node.
      *
@@ -2112,6 +2120,13 @@ export class ChartRows extends DateProcessor {
             }
             if (data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar) {
                 tr.replaceChild(this.getResourceParent(data).childNodes[0], tr.childNodes[0]);
+                if(this.parent.renderBaseline){
+                    data.childRecords.forEach((childRecord) => {
+                        if (!isNullOrUndefined(childRecord.ganttProperties.baselineStartDate && childRecord.ganttProperties.baselineEndDate)) {
+                            tr.childNodes[0].appendChild((this.updateTaskBaselineNode(childRecord))[0]);
+                        }
+                    });
+                }
             } else {
                 if (this.parent.allowTaskbarDragAndDrop && !data.expanded) {
                     (tr as Element).replaceWith(this.getGanttChartRow(index, data));

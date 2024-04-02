@@ -4623,4 +4623,60 @@ describe("Slider ticks with decimal values", () => {
         sliderInstance.destroy();
 
     });
-})
+});
+
+describe('Slider showOn property change Testing', () => {
+    let slider: any;
+    let element: HTMLElement;
+    let eventArgs: any;
+
+    it('showOn property change to "Always"', () => {
+        element = createElement('div', { id: 'slider' });
+        document.body.appendChild(element);
+        slider = new Slider({
+            value: 30,
+            tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' }
+        });
+        slider.getTheme = () => 'material';
+        slider.appendTo('#slider');
+        slider.tooltip = { showOn: 'Always' };
+        slider.dataBind();
+        expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+        var e = new MouseEvent("mouseenter", { view: window, bubbles: true, cancelable: true });
+        let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-handle'))[0];
+        ele1.dispatchEvent(e);
+        expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(true);
+        var e = new MouseEvent("mouseout", { view: window, bubbles: true, cancelable: true });
+        let ele: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-slider-container'))[0];
+        ele.dispatchEvent(e);
+        expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(true);
+        expect(slider.tooltipElement.classList.contains('e-tooltip-wrap')).toBe(true);
+        expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('30');
+        slider.destroy();
+        element.remove();
+    });
+    it('showOn property change to "Hover" with range slider', () => {
+        element = createElement('div', { id: 'slider' });
+        document.body.appendChild(element);
+        slider = new Slider({ type: 'Range', value: [30, 70], tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } });
+        slider.getTheme = () => 'material';
+        slider.appendTo('#slider');
+        slider.tooltip = { showOn: 'Hover' };
+        slider.dataBind();
+        expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+        var e = new MouseEvent("mouseenter", { view: window, bubbles: true, cancelable: true });
+        let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-handle'))[0];
+        ele1.dispatchEvent(e);
+        expect(document.getElementById('slider').querySelectorAll('.e-range').length).toBe(1);
+        expect(document.getElementById('slider').querySelectorAll(".e-handle").length).toBe(2);
+        expect(slider.tooltipElement.classList.contains('e-tooltip-wrap')).toBe(true);
+        expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('30 - 70');
+        var e = new MouseEvent("mouseout", { view: window, bubbles: true, cancelable: true });
+        let ele: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-slider-container'))[0];
+        ele.dispatchEvent(e);
+        expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+        slider.destroy();
+        element.remove();
+    });
+});
+

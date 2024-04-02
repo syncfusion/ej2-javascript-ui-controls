@@ -48,6 +48,12 @@ export class WListLevel {
     public set numberFormat(numberFormat: string) {
         this.setPropertyValue('numberFormat', numberFormat);
     }
+    public get paraStyleName(): string {
+        return this.getPropertyValue('paraStyleName') as string;
+    }
+    public set paraStyleName(paraStyleName: string) {
+        this.setPropertyValue('paraStyleName', paraStyleName);
+    }
     public get restartLevel(): number {
         return this.getPropertyValue('restartLevel') as number;
     }
@@ -105,6 +111,7 @@ export class WListLevel {
         this.addUniqueWListLevel('startAt', property, propValue, uniqueListLevelTemp);
         this.addUniqueWListLevel('followCharacter', property, propValue, uniqueListLevelTemp);
         this.addUniqueWListLevel('numberFormat', property, propValue, uniqueListLevelTemp);
+        this.addUniqueWListLevel('paraStyleName', property, propValue, uniqueListLevelTemp);
         this.addUniqueWListLevel('restartLevel', property, propValue, uniqueListLevelTemp);
         this.addUniqueWListLevel('isLegalStyleNumbering', property, propValue, uniqueListLevelTemp);
         this.uniqueListLevel = WListLevel.uniqueListLevels.addUniqueFormat(uniqueListLevelTemp, WListLevel.uniqueFormatType);
@@ -132,6 +139,7 @@ export class WListLevel {
         case 'followCharacter':
             value = 'Tab';
             break;
+        case 'paraStyleName':
         case 'numberFormat':
             value = '';
             break;

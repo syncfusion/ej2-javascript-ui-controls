@@ -489,7 +489,11 @@ export class SvgRenderer implements IRenderer {
                     textNode = document.createTextNode(childNodes[parseInt(i.toString(), 10)].text);
                     child = childNodes[parseInt(i.toString(), 10)];
                     child.x = setChildPosition(child, childNodes, i, options);
-                    offsetX = position.x + child.x - wrapBounds.x;
+                    if(options.textAlign === 'justify' || options.textAlign === 'left'){
+                        offsetX = 0;
+                    }else{
+                        offsetX = position.x + child.x - wrapBounds.x;
+                    }
                     offsetY = position.y + child.dy * (i) + ((options.fontSize) * 0.8);
                     if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
                         (options.textWrapping === 'WrapWithOverflow' || options.textWrapping === 'Wrap') && parentNode) {

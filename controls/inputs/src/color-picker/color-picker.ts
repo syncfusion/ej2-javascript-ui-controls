@@ -3,7 +3,7 @@ import { BaseEventArgs, Component, EmitType, Event, INotifyPropertyChanged, Noti
 import { Browser, closest, detach, EventHandler, getInstance, select, selectAll, formatUnit } from '@syncfusion/ej2-base';
 import { addClass, attributes, classList, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';
-import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel } from '@syncfusion/ej2-splitbuttons';
+import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel, ClickEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Deferred } from '@syncfusion/ej2-splitbuttons';
 import { Tooltip, TooltipEventArgs, getZindexPartial, Popup, isCollide } from '@syncfusion/ej2-popups';
 import { Input } from './../input/index';
@@ -396,9 +396,10 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 createPopupOnClick: this.createPopupOnClick,
                 open: this.onOpen.bind(this),
                 click: () => {
+                    const ev: MouseEvent = new MouseEvent('click', { bubbles: true, cancelable: false });
                     this.trigger('change', {
                         currentValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
-                        previousValue: { hex: null, rgba: null }, value: this.value
+                        previousValue: { hex: null, rgba: null }, value: this.value, event: ev
                     });
                 }
             });
@@ -926,15 +927,14 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.setHandlerPosition();
     }
 
-    private convertToOtherFormat(isKey: boolean = false): void {
+    private convertToOtherFormat(isKey: boolean = false, e?: MouseEvent | Event): void {
         const pValue: string = this.rgbToHex(this.rgb);
-
         this.rgb = this.hsvToRgb.apply(this, this.hsv);
         const cValue: string = this.rgbToHex(this.rgb);
         const rgba: string = this.convertToRgbString(this.rgb);
         this.updatePreview(rgba);
         this.updateInput(cValue);
-        this.triggerEvent(cValue, pValue, rgba, isKey);
+        this.triggerEvent(cValue, pValue, rgba, isKey, e);
     }
 
     private updateInput(value: string): void {
@@ -1165,10 +1165,10 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         });
     }
 
-    private triggerChangeEvent(value: string): void {
+    private triggerChangeEvent(value: string, e?: MouseEvent): void {
         const hex: string = value.slice(0, 7);
         this.trigger('change', {
-            currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) },
+            currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) }, event: e,
             previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
             value: this.enableOpacity ? value : hex
         });
@@ -1185,7 +1185,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.hsv[prob as number] += value * (e.ctrlKey ? 1 : 3);
         if (this.hsv[prob as number] < 0) { this.hsv[prob as number] = 0; }
         this.updateHsv();
-        this.convertToOtherFormat(true);
+        this.convertToOtherFormat(true, e);
     }
 
     private handlerDown(e: MouseEvent & TouchEvent): void {
@@ -1201,7 +1201,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.setHsv(this.clientX, this.clientY);
         this.getDragHandler().style.transition = 'left .4s cubic-bezier(.25, .8, .25, 1), top .4s cubic-bezier(.25, .8, .25, 1)';
         this.updateHsv();
-        this.convertToOtherFormat();
+        this.convertToOtherFormat(false, e);
         this.getDragHandler().focus();
         EventHandler.add(document, 'mousemove touchmove', this.handlerMove, this);
         EventHandler.add(document, 'mouseup touchend', this.handlerEnd, this);
@@ -1220,7 +1220,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.setHsv(x, y);
         const dragHandler: HTMLElement = this.getDragHandler();
         this.updateHsv();
-        this.convertToOtherFormat();
+        this.convertToOtherFormat(false, e);
         this.getTooltipInst().refresh(dragHandler);
         if (!this.tooltipEle.style.transform) {
             if (Math.abs(this.clientX - x) > 8 || Math.abs(this.clientY - y) > 8) {
@@ -1370,7 +1370,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.setHandlerPosition();
         this.updateInput(cValue);
         (select('.' + PREVIEW + ' .' + CURRENT, this.container) as HTMLElement).style.backgroundColor = this.convertToRgbString(this.rgb);
-        this.triggerEvent(cValue, pValue, this.convertToRgbString(this.rgb));
+        this.triggerEvent(cValue, pValue, this.convertToRgbString(this.rgb), false, e);
     }
 
     private paletteClickHandler(e: MouseEvent): void {
@@ -1389,7 +1389,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 if (this.getWrapper().classList.contains(SHOWVALUE)) {
                     this.updateInput(cValue);
                 }
-                this.triggerEvent(cValue, pValue, this.convertToRgbString(this.rgb));
+                this.triggerEvent(cValue, pValue, this.convertToRgbString(this.rgb), false, e);
             }
             if (!this.inline && !this.showButtons) {
                 this.closePopup(e);
@@ -1446,7 +1446,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     private ctrlBtnClick(ele: HTMLElement, e: MouseEvent): void {
         if (ele.classList.contains(APPLY)) {
             const cValue: string = this.rgbToHex(this.rgb);
-            this.triggerChangeEvent(cValue);
+            this.triggerChangeEvent(cValue, e);
         }
         if (!this.inline) {
             this.closePopup(e);
@@ -1553,7 +1553,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             if (value.length === 9) {
                 pValue = this.rgbToHex(this.rgb);
                 this.rgb = this.hexToRgb(value + value.substr(-2));
-                this.inputValueChange(this.rgbToHsv.apply(this, this.rgb), pValue, target.value);
+                this.inputValueChange(this.rgbToHsv.apply(this, this.rgb), pValue, target.value, e);
             } else {
                 return;
             }
@@ -1564,7 +1564,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 pValue = this.rgbToHex(this.rgb);
                 this.rgb[0] = Number(target.value);
                 hsv = this.rgbToHsv.apply(this, this.rgb);
-                this.inputValueChange(hsv, pValue);
+                this.inputValueChange(hsv, pValue, null, e);
             }
             break;
         case 'G':
@@ -1572,7 +1572,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 pValue = this.rgbToHex(this.rgb);
                 this.rgb[1] = Number(target.value);
                 hsv = this.rgbToHsv.apply(this, this.rgb);
-                this.inputValueChange(hsv, pValue);
+                this.inputValueChange(hsv, pValue, null, e);
             }
             break;
         case 'B':
@@ -1580,7 +1580,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 pValue = this.rgbToHex(this.rgb);
                 this.rgb[2] = Number(target.value);
                 hsv = this.rgbToHsv.apply(this, this.rgb);
-                this.inputValueChange(hsv, pValue);
+                this.inputValueChange(hsv, pValue, null, e);
             }
             break;
         case 'H':
@@ -1590,14 +1590,14 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             if (this.hsv[1] !== Number(target.value)) {
                 this.hsv[1] = Number(target.value);
                 this.updateHsv();
-                this.convertToOtherFormat();
+                this.convertToOtherFormat(false, e);
             }
             break;
         case 'V':
             if (this.hsv[2] !== Number(target.value)) {
                 this.hsv[2] = Number(target.value);
                 this.updateHsv();
-                this.convertToOtherFormat();
+                this.convertToOtherFormat(false, e);
             }
             break;
         case 'A':
@@ -1607,7 +1607,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     }
 
-    private inputValueChange(hsv: number[], pValue: string, value?: string): void {
+    private inputValueChange(hsv: number[], pValue: string, value?: string, e?: MouseEvent | Event): void {
         if (hsv[0] !== this.hsv[0]) {
             this.hueSlider.setProperties({ 'value': hsv[0] }, true);
             this.hueSlider.refresh();
@@ -1619,13 +1619,16 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.updateInput(value ? value : cValue);
         const rgba: string = this.convertToRgbString(this.rgb);
         this.updatePreview(rgba);
-        this.triggerEvent(cValue, pValue, rgba);
+        this.triggerEvent(cValue, pValue, rgba, false, e);
     }
 
-    private triggerEvent(cValue: string, pValue: string, rgba: string, isKey: boolean = false): void {
+    private triggerEvent(cValue: string, pValue: string, rgba: string, isKey: boolean = false, e?: MouseEvent | Event): void {
         const hex: string = cValue.slice(0, 7);
+        if (isNullOrUndefined(e)) {
+            e = new MouseEvent('click', { bubbles: true, cancelable: false });
+        }
         if (!this.showButtons && !isKey) {
-            this.trigger('change', { currentValue: { hex: hex, rgba: rgba },
+            this.trigger('change', { currentValue: { hex: hex, rgba: rgba }, event: e,
                 previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) }, value: cValue });
             if (this.enableOpacity) {
                 this.setProperties({ 'value': cValue }, true);
@@ -1635,7 +1638,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             this.element.value = hex ? hex : '#000000';
         } else {
             this.trigger('select', {
-                currentValue: { hex: hex, rgba: rgba },
+                currentValue: { hex: hex, rgba: rgba }, event: e,
                 previousValue: { hex: pValue.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(pValue)) }
             });
         }
@@ -2080,6 +2083,7 @@ export interface ColorPickerEventArgs extends BaseEventArgs {
     currentValue: { hex: string, rgba: string };
     previousValue: { hex: string, rgba: string };
     value?: string;
+    event?: Event;
 }
 
 /**

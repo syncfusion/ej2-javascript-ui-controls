@@ -411,6 +411,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
         this.appendArrowSpan();
         this.setActiveElem([this.element]);
+        this.element.setAttribute('tabindex', '0');
         this.element.setAttribute('aria-label', this.element.textContent ? this.element.textContent : 'dropdownbutton');
         if ((this.target && !this.isColorPicker() && !this.createPopupOnClick) || !this.createPopupOnClick) {
             this.createPopup();

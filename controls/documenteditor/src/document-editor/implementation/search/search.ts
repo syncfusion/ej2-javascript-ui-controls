@@ -406,6 +406,8 @@ export class Search {
                         return;
                     } else {
                         lineIndex = 0;
+                        paragraph = endLineWidget.paragraph;
+                        i--;
                     }
                 }
             }

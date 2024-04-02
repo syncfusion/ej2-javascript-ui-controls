@@ -2,13 +2,16 @@
 
 ## [Unreleased]
 
-## 25.1.37 (2024-03-26)
+## 25.1.38 (2024-04-02)
 
 ### PDF Parser
 
 #### Bug Fixes
 
 - Resolved an exception encountered while removing all pages from PDF document.
+- The issues related to the preservation of square measurement annotation have been resolved.
+- Resolved the document corruption issues in the encrypted PDF document.
+- Resolved the PNG image preservation issue while export rubber stamp annotation appearance template.
 
 ## 25.1.35 (2024-03-15)
 

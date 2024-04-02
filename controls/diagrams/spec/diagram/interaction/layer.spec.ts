@@ -1173,3 +1173,72 @@ describe('872106: Layer object in diagram doesnot removed in clear method', () =
         done();
     });
 });
+
+describe('875087: Connector disappears when moved to another layer with Node connected', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagram_Layers_Con' });
+        document.body.appendChild(ele);
+        let connector: ConnectorModel = {
+            id: 'connector1', sourceID:'node1',targetID:'node2',annotations: [ {content: 'Connector'}],type:'Orthogonal'
+        };
+        let node: NodeModel = {
+            id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [ { content: 'Node1'}]
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 80, height: 130, offsetX: 400, offsetY: 200, annotations: [ { content: 'Node2'}]
+        };
+        let node3: NodeModel = {
+            id: 'node3', width: 50, height: 50, offsetX: 600, offsetY: 200, annotations: [ { content: 'Node3'}]
+        };
+        let node4: NodeModel = {
+            id: 'node4', width: 50, height: 50, offsetX: 700, offsetY: 200, annotations: [ { content: 'Node4'}]
+        };
+        let group: NodeModel = {
+            id: 'group',children:['node3','node4'],padding:{left:10,right:10,top:10,bottom:10},style:{strokeColor:'black'}
+        };
+        
+        diagram = new Diagram({
+            width: '1000px', height: '600px',
+            nodes: [node, node2,node3,node4,group], connectors: [connector],
+        });
+        diagram.appendTo("#diagram_Layers_Con");
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Add node to new layer', (done: Function) => {
+        let layer: any = {
+            id: 'layer1',
+            visible: false,
+            objects: ['node13'],
+            lock: false,
+          };
+      
+          diagram.addLayer(layer);
+          let node = {
+            id: 'node13',
+            height: 75,
+            width: 75,
+            offsetX: 250,
+            offsetY: 350,
+            annotations: [{ content: 'Node on Layer1' }],
+          };
+          diagram.add(node);
+        expect(diagram.nodes.length === 6).toBe(true);
+        done();
+    });
+    it('Move connected node to new layer', (done: Function) => {
+        diagram.moveObjects(['node1', 'connector1'], 'layer1');
+        expect(diagram.connectors.length === 1 && diagram.connectors[0].sourceID === 'node1').toBe(true);
+        done();
+    });
+    it('Move group node to new layer', (done: Function) => {
+        diagram.moveObjects(['group'], 'layer1');
+        let group = diagram.nameTable['group'];
+        expect(diagram.nodes.length === 6 && group.children.length === 2).toBe(true);
+        done();
+    });
+});

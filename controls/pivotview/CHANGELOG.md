@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.38 (2024-04-02)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I572223` - The drill through popup will now open properly when double-clicking a value cell in the pivot table, with no console errors.
+
 ## 25.1.37 (2024-03-26)
 
 ### PivotTable
@@ -10,6 +18,7 @@
 
 - `#I562279`,`#I565475`,`#I566747` - The pivot table will now be properly displayed after engine export.
 - `#I566095` - The filter text will now be properly displayed in the OLAP Pivot Table's filter field button.
+- When you click the space key, the pivot field list node selection will work properly.
 
 ## 25.1.35 (2024-03-15)
 

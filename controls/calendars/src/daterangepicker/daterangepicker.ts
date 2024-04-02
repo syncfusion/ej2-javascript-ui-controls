@@ -748,7 +748,7 @@ export class DateRangePicker extends CalendarBase {
         if (this.element.hasAttribute('data-val')) {
             this.element.setAttribute('data-val', 'false');
         }
-        if (this.floatLabelType === 'Auto') {
+        if (this.floatLabelType !== 'Never') {
             Input.calculateWidth(this.inputElement, this.inputWrapper.container);
         }
         if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {

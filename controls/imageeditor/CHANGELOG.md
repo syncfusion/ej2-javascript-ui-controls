@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.38 (2024-04-02)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I875625` - The issue with "need to add all default toolbar items in `API` link" has been resolved.
+
 ## 25.1.37 (2024-03-26)
 
 ### Image Editor
@@ -9,6 +17,10 @@
 #### Bug Fixes
 
 - `#I565340` - The issue with "Script error thrown when attempting to reopen a base64 URL using a custom toolbar in mobile mode" has been resolved.
+
+- `#I566745` - The issue with "FontSize is not updated properly while using the updateShape method" has been resolved.
+
+- `#I570160` - "Provide the option to change stroke color for annotations using the shapeChanging event at the beginning of the toolbar render" has been completed.
 
 ## 25.1.35 (2024-03-15)
 

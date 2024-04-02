@@ -1622,6 +1622,9 @@ export class Transform {
             const cxtTbar: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_contextualToolbarArea');
             canvasMaxHeight -= cxtTbar ? cxtTbar.clientHeight : 0;
         }
+        if (!isImgShape && parent.element.clientHeight === 0) {
+            canvasMaxHeight = 0;
+        }
         if (isNullOrUndefined(isImgShape)) {
             if (canvasMaxWidth > 30) {canvasMaxWidth -= 30; } if (canvasMaxHeight > 30) {canvasMaxHeight -= 30; }
         }

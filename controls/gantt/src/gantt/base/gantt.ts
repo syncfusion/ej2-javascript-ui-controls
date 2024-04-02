@@ -571,6 +571,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * The task bar template that renders customized child task bars from the given template.
+     * {% codeBlock src='gantt/taskbarTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
      * @aspType string
@@ -580,6 +581,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * The parent task bar template that renders customized parent task bars from the given template.
+     * {% codeBlock src='gantt/parentTaskbarTemplate/index.md' %}{% endcodeBlock %}
      *
      * @default null
      * @aspType string
@@ -2994,6 +2996,11 @@ export class Gantt extends Component<HTMLElement>
                 this.chartRowsModule.initiateTemplates();
                 this.chartRowsModule.refreshGanttRows();
                 this.isLoad=false;
+                if (this.taskFields.dependency) {
+                    this.predecessorModule.updatedRecordsDateByPredecessor();
+                    this.treeGrid.refreshColumns();
+                    this.chartRowsModule.refreshGanttRows();
+                }
                 break;
             case 'dayWorkingTime':
                 this.isLoad=true;

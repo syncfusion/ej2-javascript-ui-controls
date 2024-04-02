@@ -390,8 +390,10 @@ export class ToolbarRenderer implements IRenderer {
                             for (let index: number = 0; index < args.element.childNodes.length; index++) {
                                 if (currentListStyle === (args.element.childNodes[index as number] as HTMLElement).innerHTML.split(' ').join('').toLocaleLowerCase()) {
                                     addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
-                                } else if (currentListStyle === '') {
+                                    break;
+                                } else if (currentListStyle === '' && (args.element.childNodes[index as number] as HTMLElement).innerHTML !== 'None') {
                                     addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                                    break;
                                 }
                             }
                         }

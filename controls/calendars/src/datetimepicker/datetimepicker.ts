@@ -723,7 +723,7 @@ export class DateTimePicker extends DatePicker {
                 this.inputElement.tabIndex = -1;
             }
         }
-        if (this.floatLabelType === 'Auto') {
+        if (this.floatLabelType !== 'Never') {
             Input.calculateWidth(this.inputElement, this.inputWrapper.container);
         }
         if (!isNullOrUndefined(this.inputWrapper.buttons[0]) && !isNullOrUndefined(this.inputWrapper.container.getElementsByClassName('e-float-text-overflow')[0]) && this.floatLabelType !== 'Never') {
@@ -984,6 +984,9 @@ export class DateTimePicker extends DatePicker {
         let dateObject: Date;
         if (this.calendarMode === 'Gregorian') {
             this.cldrDateTimeFormat().replace(this.formatRegex, this.TimePopupFormat())
+            if (this.dateFormatString === '') {
+                this.dateFormatString = this.cldrDateTimeFormat();
+            }
             dateObject = this.globalize.parseDate(this.inputElement.value, {
                 format: this.dateFormatString, type: 'datetime'
             });

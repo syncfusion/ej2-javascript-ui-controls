@@ -511,7 +511,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 if (this.placeholder && !this.isFocus) {
                     this.setMaskPlaceholder(false, false);
                 }
-                if (this.value === "") {
+                if (this.value === "" && oldProp.value != null) {
                     this.element.selectionStart = 0;
                     this.element.selectionEnd = 0;
                 }

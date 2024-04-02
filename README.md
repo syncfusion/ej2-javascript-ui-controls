@@ -1361,14 +1361,8 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
 ## Release Notes
  Please refer this [link](https://ej2.syncfusion.com/documentation/release-notes/index/)
 
-## Support
-For any questions or assistance, you can:
-* Visit the [Syncfusion support portal](https://support.syncfusion.com/).
-* Post your queries on the [community forums](https://www.syncfusion.com/forums).
-* Renew your subscription by clicking [here](https://www.syncfusion.com/sales/products?utm_source=github&utm_medium=listing&utm_campaign=ej2-javascript-ui-controls) or contacting our sales team at <salessupport@syncfusion.com>.
-* If you have specific feature requests or suggestions, please submit them through our [feedback portal](https://www.syncfusion.com/feedback/javascript).
-
 ## License
- For detailed information about the Syncfusion Essential Studio license and copyright, please refer to the [license](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license).
-     © Copyright 2024 Syncfusion, Inc. All Rights Reserved. 
+ This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's EULA (https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase one at https://www.syncfusion.com/sales/products or start a free 30-day trial here (https://www.syncfusion.com/account/manage-trials/start-trials).
+ A free community license (https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
+     © Copyright 2021 Syncfusion, Inc. All Rights Reserved. 
     The Syncfusion Essential Studio license and copyright applies to this distribution.

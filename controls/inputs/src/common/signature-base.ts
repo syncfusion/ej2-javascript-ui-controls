@@ -366,6 +366,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     }
 
     private endDraw(): void {
+        if (isNullOrUndefined(this.pointColl)) { return };
         const canDrawCurve: boolean = this.pointColl.length > 2; const point: Point = this.pointColl[0];
         if (!canDrawCurve && point) {
             this.strokeDraw(point);
@@ -619,7 +620,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
         const args: SignatureChangeEventArgs = { actionName: 'clear'};
         this.canvasContext.clearRect( 0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
         this.tempContext.clearRect( 0, 0, this.tempContext.canvas.width, this.tempContext.canvas.height);
-        if (this.saveWithBackground) {
+        if (this.saveWithBackground && this.backgroundImage) {
             this.setBackgroundImage(this.backgroundImage, 'temp');
         }
         this.internalRefresh();

@@ -378,7 +378,8 @@ export class DrillThroughDialog {
             enableVirtualization: !this.parent.editSettings.allowEditing,
             allowPaging: this.parent.editSettings.allowEditing,
             pageSettings: { pageSize: 20 },
-            rowHeight: this.parent.gridSettings.rowHeight
+            rowHeight: this.parent.gridSettings.rowHeight,
+            height: '100%'
         });
         if (this.parent.dataType === 'olap') {
             this.formatData(gridData);

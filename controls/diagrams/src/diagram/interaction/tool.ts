@@ -606,7 +606,8 @@ export class ConnectTool extends ToolBase {
                 newValue: { nodeId: connector[`${nodeEndId}`], portId: connector[`${portEndId}`] }, cancel: false,
                 state: 'Changed', connectorEnd: this.endPoint
             };
-            if (connector[`${nodeEndId}`] !== this.oldConnector[`${nodeEndId}`]) {
+            //875655- ConnectionChange Event not triggered in Changed state for port change in same node
+            if (connector[`${nodeEndId}`] !== this.oldConnector[`${nodeEndId}`] || connector[`${portEndId}`] !== this.oldConnector[`${portEndId}`]) {
                 this.commandHandler.triggerEvent(DiagramEvent.connectionChange, arg);
                 this.isConnected = false;
             }
@@ -1924,6 +1925,10 @@ export class ConnectorDrawingTool extends ConnectTool {
             }
             args.source = this.drawingObject;
             this.triggerElementDrawEvent(args.source,'Progress','Connector',(this.drawingObject as ConnectorModel).type,false);
+            //Bug 874781: Port Draw Connection is not proper with group node.
+            if(args.actualObject && ((args.actualObject as Node).parentId || (args.actualObject as Node).children) && (this.drawingObject as ConnectorModel).sourceID === ''){
+                this.setTarget(args);
+            }
             if (((args.target && args.target instanceof Node) || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
                 this.commandHandler.connect(this.endPoint, args);
@@ -1940,6 +1945,24 @@ export class ConnectorDrawingTool extends ConnectTool {
         this.commandHandler.enableServerDataBinding(true);
         return !this.blocked;
 
+    };
+    // Sets the target while drawing connector from the group node port or its children port.
+    private setTarget(args: MouseEventArgs){
+        if(args.target){
+            if(!args.sourceWrapper.id.includes((args.target  as NodeModel).id)){
+                if((args.target as Node).parentId && args.sourceWrapper.id.includes((args.target as Node).parentId)){
+                    args.target = this.commandHandler.diagram.nameTable[(args.target as Node).parentId];
+                }
+            }
+        }else{
+            if(!args.sourceWrapper.id.includes((args.actualObject  as NodeModel).id)){
+                if((args.actualObject  as Node).parentId && args.sourceWrapper.id.includes((args.actualObject  as Node).parentId)){
+                    args.target = this.commandHandler.diagram.nameTable[(args.actualObject  as Node).parentId];
+                }
+            }else{
+                args.target = args.actualObject;
+            }
+        }
     }
 
     /**

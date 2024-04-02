@@ -1181,8 +1181,8 @@ export class Zoom {
                 map.tileTranslatePoint.x = x + xDifference;
                 map.tileTranslatePoint.y = y + yDifference;
             }
-            map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
-            map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
+            map.translatePoint.x = (map.tileTranslatePoint.x) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y) / map.scale;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const location: any = this.maps.getTileGeoLocation(mouseLocation['layerX'], mouseLocation['layerY']);
             const minMaxLatitudeLongitude: IMinMaxLatitudeLongitude = this.maps.getMinMaxLatitudeLongitude();
@@ -1197,6 +1197,8 @@ export class Zoom {
             map.trigger(pan, panArgs);
             map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint, 'Pan');
             this.applyTransform(map, false, true);
+            map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
+            map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;

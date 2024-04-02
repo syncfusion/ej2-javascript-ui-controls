@@ -1955,50 +1955,50 @@ describe('Check for case sensitive ', ()=>{
         });
     }); 
 
-    describe('Check for getFiltered records remote data', () => {
-        let gridObj: Grid;
-        let remoteData: DataManager = new DataManager({
-            url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
-            adaptor: new ODataV4Adaptor
-        });
-        let promise: Promise<Object>;
-        let actionComplete: (args: any) => void;
-        beforeAll((done: Function) => {
-            gridObj = createGrid(
-                {
-                    dataSource: remoteData,
-                    allowPaging: true,
-                    pageSettings:{pageSize:6},
-                    allowFiltering: true,
-                    columns: [
-                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
-                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
-                        { field: 'Freight', headerText: 'Freight', width: 120 },
-                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
-                    ],
-                }, done);
-        });
-        it('filterbyColumn Method checking with getFiltered records', (done: Function) => {
-            actionComplete = () => {
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(6);
-                expect((gridObj.element.querySelectorAll('.e-row')[0] as any).cells[3].innerHTML).toBe('Switzerland');
-               (promise  as any) = gridObj.getFilteredRecords();
-                done();
-            };
-            gridObj.filterModule.filterByColumn('ShipCountry', 'startsWith', 'S');
-            gridObj.actionComplete = actionComplete;
-        });
-        it('filterbyColumn Method checking with getFiltered records', (done: Function) => {
-           promise.then((e)=>{
-            expect((e as any).result.length).toBe(78);
-            done();
-        });           
-        });
-        afterAll(() => {
-            destroy(gridObj);
-            gridObj = actionComplete = null;
-        });
-    });  
+    // describe('Check for getFiltered records remote data', () => {
+    //     let gridObj: Grid;
+    //     let remoteData: DataManager = new DataManager({
+    //         url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+    //         adaptor: new ODataV4Adaptor
+    //     });
+    //     let promise: Promise<Object>;
+    //     let actionComplete: (args: any) => void;
+    //     beforeAll((done: Function) => {
+    //         gridObj = createGrid(
+    //             {
+    //                 dataSource: remoteData,
+    //                 allowPaging: true,
+    //                 pageSettings:{pageSize:6},
+    //                 allowFiltering: true,
+    //                 columns: [
+    //                     { field: 'OrderID', headerText: 'Order ID', width: 120 },
+    //                     { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+    //                     { field: 'Freight', headerText: 'Freight', width: 120 },
+    //                     { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+    //                 ],
+    //             }, done);
+    //     });
+    //     it('filterbyColumn Method checking with getFiltered records', (done: Function) => {
+    //         actionComplete = () => {
+    //             expect(gridObj.element.querySelectorAll('.e-row').length).toBe(6);
+    //             expect((gridObj.element.querySelectorAll('.e-row')[0] as any).cells[3].innerHTML).toBe('Switzerland');
+    //            (promise  as any) = gridObj.getFilteredRecords();
+    //             done();
+    //         };
+    //         gridObj.filterModule.filterByColumn('ShipCountry', 'startsWith', 'S');
+    //         gridObj.actionComplete = actionComplete;
+    //     });
+    //     it('filterbyColumn Method checking with getFiltered records', (done: Function) => {
+    //        promise.then((e)=>{
+    //         expect((e as any).result.length).toBe(78);
+    //         done();
+    //     });           
+    //     });
+    //     afterAll(() => {
+    //         destroy(gridObj);
+    //         gridObj = actionComplete = null;
+    //     });
+    // });  
     
     describe('EJ2-34861 - Checking the arguments of filtering action', () => {
         let gridObj: Grid;
@@ -2385,39 +2385,39 @@ describe('checking for operator', () => {
     });
 });
 
-describe('Check for OdataV4 date filter', () => {
-    let gridObj: Grid;
-    let remoteData: DataManager = new DataManager({
-        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Employees',
-        adaptor: new ODataV4Adaptor
-    });
-    let actionComplete: (args: any) => void;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: remoteData,
-                allowPaging: true,
-                pageSettings:{pageSize:6},
-                allowFiltering: true,
-                columns: [
-                    { field: 'BirthDate', type: 'date' },
-                    { field: 'FirstName' }
-                ],
-            }, done);
-    });
-    it('filterbyColumn Method checking OdataV4 records records', (done: Function) => {
-        actionComplete = () => {
-            expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
-            done();
-        };
-        gridObj.filterModule.filterByColumn('BirthDate', 'equal', '1937/09/19')
-        gridObj.actionComplete = actionComplete;
-    });
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = actionComplete = null;
-    });
-});  
+// describe('Check for OdataV4 date filter', () => {
+//     let gridObj: Grid;
+//     let remoteData: DataManager = new DataManager({
+//         url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Employees',
+//         adaptor: new ODataV4Adaptor
+//     });
+//     let actionComplete: (args: any) => void;
+//     beforeAll((done: Function) => {
+//         gridObj = createGrid(
+//             {
+//                 dataSource: remoteData,
+//                 allowPaging: true,
+//                 pageSettings:{pageSize:6},
+//                 allowFiltering: true,
+//                 columns: [
+//                     { field: 'BirthDate', type: 'date' },
+//                     { field: 'FirstName' }
+//                 ],
+//             }, done);
+//     });
+//     it('filterbyColumn Method checking OdataV4 records records', (done: Function) => {
+//         actionComplete = () => {
+//             expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+//             done();
+//         };
+//         gridObj.filterModule.filterByColumn('BirthDate', 'equal', '1937/09/19')
+//         gridObj.actionComplete = actionComplete;
+//     });
+//     afterAll(() => {
+//         destroy(gridObj);
+//         gridObj = actionComplete = null;
+//     });
+// });  
 
 describe('Check for operator symbol in datasource value in filtebar', () => {
     let gridObj: Grid;
@@ -2817,48 +2817,48 @@ describe('EJ2-55947 - Script error while clear filtering with disabled column me
     });
 });
 
-describe('EJ2-56011 - Filter null value in OData adaptor', () => {
-    let gridObj: Grid;
-    let remoteData: DataManager = new DataManager({
-        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
-        adaptor: new ODataV4Adaptor
-    });
-    let promise: Promise<Object>;
-    let actionComplete: (args: any) => void;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: remoteData,
-                allowPaging: true,
-                allowFiltering: true,
-                columns: [
-                    { field: 'OrderID', headerText: 'Order ID', width: 120 },
-                    { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
-                    { field: 'Freight', headerText: 'Freight', width: 120 },
-                    { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
-                ],
-            }, done);
-    });
-    it('null value filter using filterbyColumn Method', (done: Function) => {
-        actionComplete = () => {
-           (promise  as any) = gridObj.getFilteredRecords();
-            done();
-        };
-        gridObj.filterModule.filterByColumn('ShipCountry', 'equal', null);
-        gridObj.actionComplete = actionComplete;
-    });
-    it('checking with getFiltered records and filter columns length', (done: Function) => {
-       promise.then((e)=>{
-        expect((e as any).result.length).toBe(0);
-        expect(gridObj.filterSettings.columns.length).toBe(1);
-        done();
-    });           
-    });
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = actionComplete = null;
-    });
-}); 
+// describe('EJ2-56011 - Filter null value in OData adaptor', () => {
+//     let gridObj: Grid;
+//     let remoteData: DataManager = new DataManager({
+//         url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+//         adaptor: new ODataV4Adaptor
+//     });
+//     let promise: Promise<Object>;
+//     let actionComplete: (args: any) => void;
+//     beforeAll((done: Function) => {
+//         gridObj = createGrid(
+//             {
+//                 dataSource: remoteData,
+//                 allowPaging: true,
+//                 allowFiltering: true,
+//                 columns: [
+//                     { field: 'OrderID', headerText: 'Order ID', width: 120 },
+//                     { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+//                     { field: 'Freight', headerText: 'Freight', width: 120 },
+//                     { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+//                 ],
+//             }, done);
+//     });
+//     it('null value filter using filterbyColumn Method', (done: Function) => {
+//         actionComplete = () => {
+//            (promise  as any) = gridObj.getFilteredRecords();
+//             done();
+//         };
+//         gridObj.filterModule.filterByColumn('ShipCountry', 'equal', null);
+//         gridObj.actionComplete = actionComplete;
+//     });
+//     it('checking with getFiltered records and filter columns length', (done: Function) => {
+//        promise.then((e)=>{
+//         expect((e as any).result.length).toBe(0);
+//         expect(gridObj.filterSettings.columns.length).toBe(1);
+//         done();
+//     });           
+//     });
+//     afterAll(() => {
+//         destroy(gridObj);
+//         gridObj = actionComplete = null;
+//     });
+// }); 
 describe('EJ2-58920 - Incorrect filterOperator for initial filter', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {

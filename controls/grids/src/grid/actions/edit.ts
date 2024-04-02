@@ -801,10 +801,12 @@ export class Edit implements IAction {
         const elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>this.formObj.element).elements);
         for (let i: number = 0; i < elements.length; i++) {
             if (elements[parseInt(i.toString(), 10)].hasAttribute('name')) {
-                if ((<EJ2Intance>(elements[parseInt(i.toString(), 10)] as Element)).ej2_instances &&
-                    (<Object[]>(<EJ2Intance>(elements[parseInt(i.toString(), 10)] as Element)).ej2_instances).length &&
-                    !(<EJ2Intance>(elements[parseInt(i.toString(), 10)] as Element)).ej2_instances[0].isDestroyed) {
-                    (<EJ2Intance>(elements[parseInt(i.toString(), 10)] as Element)).ej2_instances[0].destroy();
+                const instanceElement: HTMLInputElement = elements[parseInt(i.toString(), 10)].parentElement.classList.contains('e-ddl') ?
+                    elements[parseInt(i.toString(), 10)].parentElement.querySelector('input') : elements[parseInt(i.toString(), 10)];
+                if ((<EJ2Intance>(instanceElement as Element)).ej2_instances &&
+                    (<Object[]>(<EJ2Intance>(instanceElement as Element)).ej2_instances).length &&
+                    !(<EJ2Intance>(instanceElement as Element)).ej2_instances[0].isDestroyed) {
+                    (<EJ2Intance>(instanceElement as Element)).ej2_instances[0].destroy();
                 }
             }
         }

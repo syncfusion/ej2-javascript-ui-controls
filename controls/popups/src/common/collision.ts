@@ -477,3 +477,7 @@ function getViewPortWidth(): number {
     const offsetWidth: number = (isNullOrUndefined(document.documentElement)) ? 0 : documentReact.width;
     return windowWidth - (windowWidth - offsetWidth);
 }
+export function destroy(): void {
+    targetContainer = null;
+    parentDocument = null;
+}

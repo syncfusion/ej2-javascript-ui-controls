@@ -2,15 +2,15 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel, PathModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
-import { ConnectorModel} from '../../../src/diagram/objects/connector-model';
+import { ConnectorModel, DecoratorModel} from '../../../src/diagram/objects/connector-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
-import { PortVisibility, PortConstraints } from '../../../src/diagram/enum/enum';
+import { PortVisibility, PortConstraints, SelectorConstraints, ConnectorConstraints, NodeConstraints } from '../../../src/diagram/enum/enum';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { ICollectionChangeEventArgs } from '../../../src/index';
+import { Connector, ICollectionChangeEventArgs } from '../../../src/index';
 
 
 /**
@@ -772,6 +772,159 @@ describe('Port Hover for group node', () => {
         mouseEvents.mouseMoveEvent(diagramCanvas, 350, 100);
         mouseEvents.mouseMoveEvent(diagramCanvas, 360, 100);
         expect(diagram.nodes[0].ports.length === 4).toBe(false);
+        done();
+    });
+});
+
+describe('Port Draw Connection from group node', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramGroupPort' });
+        document.body.appendChild(ele);
+        let nodePorts: PointPortModel[] = [
+            {
+              id: 'port_1',
+          
+              offset: { x: 0, y: 0.2 },
+              height: 20,
+              width: 20,
+              visibility: PortVisibility.Visible
+          
+            },
+            {
+              id: 'port_4',
+          
+              offset: { x: 0, y: 0.8 },
+              height: 20,
+              width: 20,
+              visibility: PortVisibility.Visible
+            },
+            {
+              id: 'port_5',
+          
+              offset: { x: 1, y: 0.2 },
+              height: 20,
+              width: 20,
+              visibility: PortVisibility.Visible
+            },
+            {
+              id: 'port_8',
+          
+              offset: { x: 1, y: 0.8 },
+              height: 20,
+              width: 20,
+              visibility: PortVisibility.Visible
+            },
+          ];
+        let nodes: NodeModel[] = [
+            {
+              id: 'node1',
+              offsetX: 200,
+              offsetY: 100,
+              annotations: [{ content: 'node1' }],
+            },
+            {
+              id: 'image_1',
+              offsetX: 400,
+              offsetY: 200,
+              width: 100,
+              height: 100,
+          
+              shape: { type: 'Image', source: 'https://ej2.syncfusion.com/demos/src/diagram/employees/image16.png' },
+              constraints: NodeConstraints.Default & ~NodeConstraints.Select
+            },
+            {
+              id: 'group_1',
+              offsetX: 200,
+              offsetY: 200,
+              width: 200,
+              height: 150,
+              ports:nodePorts,
+              children: ['image_1'],
+              annotations: [{ content: 'group1' }],
+              constraints: NodeConstraints.Default
+                & ~(NodeConstraints.Resize
+                  | NodeConstraints.Rotate
+                  | NodeConstraints.InConnect
+                  | NodeConstraints.OutConnect
+                  | NodeConstraints.Tooltip)
+            },
+          
+          ];
+          function  getConnectorDefaults(connector: Connector)  {
+            //defines type of the connectors
+            connector.type = 'Bezier';
+            connector.style.strokeColor = "Red";
+            let decorator = {
+              shape: "None",
+              style: {
+                fill: '#6BA5D7',
+                strokeColor: 'Red',
+                strokeWidth: 4
+              }
+            };
+            connector.sourceDecorator = decorator as DecoratorModel;
+            connector.targetDecorator = decorator as DecoratorModel;
+            connector.constraints = (ConnectorConstraints.Default & ~ConnectorConstraints.Drag) |
+              ConnectorConstraints.DragSourceEnd |
+              ConnectorConstraints.DragTargetEnd
+        
+          }
+        
+          function   getNodeDefaults(obj: NodeModel)  {
+            //sets height and width for nodes
+            obj.height = 65;
+            obj.width = 100;
+            // obj.ports = nodePorts
+            if(obj.ports)
+            {
+              for (let i: number = 0; i < obj.ports.length; i++) {
+                //sets styles for the ports
+                obj.ports[i].constraints = (PortConstraints.Draw | PortConstraints.InConnect | PortConstraints.OutConnect) & ~PortConstraints.Drag
+              }
+            }
+            
+        
+          };
+        diagram = new Diagram({ width: 1050, height: 500, nodes: nodes,
+            getNodeDefaults:getNodeDefaults,
+            getConnectorDefaults:getConnectorDefaults,
+            selectedItems: {
+                constraints: SelectorConstraints.All
+                  & ~(SelectorConstraints.ResizeEast
+                    | SelectorConstraints.ResizeNorth
+                    | SelectorConstraints.ResizeSouth
+                    | SelectorConstraints.ResizeWest
+                    | SelectorConstraints.ResizeNorthEast
+                    | SelectorConstraints.ResizeNorthWest
+                    | SelectorConstraints.ResizeSouthEast
+                    | SelectorConstraints.ResizeSouthWest
+                    | SelectorConstraints.Rotate)
+              },
+        });
+        diagram.appendTo('#diagramGroupPort');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking connector source id after drawing it from group node port', (done: Function) => {
+        diagram.select([diagram.nameTable['group_1']]);
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let port = document.getElementById('group_1_port_5_groupElement');
+        let bounds:any = port.getBoundingClientRect();
+        mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 3, bounds.y + 3 );
+        mouseEvents.mouseDownEvent(diagramCanvas,  bounds.x + 3, bounds.y + 3 );
+        mouseEvents.mouseMoveEvent(diagramCanvas,  bounds.x + 20, bounds.y + 20 );
+        mouseEvents.mouseMoveEvent(diagramCanvas,  bounds.x + 50, bounds.y + 50 );
+        mouseEvents.mouseUpEvent(diagramCanvas,  bounds.x + 50, bounds.y + 50 );
+        console.log(diagram.connectors[0].id);
+        console.log(diagram.connectors[0].sourceID);
+        expect(diagram.connectors.length > 0 && diagram.connectors[0].sourceID === 'group_1').toBe(true);
         done();
     });
 });

@@ -325,6 +325,7 @@ export const startAtProperty: string[] = ['startAt','sa'];
 export const restartLevelProperty: string[] = ['restartLevel','rl'];
 export const levelNumberProperty: string[] = ['levelNumber','lvlno'];
 export const numberFormatProperty: string[] = ['numberFormat','nf'];
+export const paraStyleNameProperty: string[] = ['paraStyleName','psty'];
 export const abstractListIdProperty: string[] = ['abstractListId','alid'];
 export const nsidProperty: string = 'nsid';
 export const levelsProperty: string[] = ['levels','lvl'];
