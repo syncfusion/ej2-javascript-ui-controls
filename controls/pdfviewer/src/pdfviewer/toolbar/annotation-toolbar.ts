@@ -118,8 +118,11 @@ export class AnnotationToolbar {
      */
     public isMobileAnnotEnabled: boolean = false;
     private isHighlightEnabled: boolean = false;
+    private isMobileHighlightEnabled: boolean = false;
     private isUnderlineEnabled: boolean = false;
+    private isMobileUnderlineEnabled: boolean = false;
     private isStrikethroughEnabled: boolean = false;
+    private isMobileStrikethroughEnabled: boolean = false;
     private isHighlightBtnVisible: boolean = true;
     private isCommentBtnVisible: boolean = true;
     private isUnderlineBtnVisible: boolean = true;
@@ -391,29 +394,33 @@ export class AnnotationToolbar {
                 // eslint-disable-next-line max-len
                 items: this.createPropertyToolbarForMobile(shapeType), width: '', height: '', overflowMode: 'Scrollable',
                 created: () => {
-                    if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                    if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                         id = this.pdfViewer.element.id + '_underlineIcon';
                     }
-                    else {
-                        if (this.pdfViewer.selectedItems.annotations[0]) {
-                            if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
-                                id = this.pdfViewer.element.id + '_annotation_freeTextEdit';
-                                // eslint-disable-next-line max-len
-                            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Stamp' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'StickyNotes' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image') {
-                                id = this.pdfViewer.element.id + '_annotation_stamp';
-                                // eslint-disable-next-line max-len
-                            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText') {
-                                id = this.pdfViewer.element.id + '_annotation_handwrittenSign';
-                            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage') {
-                                id = this.pdfViewer.element.id + '_annotation_handwrittenImage';
-                            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path') {
-                                id = this.pdfViewer.element.id + '_annotation_inkIcon';
-                            } else if (shapeType === 'Highlight' || shapeType === 'Underline' || shapeType === 'Strikethrough') {
-                                id = this.pdfViewer.element.id + '_highlightIcon';
-                            } else {
-                                id = this.pdfViewer.element.id + '_annotation_shapesIcon';
-                            }
+                    else if (!isNullOrUndefined(this.pdfViewer.selectedItems.annotations[0])) {
+                        if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
+                            id = this.pdfViewer.element.id + '_annotation_freeTextEdit';
+                            // eslint-disable-next-line max-len
+                        } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Stamp' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'StickyNotes' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image') {
+                            id = this.pdfViewer.element.id + '_annotation_stamp';
+                            // eslint-disable-next-line max-len
+                        } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText') {
+                            id = this.pdfViewer.element.id + '_annotation_handwrittenSign';
+                        } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage') {
+                            id = this.pdfViewer.element.id + '_annotation_handwrittenImage';
+                        } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path') {
+                            id = this.pdfViewer.element.id + '_annotation_inkIcon';
                         }
+                        else if (shapeType === 'Highlight' || shapeType === 'Underline' || shapeType === 'Strikethrough') {
+                            id = this.pdfViewer.element.id + '_highlightIcon';
+                        } else {
+                            id = this.pdfViewer.element.id + '_annotation_shapesIcon';
+                        }
+                    }
+                    else if (shapeType === 'Highlight' || shapeType === 'Underline' || shapeType === 'Strikethrough') {
+                        id = this.pdfViewer.element.id + '_highlightIcon';
+                    } else {
+                        id = this.pdfViewer.element.id + '_annotation_shapesIcon';
                     }
                     this.pdfViewer.toolbarModule.annotationToolbarModule.mobileColorpicker(id);
                 }
@@ -914,6 +921,7 @@ export class AnnotationToolbar {
             this.adjustMobileViewer();
             if (this.toolbar) {
                 this.toolbar.destroy();
+                this.deselectAllItemsForMobile();
             }
             if (this.propertyToolbar) {
                 this.propertyToolbar.destroy();
@@ -987,6 +995,29 @@ export class AnnotationToolbar {
                 this.applyMobileAnnotationToolbarSettings();
                 this.toolbarCreated = true;
                 this.adjustMobileViewer();
+            }
+            if (!this.pdfViewerBase.isTextSelectionDisabled) {
+                if (this.isMobileHighlightEnabled) {
+                    this.primaryToolbar.selectItem(this.highlightItem);
+                    this.primaryToolbar.deSelectItem(this.underlineItem);
+                    this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                    this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+                }
+                else if (this.isMobileUnderlineEnabled) {
+                    this.primaryToolbar.selectItem(this.underlineItem);
+                    this.primaryToolbar.deSelectItem(this.highlightItem);
+                    this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                    this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+                }
+                else if (this.isMobileStrikethroughEnabled) {
+                    this.primaryToolbar.selectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.highlightItem);
+                    this.primaryToolbar.deSelectItem(this.underlineItem);
+                    this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                    this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+                }
             }
             return items;
         }
@@ -1494,6 +1525,7 @@ export class AnnotationToolbar {
 
     private addSignature(): void {
         this.deselectAllItems();
+        this.deselectAllItemsForMobile();
         this.showSignaturepanel();
     }
     public renderAddedSignature(): void {
@@ -2972,6 +3004,7 @@ export class AnnotationToolbar {
             // eslint:disable-next-line
             let element: any = args.originalEvent.target;
             this.pdfViewer.toolbarModule.selectItem(element.parentElement);
+            this.deselectAllItemsForMobile();
         }
         switch ((args.originalEvent.target as HTMLElement).id) {
         case elementId + '_shape_line':
@@ -3022,6 +3055,7 @@ export class AnnotationToolbar {
         const elementId: string = this.pdfViewer.element.id;
         const measureModule: MeasureAnnotation = this.pdfViewer.annotation.measureAnnotationModule;
         this.deselectAllItems();
+        this.deselectAllItemsForMobile();
         this.resetFreeTextAnnot();
         if (Browser.isDevice && !isBlazor()) {
             // tslint:disable-next-line
@@ -3506,8 +3540,22 @@ export class AnnotationToolbar {
                 this.resetFreeTextAnnot();
                 this.handleHighlight();
             } else {
-                this.pdfViewer.annotationModule.setAnnotationMode('Highlight');
-                this.textMarkupForMobile(args);
+                if (!this.isMobileHighlightEnabled) {
+                    this.pdfViewer.annotationModule.setAnnotationMode('Highlight');
+                    this.primaryToolbar.selectItem(this.highlightItem);
+                    this.primaryToolbar.deSelectItem(this.underlineItem);
+                    this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                    this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+                    this.textMarkupForMobile(args);
+                    this.isMobileHighlightEnabled = true;
+                    this.isMobileUnderlineEnabled = false;
+                    this.isMobileStrikethroughEnabled = false;
+                }
+                else {
+                    this.deselectAllItemsForMobile();
+                    this.pdfViewer.annotationModule.setAnnotationMode('None');
+                }
             }
             this.pdfViewer.annotation.triggerAnnotationUnselectEvent();
             break;
@@ -3519,8 +3567,22 @@ export class AnnotationToolbar {
                 this.resetFreeTextAnnot();
                 this.handleUnderline();
             } else {
-                this.pdfViewer.annotationModule.setAnnotationMode('Underline');
-                this.textMarkupForMobile(args);
+                if (!this.isMobileUnderlineEnabled) {
+                    this.pdfViewer.annotationModule.setAnnotationMode('Underline');
+                    this.primaryToolbar.selectItem(this.underlineItem);
+                    this.primaryToolbar.deSelectItem(this.highlightItem);
+                    this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                    this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+                    this.textMarkupForMobile(args);
+                    this.isMobileUnderlineEnabled = true;
+                    this.isMobileHighlightEnabled = false;
+                    this.isMobileStrikethroughEnabled = false;
+                }
+                else {
+                    this.deselectAllItemsForMobile();
+                    this.pdfViewer.annotationModule.setAnnotationMode('None');
+                }
             }
             this.pdfViewer.annotation.triggerAnnotationUnselectEvent();
             break;
@@ -3532,8 +3594,22 @@ export class AnnotationToolbar {
                 this.resetFreeTextAnnot();
                 this.handleStrikethrough();
             } else {
-                this.pdfViewer.annotationModule.setAnnotationMode('Strikethrough');
-                this.textMarkupForMobile(args);
+                if (!this.isMobileStrikethroughEnabled) {
+                    this.pdfViewer.annotationModule.setAnnotationMode('Strikethrough');
+                    this.primaryToolbar.selectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.highlightItem);
+                    this.primaryToolbar.deSelectItem(this.underlineItem);
+                    this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                    this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+                    this.textMarkupForMobile(args);
+                    this.isMobileStrikethroughEnabled = true;
+                    this.isMobileUnderlineEnabled = false;
+                    this.isMobileHighlightEnabled = false;
+                }
+                else {
+                    this.deselectAllItemsForMobile();
+                    this.pdfViewer.annotationModule.setAnnotationMode('None');
+                }
             }
             this.pdfViewer.annotation.triggerAnnotationUnselectEvent();
             break;
@@ -3600,6 +3676,7 @@ export class AnnotationToolbar {
             }
             if (!this.inkAnnotationSelected) {
                 this.deselectAllItems();
+                this.deselectAllItemsForMobile();
                 this.drawInkAnnotation();
             } else {
                 this.inkAnnotationSelected = false;
@@ -3622,6 +3699,7 @@ export class AnnotationToolbar {
             this.pdfViewerBase.isAddComment = true;
             this.pdfViewerBase.isCommentIconAdded = true;
             let commentsButton: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_comment');
+            this.deselectAllItemsForMobile();
             commentsButton.classList.add('e-pv-select');
             this.pdfViewer.toolbarModule.addComments(args);
             break;
@@ -3799,6 +3877,7 @@ export class AnnotationToolbar {
                     this.enablePropertiesTool(annotationModule);
                 } else {
                     this.deselectAllItems();
+                    this.deselectAllItemsForMobile();
                 }
                 this.toolbarElement.style.display = 'none';
                 if (!isInitialLoading) {
@@ -4440,6 +4519,45 @@ export class AnnotationToolbar {
     /**
      * @private
      */
+    public deselectAllItemsForMobile(): void {
+        if (Browser.isDevice || !this.pdfViewer.enableDesktopMode) {
+            let isBlazorPlatform: boolean = isBlazor();
+            this.isMobileHighlightEnabled = false;
+            this.isMobileUnderlineEnabled = false;
+            this.isMobileStrikethroughEnabled = false;
+            if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                this.pdfViewer.annotationModule.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+                this.pdfViewer.annotationModule.textMarkupAnnotationModule.showHideDropletDiv(true);
+            }
+            if (!isBlazorPlatform) {
+                this.primaryToolbar.deSelectItem(this.highlightItem);
+                this.primaryToolbar.deSelectItem(this.underlineItem);
+                this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+            }
+            else {
+                this.primaryToolbar.deSelectItem(this.highlightItem);
+                this.primaryToolbar.deSelectItem(this.underlineItem);
+                this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+            }
+            this.resetFreeTextAnnot();
+            this.clearTextMarkupMode();
+            this.clearShapeMode();
+            this.clearMeasureMode();
+            this.pdfViewer.tool = '';
+            this.selectAnnotationDeleteItem(false);
+            if (this.pdfViewer.annotationModule) {
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.isNewFreeTextAnnot = false;
+            }
+        }
+    }
+
+    /**
+     * @private
+     */
     public deselectAllItems(): void {
         let isBlazorPlatform: boolean = isBlazor();
         this.isHighlightEnabled = false;
@@ -4922,6 +5040,7 @@ export class AnnotationToolbar {
      */
     public clear(): void {
         this.deselectAllItems();
+        this.deselectAllItemsForMobile();
     }
 
     /**

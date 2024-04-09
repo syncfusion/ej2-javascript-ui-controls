@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I569839` - Now, the `title` attribute is added properly for the audio and video elements, inserted using the `executeCommand` public method in the Rich Text Editor.
+
+- `#I572044` - Now, the cursor is set after the image when pasting the image or image with text into the Rich Text Editor.
+
+- `#I569849` - Now, the abort icon and uploading percentage are aligned properly in the image dialog of the Rich Text Editor.
+
+- `#I570370` - Now, the backspace key is working properly when copying and pasting an image with content.
+
+- `#I553157` - Now, the bullet format list gets removed properly when we replace the content in RichTextEditor.
+
 ## 25.1.38 (2024-04-02)
 
 ### RichTextEditor
@@ -13,6 +29,12 @@
 - `#F187199` - When using the keyboard action `ctrl + A` in RichTextEditor, the inline quick toolbar works properly.
 
 - `#I553375` - Now, list style is maintained properly when removing a single list in RichTextEditor.
+
+- `#I568091` - Now, using Inline Editor doesn't scroll to the top when clicking FontColor or other toolbar items in Rich Text Editor.
+
+- `#I572787` - Now, the pasted text replaces the previous texts properly in the RichTextEditor.
+
+- `#I570076` - Now, the `InsertHtml executeCommand` works properly when inserting HTML by selection.
 
 ## 25.1.37 (2024-03-26)
 

@@ -251,12 +251,17 @@ export class AutoComplete extends ComboBox {
     }
 
     protected getQuery(query: Query): Query {
-        const filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
+        let filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
         let value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
         const filterType: string = (this.queryString === '' && !isNullOrUndefined(value)) ? 'equal' : this.filterType;
         const queryString: string = (this.queryString === '' && !isNullOrUndefined(value)) ? value as string : this.queryString;
         if (this.isFiltered) {
-            return filterQuery;
+            if ((this.enableVirtualization && !isNullOrUndefined(this.customFilterQuery))) {
+                filterQuery = this.customFilterQuery.clone() as Query;
+            }
+            else if(!this.enableVirtualization){
+                return filterQuery;
+            }
         }
         if (this.queryString !== null && this.queryString !== '') {
             const dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object }[]).typeof;
@@ -281,47 +286,60 @@ export class AutoComplete extends ComboBox {
         if (this.enableVirtualization && (!(this.dataSource instanceof DataManager) || (this.dataSource instanceof DataManager && this.virtualGroupDataSource))) {
             let queryTakeValue = 0;
             let querySkipValue = 0;
-            if(this.query && this.query.queries.length > 0){
-                for (let queryElements: number = 0; queryElements < this.query.queries.length; queryElements++) {
-                    if (this.query.queries[queryElements as number].fn === 'onSkip') {
-                        querySkipValue = this.query.queries[queryElements as number].e.nos;
+            var takeValue = this.getTakeValue();
+            if(filterQuery && filterQuery.queries.length > 0){
+                for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
+                    if (filterQuery.queries[queryElements as number].fn === 'onSkip') {
+                        querySkipValue = filterQuery.queries[queryElements as number].e.nos;
                     }
+                    if (filterQuery.queries[queryElements as number].fn === 'onTake') {
+                        queryTakeValue = takeValue <= filterQuery.queries[queryElements as number].e.nos ? filterQuery.queries[queryElements as number].e.nos : takeValue;
+                    }
+                }
+            }
+            if(queryTakeValue <= 0 && this.query && this.query.queries.length > 0){
+                for (let queryElements: number = 0; queryElements < this.query.queries.length; queryElements++) {
                     if (this.query.queries[queryElements as number].fn === 'onTake') {
                         queryTakeValue = takeValue <= this.query.queries[queryElements as number].e.nos ? this.query.queries[queryElements as number].e.nos : takeValue;
                     }
                 }
             }
-            let skipExists = false;
-            let takeExists = false;
             if (filterQuery && filterQuery.queries.length > 0) {
                 for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
                     if (filterQuery.queries[queryElements as number].fn === 'onSkip') {   
-                        skipExists = true;
+                        querySkipValue = filterQuery.queries[queryElements as number].e.nos;
+                        filterQuery.queries.splice(queryElements,1);
+                        --queryElements;
+                        continue;
                     }
                     if (filterQuery.queries[queryElements as number].fn === 'onTake') {
-                        takeExists = true;
-                        filterQuery.queries[queryElements as number].e.nos = filterQuery.queries[queryElements as number].e.nos <= queryTakeValue  ? queryTakeValue : filterQuery.queries[queryElements as number].e.nos;
+                        queryTakeValue = filterQuery.queries[queryElements as number].e.nos <= queryTakeValue  ? queryTakeValue : filterQuery.queries[queryElements as number].e.nos;
+                        filterQuery.queries.splice(queryElements,1);
+                        --queryElements;
                     }
                 }
             }
-            var takeValue = this.getTakeValue();
-            if(!skipExists){
-                if(querySkipValue > 0 && this.virtualItemStartIndex <= querySkipValue){
-                    filterQuery.skip(querySkipValue);
-                }
-                else{
-                    filterQuery.skip(this.virtualItemStartIndex);
-                }
+            if(querySkipValue > 0 && this.virtualItemStartIndex <= querySkipValue){
+                filterQuery.skip(querySkipValue);
             }
-            if(!takeExists){
-                if(queryTakeValue > 0 && takeValue <= queryTakeValue){
-                    filterQuery.take(queryTakeValue);
-                }
-                else{
-                    filterQuery.take(takeValue);
-                }
+            else{
+                filterQuery.skip(this.virtualItemStartIndex);
+            }
+            if(queryTakeValue > 0 && takeValue <= queryTakeValue){
+                filterQuery.take(queryTakeValue);
+            }
+            else{
+                filterQuery.take(takeValue);
             }
             filterQuery.requiresCount();
+        }
+        else if(this.enableVirtualization && (this.dataSource instanceof DataManager && !this.virtualGroupDataSource)) {
+            for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
+                if (filterQuery.queries[queryElements as number].fn === 'onSkip' || filterQuery.queries[queryElements as number].fn === 'onTake') {
+                    filterQuery.queries.splice(queryElements,1);
+                    --queryElements;
+                }
+            }
         }
         return filterQuery;
     }
@@ -352,6 +370,7 @@ export class AutoComplete extends ComboBox {
                     return;
                 }
                 this.isFiltered = true;
+                this.customFilterQuery = query;
                 this.filterAction(dataSource, query, fields);
             },
             cancel: false
@@ -488,10 +507,6 @@ export class AutoComplete extends ComboBox {
                             highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
                         }, 0);
                     } else {
-                        const isHtmlElement: boolean = /<[^>]*>/g.test(e.item.innerText);
-                        if (isHtmlElement) {
-                            e.item.innerText = e.item.innerText.replace(/[\u00A0-\u9999<>&]/g, (match: string) => `&#${match.charCodeAt(0)};`);
-                        }
                         highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
                     }
                 }
@@ -641,11 +656,12 @@ export class AutoComplete extends ComboBox {
     protected renderHightSearch(): void {
         if (this.highlight) {
             for (let i: number = 0; i < this.liCollections.length; i++) {
-                const isHighlight: HTMLElement = this.ulElement.querySelector('.e-active');
+                let isHighlight: HTMLElement = this.ulElement.querySelector('.e-active');
                 if (!isHighlight) {
                     revertHighlightSearch(this.liCollections[i as number]);
                     highlightSearch(this.liCollections[i as number], this.queryString, this.ignoreCase, this.filterType);
                 }
+                isHighlight = null;
             }
         }
     }

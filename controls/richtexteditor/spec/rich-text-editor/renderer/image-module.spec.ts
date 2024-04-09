@@ -5,13 +5,12 @@ import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syn
 import { RichTextEditor, QuickToolbar, IRenderer, DialogType } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA, dispatchKeyEvent, ImageResizeGripper, clickImage, clickGripper, moveGripper, leaveGripper } from "./../render.spec";
-import { SelectEventArgs } from '@syncfusion/ej2-navigations';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
 }
 
-describe('insert image', () => {
+describe('Image Module', () => {
 
     describe(' Quick Toolbar open testing after selecting some text', () => {
         let rteObj: any;
@@ -165,7 +164,7 @@ describe('insert image', () => {
                 let eventArgs: any = { target: document, preventDefault: function () { } };
                 (<any>rteObj).imageModule.onDocumentClick(eventArgs);
                 done();
-            }, 400);
+            }, 100);
         });
     });
     describe('div content', () => {
@@ -688,8 +687,8 @@ client side. Customer easy to edit the contents and get the HTML content for
                 setTimeout(() => {
                     expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'true').toBe(true);
                     done();
-                }, 1000);
-            }, 400);
+                }, 100);
+            }, 100);
         });
         it('readonly true with contenteditable set as false while click on image to close the virtual keyboard', (done: Function) => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
@@ -721,8 +720,8 @@ client side. Customer easy to edit the contents and get the HTML content for
                     expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'false').toBe(true);
                     Browser.userAgent = defaultUA;
                     done();
-                }, 1000);
-            }, 400);
+                }, 100);
+            }, 100);
         });
     });
 
@@ -952,7 +951,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 let eventArgs: any = { target: document, preventDefault: function () { } };
                 (<any>rteObj).imageModule.onDocumentClick(eventArgs);
                 done();
-            }, 400);
+            }, 100);
         });
         it('insert image url', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
@@ -1274,7 +1273,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (<any>rteObj).imageModule.deleteImg(evnArg);
                 (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
-            }, 4000);
+            }, 100);
         });
         it('image alternative text', () => {
             let eventArgs = { target: document, preventDefault: function () { } };
@@ -1355,7 +1354,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect((<any>rteObj).imageModule.uploadObj.fileList.length).toEqual(1);
                 (document.getElementsByClassName('e-browsebtn')[0] as HTMLElement).click()
                 done();
-            }, 4500);
+            }, 100);
         });
     });
 
@@ -1821,7 +1820,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(function () {
                 expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
                 done();
-            }, 1000);
+            }, 100);
         });
         it('caption check', (done: Function) => {
             let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
@@ -2471,7 +2470,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 expect((dialogEle.querySelector('.e-insertImage') as HTMLButtonElement).hasAttribute('disabled')).toBe(true);
                 done();
-            }, 4000);
+            }, 100);
         });
     });
     // describe('EJ2-37798 - Disable the insert image dialog button when the image is uploading', () => {
@@ -3111,7 +3110,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (<any>rteObj).imageModule.deleteImg(evnArg);
                 (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
-            }, 4000);
+            }, 100);
         });
     });
 
@@ -3150,7 +3149,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (<any>rteObj).imageModule.deleteImg(evnArg);
                 (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
-            }, 4000);
+            }, 100);
         });
     });
     
@@ -3247,7 +3246,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(isImageUploadSuccess).toBe(false);
                 expect(isImageUploadFailed).toBe(false);
                 done();
-            }, 4000);
+            }, 100);
             
         });
     });
@@ -3286,7 +3285,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (<any>rteObj).imageModule.deleteImg(evnArg);
                 (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
-            }, 4000);
+            }, 100);
         });
     });
 
@@ -3326,7 +3325,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (<any>rteObj).imageModule.deleteImg(evnArg);
                 (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
-            }, 4000);
+            }, 100);
         });
     });
 
@@ -3365,7 +3364,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (<any>rteObj).imageModule.deleteImg(evnArg);
                 (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
-            }, 4000);
+            }, 100);
         });
     });
 
@@ -3416,9 +3415,9 @@ client side. Customer easy to edit the contents and get the HTML content for
                         expect(document.querySelector('.e-content').childNodes[1].childNodes[0].nodeName).toBe('SPAN');
                         expect((document.querySelector('.e-content').childNodes[1].childNodes[0] as Element).classList.contains('e-img-caption')).toBe(true);
                         done();
-                    }, 400);
-                }, 400);
-            }, 400);
+                    }, 100);
+                }, 100);
+            }, 100);
         });
     });
     describe(' EJ2-28120: IFrame - Images were not replaced when using caption to the image ', () => {
@@ -3440,7 +3439,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 destroy(rteObj);
                 done();
-            }, 2000);
+            }, 100);
         });
         it(" insert image & caption", (done: Function) => {
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
@@ -3476,8 +3475,8 @@ client side. Customer easy to edit the contents and get the HTML content for
                         (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
                         expect((iframeBody.querySelector('img') as HTMLImageElement).src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
                         done();  
-                    }, 400);
-                }, 400);
+                    }, 100);
+                }, 100);
             }, 100);
         });
     });
@@ -3528,7 +3527,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(ele.classList.contains('e-imginline')).toBe(true);
                 expect(ele.classList.contains('e-resize')).toBe(true);
                 done();
-            }, 2000);
+            }, 200);
            
         });
         it(" Check dragstart Event", function (done: Function) {
@@ -3541,7 +3540,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (rteObj.imageModule as any).dragOver(event);
                 (rteObj.imageModule as any).dragEnter(event);
                 done();
-             }, 2000);
+             }, 200);
           
         });
         it(" Check insertDragImage method -External image", function () {
@@ -3577,7 +3576,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(document.querySelector('.e-rte-pop.e-popup-open')).not.toBe(null);
                 expect(image.classList.contains('e-img-focus')).toBe(true);
                 done(); 
-            }, 2000);
+            }, 1000);
        });
     });
 
@@ -3624,7 +3623,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(ele.classList.contains('e-resize')).toBe(true);
                 expect(document.getElementsByClassName("e-upload-files").length).toBe(0);
                 done();
-            }, 2000);
+            }, 1000);
         
         });
        it(" Check uploadFailure method", function (done: Function) {
@@ -3639,7 +3638,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 expect(document.querySelector('.e-upload-image')).toBe(null);
                 done();
-            }, 2000);
+            }, 1000);
         });
     });
     describe('Drag and Drop - Text', () => {
@@ -3775,7 +3774,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(ele.classList.contains('e-imginline')).toBe(true);
                 expect(ele.classList.contains('e-resize')).toBe(true);
                 done();
-            }, 2000);
+            }, 1000);
            
         });
         it(" Check image being removed with args.cancel as true", function (done: Function) {
@@ -3990,7 +3989,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
                 done();
-            }, 500);
+            }, 100);
         });
         it('second image click with focus testing', (done) => {
             dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[1] as HTMLElement, 'mousedown');
@@ -3998,7 +3997,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
                 expect((rteObj.element.querySelectorAll('.e-content img')[1] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
                 done();
-            }, 500);
+            }, 100);
         });
         it('first image click after p click with focus testing', (done) => {
             dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement, 'mousedown');
@@ -4008,8 +4007,8 @@ client side. Customer easy to edit the contents and get the HTML content for
                 setTimeout(() => {
                     expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
                     done();
-                }, 500);
-            }, 500);
+                }, 100);
+            }, 100);
         });
         it('second image click after p click with focus testing', (done) => {
             dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[1] as HTMLElement, 'mousedown');
@@ -4020,8 +4019,8 @@ client side. Customer easy to edit the contents and get the HTML content for
                     expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
                     expect((rteObj.element.querySelectorAll('.e-content img')[1] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
                     done();
-                }, 500);
-            }, 500);
+                }, 100);
+            }, 100);
         });
     });
     describe('BLAZ-9502 - Image focus not working after outside click then again click a image', () => {
@@ -4044,21 +4043,21 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
                 done();
-            }, 500);
+            }, 100);
         });
         it('outside click with focus', (done) => {
             dispatchEvent(document.body, 'mousedown');
             setTimeout(() => {
                 expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(false);
                 done();
-            }, 500);
+            }, 100);
         });
         it('Again image click with focus testing', (done) => {
             dispatchEvent(rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement, 'mousedown');
             setTimeout(() => {
                 expect((rteObj.element.querySelectorAll('.e-content img')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
                 done();
-            }, 500);
+            }, 100);
         });
     });
     describe('EJ2-46971- Resize icon of the image is not positioned properly, when height is set to the Rich Text Editor', () => {
@@ -4265,6 +4264,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             for(let i: number = 0; i < allDropDownPopups.length; i++) {
                 detach(allDropDownPopups[i]);
             }
+            destroy(rteObj);
         });
     });
 
@@ -4297,7 +4297,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect((rteObj.element.querySelector('.e-rte-botRight') as HTMLElement ).style.left ).toEqual( '296px' );
                 expect((rteObj.element.querySelector('.e-rte-botRight') as HTMLElement ).style.top ).toEqual( '320px' );
                 done();
-            }, 2500);
+            }, 500);
         });
     });
 
@@ -4838,7 +4838,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 expect(rteObj.inputElement.querySelector('.e-img-caption')).toBe(null);
                 done();
-            }, 500);
+            }, 100);
         });
         it ('Should remove the image on delete key press and have focus on the Paragraph', (done: DoneFn) => {
             let innerHTMLL: string = `
@@ -4866,7 +4866,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(rteObj.inputElement.querySelector('.e-img-caption')).toBe(null);
                 expect(window.getSelection().getRangeAt(0).startContainer.nodeName).toBe('P');
                 done();
-            }, 500);
+            }, 100);
         });
     });
 
@@ -4984,7 +4984,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(document.querySelector('.e-rte-quick-toolbar')).not.toBe(null);
                 expect(document.querySelector('.e-img-resize')).not.toBe(null);
                 done();
-            }, 800);
+            }, 600);
         });
     });
 
@@ -5071,8 +5071,8 @@ client side. Customer easy to edit the contents and get the HTML content for
                 setTimeout(() => {
                     expect((imageQTBarEle.querySelector("[title='Insert Link']") as HTMLElement).style.display === "none").toBe(true);
                     done();
-                },500);
-            },500)
+                },100);
+            },100)
             
         });
     });
@@ -5240,3 +5240,4 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 });
+

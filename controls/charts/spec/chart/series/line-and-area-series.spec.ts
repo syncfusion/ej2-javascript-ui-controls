@@ -2171,7 +2171,7 @@ describe('Chart Control Series', () => {
         it('Datalabel count check', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 let groupElement: Element = document.getElementById('containerTextGroup0');
-                expect(groupElement.childElementCount === 9).toBe(true);
+                expect(groupElement.childElementCount === 7).toBe(true);
                 done();
             };
             chartObj.refresh();

@@ -817,7 +817,7 @@ export class Toolbar {
     }
 
     private rowSelected(): void {
-        if (this.parent.enableAdaptiveUI) {
+        if (this.parent.enableAdaptiveUI && this.toolbar.element) {
             this.refreshResponsiveToolbarItems(ResponsiveToolbarAction.isInitial);
             this.toolbar.refreshOverflow();
         }

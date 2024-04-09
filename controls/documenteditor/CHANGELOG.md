@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I556448` - Resolved the table header rendering issue.
+- `#I559218` - Resolved the table border issue in the attached document.
+- `#I561167` - Resolved the hyperlink style issue while reject the changes.
+- `#I562628` - Resolved the application crashes when performing reject all changes.
+- `#I562668` - Resolved the list level preservation issue.
+- `#I562943` - Resolved the track changes disable issue while stop RevisionsOnly protection.
+- `#I563223` - Resolved the paragraph indentation and border render issues inside table.
+- `#I565315` - Resolved the issue of applying character style to the selected text.
+- `#I529797` - Resolved the search issue when using plus symbol.
+- `#I565843` - Resolved the undo issue while applying border style in table.
+
 ## 25.1.38 (2024-04-02)
 
 ### DocumentEditor

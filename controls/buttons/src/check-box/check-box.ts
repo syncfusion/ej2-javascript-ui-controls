@@ -167,10 +167,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     private changeState(state?: string, isInitialize?: boolean ): void {
         let ariaState: string;
+        let wrapper: Element = this.getWrapper() as Element;
         let rippleSpan: Element | null = null;
-        const frameSpan: Element = (this.getWrapper() as Element).getElementsByClassName(FRAME)[0];
-        if (isRippleEnabled) {
-            rippleSpan = (this.getWrapper() as Element).getElementsByClassName(RIPPLE)[0];
+        let frameSpan: Element | null = null;
+        if (wrapper) {
+            frameSpan = wrapper.getElementsByClassName(FRAME)[0];
+            if (isRippleEnabled) {
+                rippleSpan = wrapper.getElementsByClassName(RIPPLE)[0];
+            }
         }
         if (state === 'check') {
             if (frameSpan) {

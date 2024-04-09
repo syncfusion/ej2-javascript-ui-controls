@@ -1008,8 +1008,9 @@ third line`;
     }, 100);
   });
 
-  afterAll(() => {
+  afterAll((done: DoneFn) => {
     destroy(rteObj);
+    done();
   });
 });
 
@@ -1067,8 +1068,9 @@ describe("Pasting text with max Length", () => {
       done();
     }, 100);
   });
-  afterAll(() => {
+  afterAll((done: DoneFn) => {
     destroy(rteObj);
+    done();
   });
 });
 
@@ -1114,8 +1116,9 @@ describe("To test image uploading", () => {
       done();
     }, 100);
   });
-  afterAll(() => {
+  afterAll((done: DoneFn) => {
     destroy(rteObj);
+    done();
   });
 });
 
@@ -1180,8 +1183,9 @@ describe("To test action Complete event for the image and content", () => {
       done();
     }, 100);
   });
-  afterAll(() => {
+  afterAll((done: DoneFn) => {
     destroy(rteObj);
+    done();
   });
 });
 
@@ -1278,8 +1282,9 @@ describe("To paste content inside table", () => {
       done();
     }, 100);
   });
-  afterAll(() => {
+  afterAll((done: DoneFn) => {
     destroy(rteObj);
+    done();
   });
 });
 
@@ -1322,8 +1327,9 @@ describe("Image paste", () => {
         }, 50);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -1376,8 +1382,9 @@ describe("Image Upload image restriction with paste action", () => {
         }, 50);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -1430,8 +1437,9 @@ describe("Image Upload image restriction with paste action", () => {
         }, 50);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -1478,8 +1486,9 @@ describe("Paste when iframe enabled", () => {
         }, 50);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -1528,8 +1537,9 @@ describe("Paste when Xhtml enabled", () => {
         }, 50);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -1641,8 +1651,9 @@ describe("EJ2-40047 - When pasting content in RichTextEditor the font-size of te
         expect(span.style.fontWeight === '400').toBe(true);
     });
 
-    afterEach(() => {
+    afterEach((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -1699,8 +1710,9 @@ describe("Paste in Markdown Editor", () => {
       done();
   }, 50);
 });
-  afterAll(() => {
+  afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
   });
 });
 
@@ -1743,8 +1755,9 @@ describe("Paste in Markdown Editor", () => {
         expect(imgElements.length).toBe(1);
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 describe("EJ2-46613 - Pasting content with bolded list doesn't paste the content", () => {
@@ -1820,8 +1833,9 @@ describe("EJ2-46613 - Pasting content with bolded list doesn't paste the content
       done();
     }, 100);
   });
-  afterAll(() => {
+  afterAll((done: DoneFn) => {
     destroy(rteObj);
+    done();
   });
 
   describe("Paste Cleanup events testing", () => {
@@ -1935,8 +1949,9 @@ describe("EJ2-51957-Unable to paste url more than two times", () => {
       expect((rteObj as any).inputElement.querySelectorAll('a').length).toEqual(3);
       done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
   });
 
@@ -1989,8 +2004,9 @@ describe("EJ2-51489 - Pasting image and checking width and height - ", () => {
         }, 50);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -2038,8 +2054,9 @@ describe("EJ2-52017 - EJ2-53762 - Pasting content removes content editable div i
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2091,8 +2108,9 @@ describe("BLAZ-20276 - Pasting content after shift+Enter throws console error is
         }, 50);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -2141,8 +2159,9 @@ describe("EJ2-57494 - Pasting content when enterKey is configured as BR not work
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2194,8 +2213,9 @@ describe("EJ2-57352 - Image paste upload toolbar disable check", () => {
         }, 50);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -2242,8 +2262,9 @@ describe("EJ2-58136 - Paste Url with other content more than one line", () => {
         }, 50);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -2297,8 +2318,9 @@ describe("EJ2-58258 - Pasting content after shift+Enter doesn't paste the conten
         }, 50);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -2347,8 +2369,9 @@ describe("Pasting the link element added in the editor without prompt", () => {
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2402,8 +2425,9 @@ describe("Pasting the link element added in the editor with prompt", () => {
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2457,8 +2481,9 @@ describe("EJ2-58827 - pasting only content which is contenteditable as false", (
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2516,8 +2541,9 @@ describe("EJ2-58433 - Pasting content from note pad, outlook, visual studio, VS 
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2594,8 +2620,9 @@ describe("EJ2-60128 - pasting content which exceeds the max char count", () => {
       }, 100);
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2650,8 +2677,9 @@ describe("EJ2-65736 - Pasted texts gets outside the contentEditable div when usi
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2707,8 +2735,9 @@ describe("EJ2-69216 - pasting as plain text when BR is configured", () => {
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2764,8 +2793,9 @@ describe("852026 - pasting plain text when BR is configured in enterkey", () => 
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2821,8 +2851,9 @@ describe("852026 - pasting plain text when DIV is configured in enterkey", () =>
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2878,8 +2909,9 @@ describe("852026 - pasting plain text when P is configured in enterkey", () => {
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2935,8 +2967,9 @@ describe("EJ2-69216 - pasting as plain text when BR is configured", () => {
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 
@@ -2991,8 +3024,9 @@ describe("EJ2-68255 - The pasted content goes out of the contentEditable div whe
         done();
       }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
       destroy(rteObj);
+      done();
     });
 });
 describe("EJ2-68999 - RichTextEditor doesn't adjust to the pasteCleanUp popup's height when using saveInterval - ", () => {
@@ -3026,8 +3060,9 @@ describe("EJ2-68999 - RichTextEditor doesn't adjust to the pasteCleanUp popup's 
           done();
         }, 50);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 describe("EJ2-69216 - Pasting from Word doesn't work properly with enterKey 'BR' in RichTextEditor - ", () => {
@@ -3078,8 +3113,9 @@ describe("EJ2-69216 - Pasting from Word doesn't work properly with enterKey 'BR'
           done();
         }, 50);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -3136,8 +3172,9 @@ describe("BLAZ-30316 - Image file data in the after paste cleanup event testing 
           done();
         }, 50);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 describe("836937 - Paste cleanup testing for images", () => {
@@ -3188,8 +3225,9 @@ describe("836937 - Paste cleanup testing for images", () => {
             done();
         }, 100);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -3245,8 +3283,9 @@ describe("838345- Cut and paste not working properly when input element as range
             done();
         }, 50);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -3302,8 +3341,9 @@ describe("826247 - Cropped image paste from MS Word - ", () => {
             done();
         }, 500);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -3359,8 +3399,9 @@ describe("843341- Indentation is not maintained when the content is copied and p
             done();
         }, 50);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -3415,8 +3456,9 @@ describe("846697 - Pasting content doesn't work properly with enterKey 'BR' in R
             done();
         }, 50);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -3429,8 +3471,9 @@ describe('850189 - Border lines are appeared on the images while copy paste the 
             }
         });
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(editor);
+        done();
     });
     it ('Should remvoe the outline style for the pasted image.', (done: DoneFn) => {
         editor.focusIn();
@@ -3495,8 +3538,9 @@ describe("853350 - pasting content from online Excel sheet doesn't remove the st
             done();
         }, 50);
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -3509,8 +3553,9 @@ describe('854721- Inside the table, content such as heading used in uppercase, u
             }
         });
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(editor);
+        done();
     });
     it ('Should not remove the text transform inline style for the span element.', (done: DoneFn) => {
         editor.focusIn();
@@ -3535,8 +3580,9 @@ describe('854721- Inside the table, content such as heading used in uppercase, u
                 }
             });
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(editor);
+            done();
         });
         it ('Should remove the Margin left for the msolistparagraph class ul ol and subract 0.5 in for the Nested List.', (done: DoneFn) => {
             editor.focusIn();
@@ -3605,8 +3651,9 @@ describe("869680 - Paste Format is not fully visible and not able to scroll to c
     done();
   }, 50);
   });
-  afterAll(() => {
+  afterAll((done: DoneFn) => {
     destroy(rteObj);
+    done();
   });
 });
 
@@ -3619,8 +3666,9 @@ describe('873087: Table loses its format when pasting into RichTextEditor.', () 
             }
         });
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(editor);
+        done();
     });
     it ('Should add teh e-rte-table properly.', (done: DoneFn) => {
         editor.focusIn();
@@ -3631,6 +3679,80 @@ describe('873087: Table loses its format when pasting into RichTextEditor.', () 
         editor.onPaste(pasteEvent);
         setTimeout(() => {
             expect((editor.inputElement.querySelector('table') as HTMLElement).classList.contains('e-rte-table')).toBe(true);
+            done();
+        }, 100);
+    });
+});
+
+describe('878049 - The indent is not working properly in the Rich Text Editor.', () => {
+    let editor: RichTextEditor;
+    let editorObj: EditorManager;
+    beforeAll(() => {
+        editor = renderRTE({
+            pasteCleanupSettings : {
+                keepFormat : true
+            }
+        });
+        editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });    
+    });
+    afterAll((done: DoneFn) => {
+        destroy(editor);
+        done();
+    });
+    it ('Checking the indent', (done: DoneFn) => {
+        editor.focusIn();
+        const clipBoardData: string = `<p style="margin-top: 0in; margin-right: 0in; margin-bottom: 8pt; line-height: 107%; font-size: 11pt; font-family: Calibri, sans-serif;">
+        <span style="font-family:&quot;Segoe UI&quot;,sans-serif;color:#1A1A1A;background:white;">This section explains the steps to create a simple Rich Text Editor and demonstrates the basic usage of the Rich Text Editor component using the Essential JS 2&nbsp;</span>
+        <a href="https://github.com/SyncfusionExamples/ej2-quickstart-webpack-" target="_blank" style="text-align:start;" aria-label="Open in new window">
+            <span style="font-family:&quot;Segoe UI&quot;,sans-serif;color:#0079F3;background:white;text-decoration:none;">quickstart</span>
+        </a>
+        <span style="font-family:&quot;Segoe UI&quot;,sans-serif;color:#1A1A1A;background:white;">
+            <span style="text-align:start;float:none;">&nbsp;seed repository. This seed repository is pre-configured with the Essential JS 2 package.</span>
+        </span>
+    </p>`;
+        const dataTransfer: DataTransfer = new DataTransfer();
+        dataTransfer.setData('text/html', clipBoardData);
+        const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+        editor.onPaste(pasteEvent);
+        setTimeout(() => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('p');
+            let end: HTMLElement = elem.querySelector('p');
+            editorObj.nodeSelection.setSelectionText(document, start, end, 0, 0);
+            editorObj.execCommand("Indents", 'Outdent', null);
+            expect(start.style.marginLeft === '').toBe(true);
+            done();
+        }, 100);
+    });
+});
+
+describe('876585 - List marker items has merged after paste the content.', () => {
+    let editor: RichTextEditor;
+    beforeAll((done: Function) => {
+        editor = renderRTE({
+            pasteCleanupSettings : {
+                keepFormat : true
+            },
+            value: '<ol><li>The Rich Text Editor (RTE) control is an easy to render in client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</li></ol>'
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(editor);
+    });
+    it ('Checking the list after paste the content', (done: DoneFn) => {
+        editor.focusIn();
+        let elem: HTMLElement = editor.inputElement as HTMLElement;
+        let start: HTMLElement = elem.querySelector('li');
+        let end: HTMLElement = elem.querySelector('li');
+        editor.formatter.editorManager.nodeSelection.setSelectionText(document, start, end, 0, 1);
+        const clipBoardData: string = '<ol><li>The Rich Text Editor (RTE) control is an easy to render in client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</li></ol>';
+        const dataTransfer: DataTransfer = new DataTransfer();
+        dataTransfer.setData('text/html', clipBoardData);
+        const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+        editor.onPaste(pasteEvent);
+        setTimeout(() => {
+            expect(editor.inputElement.querySelectorAll('li').length).toEqual(1);
             done();
         }, 100);
     });

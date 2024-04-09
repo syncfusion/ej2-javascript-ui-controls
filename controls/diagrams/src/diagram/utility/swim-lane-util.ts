@@ -22,6 +22,7 @@ import { checkParentAsContainer, findBounds, removeChildInContainer } from '../i
 import { IElement } from '../objects/interface/IElement';
 import { ClipBoardObject } from '../interaction/command-manager';
 import { canSelect } from './constraints-util';
+import { MarginModel } from '../core/appearance-model';
 
 /**
  * SwimLane modules are used to rendering and interaction.
@@ -1021,7 +1022,7 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
         const shape: SwimLaneModel = swimLane.shape as SwimLaneModel; let redoObj: NodeModel;
         let orientation: boolean = false; let entry: HistoryEntry;
         let index: number; let children: NodeModel[];
-        let j: number; let i: number; let k: number; let cell: GridCell; let child: NodeModel; let point: PointModel;
+        let j: number; let i: number; let c: number; let cell: GridCell; let child: NodeModel; let point: PointModel;
         const laneObj: LaneModel = new Lane(shape as Shape, 'lanes', lane, true);
         index = (shape.header && (shape as SwimLane).hasHeader) ? 1 : 0;
         if (shape.orientation === 'Horizontal') {
@@ -1084,21 +1085,31 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
             swimLaneMeasureAndArrange(swimLane);
             updateHeaderMaxWidth(diagram, swimLane);
             children = lane.children;
+            let childAdded = false;
             if (children && children.length > 0) {
                 for (j = 0; j < children.length; j++) {
+                    childAdded = false;
                     child = children[parseInt(j.toString(), 10)];
                     point = { x: child.wrapper.offsetX, y: child.wrapper.offsetY };
-
+                    let padding: MarginModel = {left:0,right:0,top:0,bottom:0};
                     if (shape.orientation === 'Horizontal') {
+                        padding.bottom = bounds.y - grid.bounds.y;
                         //839579 - swimlane delete Lane and perform undo redo issue
                         cell = grid.rows[parseInt(index.toString(), 10)].cells[parseInt(j.toString(), 10)];
                         for (i = 0; i < grid.rows[parseInt(index.toString(), 10)].cells.length; i++) {
-                            addChildNodeToNewLane(diagram, grid.rows[parseInt(index.toString(), 10)].cells[parseInt(i.toString(), 10)], point, child);
+                            addChildNodeToNewLane(diagram, grid.rows[parseInt(index.toString(), 10)].cells[parseInt(i.toString(), 10)], point, child,padding);
                         }
                     } else {
-                        for (k = 0; k < grid.rows.length; k++) {
-                            cell = grid.rows[parseInt(k.toString(), 10)].cells[parseInt(index.toString(), 10)];
-                            addChildNodeToNewLane(diagram, cell, point, child);
+                        childAddBreak:
+                        for(let r = 0; r <= grid.rows.length;r++){
+                            for (c = 0; c < grid.rows[parseInt(r.toString(), 10)].cells.length; c++) {
+                                padding.right = bounds.x - grid.bounds.x;
+                                cell = grid.rows[parseInt(r.toString(), 10)].cells[parseInt(c.toString(), 10)];
+                                childAdded = addChildNodeToNewLane(diagram, cell, point, child, padding);
+                                if(childAdded){
+                                    break childAddBreak;
+                                }
+                            }
                         }
                     }
                 }
@@ -1120,14 +1131,35 @@ export function addLane(diagram: Diagram, parent: NodeModel, lane: LaneModel, co
  * @param {NodeModel} child - provide the child  value.
  * @private
  */
-function addChildNodeToNewLane(diagram: Diagram, cell: GridCell, point: PointModel, child: NodeModel): void {
+function addChildNodeToNewLane(diagram: Diagram, cell: GridCell, point: PointModel, child: NodeModel,padding?: MarginModel | number): boolean {
+    let childAdded = false;
     if (cell.children && cell.children.length > 0) {
         const canvas: Canvas = cell.children[0] as Canvas;
         const parent: NodeModel = diagram.nameTable[canvas.id];
-        if (canvas.bounds.containsPoint(point)) {
+        if (containsChildPoint(canvas.bounds,point,padding as MarginModel)) {
             diagram.addChild(parent, child);
+            childAdded = true;
         }
     }
+    return childAdded;
+}
+/**
+ * containsChildPoint method \
+ *
+ * @returns {boolean} containsChildPoint method .\
+ * @param {Rect} bounds - provide the bounds  value.
+ * @param {PointModel} point - provide the point  value.
+ * @param {MarginModel} padding - provide the padding  value.
+ * @private
+ */
+function containsChildPoint(bounds:Rect,point:PointModel, padding:MarginModel): boolean {
+    let leftPadding: number, rightPadding: number, topPadding: number, bottomPadding: number;
+    leftPadding = padding.left || 0;
+    rightPadding = padding.right || 0;
+    topPadding = padding.top || 0;
+    bottomPadding = padding.bottom || 0;
+    return bounds.left - leftPadding <= point.x && bounds.right + rightPadding >= point.x
+    && bounds.top - topPadding <= point.y && bounds.bottom + bottomPadding >= point.y;
 }
 
 /**

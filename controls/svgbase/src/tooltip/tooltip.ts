@@ -709,9 +709,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     if (this.header.indexOf('<br') > -1) {
                         padding = this.header.split(/<br.*?>/g).length + count;
                     }
+                    const tooltipContent: string = (this.formattedText && this.formattedText.length >= 2)
+                        ? `${this.getTooltipTextContent(this.formattedText[1])}, ${this.getTooltipTextContent(this.formattedText[0])}`
+                        : '';
                     markerGroup.appendChild(drawSymbol(
                         new TooltipLocation(x, this.markerPoint[count as number] - this.padding + (isBottom ? this.arrowPadding : padding)),
-                        shape, new Size(size, size), '', shapeOption, null));
+                        shape, new Size(size, size), '', shapeOption, "img", tooltipContent));
                 }
                 count++;
             }

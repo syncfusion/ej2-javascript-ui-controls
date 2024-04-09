@@ -334,7 +334,8 @@ export class Render {
                 const cellIndex: number = this.parent.grid.getNormalizedColumnIndex(columnUid);
                 if (rows.length !== 0) {
                     for (let j: number = 0; j < rowsObj.length; j++) {
-                        if (rowsObj[parseInt(j.toString(), 10)].isDataRow && !isNullOrUndefined(rowsObj[parseInt(j.toString(), 10)].index)) {
+                        if (rowsObj[parseInt(j.toString(), 10)].isDataRow
+                        && !isNullOrUndefined(rowsObj[parseInt(j.toString(), 10)].index)) {
                             const cell: Cell<gridColumn> = rowsObj[parseInt(j.toString(), 10)][`${cells}`][parseInt(cellIndex.toString(), 10)];
                             const cellRenderer: CellRenderer = new CellRenderer(this.parent.grid as IGrid, this.parent.grid.serviceLocator);
                             const td: Element = this.parent.getCellFromIndex(rowsObj[parseInt(j.toString(), 10)].index, cellIndex - indent);

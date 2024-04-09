@@ -1995,6 +1995,7 @@ export class Shape {
         const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'insert', previousShapeSettings: shapeSettings,
             currentShapeSettings: shapeSettings};
         parent.trigger('shapeChanging', shapeChangingArgs);
+        isSelect = isSelect ? isSelect : isSelected;
         this.drawShapeImageEvent(shapeChangingArgs, isSelect);
         if (parent.isPublicMethod && !isSelected) {
             parent.notify('undo-redo', {prop: 'updateUndoRedo', onPropertyChange: false});

@@ -9,7 +9,7 @@ import * as model from '../models/items';
 import { BaseToolbar } from '../actions/base-toolbar';
 import { DropDownButtons } from '../actions/dropdown-buttons';
 import { ServiceLocator } from '../services/service-locator';
-import { toolsLocale, fontNameLocale, formatsLocale, numberFormatListLocale, bulletFormatListLocale, defaultLocale} from '../models/default-locale';
+import { toolsLocale, fontNameLocale, formatsLocale, numberFormatListLocale, bulletFormatListLocale} from '../models/default-locale';
 import { IToolsItemConfigs, IRichTextEditor, BeforeSanitizeHtmlArgs } from '../base/interface';
 import { IToolbarItems, IDropDownItemModel, ISetToolbarStatusArgs, IToolbarItemModel } from './interface';
 
@@ -142,41 +142,6 @@ export function getTooltipText(item: string, serviceLocator: ServiceLocator): st
     const itemLocale: string = toolsLocale[`${item}`];
     const tooltipText: string = i10n.getConstant(itemLocale);
     return tooltipText;
-}
-
-export function getTooltipTextDropdownItems(item: string, serviceLocator: ServiceLocator, localeItems: { [ket: string]: string }[], rteObj?: IRichTextEditor): string {
-    if (localeItems) {
-        const i10n: L10n = serviceLocator.getService<L10n>('rteLocale');
-        for (let i: number = 0; i < localeItems.length; i++) {
-            const itemLocale: string = localeItems[i as number].value.toLocaleLowerCase();
-            const numberValue: string = localeItems[i as number].locale;
-            const numberLocale: string = defaultLocale[`${numberValue}`].toLocaleLowerCase();
-            if (item === itemLocale || item === numberLocale) {
-                const tooltipText: string = localeItems[i as number].locale;
-                return i10n.getConstant(tooltipText);
-            }
-        }
-    } else {
-        const fontsize: IDropDownItemModel[] = rteObj.fontSize.items
-        for (let i: number = 0; i < fontsize.length; i++) {
-            if (item === rteObj.fontSize.items[i as number].value) {
-                const fontSize: string = rteObj.fontSize.items[i as number].text;
-                return fontSize;
-            }
-        }
-    }
-    return '';
-}
-
-export function getQuickToolbarTooltipText(item: string): string {
-    const keys: string[] = Object.keys(defaultLocale);
-    for (let i: number = 0; i < keys.length; i++) {
-        const tooltipText: string  = defaultLocale[`${keys[i as number]}`];
-        if (item === tooltipText) {
-            return tooltipText;
-        }
-    }
-    return '';
 }
 
 /**

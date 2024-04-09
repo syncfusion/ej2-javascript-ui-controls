@@ -1905,8 +1905,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             !(e.altKey || e.shiftKey || (e.altKey && e.shiftKey && e.which == 67))) {
             this.formatter.saveData();
         }
-        if ((e as KeyboardEventArgs).action !== 'insert-link' &&
-        (e as KeyboardEventArgs).action !== 'format-copy' && (e as KeyboardEventArgs).action !== 'format-paste' &&
+        const keyboardEventAction: string[] = ['insert-link', 'format-copy', 'format-paste', 'insert-image', 'insert-table', 'insert-audio', 'insert-video'];
+        if (keyboardEventAction.indexOf((e as KeyboardEventArgs).action) === -1 &&
         (!(e as KeyboardEvent).target || !(((e as KeyboardEvent).target as Element).classList.contains('e-mention') && !isNOU(document.querySelector('#' + ((e as KeyboardEvent).target as Element).id + '_popup.e-popup-open')) && e.code === 'Tab')) &&
         ((e as KeyboardEventArgs).action && (e as KeyboardEventArgs).action !== 'paste' && (e as KeyboardEventArgs).action !== 'space'
         || e.which === 9 || (e.code === 'Backspace' && e.which === 8))) {
@@ -3560,9 +3560,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public autoResize(): void {
         if (this.height === 'auto') {
             if (this.editorMode === 'Markdown') {
-                setTimeout(() => {
-                    this.setAutoHeight(this.inputElement);
-                }, 0);
+                this.setAutoHeight(this.inputElement);
             } else if (this.iframeSettings.enable) {
                 const iframeElement: HTMLIFrameElement = this.element.querySelector('#' + this.getID() + '_rte-view');
                 this.setAutoHeight(iframeElement);
@@ -3573,20 +3571,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     private setAutoHeight(element: HTMLElement): void {
-        if (!isNOU(element) && !this.iframeSettings.enable) {
+        if (!isNOU(element)) {
             element.style.height = this.inputElement.scrollHeight + 'px';
             element.style.overflow = 'hidden';
-        }
-        else if (!isNOU(element) && !isNOU(element.parentElement) && this.iframeSettings.enable) {
-            const newRange: Range = this.getRange();
-            element.style.height = 'auto';
-            const newHeight: string = (element as HTMLIFrameElement).contentDocument.body.scrollHeight + 'px';
-            element.style.height = newHeight;
-            element.style.overflow = 'hidden';
-            // 16 px added for padding doesn't affect the editor height
-            if (newRange.startContainer.nodeName !== '#text' && newRange.startContainer.nodeName !== 'BODY' && window.innerHeight < (newRange.startContainer as Element).getBoundingClientRect().top + element.getBoundingClientRect().top + 16) {
-                (newRange.startContainer as Element).scrollIntoView(false);
-            }
         }
     }
     private wireEvents(): void {

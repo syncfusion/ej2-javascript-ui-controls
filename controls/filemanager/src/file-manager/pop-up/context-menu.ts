@@ -97,7 +97,6 @@ export class ContextMenu {
 
     /* istanbul ignore next */
     public onBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
-        this.disabledItems = [];
         let selected: boolean = false;
         let uid: string;
         // eslint-disable-next-line
@@ -633,6 +632,6 @@ export class ContextMenu {
     }
 
     private getMenuId(id: string): string {
-        return this.parent.element.id + '_cm_' + id.toLowerCase();
+        return this.parent.element.id + '_cm_' + id.split(' ').join('').toLowerCase();
     }
 }

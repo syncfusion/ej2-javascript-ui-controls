@@ -1101,6 +1101,11 @@ export class ToolbarModule {
         }
     }
 
+    private triggerTbarClickEvent(args: MenuEventArgs): void {
+        const clickEvent: ClickEventArgs = { item: args.item, originalEvent: args.event };
+        this.parent.trigger('toolbarItemClicked', clickEvent);
+    }
+
     private renderAnnotationBtn(isContextualToolbar?: boolean): void {
         const parent: ImageEditor = this.parent; let isCustomized: boolean = false;
         const items: DropDownButtonItemModel[] = []; const id: string = parent.element.id;
@@ -1173,6 +1178,7 @@ export class ToolbarModule {
                 }
             },
             select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
                 parent.okBtn();
                 let isCropSelection: boolean = false;
                 let splitWords: string[];
@@ -1214,7 +1220,11 @@ export class ToolbarModule {
                     this.currentToolbar = 'shapes';
                     (parent.element.querySelector('#' + id + '_fileUpload') as HTMLInputElement).click();
                     break;
-                default:
+                case 'ellipse':
+                case 'arrow':
+                case 'line':
+                case 'rectangle':
+                case 'path':
                     this.currentToolbar = 'shapes';
                     this.setInitialShapeSettings(args);
                     parent.notify('selection', {prop: 'annotate', value: {shape: args.item.id }});
@@ -1321,6 +1331,7 @@ export class ToolbarModule {
             },
             items: items,
             select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
                 this.cropSelect(args);
                 drpDownBtn.iconCss = 'e-icons ' + this.getCurrentShapeIcon('crop-' + args.item.id);
                 drpDownBtn.content = Browser.isDevice ? null : parent.toPascalCase(args.item.id);
@@ -1356,7 +1367,11 @@ export class ToolbarModule {
                     elem.style.display = 'block';
                 }
             },
-            items: items, select: parent.transformSelect.bind(this),
+            items: items,
+            select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
+                parent.transformSelect.bind(this);
+            },
             iconCss: 'e-icons e-transform', cssClass: 'e-image-popup'
         });
         drpDownBtn.appendTo('#' + parent.element.id + '_transformBtn');
@@ -1374,6 +1389,7 @@ export class ToolbarModule {
             // Initialize the DropDownButton component.
             const saveDrpDownBtn: DropDownButton = new DropDownButton({ items: saveItems, cssClass: 'e-caret-hide e-image-popup', iconCss: 'e-icons e-save',
                 select: (args: MenuEventArgs) => {
+                    this.triggerTbarClickEvent(args);
                     parent.export(args.item.text);
                     parent.isChangesSaved = true;
                     parent.notify('draw', { prop: 'redrawDownScale' });
@@ -1834,6 +1850,7 @@ export class ToolbarModule {
                     }
                 },
                 select: (args: MenuEventArgs) => {
+                    this.triggerTbarClickEvent(args);
                     spanElem.textContent = args.item.text;
                     parent.updateStrokeWidth(args.item.id);
                     if (Browser.isDevice) {
@@ -1890,6 +1907,7 @@ export class ToolbarModule {
             },
 
             select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
                 spanElem.textContent = args.item.text;
                 parent.updateArrow('startArrow', args.item.id);
             }
@@ -1931,6 +1949,7 @@ export class ToolbarModule {
                 }
             },
             select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
                 spanElem.textContent = args.item.text;
                 parent.updateArrow('endArrow', args.item.id);
             }
@@ -2158,6 +2177,7 @@ export class ToolbarModule {
                     }
                 },
                 select: (args: MenuEventArgs) => {
+                    this.triggerTbarClickEvent(args);
                     spanElem.textContent = args.item.text;
                     if (Browser.isDevice) {
                         spanElem.setAttribute('style', 'font-family:' + args.item.id);
@@ -2186,6 +2206,7 @@ export class ToolbarModule {
                     args.element.querySelector('[aria-label *= ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
                 },
                 select: (args: MenuEventArgs) => {
+                    this.triggerTbarClickEvent(args);
                     fontSizeSpanElem.textContent =  args.item.text;
                     parent.updateFontSize(args.item.text);
                 }
@@ -2662,6 +2683,7 @@ export class ToolbarModule {
                     args.element.querySelector('[aria-label = ' + '"' + activeBtn + '"' + ']').classList.add('e-selected-btn');
                 },
                 select: (args: MenuEventArgs) => {
+                    this.triggerTbarClickEvent(args);
                     spanElem.textContent = args.item.text;
                     parent.updatePenStrokeWidth(args.item.id);
                     if (Browser.isDevice) {
@@ -2952,6 +2974,7 @@ export class ToolbarModule {
                 }
             },
             select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
                 prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
                     gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
                     offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
@@ -3023,6 +3046,7 @@ export class ToolbarModule {
                 }
             },
             select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
                 prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
                     gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
                     offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
@@ -3094,6 +3118,7 @@ export class ToolbarModule {
                 }
             },
             select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
                 prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
                     gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
                     offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
@@ -3166,6 +3191,7 @@ export class ToolbarModule {
                 }
             },
             select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
                 prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
                     gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
                     offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
@@ -3237,6 +3263,7 @@ export class ToolbarModule {
                 }
             },
             select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
                 prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
                     gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
                     offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,
@@ -3306,6 +3333,7 @@ export class ToolbarModule {
                 }
             },
             select: (args: MenuEventArgs) => {
+                this.triggerTbarClickEvent(args);
                 prevFrameSettings = {type: parent.toPascalCase(parent.frameObj.type) as FrameType, color: parent.frameObj.color,
                     gradientColor: parent.frameObj.gradientColor, size: parent.frameObj.size, inset: parent.frameObj.inset,
                     offset: parent.frameObj.offset, borderRadius: parent.frameObj.radius, frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle,

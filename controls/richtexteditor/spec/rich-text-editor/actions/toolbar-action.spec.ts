@@ -746,7 +746,7 @@ describe('Toolbar actions ', () => {
             let actionComplete: boolean = false;
             let controlId: string;
             let selectNode: HTMLElement;
-            beforeAll(() => {
+            beforeAll((done: DoneFn) => {
                 rteObj = renderRTE({
                     toolbarSettings: {
                         items: ['Cut', 'Copy', 'Paste']
@@ -764,9 +764,11 @@ describe('Toolbar actions ', () => {
                 controlId = rteEle.id;
                 editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
                 curDocument = rteObj.contentModule.getDocument();
+                done();
             });
-            afterAll(() => {
+            afterAll((done: DoneFn) => {
                 destroy(rteObj);
+                done();
             });
             it(" Click the cut action", () => {
                 let nodeSelection: NodeSelection = new NodeSelection();
@@ -896,6 +898,39 @@ describe('Toolbar actions ', () => {
                     target: (popupElement.childNodes[0].childNodes[1] as HTMLElement)
                 };
                 (rteObj.toolbarModule as any).dropDownModule.fontNameDropDown.clickHandler(mouseEventArgs);
+            });
+        });
+
+        describe('876823 - In IFrame mode, the list dropodown menu(ordered list & unordered list) not closed properly when focus on the editor. ', () => {
+            let innerHTMLStr = "<p>First p node-0</p><p>First p node-1</p>\n\n    <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>\n\n    <p class='second-p-node'><label class='second-label'>label node</label></p>\n    <p class='third-p-node'>dom node<label class='third-label'>label node</label></p>\n    <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>\n    <p id='convertPre'>converted to pre<p><p id='revertPre'>converted to pre<p>";
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['Bold', 'NumberFormatList', 'BulletFormatList']
+                    },
+                    value :innerHTMLStr,
+                    iframeSettings: {
+                        enable: true
+                    },
+                });
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+            it("Dropdown hides when you click the focus from the dropdown.", () => {
+                (rteObj as any).focusIn();
+                const mouseDownEvent = new MouseEvent('mousedown', {
+                    bubbles: true,
+                    cancelable: true,
+                });
+                let trgEle: HTMLElement = <HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[1];
+                trgEle.childNodes[0].dispatchEvent(mouseDownEvent);
+                (trgEle.childNodes[0] as HTMLElement).click();
+                (trgEle.childNodes[0] as HTMLElement).setAttribute("aria-expanded", 'true');
+                let popupElement = document.querySelectorAll("#" + rteObj.getID() + "_toolbar_NumberFormatList-popup")[0];
+                expect(popupElement != undefined ).toBe(true);
+                (rteObj as any).inputElement.ownerDocument.dispatchEvent(mouseDownEvent);
+                expect(popupElement.classList.contains("e-popup-close")).toBe(true);
             });
         });
     });

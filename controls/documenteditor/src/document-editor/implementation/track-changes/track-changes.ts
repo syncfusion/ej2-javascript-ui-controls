@@ -2,7 +2,7 @@
 import { RevisionType, RevisionActionType } from '../../base/types';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
-import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox, Widget, BlockWidget } from '../viewer/page';
+import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox, Widget, BlockWidget, FieldElementBox } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
@@ -117,7 +117,8 @@ export class Revision {
             selection.selectRange(startPos, endPos);
             this.owner.editorModule.updateHistoryPosition(endPos, false);
         }
-        if (this.owner.editorHistoryModule && this.owner.editorHistoryModule.currentBaseHistoryInfo.action !== 'BackSpace') {
+        if (this.owner.editorHistoryModule && this.owner.editorHistoryModule.currentBaseHistoryInfo
+            && this.owner.editorHistoryModule.currentBaseHistoryInfo.action !== 'BackSpace') {
             this.owner.editorHistoryModule.currentBaseHistoryInfo.removedNodes.reverse();
         }
         if (this.owner.editorHistoryModule) {
@@ -150,6 +151,10 @@ export class Revision {
             }
             if (this.owner.editorHistoryModule) {
                 this.owner.editorHistoryModule.updateComplexHistory();
+            }
+            if (this.owner.selectionModule.start.paragraph.isInsideTable) {
+                let table: TableWidget = (this.owner.selectionModule.start.paragraph.containerWidget as TableCellWidget).ownerTable;
+                this.owner.documentHelper.layout.reLayoutTable(table);
             }
         }
     }
@@ -238,9 +243,35 @@ export class Revision {
                     return true;
                 }
             } else {
-                this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'ClearRevisions';
-                this.updateRevisionID();
-                this.removeRevisionFromPara(start, end);
+                // Bug 873011: Handled the hyperlink formatting preservation when rejecting the RemoveHyperlink action.
+                let fieldBegin: FieldElementBox = this.owner.selectionModule.getHyperlinkField();
+                if (!isFromAccept && !isNullOrUndefined(fieldBegin) && fieldBegin == item && !isNullOrUndefined(fieldBegin.fieldEnd)) {
+                    this.owner.editorModule.initComplexHistory('ClearRevisions');
+                    this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'ClearRevisions';
+                    this.updateRevisionID();
+                    this.removeRevisionFromPara(start, end);
+                    if (!isNullOrUndefined(this.owner.editorHistoryModule)) {
+                        let endInfo: ParagraphInfo = this.owner.selectionModule.getParagraphInfo(end);
+                        let endIndex: string = this.owner.selectionModule.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
+                        this.owner.editorHistoryModule.currentBaseHistoryInfo.endPosition = endIndex;
+                        this.owner.editorHistoryModule.currentBaseHistoryInfo.selectionEnd = endIndex;
+                        this.owner.editorHistoryModule.updateHistory();
+                    }
+                    if (this.owner.enableTrackChanges) {
+                        this.owner.enableTrackChanges = false;
+                        this.owner.editorModule.updateHyperlinkFormat(this.owner.selectionModule);
+                        this.owner.enableTrackChanges = true;
+                    } else {
+                        this.owner.editorModule.updateHyperlinkFormat(this.owner.selectionModule);
+                    }
+                    if (this.owner.editorHistoryModule && !isNullOrUndefined(this.owner.editorHistoryModule.currentHistoryInfo)) {
+                        this.owner.editorHistoryModule.updateComplexHistory();
+                    }
+                } else {
+                    this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'ClearRevisions';
+                    this.updateRevisionID();
+                    this.removeRevisionFromPara(start, end);
+                }
                 // Set false to this because we retrived the revision based on above action (after this iteration we have changed the action basded the below property)
                 this.owner.trackChangesPane.isTrackingPageBreak = false;
             }
@@ -253,7 +284,7 @@ export class Revision {
             let tableWidget: TableWidget = (item as WRowFormat).ownerBase.ownerTable;
             let currentRow: TableRowWidget = item.ownerBase as TableRowWidget;
             this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'RemoveRowTrack';
-            this.owner.editorModule.cloneTableToHistoryInfo(tableWidget);
+            this.owner.editorModule.cloneTableToHistoryInfo(tableWidget.combineWidget(this.owner.viewer) as TableWidget);
         }
 
         removeChanges = removeChanges && !this.canSkipTableItems;

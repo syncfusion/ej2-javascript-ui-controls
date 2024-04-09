@@ -851,7 +851,7 @@ export class Video {
         }
         e.selection.restore();
         this.parent.formatter.process(
-            this.parent, e.args, e.args,
+            this.parent, e.args, (e.args as ClickEventArgs).originalEvent,
             {
                 selectNode: e.selectNode,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
@@ -937,6 +937,9 @@ export class Video {
                 this.prevSelectedVidEle.style.outline = '';
             }
         }
+        if (this.parent.inlineMode.enable && target && this.dialogObj && !closest(target, '#' + this.dialogObj.element.id)) {
+            this.dialogObj.hide();
+        }
     }
     private removeResizeEle(): void {
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
@@ -956,7 +959,7 @@ export class Video {
         }
         const subCommand: string = ((e.args as ClickEventArgs).item) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Break';
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
+        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent, { selectNode: e.selectNode, subCommand: subCommand });
     }
 
     private inline(e: IImageNotifyArgs): void {
@@ -965,13 +968,13 @@ export class Video {
         }
         const subCommand: string = ((e.args as ClickEventArgs).item) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Inline';
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
+        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent, { selectNode: e.selectNode, subCommand: subCommand });
     }
 
     private alignVideo(e: IImageNotifyArgs, type: string): void {
         const subCommand: string = ((e.args as ClickEventArgs).item) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : type;
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
+        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent, { selectNode: e.selectNode, subCommand: subCommand });
     }
 
     private editAreaClickHandler(e: IImageNotifyArgs): void {
@@ -1118,7 +1121,7 @@ export class Video {
                     this.uploadObj.removing();
                 }
                 this.parent.isBlur = false;
-                if (event && (event.event as { [key: string]: string }).returnValue) {
+                if (event && !isNOU(event.event) && (event.event as { [key: string]: string }).returnValue) {
                     if (this.parent.editorMode === 'HTML') {
                         selection.restore();
                     }
@@ -1207,21 +1210,26 @@ export class Video {
                 }
             }
         });
-        if (e.selectNode && (((e.selectNode[0] as HTMLElement) && (e.selectNode[0] as HTMLElement).nodeType !== 3 &&
-            (e.selectNode[0] as HTMLElement).nodeName !== 'BR' &&
-            ((e.selectNode[0] as HTMLElement).classList &&
-            (e.selectNode[0] as HTMLElement).classList.contains(classes.CLS_VID_CLICK_ELEM))) ||
-            (e.selectNode[0] as HTMLElement).nodeName === 'IFRAME' || (e.selectNode[0] as HTMLElement).nodeName === 'VIDEO')) {
-            const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
-            const sourceElement: HTMLSourceElement = (e.selectNode[0] as HTMLElement).querySelector('source');
-            (this.inputUrl as HTMLInputElement).value = sourceElement.src.match(regex) ? sourceElement.src : '';
+        if (e.selectNode && (e.selectNode[0] as HTMLElement) && ((e.selectNode[0] as HTMLElement).nodeName === 'VIDEO' || this.isEmbedVidElem(e.selectNode[0] as HTMLElement))) {
+            if ((e.selectNode[0] as HTMLElement).nodeName === 'VIDEO') {
+                const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+                const sourceElement: HTMLSourceElement = (e.selectNode[0] as HTMLElement).querySelector('source');
+                (this.inputUrl as HTMLInputElement).value = sourceElement && sourceElement.src && sourceElement.src.match(regex) ? sourceElement.src : '';
+            } else {
+                (this.embedInputUrl as HTMLInputElement).value = (e.selectNode[0] as HTMLElement).nodeName === 'IFRAME' ? (e.selectNode[0] as HTMLElement).outerHTML
+                 : (e.selectNode[0] as HTMLElement).querySelector('iframe').outerHTML;
+            }
         }
+        const isWebUrl: boolean = (this.inputUrl as HTMLInputElement).value ? true : false;
         const embedUrlBtn: RadioButton = new RadioButton({
             label: this.i10n.getConstant('embeddedCode'),
-            checked: true,
+            checked: !isWebUrl,
             name: 'URL',
             created: () => {
-                urlContent.appendChild(this.embedInputUrl);
+                if (!isWebUrl)
+                {
+                    urlContent.appendChild(this.embedInputUrl);
+                }
             },
             change: () => {
                 urlContent.innerHTML = '';
@@ -1231,7 +1239,14 @@ export class Video {
         embedUrlBtn.appendTo((videoUrl.querySelector('#embedURL') as HTMLElement));
         const webUrlBtn: RadioButton = new RadioButton({
             label: this.i10n.getConstant('webUrl'),
+            checked: isWebUrl,
             name: 'URL',
+            created: () => {
+                if (isWebUrl)
+                {
+                    urlContent.appendChild(this.inputUrl);
+                }
+            },
             change: () => {
                 urlContent.innerHTML = '';
                 urlContent.appendChild(this.inputUrl);

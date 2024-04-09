@@ -323,7 +323,7 @@ describe('FileManager control Grid view', () => {
         });
         it('end key testing', () => {
             let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
-            let name: any = document.querySelector('th.e-fe-grid-name');
+            let icon: any = document.querySelector('th.e-fe-grid-icon');
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe(null);
             keyboardEventArgs.action = 'end';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
@@ -336,7 +336,7 @@ describe('FileManager control Grid view', () => {
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
             keyboardEventArgs.action = 'ctrlHome';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
-            expect(name.classList.contains('e-focused')).toBe(true);
+            expect(icon.classList.contains('e-focused')).toBe(true);
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
             keyboardEventArgs.action = 'end';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
@@ -430,17 +430,17 @@ describe('FileManager control Grid view', () => {
         });
         it('control+home key testing', () => {
             let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
-            let name: any = document.querySelector('th.e-fe-grid-name');
+            let icon: any = document.querySelector('th.e-fe-grid-icon');
             expect(li[0].classList.contains('e-focused')).toBe(false);
             keyboardEventArgs.action = 'ctrlHome';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
-            expect(name.classList.contains('e-focused')).toBe(true);
+            expect(icon.classList.contains('e-focused')).toBe(true);
             feObj.detailsviewModule.gridObj.selectionModule.selectRow(li.length - 1);
-            expect(name.classList.contains('e-focused')).toBe(false);
+            expect(icon.classList.contains('e-focused')).toBe(false);
             keyboardEventArgs.action = 'ctrlHome';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe('true');
-            expect(li[0].classList.contains('e-focused')).toBe(true);
+            expect(icon.classList.contains('e-focused')).toBe(true);
             keyboardEventArgs.action = 'home';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe(null);
@@ -1174,14 +1174,14 @@ describe('FileManager control Grid view', () => {
         });
 
         it('tab key testing', function () {
-            let li: any = document.getElementById('file_grid').querySelector('th.e-fe-grid-name');
+            let icon: any = document.getElementById('file_grid').querySelector('th.e-fe-grid-icon');
+            let name: any = document.getElementById('file_grid').querySelector('th.e-fe-grid-name');
             keyboardEventArgs.action = 'tab';
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
-            expect(li.classList.contains('e-focused')).toBe(true);
-            let grid: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+            expect(icon.classList.contains('e-focused')).toBe(true);
             feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
-            expect(grid[0].classList.contains('e-focused')).toBe(true);
-            expect(li.classList.contains('e-focused')).toBe(false);
+            expect(name.classList.contains('e-focused')).toBe(true);
+            expect(icon.classList.contains('e-focused')).toBe(false);
         });
 
         it('ctrl + A key testing', () => {

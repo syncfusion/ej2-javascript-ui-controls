@@ -172,8 +172,11 @@ export class NodeCutter {
             cursorRange = range;
             this.position = 1;
         } else {
-            const startOffset: number = this.GetCursorStart(indexes , range.startOffset, true);
+            let startOffset: number = this.GetCursorStart(indexes , range.startOffset, true);
             this.position = range.startOffset - startOffset;
+            if (startOffset !== 0 && str[startOffset as number] && str[startOffset as number] === ' ') {
+                startOffset = startOffset + 1;
+            }
             cursorRange.setStart(range.startContainer, startOffset);
             cursorRange.setEnd(range.startContainer, this.GetCursorStart(indexes, range.startOffset, false));
         }

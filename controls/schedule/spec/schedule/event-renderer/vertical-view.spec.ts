@@ -2028,6 +2028,90 @@ describe('Vertical View Event Render Module', () => {
         });
     });
 
+describe('EJ2-876307 - Hide appointment wrappers until template rendering is completed', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Burning Man',
+            StartTime: '2018-06-06T09:30:00.000Z',
+            EndTime: '2018-06-06T11:30:00.000Z',
+            OwnerId: 1
+        },
+        {
+            Id: 2,
+            Subject: 'Marketing Forum',
+            StartTime: '2018-06-06T04:30:00.000Z',
+            EndTime: '2018-06-06T06:00:00.000Z',
+            OwnerId: 2
+        }, {
+            Id: 3,
+            Subject: 'Business Factory',
+            StartTime: '2018-06-12T08:00:00.000Z',
+            EndTime: '2018-06-12T09:30:00.000Z',
+            OwnerId: 3
+        }, {
+            Id: 4,
+            Subject: 'Burning Man1',
+            StartTime: '2018-06-12T06:00:00.000Z',
+            EndTime: '2018-06-12T07:30:00.000Z',
+            OwnerId: 1
+        }];
+        const ownerCollections: Record<string, any>[] = [
+            { OwnerText: 'Margaret', OwnerId: 1, Color: '#ea7a57', workDays: [1, 2, 3, 4, 5, 6] },
+            { OwnerText: 'Robert', OwnerId: 2, Color: '#df5286' },
+            { OwnerText: 'Laura', OwnerId: 3, Color: '#865fcf' }
+        ];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                selectedDate: new Date(2018, 5, 5),
+                resources: [
+                    {
+                        field: 'OwnerId', title: 'Owners', name: 'Owners', allowMultiple: true,
+                        dataSource: ownerCollections, textField: 'OwnerText', idField: 'OwnerId',
+                        colorField: 'Color', workDaysField: 'workDays'
+                    }
+                ],
+                eventSettings: {
+                    template: '<div>Subject: ${Subject}</div>'
+                }
+            };
+            schObj = util.createSchedule(schOptions, [], done);
+            (schObj as any).isReact = true;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking hidden appointment wraps at initial rendering', (done: DoneFn) => {
+            schObj.dataBinding = () => {
+                const hiddenWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS));
+                expect(hiddenWraps.length).toEqual(14);
+            }
+            schObj.dataBound = () => {
+                const hiddenWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS));
+                expect(hiddenWraps.length).toEqual(0);
+                done();
+            }
+            schObj.eventSettings.dataSource = data;
+            schObj.dataBind();
+        });
+        it('Checking hidden appointment wraps while resource grouping', (done: DoneFn) => {
+            schObj.dataBinding = () => {
+                const hiddenWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS));
+                expect(hiddenWraps.length).toEqual(42);
+            }
+            schObj.dataBound = () => {
+                const hiddenWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS));
+                expect(hiddenWraps.length).toEqual(0);
+                done();
+            }
+            schObj.group = { resources: ['Owners'] };
+            schObj.dataBind();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

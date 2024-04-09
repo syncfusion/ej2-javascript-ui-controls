@@ -1,7 +1,7 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
-import { ChartLocation, ColorValue, RectOption, isCollide, isOverlap, LabelLocation } from '../../common/utils/helper';
+import { ChartLocation, ColorValue, RectOption, isCollide, isOverlap, LabelLocation, rotateTextSize } from '../../common/utils/helper';
 import { markerAnimate, appendChildElement, getVisiblePoints } from '../../common/utils/helper';
 import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex } from '../../common/utils/helper';
 import { Chart } from '../chart';
@@ -39,7 +39,7 @@ export class DataLabel {
     private inverted: boolean;
     private errorHeight: number = 0;
     private chartBackground: string;
-
+    private extraSpace: number;
     /**
      * Constructor for the data label module.
      *
@@ -147,7 +147,6 @@ export class DataLabel {
         this.yAxisInversed = series.yAxis.isAxisInverse;
         const redraw: boolean = chart.redraw;
         let isDataLabelOverlap: boolean = false;
-        let coordinatesAfterRotation: ChartLocation[] = [];
         const templateId: string = chart.element.id + '_Series_' +
             (series.index === undefined ? series.category : series.index) + '_DataLabelCollections';
         const element: HTMLElement = createElement('div', {
@@ -199,7 +198,12 @@ export class DataLabel {
                         if (argsData.template !== null) {
                             this.createDataLabelTemplate(element, series, dataLabel, point, argsData, i, redraw);
                         } else {
-                            textSize = measureText(argsData.text, dataLabel.font, this.chart.themeStyle.datalabelFont);
+                            if (dataLabel.enableRotation){
+                                textSize = rotateTextSize(dataLabel.font, argsData.text, dataLabel.angle, this.chart);
+                            }
+                            else {
+                                textSize = measureText(argsData.text, dataLabel.font, this.chart.themeStyle.datalabelFont);
+                            }
                             rect = this.calculateTextPosition(point, series, textSize, dataLabel, i);
                             // To check whether the polar radar chart datalabel intersects the axis label or not
                             if (chart.chartAreaType === 'PolarRadar') {
@@ -216,10 +220,9 @@ export class DataLabel {
                                 const rectCoordinates: ChartLocation[] = this.getRectanglePoints(rect);
                                 rectCenterX = rect.x + (rect.width / 2);
                                 rectCenterY = (rect.y + (rect.height / 2));
-                                coordinatesAfterRotation = getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle);
-                                isDataLabelOverlap = (dataLabel.labelIntersectAction === 'Rotate90' || angle == -90) ? false : this.isDataLabelOverlapWithChartBound(coordinatesAfterRotation, chart, clip);
+                                isDataLabelOverlap = (dataLabel.labelIntersectAction === 'Rotate90' || angle == -90) ? false : this.isDataLabelOverlapWithChartBound(rectCoordinates, chart, clip);
                                 if (!isDataLabelOverlap) {
-                                    this.chart.rotatedDataLabelCollections.push(coordinatesAfterRotation);
+                                    this.chart.rotatedDataLabelCollections.push(rectCoordinates);
                                     const currentPointIndex: number = this.chart.rotatedDataLabelCollections.length - 1;
                                     for (let index: number = currentPointIndex; index >= 0; index--) {
                                         if (this.chart.rotatedDataLabelCollections[currentPointIndex as number] &&
@@ -256,7 +259,7 @@ export class DataLabel {
                                 rgbValue = convertHexToColor(colorNameToHex(backgroundColor));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
                                 xPos = (rect.x + this.margin.left + textSize.width / 2) + labelLocation.x;
-                                yPos = (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
+                                yPos = dataLabel.enableRotation && this.chart.chartAreaType !== 'PolarRadar' ? (rect.y + this.margin.top + textSize.height / 2 + textSize.width / 4 + (dataLabel.position === 'Auto' ? point.regions[0].width / 10 : 0)) + labelLocation.y : (rect.y + this.margin.top + textSize.height * 3 / 4) + labelLocation.y;
                                 labelLocation = { x: 0, y: 0 };
                                 if (angle !== 0 && dataLabel.enableRotation) {
                                     // xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
@@ -584,8 +587,8 @@ export class DataLabel {
         }
         const padding: number = 5;
         const margin: MarginModel = this.margin;
-        const textLength: number = !this.inverted ? textSize.height : textSize.width;
-        let extraSpace: number = this.borderWidth + textLength / 2 + (position !== 'Outer' && series.type.indexOf('Column') > -1 &&
+        const textLength: number = (series.marker.dataLabel.enableRotation ? textSize.width : (!this.inverted ? textSize.height : textSize.width));
+        this.extraSpace = this.borderWidth + textLength / 2 + (position !== 'Outer' && series.type.indexOf('Column') > -1 &&
             (Math.abs(rect.height - textSize.height) < padding) ? 0 : padding);
         if (series.type === 'StackingColumn100' || series.type === 'StackingBar100') {
             position = (position === 'Outer') ? 'Top' : position;
@@ -598,10 +601,10 @@ export class DataLabel {
         switch (position) {
         case 'Bottom':
             labelLocation = !this.inverted ?
-                isMinus ? (labelLocation + (series.type === 'Waterfall' ? (- extraSpace - margin.top - this.markerHeight) : (-rect.height + extraSpace + margin.top))) :
-                    (labelLocation + rect.height - extraSpace - margin.bottom) :
-                isMinus ? (labelLocation + (series.type === 'Waterfall' ? (+ extraSpace + margin.left + this.markerHeight) : (+ rect.width - extraSpace - margin.left))) :
-                    (labelLocation - rect.width + extraSpace + margin.right);
+                isMinus ? (labelLocation + (series.type === 'Waterfall' ? (- this.extraSpace - margin.top - this.markerHeight) : (-rect.height + this.extraSpace + margin.top))) :
+                    (labelLocation + rect.height - this.extraSpace - margin.bottom) :
+                isMinus ? (labelLocation + (series.type === 'Waterfall' ? (+ this.extraSpace + margin.left + this.markerHeight) : (+ rect.width - this.extraSpace - margin.left))) :
+                    (labelLocation - rect.width + this.extraSpace + margin.right);
             break;
         case 'Middle':
             labelLocation = labelLocation = !this.inverted ?
@@ -612,8 +615,8 @@ export class DataLabel {
             labelLocation = this.calculateRectActualPosition(labelLocation, rect, isMinus, series, textSize, labelIndex, point);
             break;
         default:
-            extraSpace += this.errorHeight;
-            labelLocation = this.calculateTopAndOuterPosition(labelLocation, rect, position, series, labelIndex, extraSpace, isMinus);
+            this.extraSpace += this.errorHeight;
+            labelLocation = this.calculateTopAndOuterPosition(labelLocation, rect, position, series, labelIndex, this.extraSpace, isMinus);
 
             break;
         }
@@ -697,8 +700,14 @@ export class DataLabel {
                 labelLocation, rect, isMinus, actualPosition,
                 series, size, labelIndex, point);
             if (!this.inverted) {
+                if (series.marker.dataLabel.enableRotation) {
+                    size.width = size.width - point.regions[0].width / 10;
+                }
                 labelRect = calculateRect(new ChartLocation(this.locationX, location), size, this.margin);
                 isOverLap = labelRect.y < 0 || isCollide(labelRect, collection, series.clipRect) || labelRect.y > series.clipRect.height;
+                if (series.marker.dataLabel.template === null && isOverLap != true) {
+                    isOverLap = labelRect.y / 2 + size.height + (actualPosition === 'Outer' ? point.regions[0].height + this.extraSpace : point.regions[0].height - 2 * this.extraSpace) > series.clipRect.height; 
+                } 
             } else {
                 labelRect = calculateRect(new ChartLocation(location, this.locationY), size, this.margin);
                 isOverLap = labelRect.x < 0 || isCollide(labelRect, collection, series.clipRect) ||

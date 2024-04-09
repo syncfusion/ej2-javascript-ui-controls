@@ -123,14 +123,18 @@ export class DetailRow {
                 detailRow.appendChild(this.parent.createElement('th', { className: 'e-detailindentcell', attrs: {'scope': 'col'} }));
                 detailRow.appendChild(detailCell);
                 tr.parentNode.insertBefore(detailRow, tr.nextSibling);
+                let isReactCompiler: boolean;
+                let isReactChild: boolean;
                 if (gObj.detailTemplate) {
-                    const isReactCompiler: boolean = this.parent.isReact && typeof (gObj.detailTemplate) !== 'string';
-                    const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                    isReactCompiler = this.parent.isReact && typeof (gObj.detailTemplate) !== 'string';
+                    isReactChild = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                         this.parent.parentDetails.parentInstObj.isReact;
                     const detailTemplateID: string = gObj.element.id + 'detailTemplate';
                     if (isReactCompiler || isReactChild) {
                         gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID, null, null, detailCell);
-                        this.parent.renderTemplates();
+                        this.parent.renderTemplates(function(): void {
+                            gObj.trigger(events.detailDataBound, { detailElement: detailCell, data: data, childGrid: childGrid });
+                        });
                     } else {
                         appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID,
                                                                             undefined, undefined, undefined, this.parent['root']));
@@ -185,7 +189,9 @@ export class DetailRow {
                 const rowObjs: Row<Column>[] = gObj.getRowsObject();
                 rowElems.splice(rowElems.indexOf(tr) + 1, 0, detailRow);
                 rowObjs.splice(rowObjs.indexOf(rowObj) + 1, 0, row);
-                gObj.trigger(events.detailDataBound, { detailElement: detailCell, data: data, childGrid: childGrid });
+                if (!isReactCompiler || !isReactChild) {
+                    gObj.trigger(events.detailDataBound, { detailElement: detailCell, data: data, childGrid: childGrid });
+                }
                 gObj.notify(events.detailDataBound, { rows: rowObjs });
             }
             classList(target, ['e-detailrowexpand'], ['e-detailrowcollapse']);

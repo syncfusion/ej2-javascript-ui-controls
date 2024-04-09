@@ -931,7 +931,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         }
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
-        this.activeStep = index;
+        this.activeStep = parseInt(index.toString(), 10);
         this.isProtectedOnChange = prevOnChange;
         for (let i: number = 0; i < this.steps.length; i++) {
             const itemElement: HTMLElement = this.stepperItemElements[parseInt(i.toString(), 10)];

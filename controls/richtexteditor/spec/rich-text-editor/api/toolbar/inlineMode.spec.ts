@@ -137,12 +137,13 @@ describe(' Inline Quick Toolbar - ', () => {
                 item.click();
                 let popup: HTMLElement = document.getElementById(controlId + '_quick_Alignments-popup');
                 dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
-                (popup.querySelectorAll('.e-item')[3] as HTMLElement).click()
-                let tag: HTMLElement = rteObj.element.querySelector('#rte');
-                expect(tag.parentElement.style.textAlign === 'justify').toBe(true);
-                document.body.click();
-                dispatchEvent(document as any, 'mousedown')
-                done();
+                setTimeout(() => {
+                    (popup.querySelectorAll('.e-item')[3] as HTMLElement).click()
+                    let tag: HTMLElement = rteObj.element.querySelector('#rte');
+                    expect(tag.parentElement.style.textAlign === 'justify').toBe(true);
+                    document.body.click();
+                    done();
+                }, 200);
             }, 200);
         });
 

@@ -20,10 +20,7 @@ describe("RichTextEditor Styles changes", () => {
     describe("EJ2-15894 - RTE maximized window hide the bottom", () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let originalTimeout: number;
         beforeEach(() => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: [ "Bold", "FullScreen" ]
@@ -33,7 +30,6 @@ describe("RichTextEditor Styles changes", () => {
         });
 
         afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             styleEle.remove();
             destroy(rteObj);
         });
@@ -44,7 +40,7 @@ describe("RichTextEditor Styles changes", () => {
                 trgEle.click();
                 expect(window.getComputedStyle(rteEle.querySelector('.e-rte-content')).height).not.toEqual('100%');
                 done();
-            }, 2000);
+            }, 1000);
         });
     });
 });

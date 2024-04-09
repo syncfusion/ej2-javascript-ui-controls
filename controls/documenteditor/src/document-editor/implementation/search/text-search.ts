@@ -48,12 +48,13 @@ export class TextSearch {
         if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1
             || textToFind.indexOf(']') > -1 || textToFind.indexOf('$') > -1 || textToFind.indexOf('{') > -1
             || textToFind.indexOf('}') > -1 || textToFind.indexOf('*') > -1 || textToFind.indexOf('|') > -1
-            || textToFind.indexOf('^') > -1 || textToFind.indexOf('?') > -1) {
+            || textToFind.indexOf('^') > -1 || textToFind.indexOf('?') > -1 || textToFind.indexOf('+') > -1) {
             let text: string = '';
             for (let i: number = 0; i < textToFind.length; i++) {
                 if (textToFind[parseInt(i.toString(), 10)] === '(' || textToFind[parseInt(i.toString(), 10)] === ')' || textToFind[parseInt(i.toString(), 10)] === '.' || textToFind[parseInt(i.toString(), 10)] === '['
                     || textToFind[parseInt(i.toString(), 10)] === ']' || textToFind[parseInt(i.toString(), 10)] === '$' || textToFind[parseInt(i.toString(), 10)] === '{' || textToFind[parseInt(i.toString(), 10)] === '}'
-                    || textToFind[parseInt(i.toString(), 10)] === '*' || textToFind[parseInt(i.toString(), 10)] === '|' || textToFind[parseInt(i.toString(), 10)] === '^' || textToFind[parseInt(i.toString(), 10)] === '?') {
+                    || textToFind[parseInt(i.toString(), 10)] === '*' || textToFind[parseInt(i.toString(), 10)] === '|' || textToFind[parseInt(i.toString(), 10)] === '^' || textToFind[parseInt(i.toString(), 10)] === '?'
+                    || textToFind[parseInt(i.toString(), 10)] === '+') {
                     text += '\\' + textToFind[parseInt(i.toString(), 10)];
                 } else {
                     text += textToFind[parseInt(i.toString(), 10)];

@@ -11667,7 +11667,9 @@ export class Selection {
                             isDropdown = false;
                         } 
                     }
-                    offset += element.length;
+                    if (!element.skipformFieldLength) {
+                        offset += element.length;
+                    }
                 }
             }
         }
@@ -11821,7 +11823,9 @@ export class Selection {
                             }
                         }
                     }
-                    offset += element.length;
+                    if (!element.skipformFieldLength) {
+                        offset += element.length;
+                    }
                 }
             }
         }

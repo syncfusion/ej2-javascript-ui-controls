@@ -6,7 +6,8 @@
 import { renderRTE, destroy, setCursorPoint } from '../render.spec';
 import { ActionBeginEventArgs, RichTextEditor } from '../../../src/rich-text-editor';
 import { Button } from '@syncfusion/ej2-buttons';
-import { createElement, detach } from '@syncfusion/ej2-base';
+import { Browser, createElement, detach } from '@syncfusion/ej2-base';
+import { NodeSelection } from '../../../src/selection/selection';
 
 
 const copyKeyBoardEventArgs: any = {
@@ -85,9 +86,9 @@ describe('Format Painter Module', () => {
             editAreaClickArgs.args.target = rteObject.element.querySelector('.e-content');
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
-
+            done();
         });
         it('Should add cursor and activate toolbar after copy action and remove after paste action', (done: Function) => {
             rteObject.focusIn();
@@ -100,7 +101,7 @@ describe('Format Painter Module', () => {
                 expect(rteObject.element.querySelector('.e-content').classList.contains('e-rte-cursor-brush')).toEqual(false);
                 expect(toolbarELem.parentElement.parentElement.classList.contains('e-active')).toEqual(false);
                 done();
-            }, 1000);
+            }, 400);
         });
         it('Should add cursor and activate toolbar after copy action , should not remove after paste action remove after escape action', (done: Function) => {
             rteObject.focusIn();
@@ -123,7 +124,7 @@ describe('Format Painter Module', () => {
                 expect(rteObject.element.querySelector('.e-content').classList.contains('e-rte-cursor-brush')).toEqual(false);
                 expect(toolbarELem.parentElement.parentElement.classList.contains('e-active')).toEqual(false);
                 done();
-            }, 1000);
+            }, 400);
         });
         it('Should disable sticky mode on click of format painter toolbar', (done: Function) => {
             rteObject.focusIn();
@@ -150,7 +151,7 @@ describe('Format Painter Module', () => {
                     expect(toolbarELem.parentElement.parentElement.classList.contains('e-active')).toEqual(false);
                     done();
                 }, 500);
-            }, 1000);
+            }, 400);
         });
     } );
 
@@ -174,8 +175,9 @@ describe('Format Painter Module', () => {
             toolbarELem = document.body.querySelector('.e-rte-format-painter');
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Check for the toolbar update and cursor update after Format Copy action', (done: Function) => {
             rteObject.focusIn();
@@ -228,8 +230,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Tests for painting inline format from P element to H2 element Case 1: With selection, Should only paste inline styles', (done: Function) => {
             rteObject.focusIn();
@@ -315,8 +318,8 @@ describe('Format Painter Module', () => {
             expect(startElement.nodeName).toEqual('P');
             expect(startElement.querySelectorAll('strong').length).toEqual(1);
             expect(startElement.querySelectorAll('em').length).toEqual(1);
-            expect(startElement.querySelectorAll('em')[0].textContent).toEqual(' started');
-            expect(startElement.querySelectorAll('strong')[0].textContent).toEqual(' started');
+            expect(startElement.querySelectorAll('em')[0].textContent).toEqual('started');
+            expect(startElement.querySelectorAll('strong')[0].textContent).toEqual('started');
             done();
         });
     });
@@ -348,8 +351,9 @@ describe('Format Painter Module', () => {
             toolbarELem = document.body.querySelector('.e-rte-format-painter');
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it(' with focus outside rte and click the toolbar button, should remove the strong inline styles', (done: Function) => {
             toolbarELem.click();
@@ -387,8 +391,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('should create one li and ul when one node is painted', (done: Function) => {
             rteObject.focusIn();
@@ -504,8 +509,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('should split ol and create a new ul Case 1 Middle list', (done: Function) => {
             rteObject.focusIn();
@@ -621,8 +627,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Copy formats in list and paste the format in the same list with nested list with para tag wrapped inside the same list', (done: Function) => {
             rteObject.focusIn();
@@ -667,8 +674,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Denied Format Testing Content 1 Should remove only the value in deniedFormats', (done: Function) => {
             rteObject.focusIn();
@@ -777,8 +785,9 @@ describe('Format Painter Module', () => {
             toolbarELem = document.body.querySelector('.e-rte-format-painter');
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Action Begin event testing Case 1 Format Copy', (done: Function) => {
             toolbarELem.click();
@@ -919,8 +928,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Check for the undo after Format Copy action', (done: Function) => {
             rteObject.focusIn();
@@ -992,8 +1002,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Tests for painting inline format from H2 element to Blockquote element Case 1: With selection', (done: Function) => {
             rteObject.focusIn();
@@ -1047,9 +1058,9 @@ describe('Format Painter Module', () => {
             setCursorPoint(startElement.firstChild as Element, 90);
             rteObject.keyDown(pasteKeyBoardEventArgs);
             startElement = rteObject.inputElement.querySelectorAll('.sourceformatnode')[1];
-            expect(startElement.innerHTML).toEqual(' your');
+            expect(startElement.innerHTML).toEqual('your');
             startElement = rteObject.inputElement.querySelectorAll('.sourceParent')[1];
-            const content: string = '<span style="font-size: 18pt;"><span style="background-color: rgb(217, 217, 217);">\n                                    <span style="color: rgb(31, 55, 99); text-decoration: inherit;"><strong class="goalformatnode" style="background-color: rgb(217, 217, 217);">\n                                    "Put your heart, mind, intellect, and soul even to</strong></span></span></span><span style="font-family: Tahoma, Geneva, sans-serif;"><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><span style="background-color: rgb(204, 255, 255);"><b><u class="sourceformatnode"> your</u></b></span></span></span><span style="font-size: 18pt;"><span style="background-color: rgb(217, 217, 217);"><span style="color: rgb(31, 55, 99); text-decoration: inherit;"><strong class="goalformatnode" style="background-color: rgb(217, 217, 217);"> smallest acts. This is the secret of success." - \n                                    - Swami Sivananda</strong></span></span></span>';
+            const content: string = '<span style="font-size: 18pt;"><span style="background-color: rgb(217, 217, 217);">\n                                    <span style="color: rgb(31, 55, 99); text-decoration: inherit;"><strong class="goalformatnode" style="background-color: rgb(217, 217, 217);">\n                                    "Put your heart, mind, intellect, and soul even to </strong></span></span></span><span style="font-family: Tahoma, Geneva, sans-serif;"><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><span style="background-color: rgb(204, 255, 255);"><b><u class="sourceformatnode">your</u></b></span></span></span><span style="font-size: 18pt;"><span style="background-color: rgb(217, 217, 217);"><span style="color: rgb(31, 55, 99); text-decoration: inherit;"><strong class="goalformatnode" style="background-color: rgb(217, 217, 217);"> smallest acts. This is the secret of success." - \n                                    - Swami Sivananda</strong></span></span></span>';
             expect(startElement.nodeName).toEqual('H2');
             expect(startElement.className).toEqual('sourceParent');
             expect(startElement.innerHTML).toEqual(content);
@@ -1085,8 +1096,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Should remove the nested node and insert it to previos element instead of the Nested Paragraph element', (done: Function) => {
             rteObject.focusIn();
@@ -1137,8 +1149,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Tests for painting inline format from P element to H2 element Case 1: With selection, Should only paste inline styles', (done: Function) => {
             rteObject.focusIn();
@@ -1216,8 +1229,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterAll( () => {
+        afterAll( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Copy and pasting nested styles should not split the span containing the e-img-inner', (done: Function) => {
             rteObject.focusIn();
@@ -1230,7 +1244,7 @@ describe('Format Painter Module', () => {
             startElement = rteObject.inputElement.querySelector('.e-img-inner');
             setCursorPoint(startElement.firstChild as Element, 9);
             rteObject.keyDown(pasteKeyBoardEventArgs);
-            const immgCaptionInnerHTML: string = `This is<span style="font-family: Tahoma, Geneva, sans-serif;"><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><span style="background-color: rgb(204, 255, 255);"><b><u class="sourceformatnode"> the</u></b></span></span></span> caption of the image.`;
+            const immgCaptionInnerHTML: string = 'This is <span style="font-family: Tahoma, Geneva, sans-serif;"><span style="color: rgb(68, 114, 196); text-decoration: inherit;"><span style="background-color: rgb(204, 255, 255);"><b><u class="sourceformatnode">the</u></b></span></span></span> caption of the image.';
             expect(startElement.innerHTML).toEqual(immgCaptionInnerHTML);
             done();
         });
@@ -1255,8 +1269,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Testing for removing old formats, should apply the copied format should not apply the block level formats', (done: Function) => {
             rteObject.focusIn();
@@ -1305,8 +1320,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('CASE 1 Range collapsed Tests for cursor maintained check', (done: Function) => {
             rteObject.focusIn();
@@ -1352,8 +1368,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Should not remove the anchor element. Test for anchor element not getting removed', (done: Function) => {
             rteObject.focusIn();
@@ -1435,8 +1452,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Should remove the nested node and insert it to previos element instead of the Nested Paragraph element', (done: Function) => {
             rteObject.focusIn();
@@ -1507,8 +1525,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Case 1 SELECTION Copying without inline styles and painting Partial text with styles of a block node, should remove the old styles', (done: Function) => {
             rteObject.focusIn();
@@ -1605,8 +1624,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Case 1 Pasting a inline style with paragraph format to the Table td element.', (done: Function) => {
             rteObject.focusIn();
@@ -1704,8 +1724,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('CASE 1 When copied and pasted list type not match,', (done: Function) => {
             rteObject.focusIn();
@@ -1864,8 +1885,9 @@ describe('Format Painter Module', () => {
             toolbarELem = document.body.querySelector('.e-rte-format-painter');
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Action Complete event testing Case 1 Format Copy', (done: Function) => {
             toolbarELem.click();
@@ -1940,8 +1962,9 @@ describe('Format Painter Module', () => {
             done();
         });
 
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
 
         it('CASE 1 Copy and paste the format from the td element ,', (done: Function) => {
@@ -1989,8 +2012,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Denied Format Testing Content 1 Should remove only the value in deniedFormats', (done: Function) => {
             rteObject.focusIn();
@@ -2025,8 +2049,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Destroy the format painter module', (done: Function) => {
             rteObject.focusIn();
@@ -2057,8 +2082,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Dynamic property change to test denied attributes', (done: Function) => {
             rteObject.formatPainterSettings = {
@@ -2108,8 +2134,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Test for span not getting pasted properly', (done: Function) => {
             rteObject.formatPainterSettings = {
@@ -2157,8 +2184,9 @@ describe('Format Painter Module', () => {
             });
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Test for span not getting pasted properly', (done: Function) => {
             rteObject.formatPainterSettings = {
@@ -2226,8 +2254,9 @@ describe('Format Painter Module', () => {
             done();
         });
 
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
 
         it('Test for content not getting deleted after the format paste action.', (done: Function) => {
@@ -2386,6 +2415,104 @@ describe('Format Painter Module', () => {
             expect(startElement.nodeName).toEqual('SPAN');
             expect(startElement.parentElement.nodeName).toEqual('LI');
             expect(startElement.parentElement.parentElement.nodeName).toEqual('OL');
+        });
+    });
+    describe('876545 - In firefox format painter keyboard shortcut is not working ', () => {
+        let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+        let defaultUA: string = navigator.userAgent;
+        let rteObject : RichTextEditor ;
+        let domSelection: NodeSelection = new NodeSelection();
+        const innerHTML: string = '<p><strong>Getting</strong> started with format painter</p>';
+        beforeAll( () => {
+            Browser.userAgent = fireFox;
+            rteObject = renderRTE({
+                toolbarSettings : { items: ['FormatPainter', 'ClearFormat', 'Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough']
+                } , value: innerHTML
+            });
+        });
+
+        afterAll( () => {
+            destroy(rteObject);
+            Browser.userAgent = defaultUA;
+        });
+
+        it('Copying and paste bold using format painter via keyboard shortcut in firefox', () => {
+            rteObject.focusIn();
+            let startElement = rteObject.inputElement.querySelector('p');
+            domSelection.setSelectionText(document, startElement.childNodes[0], startElement.childNodes[0], 0, 1);
+            rteObject.keyDown(copyKeyBoardEventArgs);
+            domSelection.setSelectionText(document, startElement.childNodes[1], startElement.childNodes[1], 0, 28);
+            rteObject.keyDown(pasteKeyBoardEventArgs);
+            expect(startElement.childNodes[1].nodeName).toBe('STRONG');
+        });
+    });
+
+    describe('876552 - When using the format painter to reverse the format, the spaces between characters are removed. ', () => {
+        let rteObject : RichTextEditor ;
+        const innerHTML: string = `<h3 class="sourceformatnode">Format Painter</h3><p>
+        A Format Painter is a Rich Text Editor feature allowing users to quickly 
+        <span style="background-color: rgb(198, 140, 83);"><strong>copy</strong></span>
+        and 
+        <span style="background-color: rgb(198, 140, 83);"><strong>paste</strong></span>
+        formatting from one text to another. With a rich text editor, utilize the format painter as follows:
+    </p><ul>
+        <li>
+            Select the text whose format you want to copy.
+        </li>
+        <li class="goalParentNode" style=" margin-bottom: 10px;">Click on the<span>&nbsp;</span><strong style=" font-weight: bold;"><em  class="goalformatnode">Format Painter</em></strong><span>&nbsp;</span>button in the toolbar. It may look like a paintbrush icon.</li>
+        <li>
+            The cursor will change to a <strong>paintbrush</strong> icon. Click and drag the cursor over the text you want to apply the copied format.
+        </li>
+        <li>
+            Release the mouse button to apply the format.
+        </li>
+    </ul><p>
+        Using the format painter in a rich text editor can save you time when formatting a large document, You can quickly 
+        copy and apply formatting
+        to <span style="background-color: rgb(198, 140, 83);"><strong>multiple sections</strong></span>. 
+        It's a helpful tool for anyone who works with text editing regularly, such as writers, editors, and content creators.
+    </p>`
+        beforeEach( (done: Function) => {
+            rteObject = renderRTE({
+                toolbarSettings : { items: ['FormatPainter', 'ClearFormat', 'Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'LowerCase', 'UpperCase', '|',
+                    'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                    'Indent', 'Outdent', '|',
+                    'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                    'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                } , value: innerHTML
+            });
+            done();
+        });
+
+        afterEach( () => {
+            destroy(rteObject);
+        });
+
+        it('Test for not removal of the nbsp.', (done: Function) => {
+            rteObject.focusIn();
+            let range = new Range();
+            let startElement = rteObject.inputElement.querySelector('.sourceformatnode');
+            range.setStart(startElement.firstChild, 1);
+            range.collapse(true);
+            rteObject.selectRange(range);
+            rteObject.keyDown(copyKeyBoardEventArgs);
+            startElement = rteObject.inputElement.querySelector('.goalformatnode');
+            range.setStart(startElement.firstChild, 1);
+            range.collapse(true);
+            rteObject.selectRange(range);
+            const goalParentNode: HTMLElement = rteObject.inputElement.querySelector('.goalParentNode');
+            expect(goalParentNode.childNodes[1].nodeName).toEqual('SPAN');
+            expect(goalParentNode.childNodes[1].textContent.charCodeAt(0)).toEqual(160);
+            rteObject.keyDown(pasteKeyBoardEventArgs);
+            startElement = rteObject.inputElement.querySelectorAll('.sourceformatnode')[1];
+            expect(startElement.childNodes[1].nodeName).toEqual('SPAN');
+            expect(startElement.childNodes[1].textContent.charCodeAt(0)).toEqual(160);
+            done();
         });
     });
 });

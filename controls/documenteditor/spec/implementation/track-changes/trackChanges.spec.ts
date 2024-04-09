@@ -148,4 +148,40 @@ describe('Track changes Select all and replace text', () => {
         expect(count).toBe(1);
     });
 });
+describe('Track changes hyperlink reject validation', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Test hyperlink formatting preservation on rejecting action', function () {
+        console.log('Test hyperlink formatting preservation on rejecting action');
+        container.openBlank();
+        container.editor.insertHyperlink('https://www.syncfusion.com/', 'Syncfusion');
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;0', '0;0;43');
+        container.editor.removeHyperlink();
+        container.revisions.changes[0].reject();
+        container.selection.select('0;0;43', '0;0;53');
+        expect(container.selection.characterFormat.underline).toBe('Single');
+        expect(container.selection.characterFormat.fontColor).toBe('#0563c1');
+    });
+});
 

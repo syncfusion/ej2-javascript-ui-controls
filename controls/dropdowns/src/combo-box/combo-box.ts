@@ -729,7 +729,7 @@ export class ComboBox extends DropDownList {
             }
             this.preventAutoFill = this.inputElement.value === '' ? false : this.preventAutoFill;
             this.setAutoFill(activeElement, isKeyNavigate);
-        } else if (this.inputElement.value === '') {
+        } else if (!isNullOrUndefined(this.inputElement) && this.inputElement.value === '') {
             this.activeIndex = null;
             if (!isNullOrUndefined(this.list)) {
                 if (!this.enableVirtualization) {
@@ -982,9 +982,6 @@ export class ComboBox extends DropDownList {
     public render(): void {
         super.render();
         this.setSearchBox();
-        if (this.isFiltering() && this.getModuleName() === 'combobox' && isNullOrUndefined(this.list)) {
-            super.renderList();
-        }
         this.renderComplete();
     }
     /**

@@ -407,7 +407,7 @@ export class InsertHtml {
             if (blockNode.nodeName === 'BODY' && range.startContainer === range.endContainer && range.startContainer.nodeType === 1) {
                 blockNode = range.startContainer;
             }
-            if ((blockNode as HTMLElement).closest('LI') && node && (node as HTMLElement).firstElementChild &&
+            if ((blockNode as HTMLElement).closest('LI') && blockNode.nodeName !== 'TD' && blockNode.nodeName !== 'TH' && blockNode.nodeName !== 'TR' && node && (node as HTMLElement).firstElementChild &&
             (((node as HTMLElement)).firstElementChild.tagName === 'OL' || (node as HTMLElement).firstElementChild.tagName === 'UL')) {
                 let liNode: HTMLElement;
                 while ((node as HTMLElement).firstElementChild.lastElementChild && (node as HTMLElement).firstElementChild.lastElementChild.tagName === 'LI') {
@@ -436,7 +436,7 @@ export class InsertHtml {
                         detach(currentNode.nextSibling);
                     }
                 } else if ((currentNode.nodeName === '#text' || currentNode.nodeName === 'BR') && !isNOU(currentNode.parentElement) &&
-                (currentNode.parentElement.nodeName === 'LI' || (blockNode === editNode && currentNode.parentElement === blockNode )) &&
+                (currentNode.parentElement.nodeName === 'LI' ||  currentNode.parentElement.closest('LI') || (blockNode === editNode && currentNode.parentElement === blockNode )) &&
                 currentNode.parentElement.textContent.trim().length > 0) {
                     splitedElm = currentNode;
                     if (currentNode.parentElement.nodeName === 'LI' && !isNOU(currentNode.nextSibling) &&
@@ -445,6 +445,12 @@ export class InsertHtml {
                     }
                     if (!range.collapsed) {
                         range.deleteContents();
+                        const value: Node = range.startContainer;
+                        if (!isNOU(value) && value.nodeName === 'LI' && !isNOU(value.parentElement) && (value.parentElement.nodeName === 'OL' || value.parentElement.nodeName === 'UL') && value.textContent.trim() === '') {
+                            (value.parentElement as HTMLElement).querySelectorAll('li').forEach((item) => {
+                                item.remove();
+                            });
+                        }
                     }
                     range.insertNode(node);
                     this.contentsDeleted = true;

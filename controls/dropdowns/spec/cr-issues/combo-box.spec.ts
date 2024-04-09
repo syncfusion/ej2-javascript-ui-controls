@@ -948,7 +948,8 @@ describe('ComboBox', () => {
             listObj.appendTo('#ComboBox');
             (listObj as any).inputElement.value = "a";
             keyboardEventArgs.keyCode = 65;
-            (listObj as any).searchLists(keyboardEventArgs);
+            (listObj as any).isValidKey = true;
+            (listObj as any).onFilterUp(keyboardEventArgs);
         });
         it('Changing datasource dynamically should not change value property', () => {
             listObj1 = new ComboBox({

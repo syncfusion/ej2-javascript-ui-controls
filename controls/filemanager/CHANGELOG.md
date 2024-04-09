@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I574481` - The issue with context menu items not getting disabled when menu items contain spaces in the File Manager component has been resolved.
+
+## 25.1.38 (2024-04-02)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I572635` - The problem where an extra plus icon appeared in the details view of the file manager component when in mobile mode has been resolved.
+
+## 25.1.37 (2024-03-26)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I561123` - The issue with being unable to sort the header columns using keyboard interaction has been resolved.
+
 ## 25.1.35 (2024-03-15)
 
 ### FileManager

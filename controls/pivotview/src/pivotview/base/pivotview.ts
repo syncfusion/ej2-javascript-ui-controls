@@ -3422,13 +3422,26 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this as any).bulkChanges.pivotValues;
         this.allowServerDataBinding = true;
+        if (this.dataSourceSettings && this.dataSourceSettings.dataSource && this.dataSourceSettings.dataSource instanceof DataManager
+            && pivotData.dataSourceSettings && pivotData.dataSourceSettings.dataSource &&
+            (pivotData.dataSourceSettings.dataSource as DataManager).dataSource && this.dataSourceSettings.dataSource.dataSource &&
+            (pivotData.dataSourceSettings.dataSource as DataManager).dataSource.url === this.dataSourceSettings.dataSource.dataSource.url) {
+            pivotData.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
+        }
         this.dataSourceSettings = pivotData.dataSourceSettings;
     }
 
     private mergePersistPivotData(): void {
         const data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
         if (!(isNullOrUndefined(data) || (data === ''))) {
-            this.setProperties(JSON.parse(data), true);
+            const dataObj: PivotView = JSON.parse(data);
+            if (this.dataSourceSettings && this.dataSourceSettings.dataSource && this.dataSourceSettings.dataSource instanceof DataManager
+                && dataObj.dataSourceSettings && dataObj.dataSourceSettings.dataSource &&
+                (dataObj.dataSourceSettings.dataSource as DataManager).dataSource && this.dataSourceSettings.dataSource.dataSource &&
+                (dataObj.dataSourceSettings.dataSource as DataManager).dataSource.url === this.dataSourceSettings.dataSource.dataSource.url) {
+                dataObj.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
+            }
+            this.setProperties(dataObj, true);
         }
     }
 

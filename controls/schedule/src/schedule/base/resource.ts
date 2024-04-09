@@ -511,6 +511,7 @@ export class ResourceBase {
                 args = {
                     cancel: false, event: (event) ? event.event : null, groupIndex: this.parent.uiStateValues.groupIndex, requestType: 'resourceChanged'
                 };
+                this.parent.adaptiveGroupIndex = this.parent.uiStateValues.groupIndex;
                 this.parent.trigger(events.actionComplete, args);
             }
         });

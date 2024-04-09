@@ -7,7 +7,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
-import { ReadArgs, SearchArgs, FileDetails, NotifyArgs } from '../base/interface';
+import { ReadArgs, SearchArgs, FileDetails, NotifyArgs, SortOrder } from '../base/interface';
 import { FileSelectEventArgs, FileLoadEventArgs, FileSelectionEventArgs } from '../base/interface';
 import { FileOpenEventArgs } from '../base/interface';
 import { createDialog, createImageDialog } from '../pop-up/dialog';
@@ -230,8 +230,7 @@ export class DetailsView {
                     field: 'name', headerText: getLocaleText(this.parent, 'Name'), width: 'auto', minWidth: 120, headerTextAlign: 'Left',
                     template: initializeCSPTemplate(function(data: any) {
                         const name: string = enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(data.name) : data.name;
-                        return `<div class="e-fe-text">${name}</div><div class="e-fe-date">${data._fm_modified}</div>' +
-                        '<span class="e-fe-size">${data.size}</span>`;
+                        return `<div class="e-fe-text">${name}</div><div class="e-fe-date">${data._fm_modified}</div><span class="e-fe-size">${data.size}</span>`;
                     }) as any
                 }
             ];
@@ -240,7 +239,7 @@ export class DetailsView {
             this.adjustWidth(columns, 'name');
             for (let i: number = 0, len: number = columns.length; i < len; i++) {
                 columns[i as number].headerText = getLocaleText(this.parent, columns[i as number].headerText);
-                if (columns[i as number].field === 'name' && !isNOU(columns[i as number].template)) {
+                if (columns[i as number].field === 'name' && !isNOU(columns[i as number].template) && !(typeof columns[i as number].template === 'function')) {
                     const template: string | Function = columns[i as number].template;
                     columns[i as number].template = initializeCSPTemplate(function (data: any) {
                         const name: string = enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(data.name) : data.name;
@@ -1295,6 +1294,7 @@ export class DetailsView {
             }
         );
         EventHandler.add(this.gridObj.element, 'blur', this.removeFocus, this);
+        EventHandler.add(this.parent.element, 'focusout', this.onBlur, this);
     }
 
     private unWireEvents(): void {
@@ -1302,6 +1302,7 @@ export class DetailsView {
         this.keyboardModule.destroy();
         this.keyboardDownModule.destroy();
         EventHandler.remove(this.gridObj.element, 'blur', this.removeFocus);
+        EventHandler.remove(this.parent.element, 'focusout', this.onBlur);
     }
 
     private wireClickEvent(toBind: boolean): void {
@@ -1354,6 +1355,20 @@ export class DetailsView {
         this.addFocus(null);
     }
 
+    private onBlur(e: KeyboardEventArgs): void {
+        if (((e as any).relatedTarget !== null && closest((e as any).relatedTarget, '.e-grid') !== (e as any).relatedTarget)) {
+            return;
+        }
+        if (!isNOU(this.gridObj.element)) {
+            const thElements: NodeListOf<HTMLElement> = this.gridObj.element.querySelectorAll('th');
+            for (let i: number = 0; i < thElements.length; i++) {
+                if (thElements[i as number].classList.contains('e-focus')) {
+                    this.addFocus(null);
+                }
+            }
+        }
+    }
+
     private getFocusedItemIndex(): number {
         return (!isNOU(this.getFocusedItem())) ?
             parseInt(this.getFocusedItem().getAttribute('data-rowindex'), 10) : null;
@@ -1404,7 +1419,6 @@ export class DetailsView {
 
     /* istanbul ignore next */
     // eslint:disable-next-line
-    actionDivert : boolean = false;
     private keyupHandler(e: KeyboardEventArgs): void {
         if (!this.isRendered) { return; }
         e.preventDefault();
@@ -1433,7 +1447,17 @@ export class DetailsView {
             this.performDelete();
             break;
         case 'enter':
-            if (this.gridObj.selectedRowIndex === -1) { break; }
+            if (this.gridObj.selectedRowIndex === -1 && this.gridObj.allowSorting === true) {
+                if (!(e.target as HTMLElement).classList.contains('e-fe-grid-icon')) {
+                    const direction: SortOrder = !(e.target as HTMLElement).getElementsByClassName('e-ascending').length ? 'Ascending' : 'Descending';
+                    const currentField: string = this.gridObj.getColumnByUid((e.target as HTMLElement).querySelector('.e-headercelldiv').getAttribute('e-mappinguid')).field;
+                    this.gridObj.sortColumn(currentField, direction);
+                    if (!isNOU(this.getFocusedItem().nextSibling)) {
+                        (this.getFocusedItem().nextSibling as HTMLElement).setAttribute('tabindex', '0');
+                    }
+                }
+                break;
+            }
             rowData = this.gridObj.getRowsObject()[this.gridObj.selectedRowIndex].data;
             if (rowData) {
                 // eslint-disable-next-line
@@ -1477,13 +1501,8 @@ export class DetailsView {
                 } else if (this.gridObj.selectedRowIndex !== -1 && e.action === 'tab') {
                     return;
                 }
-                else if (!this.actionDivert) {
-                    this.addHeaderFocus();
-                    this.actionDivert = true;
-                }
-                else {
-                    this.addFocus(0);
-                    this.actionDivert = false;
+                else{
+                    this.addHeaderFocus(e);
                 }
             }
             break;
@@ -1757,16 +1776,29 @@ export class DetailsView {
         }
     }
 
-    private addHeaderFocus() : void {
+    private addHeaderFocus(e: KeyboardEventArgs) : void {
         const treeFocus: HTMLElement = select('.e-row', this.element);
         this.gridObj.element.setAttribute('tabindex', '-1');
-        const nameFocus: HTMLElement = select('th.e-fe-grid-name', this.element);
-        nameFocus.setAttribute('tabindex', '0');
-        nameFocus.focus();
-        addClass([nameFocus], [CLS.FOCUS, CLS.FOCUSED]);
-        treeFocus.setAttribute('tabindex', '0');
-        if (treeFocus.tabIndex === 0 && nameFocus.tabIndex === 0) {
-            removeClass([treeFocus], [CLS.FOCUS, CLS.FOCUSED]);
+        let nameFocus: Element;
+        if (!isNOU(e.target as HTMLElement) && (e.target as HTMLElement).classList.contains('e-defaultcursor')) {
+            this.addFocus(0);
+            nameFocus = (e.target as HTMLElement).nextElementSibling;
+        }
+        else if (!isNOU(this.gridObj.element.querySelector('.e-focus')) && (this.gridObj.element.querySelector('.e-focus').tagName === 'TH')) {
+            nameFocus = this.gridObj.element.querySelector('.e-focus').nextElementSibling;
+            this.addFocus(0);
+        }
+        else {
+            nameFocus = select('th.e-fe-grid-icon', this.element);
+        }
+        if (!isNOU(nameFocus)) {
+            nameFocus.setAttribute('tabindex', '0');
+            (nameFocus as HTMLElement).focus();
+            addClass([nameFocus], [CLS.FOCUS, CLS.FOCUSED]);
+            treeFocus.setAttribute('tabindex', '0');
+            if (treeFocus.tabIndex === 0 && (nameFocus as HTMLElement).tabIndex === 0) {
+                removeClass([treeFocus], [CLS.FOCUS, CLS.FOCUSED]);
+            }
         }
     }
 

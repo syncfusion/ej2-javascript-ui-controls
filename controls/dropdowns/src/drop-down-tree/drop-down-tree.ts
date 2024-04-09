@@ -1162,7 +1162,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             cancel: false,
             preventDefaultAction: false,
             event: event,
-            text: value,
+            text: value.trim(),
             fields: filterFields
         };
         this.trigger('filtering', args, (args: DdtFilteringEventArgs) => {
@@ -1170,7 +1170,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 let flag: boolean = false;
                 let fields: FieldsModel;
                 this.isFilteredData = true;
-                if (value === '') {
+                if (args.text === '') {
                     this.isFilteredData = false;
                     this.isFilterRestore = true;
                     this.isFromFilterChange = false;
@@ -1179,16 +1179,16 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     fields = args.fields;
                 } else {
                     if (this.treeDataType === 1) {
-                        fields = this.selfReferencefilter(value, args.fields);
+                        fields = this.selfReferencefilter(args.text, args.fields);
                     } else {
                         if (this.fields.dataSource instanceof DataManager) {
-                            fields = this.remoteDataFilter(value, args.fields);
+                            fields = this.remoteDataFilter(args.text, args.fields);
                             fields.child = this.fields.child;
                             this.treeObj.fields = this.getTreeFields(args.fields);
                             this.treeObj.dataBind();
                             flag = true;
                         } else {
-                            fields = this.nestedFilter(value, args.fields);
+                            fields = this.nestedFilter(args.text, args.fields);
                         }
                     }
                 }
@@ -1867,11 +1867,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private createHiddenElement(): void {
         if (this.allowMultiSelection || this.showCheckBox) {
             this.hiddenElement = this.createElement('select', {
-                attrs: { 'aria-hidden': 'true', 'class': HIDDENELEMENT, 'tabindex': '-1', 'multiple': '' }
+                attrs: { 'aria-hidden': 'true', 'class': HIDDENELEMENT, 'tabindex': '-1', 'multiple': '', 'aria-label': this.getModuleName() }
             }) as HTMLSelectElement;
         } else {
             this.hiddenElement = this.createElement('select', {
-                attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': HIDDENELEMENT }
+                attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': HIDDENELEMENT, 'aria-label': this.getModuleName() }
             }) as HTMLSelectElement;
         }
         prepend([this.hiddenElement], this.inputWrapper);
@@ -2018,9 +2018,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private setAttributes(): void {
         this.inputEle.setAttribute('tabindex', '-1');
+        this.inputEle.setAttribute('aria-label', this.getModuleName());
         const id: string = this.element.getAttribute('id');
         this.hiddenElement.id = id + '_hidden';
         this.inputWrapper.setAttribute('tabindex', '0');
+        this.inputWrapper.setAttribute('aria-label', this.getModuleName());
         attributes(this.inputWrapper, this.getAriaAttributes());
     }
 
@@ -2347,7 +2349,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                         focusedElement.setAttribute('tabindex', '0');
                     }
                     else {
-                        focusedElement = this.treeObj.element.querySelector('li');
+                        let oldFocussedNode: HTMLElement = this.treeObj.element.querySelector('.e-node-focus');
+                        focusedElement = this.treeObj.element.querySelector('li:not(.e-disable):not(.e-prevent)');
+                        if (oldFocussedNode && oldFocussedNode != focusedElement) {
+                            oldFocussedNode.setAttribute('tabindex', '-1');
+                            removeClass([oldFocussedNode], 'e-node-focus');
+                        }
                     }
                     focusedElement.focus();
                     addClass([focusedElement], ['e-node-focus']);
@@ -3178,7 +3185,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private setFooterTemplate(): void {
         if (this.footer) {
-            this.footer.innerHTML = '';
+            if ((this as any).isReact && typeof this.footerTemplate === 'function') {
+                this.clearTemplate(['footerTemplate']);
+            } else {
+                this.footer.innerHTML = '';
+            }
         } else {
             this.footer = this.createElement('div');
             addClass([this.footer], FOOTER);

@@ -194,10 +194,6 @@ export class HistoryInfo extends BaseHistoryInfo {
                         }
                         else if (currentHistory.action === 'FontColor') {
                             operations = operations.concat(currentHistory.getActionInfo());
-                            if (action === 'RemoveHyperlink') {
-                                // Clear format not synced when removeHyperlink 
-                                operations = operations.concat(currentHistory.buildFormatOperation('ClearFormat', true));
-                            }
                         }
                     }
                     if (this.editorHistory.isUndoing) {

@@ -579,4 +579,119 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('878703 - ZoomIn and ZoomOut not working properly when canZoomOut set to true', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram_zoom' });
+            ele.style.width = '100%';
+            document.body.appendChild(ele);
+            let nodes:NodeModel[] = [
+                { id: 'node1', offsetX: 100, offsetY: 100, width: 100, height: 100, annotations: [{ content: 'Start' }] },
+                { id: 'node2', offsetX: 500, offsetY: 100, width: 100, height: 100, annotations: [{ content: 'Process' }] },
+                { id: 'node3', offsetX: 1000, offsetY: 100, width: 100, height: 100, annotations: [{ content: 'End' }] },
+                { id: 'node4', offsetX: 1500, offsetY: 100, width: 100, height: 100, annotations: [{ content: 'Decision' }] },
+                { id: 'node5', offsetX: 2000, offsetY: 100, width: 100, height: 100, annotations: [{ content: 'Document' }] },
+                { id: 'node6', offsetX: 2500, offsetY: 100, width: 100, height: 100, annotations: [{ content: 'Paper' }] },
+                { id: 'node7', offsetX: 3000, offsetY: 100, width: 100, height: 100, annotations: [{ content: 'Preparation' }] },
+                { id: 'node8', offsetX: 3500, offsetY: 100, width: 100, height: 100, annotations: [{ content: 'Decision' }] },
+                { id: 'node9', offsetX: 4000, offsetY: 100, width: 100, height: 100, annotations: [{ content: 'End' }] },
+                { id: 'node10', offsetX: 100, offsetY: 500, width: 100, height: 100, annotations: [{ content: 'Process' }] },
+                { id: 'node11', offsetX: 1000, offsetY: 1000, width: 100, height: 100, annotations: [{ content: 'End' }] },
+                { id: 'node12', offsetX: 1500, offsetY: 1500, width: 100, height: 100, annotations: [{ content: 'Decision' }] },
+                { id: 'node13', offsetX: 2000, offsetY: 2000, width: 100, height: 100, annotations: [{ content: 'Document' }] },
+                { id: 'node14', offsetX: 2500, offsetY: 2500, width: 100, height: 100, annotations: [{ content: 'Paper' }] },
+                { id: 'node15', offsetX: 3000, offsetY: 3000, width: 100, height: 100, annotations: [{ content: 'Preparation' }] },
+                { id: 'node16', offsetX: 3500, offsetY: 3500, width: 100, height: 100, annotations: [{ content: 'Decision' }] },
+                { id: 'node17', offsetX: 4000, offsetY: 4000, width: 100, height: 100, annotations: [{ content: 'End' }] },
+                { id: 'node18', offsetX: 100, offsetY: 1000, width: 100, height: 100, annotations: [{ content: 'Process' }] },
+                { id: 'node19', offsetX: 500, offsetY: 1000, width: 100, height: 100, annotations: [{ content: 'End' }] },
+                { id: 'node20', offsetX: 1000, offsetY: 1500, width: 100, height: 100, annotations: [{ content: 'Decision' }] },
+                { id: 'node21', offsetX: 1500, offsetY: 2000, width: 100, height: 100, annotations: [{ content: 'Document' }] },
+                { id: 'node22', offsetX: 2000, offsetY: 2500, width: 100, height: 100, annotations: [{ content: 'Paper' }] },
+                { id: 'node23', offsetX: 2500, offsetY: 3000, width: 100, height: 100, annotations: [{ content: 'Preparation' }] },
+                { id: 'node24', offsetX: 3000, offsetY: 3500, width: 100, height: 100, annotations: [{ content: 'Decision' }] },
+                { id: 'node25', offsetX: 3500, offsetY: 4000, width: 100, height: 100, annotations: [{ content: 'End' }] },
+    
+    
+              ];
+            diagram = new Diagram({
+                width: '900px', height: '700px',
+                nodes: nodes,
+            });
+            diagram.appendTo('#diagram_zoom');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking fitToPage with canZoomOut', (done: Function) => {
+            let fitOptions = {canZoomOut:true}
+            diagram.fitToPage(fitOptions);
+            expect(diagram.scrollSettings.currentZoom < 0.2 && diagram.scrollSettings.minZoom === 0.2).toBe(true);
+            done();
+        });
+        it('Checking ZoomOut with mousewheel when currentZoom less than minZoom', (done: Function) => {
+            let curZoom = diagram.scrollSettings.currentZoom;
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseWheelEvent(diagramCanvas, 500, 250, true);
+            expect(diagram.scrollSettings.currentZoom === curZoom).toBe(true);
+            done();
+        });
+        it('Checking ZoomIn with mousewheel when currentZoom less than minZoom', (done: Function) => {
+            let curZoom = diagram.scrollSettings.currentZoom;
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseWheelEvent(diagramCanvas, 500, 250, true,undefined,true);
+            expect(diagram.scrollSettings.currentZoom !== curZoom && curZoom < diagram.scrollSettings.currentZoom).toBe(true);
+            done();
+        });
+        it('Checking fitToPage without canZoomOut', (done: Function) => {
+            diagram.fitToPage();
+            expect(diagram.scrollSettings.currentZoom <= diagram.scrollSettings.maxZoom).toBe(true);
+            done();
+        });
+        it('Checking ZoomOut with zoomTo method when currentZoom less than minZoom', (done: Function) => {
+            let fitOptions = {canZoomOut:true}
+            diagram.fitToPage(fitOptions);
+            let curZoom = diagram.scrollSettings.currentZoom;
+            let zoomOptions = {type: 'ZoomOut', zoomFactor: 0.2}
+            diagram.zoomTo(zoomOptions as any);
+            expect(diagram.scrollSettings.currentZoom === curZoom).toBe(true);
+            done();
+        });
+        it('Checking ZoomIn with zoomTo method when currentZoom less than minZoom', (done: Function) => {
+            let curZoom = diagram.scrollSettings.currentZoom;
+            let zoomOptions = {type: 'ZoomIn', zoomFactor: 0.2}
+            diagram.zoomTo(zoomOptions as any);
+            expect(diagram.scrollSettings.currentZoom !== curZoom && curZoom < diagram.scrollSettings.currentZoom).toBe(true);
+            done();
+        });
+        it('Checking zoom after changing minZoom value less than 0.2', (done: Function) => {
+            let fitOptions = {canZoomOut:true}
+            diagram.fitToPage(fitOptions);
+            let curZoom = diagram.scrollSettings.currentZoom;
+            diagram.scrollSettings.minZoom = 0.05;
+            diagram.dataBind();
+            let zoomOptions = {type: 'ZoomOut', zoomFactor: 0.2}
+            diagram.zoomTo(zoomOptions as any);
+            expect(diagram.scrollSettings.currentZoom !== curZoom && curZoom > diagram.scrollSettings.currentZoom).toBe(true);
+            done();
+        });
+        it('Checking zoom after changing maxZoom value as 5', (done: Function) => {
+            diagram.scrollSettings.currentZoom = 1;
+            diagram.dataBind();
+            diagram.scrollSettings.maxZoom = 5;
+            diagram.dataBind();
+            let zoomOptions = {type: 'ZoomIn', zoomFactor: 2}
+            diagram.zoomTo(zoomOptions as any);
+            let zoomOptions2 = {type: 'ZoomIn', zoomFactor: 2}
+            diagram.zoomTo(zoomOptions2 as any);
+            expect(diagram.scrollSettings.currentZoom < 5).toBe(true);
+            done();
+        });
+    });
 });

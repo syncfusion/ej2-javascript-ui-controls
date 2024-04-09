@@ -53,7 +53,7 @@ export class EnterKeyAction {
                 curElement = curElement.parentElement;
                 blockElement = curElement;
             }
-            isTableEnter = blockElement.tagName === 'TD' || blockElement.tagName === 'TBODY' ? false : true;
+            isTableEnter = blockElement.tagName === 'TH' || blockElement.tagName === 'TD' || blockElement.tagName === 'TBODY' ? false : true;
         }
         if ((e.args as KeyboardEventArgs).which === 13 && !(e.args as KeyboardEventArgs).ctrlKey && (!Browser.isDevice ? (e.args as KeyboardEventArgs).code === 'Enter' : (e.args as KeyboardEventArgs).key === 'Enter' )) {
             if (isNOU(this.startNode.closest('LI, UL, OL')) && isNOU(this.endNode.closest('LI, UL, OL')) &&
@@ -68,6 +68,9 @@ export class EnterKeyAction {
                 };
                 this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
                     if (!actionBeginArgs.cancel) {
+                        if (this.parent.formatter.getUndoRedoStack().length === 0) {
+                            this.parent.formatter.saveData();
+                        }
                         if (!(this.range.startOffset === this.range.endOffset && this.range.startContainer === this.range.endContainer)) {
                             if (!(this.range.startContainer.nodeName === 'SPAN' && ((this.range.startContainer as HTMLElement).classList.contains('e-video-wrap') ||
                             (this.range.startContainer as HTMLElement).classList.contains('e-audio-wrap')))) {

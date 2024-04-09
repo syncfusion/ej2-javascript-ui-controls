@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I558418` - Resolved data re-rendering on scrolling up in virtualization.
+- `#F187000` - Nested parent remains the expanded property when its root parent is collapsed in remote data with loadChildOnDemand.
+- `#I572093` - `onclick` event of button bound properly while creating a button component in treegrid with HtmlEncode enabled.
+
+## 25.1.38 (2024-04-02)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I560767` - Resolved exception on initial rendering with column template in remote data.
+
 ## 25.1.37 (2024-03-26)
 
 ### Tree Grid

@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I571372` - The first axis label does not shift to the left when using `edgelabelplacement` as `shift`.
+- `#I571107` - When the chart is resized, the console error will no longer be thrown.
+
 ## 25.1.38 (2024-04-02)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I532022` - Now, the datalabel position is properly set when the position property is set to `Auto`.
+
+## 25.1.37 (2024-03-26)
 
 ### AccumulationChart
 

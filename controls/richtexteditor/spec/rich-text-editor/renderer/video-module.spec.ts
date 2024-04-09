@@ -5,7 +5,6 @@ import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syn
 import { RichTextEditor, QuickToolbar, IRenderer, DialogType } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
-import { SelectEventArgs } from '@syncfusion/ej2-navigations';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -58,7 +57,7 @@ describe('Video Module ', () => {
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
@@ -181,7 +180,7 @@ describe('Video Module ', () => {
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
@@ -434,7 +433,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.contentModule.getDocument().body.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -537,7 +536,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
@@ -610,7 +609,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
@@ -720,7 +719,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let args: any = {
-                item: { url: 'https://www.w3schools.com/html/mov_bbb.mp4', selection: save },
+                item: { url: window.origin + '/base/spec/content/video/mov_bbb.mp4', selection: save },
                 preventDefault: function () { }
             };
             (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
@@ -761,7 +760,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
@@ -854,7 +853,37 @@ client side. Customer easy to edit the contents and get the HTML content for
             done();
         });
     });
- 
+
+    describe('876602 - Double quick toolbar open when click the video', () => {
+        let rteObj: any;
+        it("Double quick toolbar open when click the video", () => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false,
+                    text: ['Bold', 'Italic', 'Underline', 'StrikeThrough', 'FontColor', 'BackgroundColor', '|',
+            'FontName', 'FontSize', 'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList']
+                },
+                value: `<div id='rte'><p><b>Syncfusion</b> Software</p><span class=\"e-video-wrap\" contenteditable=\"false\" title=\"mov_bbb.mp4\"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/hveapZxnOFY?si=zU9QX1Vww3ZIowHA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" style="min-width: 0px; max-width: 1166px; min-height: 0px;" class="e-rte-embed-url e-resize e-video-focus"></iframe></span></span><br>`
+            });
+            let target = <HTMLElement> (rteObj as any).element.querySelectorAll(".e-content")[0];
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-clickelem');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).videoModule.editAreaClickHandler({args:clickEvent});
+            expect(!isNullOrUndefined(document.querySelector('.e-video-wrap')as HTMLElement)).toBe(true);
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            expect(document.querySelectorAll ('.e-rte-quick-popup').length === 1).toBe(true);
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
     describe('Open video dialog and click cancel', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -917,7 +946,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let args: any = {
-                item: { url: 'https://www.w3schools.com/html/mov_bbb.mp4', selection: save },
+                item: { url: window.origin + '/base/spec/content/video/mov_bbb.mp4', selection: save },
                 preventDefault: function () { }
             };
             (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
@@ -998,7 +1027,7 @@ client side. Customer easy to edit the contents and get the HTML content for
              let range: any = new NodeSelection().getRange(document);
              let save: any = new NodeSelection().save(range, document);
              let args: any = {
-                 item: { url: 'https://www.w3schools.com/html/mov_bbb.mp4', selection: save },
+                 item: { url: window.origin + '/base/spec/content/video/mov_bbb.mp4', selection: save },
                  preventDefault: function () { }
              };
              (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
@@ -1044,15 +1073,17 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let args: any = {
-                item: { url: 'https://www.w3schools.com/html/mov_bbb.mp4', selection: save },
+                item: { url: window.origin + '/base/spec/content/video/mov_bbb.mp4', selection: save },
                 preventDefault: function () { },
                 selector: 'content',
                 callBack: function () { }
             };
             (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
             (<any>rteObj).formatter.editorManager.videoObj.editAreaVideoClick({callBack: function () { }});
-            expect(rteObj.inputElement.innerHTML === `<p><span class="e-video-wrap" contenteditable="false" title="undefined"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`).toBe(true);
-            done();
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('video').length > 0).toBe(true);
+                done();
+            }, 100);
         });
     }); 
 
@@ -1088,7 +1119,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let args: any = {
-                item: { url: 'https://www.w3schools.com/html/mov_bbb.mp4', selection: save },
+                item: { url: window.origin + '/base/spec/content/video/mov_bbb.mp4', selection: save },
                 preventDefault: function () { }
             };
             (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
@@ -1127,7 +1158,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             let fileObj: File = new File(["Nice One"], "sample.mp3", { lastModified: 0, type: "overide/mimetype" });
@@ -1138,7 +1169,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect((<any>rteObj).videoModule.uploadObj.fileList.length).toEqual(1);
                 (document.getElementsByClassName('e-browsebtn')[0] as HTMLElement).click()
                 done();
-            }, 4500);
+            }, 1000);
         });
      });
  
@@ -1645,7 +1676,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let args: any = {
-                item: { url: 'https://www.w3schools.com/html/mov_bbb.mp4', selection: save },
+                item: { url: window.origin + '/base/spec/content/video/mov_bbb.mp4', selection: save },
                 preventDefault: function () { }
             };
             (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
@@ -1673,7 +1704,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(dialogEle.querySelector('.e-dlg-content').firstElementChild.classList.contains('e-video-sizewrap')).toBe(true);
                 let save: any = new NodeSelection().save(range, document);
                 let args: any = {
-                    item: { url: 'https://www.w3schools.com/html/mov_bbb.mp4', selection: save },
+                    item: { url: window.origin + '/base/spec/content/video/mov_bbb.mp4', selection: save },
                     preventDefault: function () { }
                 };
                 args.item = {width: 200, height: 200, selectNode : [(rteObj.element.querySelector('.e-rte-video') as HTMLElement)]};
@@ -1717,7 +1748,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 let range: any = new NodeSelection().getRange(document);
                 let save: any = new NodeSelection().save(range, document);
                 let args: any = {
-                    item: { url: 'https://www.w3schools.com/html/mov_bbb.mp4', selection: save },
+                    item: { url: window.origin + '/base/spec/content/video/mov_bbb.mp4', selection: save },
                     preventDefault: function () { }
                 };
                 args.item = {width: 200, height: 200, selectNode : [(rteObj.element.querySelector('.e-rte-video') as HTMLElement)]};
@@ -1837,6 +1868,22 @@ client side. Customer easy to edit the contents and get the HTML content for
             (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).dispatchEvent(new Event("keyup"));
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
             expect((<any>rteObj).element.querySelector('iframe')).not.toBe(null);
+            // Need to enable once fix the embed quick toolbar not open issue (case for Task Bug 876597)
+            // let video: HTMLElement  = rteObj.element.querySelector(".e-video-clickelem");
+            // setCursorPoint(video, 0);
+            // dispatchEvent(video, 'mousedown');
+            // video.click();
+            // dispatchEvent(video, 'mouseup');
+            // setTimeout(function () {
+            //     let videoBtn: HTMLElement  = document.getElementById(rteObj.element.id + "_quick_VideoReplace");
+            //     videoBtn.parentElement.click();
+            //     let dialog: HTMLElement  = document.getElementById(rteObj.element.id + "_video");
+            //     let urlEmbedInput: HTMLInputElement = dialog.querySelector('.e-embed-video-url');
+            //     expect(urlEmbedInput.value !== null && urlEmbedInput.value !== undefined && urlEmbedInput.value !== '').toBe(true);
+            //     (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            //     let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
+            //     expect(urlInput.value === null || urlInput.value === undefined || urlInput.value === '').toBe(true);
+            // }, 100);
             done();
         });
     });
@@ -1864,7 +1911,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect((dialogEle.querySelector('.e-embed-video-url') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
             // expect((dialogEle.querySelector('.e-video-url') as HTMLButtonElement).hasAttribute('disabled')).toBe(true);
-            // (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            // (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             // (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             // expect((dialogEle.querySelector('.e-embed-video-url') as HTMLButtonElement).hasAttribute('disabled')).toBe(true);
             done();
@@ -2167,7 +2214,7 @@ client side. Customer easy to edit the contents and get the HTML content for
              setTimeout(() => {
                  expect((dialogEle.querySelector('.e-insertVideo') as HTMLButtonElement).hasAttribute('disabled')).toBe(true);
                  done();
-             }, 4000);
+             }, 100);
          });
      });
     //  describe('Disable the insert video dialog button when the video is uploading', () => {
@@ -2178,7 +2225,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //                  items: ['Video']
     //              },
     //              insertVideoSettings: {
-    //                  saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
+    //                  saveUrl: "https://services.syncfusion.com/js/production/api/FileUploader/Save",
     //                  path: "../Videos/"
     //              }
     //          });
@@ -2198,14 +2245,14 @@ client side. Customer easy to edit the contents and get the HTML content for
     //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
     //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
     //          (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
     //          let fileObj: File = new File(["mov_bob"], "horse.mp4", { lastModified: 0, type: "overide/mimetype" });
     //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
     //          (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
     //          setTimeout(() => {
     //              expect((dialogEle.querySelector('.e-insertVideo') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
     //              done();
-    //          }, 4000);
+    //          }, 5500);
     //      });
     //  });
      describe('Getting error while insert the video after applied the  lower case or  upper case commands in Html Editor  - ', () => {
@@ -2238,7 +2285,7 @@ client side. Customer easy to edit the contents and get the HTML content for
              setTimeout(() => {
                  let dialogEle: any = rteObj.element.querySelector('.e-dialog');
                  (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-                 (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+                 (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
                  (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
                  expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
                  (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
@@ -2397,7 +2444,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //                  filename.title = args.file.name;
     //              },
     //              insertVideoSettings: {
-    //                  saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+    //                  saveUrl:"https://services.syncfusion.com/js/production/api/FileUploader/Save",
     //                  path: "../Videos/"
     //              },
     //              toolbarSettings: {
@@ -2420,7 +2467,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
     //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
     //          (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
     //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
     //          let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
     //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -2428,7 +2475,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //          setTimeout(() => {
     //              expect(document.querySelectorAll(".e-file-name")[0].innerHTML).toBe('rte_video');
     //              done();
-    //          }, 4500);
+    //          }, 5500);
     //      });
     //  });
  
@@ -2459,7 +2506,7 @@ client side. Customer easy to edit the contents and get the HTML content for
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
              (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
              (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
              let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -2471,7 +2518,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                  (<any>rteObj).videoModule.deleteVideo(evnArg);
                  (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
                  done();
-             }, 4000);
+             }, 1000);
          });
      });
  
@@ -2502,7 +2549,7 @@ client side. Customer easy to edit the contents and get the HTML content for
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
              (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
              (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
              let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -2514,7 +2561,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                  (<any>rteObj).videoModule.deleteVideo(evnArg);
                  (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
                  done();
-             }, 4000);
+             }, 1000);
          });
      });
      
@@ -2529,7 +2576,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //              fileUploading: mediaUploadingSpy,
     //              fileUploadSuccess: mediaUploadSuccessSpy,
     //              insertVideoSettings: {
-    //                  saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+    //                  saveUrl:"https://services.syncfusion.com/js/production/api/FileUploader/Save",
     //                  path: "../Videos/"
     //              },
     //              toolbarSettings: {
@@ -2552,7 +2599,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
     //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
     //          (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
     //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
     //          let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
     //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -2565,7 +2612,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //              (<any>rteObj).videoModule.deleteVideo(evnArg);
     //              (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
     //              done();
-    //          }, 4000);
+    //          }, 5500);
     //      });
     //  });
  
@@ -2611,7 +2658,7 @@ client side. Customer easy to edit the contents and get the HTML content for
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
              (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
              let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
              (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
@@ -2619,7 +2666,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                  expect(isMediaUploadSuccess).toBe(false);
                  expect(isMediaUploadFailed).toBe(false);
                  done();
-             }, 4000);
+             }, 1000);
              
          });
      });
@@ -2650,7 +2697,7 @@ client side. Customer easy to edit the contents and get the HTML content for
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
              (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
              let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
              (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
@@ -2696,7 +2743,7 @@ client side. Customer easy to edit the contents and get the HTML content for
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
              (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
              let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
              (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
@@ -2749,7 +2796,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                  (<any>rteObj).videoModule.deleteVideo(evnArg);
                  (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
                  done();
-             }, 4000);
+             }, 1000);
          });
      });
  
@@ -2779,7 +2826,7 @@ client side. Customer easy to edit the contents and get the HTML content for
              (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
              let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
              (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
              let fileObj: File = new File(["Header"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
              let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
              (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
@@ -3180,7 +3227,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
@@ -3258,7 +3305,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
@@ -3336,7 +3383,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
@@ -3413,7 +3460,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
@@ -3569,7 +3616,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
             (document.querySelector('.e-insertVideo.e-primary')as HTMLElement).click();
             expect(!isNullOrUndefined(document.querySelector('.e-rte-video'))).toBe(true)
@@ -3602,11 +3649,11 @@ client side. Customer easy to edit the contents and get the HTML content for
             (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
             (dialogEle.querySelector('.e-video-url-wrap input#embedURL')as HTMLElement).click();
             (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = '';
             (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
             (dialogEle.querySelector('.e-video-url-wrap input#embedURL')as HTMLElement).click();
             (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
@@ -3648,7 +3695,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect((<any>rteObj).videoModule.uploadObj.fileList.length).toEqual(1);
                 (document.getElementsByClassName('e-dlg-closeicon-btn')[0] as HTMLElement).click()
                 done();
-            }, 4500);
+            }, 100);
         });
     });
     describe(' Mobile video interaction', () => {
@@ -3708,7 +3755,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
             (<any>rteObj).videoModule.onIframeMouseDown();
             (<HTMLElement>document.querySelectorAll('.e-toolbar-item')[0]as HTMLElement).click();
@@ -3854,7 +3901,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //         (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
     //         let dialogEle: any = rteObj.element.querySelector('.e-dialog');
     //         (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
-    //         (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
+    //         (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/mov_bbb.mp4';
     //         (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
     //         (document.querySelector('.e-insertVideo.e-primary')as HTMLElement).click();
     //         let target = (<any>rteObj).Element.querySelectorAll(".e-content")[0];

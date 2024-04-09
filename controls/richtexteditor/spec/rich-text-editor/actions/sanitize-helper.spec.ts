@@ -490,8 +490,9 @@ describe('Sanitize Html Helper', () => {
           }, 50);
         });
 
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
     describe('prevent xss attack when enableHtmlSanitizer is true', () => {

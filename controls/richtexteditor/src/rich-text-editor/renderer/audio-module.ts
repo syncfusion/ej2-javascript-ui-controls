@@ -66,6 +66,7 @@ export class Audio {
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.on(events.insertCompleted, this.showAudioQuickToolbar, this);
         this.parent.on(events.destroy, this.removeEventListener, this);
+        this.parent.on(events.iframeMouseDown, this.closeDialog, this);
     }
 
     protected removeEventListener(): void {
@@ -85,6 +86,7 @@ export class Audio {
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
         this.parent.off(events.insertCompleted, this.showAudioQuickToolbar);
         this.parent.off(events.destroy, this.removeEventListener);
+        this.parent.off(events.iframeMouseDown, this.closeDialog);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.touchStart);
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.audioClick);
@@ -335,7 +337,7 @@ export class Audio {
         }
         e.selection.restore();
         this.parent.formatter.process(
-            this.parent, e.args, e.args,
+            this.parent, e.args, (e.args as ClickEventArgs).originalEvent,
             {
                 selectNode: e.selectNode,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
@@ -429,6 +431,9 @@ export class Audio {
                 this.prevSelectedAudEle.style.outline = '';
             }
         }
+        if (this.parent.inlineMode.enable && target && this.dialogObj && !closest(target, '#' + this.dialogObj.element.id)) {
+            this.dialogObj.hide();
+        }
     }
 
     private alignmentSelect(e: ClickEventArgs): void {
@@ -463,7 +468,7 @@ export class Audio {
         }
         const subCommand: string = ((e.args as ClickEventArgs).item) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Break';
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
+        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent, { selectNode: e.selectNode, subCommand: subCommand });
     }
     private inline(e: IImageNotifyArgs): void {
         if (e.selectNode[0].nodeName !== 'AUDIO') {
@@ -471,7 +476,7 @@ export class Audio {
         }
         const subCommand: string = ((e.args as ClickEventArgs).item) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Inline';
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, subCommand: subCommand });
+        this.parent.formatter.process(this.parent, e.args, (e.args as ClickEventArgs).originalEvent, { selectNode: e.selectNode, subCommand: subCommand });
     }
 
     private editAreaClickHandler(e: IImageNotifyArgs): void {
@@ -612,7 +617,7 @@ export class Audio {
                     this.uploadObj.removing();
                 }
                 this.parent.isBlur = false;
-                if (event && (event.event as { [key: string]: string }).returnValue) {
+                if (event && !isNOU(event.event) && (event.event as { [key: string]: string }).returnValue) {
                     if (this.parent.editorMode === 'HTML') {
                         selection.restore();
                     }

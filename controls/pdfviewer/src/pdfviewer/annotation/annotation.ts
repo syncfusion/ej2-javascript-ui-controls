@@ -3692,7 +3692,7 @@ export class Annotation {
                             // eslint-disable-next-line max-len
                             this.pdfViewer.toolbarModule.annotationToolbarModule.createPropertyTools("");
                         } else {
-                            if (this.pdfViewer.enableToolbar && this.pdfViewer.enableAnnotationToolbar) {
+                            if (this.pdfViewer.enableToolbar && this.pdfViewer.enableAnnotationToolbar && !this.pdfViewerBase.isAddComment) {
                                 // eslint-disable-next-line max-len
                                 this.pdfViewer.toolbarModule.annotationToolbarModule.createAnnotationToolbarForMobile();
                                 this.pdfViewer.toolbarModule.annotationToolbarModule.createPropertyTools(this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.38 (2024-04-02)
+
+### Menu
+
+#### Bug Fixes
+
+- The issue with "focusing the first element by using tab key in Menu" has been resolved.
+
 ## 25.1.37 (2024-03-26)
 
 ### TreeView

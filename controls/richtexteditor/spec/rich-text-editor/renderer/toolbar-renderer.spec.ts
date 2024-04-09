@@ -229,4 +229,47 @@ describe('Toolbar - Renderer', () => {
             destroy(rteObj);
         });
     });
+
+    describe('876802 - In Inline mode, after applying the format type, the applied format type does not remain in the active state.', () => {
+        let rteObj: any;
+        beforeAll((done) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize', 'Formats', 'OrderedList', 'UnorderedList']
+                },
+                inlineMode: {
+                    enable: true
+                },
+                value: "<h1 id=\"rte-element1\"><span id='test-span'>Rich text Editor</span></h1><div id=\"rte-element2\">Ri<span id='test-span1' style=\"font-family: Impact, Charcoal, sans-serif;\">ch text Edit</span>or</div>"
+            });
+            done();
+        });
+        it('Format preselect in inline mode', (done: Function) => {
+            (rteObj as any).focusIn();
+            let headerElement: HTMLElement = rteObj.inputElement.querySelector('#rte-element1 #test-span');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionText(document, headerElement.childNodes[0], headerElement.childNodes[0], 2, 4);
+            dispatchEvent(headerElement, 'mouseup');
+            setTimeout(() => {
+                (rteObj as any).element.ownerDocument.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[2].firstChild.click();
+                let FormatsNameItem: HTMLElement = document.querySelector('#' + rteObj.getID() + '_quick_Formats-popup');
+                expect(FormatsNameItem.querySelector('.e-item.e-h1[aria-label="Heading 1"]').classList.contains('e-active')).toBe(true);
+                done();
+            }, 200);
+        });
+        it('Font name preselect in the inline mode ', (done: Function) => {
+            (rteObj as any).focusIn();
+            let fontElement = (rteObj as any).inputElement.querySelector('#rte-element2 #test-span1');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, fontElement.childNodes[0], fontElement.childNodes[0], 5, 7);
+            dispatchEvent(fontElement, 'mouseup');
+            setTimeout(() => {
+                rteObj.element.ownerDocument.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[0].firstChild.click();
+                let fontNameItem = document.querySelector('#' + rteObj.getID() + '_quick_FontName-popup');
+                expect(fontNameItem.querySelector('.e-item.e-impact').classList.contains('e-active')).toBe(true);
+                done();
+            }, 200);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

@@ -510,6 +510,9 @@ describe('Table Module', () => {
         });
         it('Percentage Check-While resizing', () => {
             let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            let selObj: NodeSelection = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), table.querySelectorAll('td')[0], table.querySelectorAll('td')[0], 0, 0);
+            var position = window.getSelection().anchorNode;
             let mouseEvent = document.createEvent('MouseEvents');
             mouseEvent.initEvent('mousedown', true, true);
             (document.getElementsByClassName('e-column-resize')[1] as HTMLElement).dispatchEvent(mouseEvent);
@@ -519,6 +522,7 @@ describe('Table Module', () => {
             document.dispatchEvent(mouseEvent);
             let colWidth: string = (table as HTMLTableElement).rows[0].cells[0].style.width
             expect(colWidth.indexOf('%') !== -1).toBe(true);
+            expect(position).toEqual(window.getSelection().anchorNode);
         });
         it('resize end', () => {
             let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-column-resize') as HTMLElement;
@@ -1210,11 +1214,8 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         let rteObj: any;
         let trg: HTMLElement;
         let args: any;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Bold', 'CreateTable']
@@ -1234,7 +1235,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
 
         afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             destroy(rteObj);
         });
 
@@ -1269,7 +1269,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 let eventsArg: any = { pageX: 50, pageY: 300, target: tar };
                 (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
                 done();
-            }, 2000);
+            }, 100);
         });
     });
 
@@ -4073,6 +4073,59 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe("872207 - Table cells are collapsed while apply the vertical split.", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `<p>Text</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 66.6666%;" colspan="2"><br></td><td style="width: 33.3333%;"><br></td><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p>Editor</p>`
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Table cells are collapsed while apply the vertical split.', (done: Function) => {
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            var domSelection = new NodeSelection();
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                var tableCell = document.querySelectorAll('tr')[0].querySelectorAll('td')[0];
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[2] as HTMLElement).click();
+                var table = rteEle.querySelector("table");
+                var rows = table.rows;
+                expect(table.rows.length).toBe(2);
+                expect(table.rows[0].children.length).toBe(3);
+                expect(table.rows[1].children.length).toBe(3);
+                expect((rows[0].children[0] as HTMLElement).style.width).toEqual("33.0299%");
+                expect((rows[0].children[1] as HTMLElement).style.width).toEqual("33.0299%");
+                expect((rows[0].children[2] as HTMLElement).style.width).toEqual("33.3333%");
+                expect(rows[0].children[0].classList.contains("e-cell-select")).toEqual(true);
+                expect(rows[0].children[0].getAttribute("colspan")).toBe(null);
+                expect(rows[0].children[0].getAttribute("rowspan")).toBe(null);
+                expect(rows[0].children[1].getAttribute("colspan")).toBe(null);
+                expect(rows[0].children[1].getAttribute("rowspan")).toBe(null);
+                expect(rows[0].children[2].getAttribute("colspan")).toBe(null);
+                expect(rows[0].children[2].getAttribute("rowspan")).toBe(null);
+                expect(rows[1].children[0].getAttribute("rowspan")).toBe(null);
+                expect(rows[1].children[1].getAttribute("colspan")).toBe(null);
+                expect(rows[1].children[1].getAttribute("rowspan")).toBe(null);
+                expect(rows[1].children[2].getAttribute("colspan")).toBe(null);
+                expect(rows[1].children[2].getAttribute("rowspan")).toBe(null);
+                done();
+            }, 400);
+        });
+    });
+
     describe("Delete Row with single row", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -4616,9 +4669,11 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             setTimeout(function () {
                 var tablePop = document.querySelectorAll('.e-rte-quick-popup')[0];
                 (tablePop.querySelectorAll(".e-rte-quick-toolbar.e-rte-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn")[5] as HTMLElement).click()
-                expect(rteObj.contentModule.getEditPanel().innerHTML === '<div><br></div>').toBe(true);
-                done();
-            }, 1000);
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().innerHTML === '<div><br></div>').toBe(true);
+                    done();
+                }, 100);
+            }, 100);
         });
         it('Remove the table using the Quicktoolbar with the enter key DIV <BR>', function (done) {
             rteObj.enterKey = 'BR'
@@ -4633,9 +4688,11 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             setTimeout(function () {
                 var tablePop = document.querySelectorAll('.e-rte-quick-popup')[0];
                 (tablePop.querySelectorAll(".e-rte-quick-toolbar.e-rte-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn")[5] as HTMLElement).click()
-                expect(rteObj.contentModule.getEditPanel().innerHTML === '<br>').toBe(true);
-                done();
-            }, 800);
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().innerHTML === '<br>').toBe(true);
+                    done();
+                }, 100);
+            }, 100);
         });
     });
 
@@ -4670,9 +4727,9 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             (rteObj as any).mouseDownHandler(eventsArg);
             (rteObj as any).mouseUp(eventsArg);
             setTimeout(function () {
-                    expect((rteObj.contentModule.getEditPanel() as any).contentEditable == "true" ).toBe(true);
+                expect((rteObj.contentModule.getEditPanel() as any).contentEditable == "true" ).toBe(true);
                 done();
-            }, 1000);
+            }, 100);
         });
     });
 
@@ -5934,6 +5991,41 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 expect(document.querySelector('#' + rteObj.element.id + '_quick_TableCell-popup').querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(true);
                 done();
             },0);
+        });
+    });
+
+    describe('876830 - The table header was moved while press enter key in RTE', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEvent: any = {
+            preventDefault: function() {},
+            keyCode: 13,
+            which: 13,
+            shiftKey: false,
+            code: 'Enter'
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th class="e-cell-select"><br></th><th class="e-cell-select"><br></th></tr></thead><tbody><tr><td class="e-cell-select" style="width: 50%;"><br></td><td style="width: 50%;" class="e-cell-select"><br></td></tr></tbody></table>'
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('The table header was moved while press enter key in RTE', () => {
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            let selObj: NodeSelection = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), table.querySelectorAll('th')[0], table.querySelectorAll('th')[0], 0, 0);
+            keyboardEvent.code = 'Enter';
+            keyboardEvent.action = 'enter';
+            keyboardEvent.which = 13;
+            (<any>rteObj).keyDown(keyboardEvent);
+            expect(table.querySelectorAll('table tr')[0].firstChild.nodeName !== 'P').toBe(true);
         });
     });
 });

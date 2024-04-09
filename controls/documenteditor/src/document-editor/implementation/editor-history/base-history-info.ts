@@ -542,7 +542,9 @@ export class BaseHistoryInfo {
                 }
             }
             if (this.editorHistory.isUndoing) {
-                if (this.lastElementRevision && isNullOrUndefined(this.endRevisionLogicalIndex)) {
+                if (this.lastElementRevision && isNullOrUndefined(this.isAcceptOrReject) && deletedNodes.length > 0 && deletedNodes[0] instanceof ParagraphWidget && (deletedNodes[0] as ParagraphWidget).isEmpty()) {
+                    this.endRevisionLogicalIndex = this.selectionEnd;
+                } else if (this.lastElementRevision && isNullOrUndefined(this.endRevisionLogicalIndex)) {
                     this.updateEndRevisionInfo();
                 } else if (this.action === 'RemoveRowTrack') {
                     this.endRevisionLogicalIndex = this.selectionEnd;
@@ -622,8 +624,8 @@ export class BaseHistoryInfo {
                 if (this.owner.enableCollaborativeEditing) {
                     this.endIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(currentPosition);
                     this.endIndex += this.paraInclude(currentPosition);
-                }	              
-                if (this.editorHistory.isUndoing) {
+                }
+                if (this.editorHistory.isUndoing || (this.editorHistory.isRedoing && !this.owner.selectionModule.isEmpty && deletedNodes.length > 0)) {
                     this.owner.editorModule.deleteSelectedContents(sel, true);
                     isRemoveContent = true;
                 }
@@ -658,9 +660,9 @@ export class BaseHistoryInfo {
                 }
             } else {
                 isRemoveContent = false;
-                if (!insertTextPosition.isAtSamePosition(endTextPosition)) {
+                if (!insertTextPosition.isAtSamePosition(endTextPosition) ) {
                     isRemoveContent = this.action === 'BackSpace' || this.action === 'Delete' || this.action === 'ClearCells'
-                        || this.action === 'DeleteCells';
+                    || this.action === 'DeleteCells';
                 }
             }
             let isRedoAction: boolean = (this.editorHistory.isRedoing && !isRemoveContent);
@@ -766,7 +768,8 @@ export class BaseHistoryInfo {
         this.lastElementRevision = this.checkAdjacentNodeForMarkedRevision(this.lastElementRevision);
         let currentRevision: TextPosition = this.retrieveEndPosition(this.lastElementRevision);
         let blockInfo: ParagraphInfo = this.owner.selectionModule.getParagraphInfo(currentRevision);
-        if(blockInfo.paragraph.getLength() == blockInfo.offset && !blockInfo.paragraph.isInsideTable) {
+        const isLastChild = (blockInfo.paragraph == this.owner.editor.getLastParaForBodywidgetCollection(blockInfo.paragraph));
+        if(blockInfo.paragraph.getLength() == blockInfo.offset && !blockInfo.paragraph.isInsideTable && !isLastChild) {
             blockInfo.offset++;
         }
         this.endRevisionLogicalIndex = this.owner.selectionModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
@@ -939,7 +942,14 @@ export class BaseHistoryInfo {
                         deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
                         block = newParagraph;
                     }
-                    if (lastNode instanceof ParagraphWidget && this.owner.selectionModule.start.offset > 0) {
+                    let skipinsert: boolean = false;
+                    if (!isNullOrUndefined(this.isAcceptOrReject)) {
+                        skipinsert = true;
+                        if (!isNullOrUndefined(this.owner.selectionModule.start.paragraph.nextRenderedWidget) && this.owner.selectionModule.start.paragraph.nextRenderedWidget instanceof TableWidget) {
+                            skipinsert = false;
+                        }
+                    }
+                    if (lastNode instanceof ParagraphWidget && this.owner.selectionModule.start.offset > 0 && !skipinsert) {
                         this.owner.editorModule.insertNewParagraphWidget(lastNode, true);
                         if (lastNode.characterFormat.removedIds.length > 0) {
                             this.owner.editorModule.constructRevisionFromID(lastNode.characterFormat, undefined);
@@ -1017,6 +1027,8 @@ export class BaseHistoryInfo {
                         let paragraph: ParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(firstNode.getSplitWidgets().pop() as BlockWidget);
                         if (!isNullOrUndefined(paragraph)) {
                             this.owner.selectionModule.selectParagraphInternal(paragraph, true);
+                        } else if (!isNullOrUndefined(firstNode)) {
+                            this.owner.selectionModule.selectParagraphInternal(firstNode, false);
                         }
                     } else if (deletedNodes[0] instanceof TableWidget && deletedNodes.length !== 1) {
                         let nextNode: BlockWidget = deletedNodes[1] as BlockWidget;
@@ -1041,6 +1053,8 @@ export class BaseHistoryInfo {
             let node: IWidget = deletedNodes[i];
             if (node instanceof ElementBox) {
                 this.owner.editorModule.insertInlineInSelection(this.owner.selectionModule, node as ElementBox);
+            } else if (node instanceof ParagraphWidget && node.childWidgets === undefined) {
+                this.owner.selection.moveToNextParagraph();
             } else if (node instanceof BlockWidget) {
                 if (node instanceof TableRowWidget) {
                     if (block instanceof TableWidget) {
@@ -2625,100 +2639,93 @@ export class BaseHistoryInfo {
         if (!isNullOrUndefined(element)) {
             do {
                 let insertedText;
-                let data: MarkerInfo;
+                let Data: MarkerInfo;
                 let elementLength;
                 let characterFormat;
                 let type;
-                if (element instanceof FieldElementBox) {
-                    if (element.fieldType === 0 && this.getRemovedText() !== '') {
-                        operations.push(this.getDeleteOperation('Delete'));
-                        let operation: Operation = operations[operations.length - 1];
-                        operation.offset = elementOffset;
-                        if (!isNullOrUndefined(operation.markerData) && this.owner.enableTrackChanges) {
-                            operation.markerData.isSkipTracking = true;
+                if (!element.skipformFieldLength) {
+                    if (element instanceof FieldElementBox) {
+                        if (element.fieldType === 0 && this.getRemovedText() !== '') {
+                            operations.push(this.getDeleteOperation('Delete'));
+                            let operation: Operation = operations[operations.length - 1];
+                            operation.offset = elementOffset;
+                            if (!isNullOrUndefined(operation.markerData) && this.owner.enableTrackChanges) {
+                                operation.markerData.isSkipTracking = true;
+                            }
                         }
-                    }
-                    insertedText = element.fieldType === 0 ? CONTROL_CHARACTERS.Marker_Start : element.fieldType === 1 ? CONTROL_CHARACTERS.Marker_End : element.fieldType === 2 ? CONTROL_CHARACTERS.Field_Separator : '';
-
-                    if (element.fieldType === 0 && element.formFieldData) {
-                        type = this.formFieldType;
+                        insertedText = element.fieldType === 0 ? CONTROL_CHARACTERS.Marker_Start : element.fieldType === 1 ? CONTROL_CHARACTERS.Marker_End : element.fieldType === 2 ? CONTROL_CHARACTERS.Field_Separator : '';
+                        if (element.fieldType === 0 && element.formFieldData) {
+                            type = this.formFieldType;
+                            if (element.revisions.length > 0) {
+                                Data = this.owner.editorModule.getRevisionMarkerData(Data, element.revisions[0]);
+                            }
+                            if (isNullOrUndefined(Data)) {
+                                Data = {};
+                            }
+                            Data.type = 'Field';
+                            Data.formFieldData = JSON.stringify(element.formFieldData);
+                        } else {
+                            if(element.revisions.length > 0) {
+                                Data = this.owner.editorModule.getRevisionMarkerData(Data, element.revisions[0]);
+                            }
+                            if (isNullOrUndefined(Data)) {
+                                Data = {};
+                            }
+                            Data.type = 'Field';
+                        }
+                        elementLength = element.length;
+                    } else if (this.fieldBegin.formFieldData && element instanceof BookmarkElementBox) {
+                        insertedText = element.bookmarkType === 0 ? CONTROL_CHARACTERS.Marker_Start : CONTROL_CHARACTERS.Marker_End;
+                        Data = { 'bookmarkName': element.name, 'type': 'Bookmark' };
+                        elementLength = element.length;
+                    } else if (element instanceof TextElementBox) {
+                        insertedText = element.text;
+                        elementLength = element.length;
                         if (element.revisions.length > 0) {
-                            data = this.owner.editorModule.getRevisionMarkerData(data, element.revisions[0]);
+                            Data = this.owner.editorModule.getRevisionMarkerData(Data, element.revisions[0]);
                         }
-                        if (isNullOrUndefined(data)) {
-                            data = {};
-                        }
-                        data.type = 'Field';
-                        data.formFieldData = JSON.stringify(element.formFieldData);
-                    } else {
-                        if(element.revisions.length > 0) {
-                            data = this.owner.editorModule.getRevisionMarkerData(data, element.revisions[0]);
-                        }
-                        if (isNullOrUndefined(data)) {
-                            data = {};
-                        }
-                        data.type = 'Field';
                     }
-                    elementLength = element.length;
-                } else if (this.fieldBegin.formFieldData && element instanceof BookmarkElementBox) {
-                    if (element.revisions.length > 0) {
-                        data = this.owner.editorModule.getRevisionMarkerData(data, element.revisions[0]);
+                    if (!(element instanceof BookmarkElementBox)) {
+                        let characterData: any = this.owner.sfdtExportModule.writeCharacterFormat(element.characterFormat, 0);
+                        characterFormat = JSON.stringify(characterData);
                     }
-                    insertedText = element.bookmarkType === 0 ? CONTROL_CHARACTERS.Marker_Start : CONTROL_CHARACTERS.Marker_End;
-                    if (isNullOrUndefined(data)) {
-                        data = {};
+                    let operation: Operation = {
+                        action: 'Insert',
+                        offset: elementOffset,
+                        type: type,
+                        text: insertedText,
+                        length: elementLength,
+                        markerData: Data,
+                        format: characterFormat
                     }
-                    data.bookmarkName = element.name;
-                    data.type = 'Bookmark';
-                    elementLength = element.length;
-                } else if (element instanceof TextElementBox) {
-                    insertedText = element.text;
-                    elementLength = element.length;
-                    if (element.revisions.length > 0) {
-                        data = this.owner.editorModule.getRevisionMarkerData(data, element.revisions[0]);
-                    }
-                }
-                if (!(element instanceof BookmarkElementBox)) {
-                    let characterData: any = {};
-                    HelperMethods.writeCharacterFormat(characterData, true, element.characterFormat, undefined, true);
-                    characterFormat = JSON.stringify(characterData);
-                }
-                let operation: Operation = {
-                    action: 'Insert',
-                    offset: elementOffset,
-                    type: type,
-                    text: insertedText,
-                    length: elementLength,
-                    markerData: data,
-                    format: characterFormat
-                }
-                operations.push(operation);
-                elementOffset += element.length;
-                data = undefined;
-                type = undefined;
-                characterFormat = undefined;
-                if (element instanceof FieldElementBox && element.fieldType === 1) {
-                    isFieldEnd = true;
-                    if (this.fieldBegin.formFieldData && element.nextNode instanceof BookmarkElementBox) {
-                        let elementBox: BookmarkElementBox = element.nextNode;
-                        insertedText = elementBox.bookmarkType === 0 ? CONTROL_CHARACTERS.Marker_Start : CONTROL_CHARACTERS.Marker_End;
-                        if (element.revisions.length > 0) {
-                            data = this.owner.editorModule.getRevisionMarkerData(data, elementBox.revisions[0]);
+                    operations.push(operation);
+                    elementOffset += element.length;
+                    Data = undefined;
+                    type = undefined;
+                    characterFormat = undefined;
+                    if (element instanceof FieldElementBox && element.fieldType === 1) {
+                        isFieldEnd = true;
+                        if (this.fieldBegin.formFieldData && element.nextNode instanceof BookmarkElementBox) {
+                            let elementBox: BookmarkElementBox = element.nextNode;
+                            insertedText = elementBox.bookmarkType === 0 ? CONTROL_CHARACTERS.Marker_Start : CONTROL_CHARACTERS.Marker_End;
+                            if (element.revisions.length > 0) {
+                                Data = this.owner.editorModule.getRevisionMarkerData(Data, elementBox.revisions[0]);
+                            }
+                            if (isNullOrUndefined(Data)) {
+                                Data = {};
+                            }
+                            Data.bookmarkName = elementBox.name;
+                            Data.type = 'Bookmark';
+                            elementLength = elementBox.length;
+                            let operation: Operation = {
+                                action: 'Insert',
+                                offset: elementOffset,
+                                text: insertedText,
+                                length: elementLength,
+                                markerData: Data
+                            };
+                            operations.push(operation);
                         }
-                        if (isNullOrUndefined(data)) {
-                            data = {};
-                        }
-                        data.bookmarkName = elementBox.name;
-                        data.type = 'Bookmark';
-                        elementLength = elementBox.length;
-                        let operation: Operation = {
-                            action: 'Insert',
-                            offset: elementOffset,
-                            text: insertedText,
-                            length: elementLength,
-                            markerData: data
-                        };
-                        operations.push(operation);
                     }
                 }
                 element = element.nextNode;
@@ -3617,8 +3624,8 @@ export class BaseHistoryInfo {
             if (isNullOrUndefined(comment)) {
                 comment = this.removedNodes[0] as CommentElementBox;
             }
-            operation.length = undefined;
-            operation.action = 'Update';
+            operation.length = 1;
+            operation.action = 'Format';
             operation.offset = undefined;
             operation.text = CONTROL_CHARACTERS.Marker_Start + CONTROL_CHARACTERS.Marker_End;
             operation.markerData = {
@@ -3633,28 +3640,40 @@ export class BaseHistoryInfo {
                 isReply: comment.isReply
             }
             if (!isNullOrUndefined(comment.ownerComment)) {
-                operation.markerData.ownerCommentId = comment.ownerComment.commentId;
+                // Get the position of the comment owner offset
+                let position: TextPosition = this.owner.selection.getElementPosition(comment.ownerComment.commentEnd, true).startPosition;
+                operation.offset = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(position);
             }
             if (action === 'DeleteCommentWidget') {
+                operation.offset = this.startIndex < this.endIndex ? this.endIndex : this.startIndex;
+                // To get the offset of end comment element box we are seperating minus one to it. 
+                operation.offset -= 1;
                 operation.markerData.commentAction = 'remove';
             } else if (action === 'InsertCommentWidget') {
                 operation.markerData.commentAction = 'add';
             }
         } else if (action === 'ResolveComment') {
+            operation.action = 'Format';
+            operation.length = 1;
             operation.text = CONTROL_CHARACTERS.Marker_Start + CONTROL_CHARACTERS.Marker_End;
+            operation.offset = this.startIndex < this.endIndex ? this.endIndex : this.startIndex;
+            // To get the offset of end comment element box we are seperating minus one to it.
+            operation.offset -= 1;
             operation.markerData = {
                 type: 'Comment',
                 commentId: comment.commentId,
                 done: comment.isResolved
             }
         } else if (action === 'EditComment') {
+            operation.action = 'Format';
+            operation.length = 1;
             operation.text = CONTROL_CHARACTERS.Marker_Start + CONTROL_CHARACTERS.Marker_End;
+            operation.offset = this.startIndex < this.endIndex ? this.endIndex : this.startIndex;
+            // To get the offset of end comment element box we are seperating minus one to it.
+            operation.offset -= 1;
             operation.markerData = {
                 type: 'Comment',
-                commentId: comment.commentId,
                 text: comment.text,
-                isReply: comment.isReply,
-                ownerCommentId: comment.isReply ? comment.ownerComment.commentId : undefined
             }
         }
         return operation;
@@ -3669,7 +3688,13 @@ export class BaseHistoryInfo {
                 this.getDeleteCommentOperation(currentHistory.modifiedActions, operations);
             } else {
                 let operation: Operation = currentHistory.getDeleteOperation(currentHistory.action);
-                operations.push(currentHistory.getCommentOperation(operation, currentHistory.action));
+                currentHistory.getCommentOperation(operation, currentHistory.action);
+                if (currentHistory.action === 'DeleteCommentWidget' && !isNullOrUndefined(modifiedActions[i + 1])) {
+                    // For update operation we need end offset. So taking the offset from end remove inline history.
+                    let updateHistory = modifiedActions[i + 1];
+                    operation.offset = updateHistory.startIndex < updateHistory.endIndex ? updateHistory.startIndex : updateHistory.endIndex;
+                }
+                operations.push(operation);
             }
         }
     }

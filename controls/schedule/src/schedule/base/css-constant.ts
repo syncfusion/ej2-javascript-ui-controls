@@ -8,6 +8,8 @@ export const RTL: string = 'e-rtl';
 /** @private */
 export const DEVICE_CLASS: string = 'e-device';
 /** @private */
+export const ADAPTIVE_CLASS: string = 'e-adaptive';
+/** @private */
 export const MULTI_DRAG: string = 'e-multi-drag';
 /** @private */
 export const ICON: string = 'e-icons';

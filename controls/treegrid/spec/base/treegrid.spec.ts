@@ -2416,6 +2416,43 @@ describe('EJ2-71118 - Tab navigation throws script error while navigating to the
     });
 });
 
+describe('878792 - OnClick event was not binded while creating button in treegrid with HtmlEncode enabled in Javascript Treegrid', () => {
+    let TreeGridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        TreeGridObj = createGrid(
+            {
+                dataSource: [
+                    {
+                        taskName:
+                            '<button id="editComment"  data-toggle="tooltip" data-placement="top" title="Edit Comment" onclick="buttonClick()" type=\'button\' class=\'e-control e-btn e-lib e-small e-primary btn-savecomment e-button-80pt\'><i class="ms-Icon ms-Icon--EditSolid12"></i> Edit Comment</button>',
+                    },
+                ],
+                allowPaging: true,
+                childMapping: 'subtasks',
+                height: 350,
+                treeColumnIndex: 1,
+                columns: [
+                    { type: 'checkbox', width: 60 },
+                    {
+                      field: 'taskName',
+                      headerText: 'Task Name',
+                      width: 200,
+                      textAlign: 'Left',
+                      disableHtmlEncode: false,
+                    },
+                  ],
+            }, done);
+    });
+
+    it('check button click present', () => {
+        expect(document.getElementById('editComment').onclick.length === 1).toBe(true);
+    });
+    afterAll(() => {
+        destroy(TreeGridObj);
+    });
+});
+
 describe('Bug 839261: Column template is not working properly when using getPersistData method', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {

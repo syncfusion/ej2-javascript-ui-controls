@@ -5,8 +5,7 @@ import { getIndex } from '../base/util';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
-import { getDropDownValue, getFormattedFontSize, getTooltipText, getTooltipTextDropdownItems, getQuickToolbarTooltipText} from '../base/util';
-import { fontNameLocale, formatsLocale, numberFormatListLocale, bulletFormatListLocale} from '../models/default-locale';
+import { getDropDownValue, getFormattedFontSize, getTooltipText} from '../base/util';
 import * as model from '../models/items';
 import { IRichTextEditor, IRenderer, IDropDownModel, IDropDownItemModel, IDropDownRenderArgs, IListDropDownModel, ICssClassArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
@@ -27,6 +26,7 @@ export class DropDownButtons {
     public displayDropDown: DropDownButton;
     public tableRowsDropDown: DropDownButton;
     public tableColumnsDropDown: DropDownButton;
+    public tableCellDropDown: DropDownButton;
     public tableCellVerticalAlignDropDown: DropDownButton;
     /**
      *
@@ -54,27 +54,9 @@ export class DropDownButtons {
         if (item.cssClass) {
             addClass([args.element], item.cssClass);
         }
-        if (item.command === 'Images' || item.command === 'Videos' || item.command === 'Audios' || item.command === 'Table') {
-            args.element.setAttribute('title', getQuickToolbarTooltipText(item.text) !== ''? getQuickToolbarTooltipText(item.text) : item.text);
-        }
         if (item.command === 'Alignments' || item.subCommand === 'JustifyLeft'
             || item.subCommand === 'JustifyRight' || item.subCommand === 'JustifyCenter') {
             args.element.setAttribute('title', getTooltipText(item.subCommand.toLocaleLowerCase(), this.locator));
-        }
-        if (item.command === 'Formats') {
-            args.element.setAttribute('title', getTooltipTextDropdownItems(item.subCommand.toLocaleLowerCase(), this.locator, formatsLocale));
-        }
-        if (item.command === 'Font') {
-            args.element.setAttribute('title', getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, fontNameLocale) !== ''? getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, fontNameLocale): item.text);
-        }
-        if (item.subCommand === 'BulletFormatList') {
-            args.element.setAttribute('title', getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, bulletFormatListLocale) !== ''? getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, bulletFormatListLocale): item.text);
-        }
-        if (item.subCommand === 'NumberFormatList') {
-            args.element.setAttribute('title', (getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, numberFormatListLocale)) !== ''? getTooltipTextDropdownItems(item.text.toLocaleLowerCase(), this.locator, numberFormatListLocale): item.text);
-        }
-        if (item.subCommand === 'FontSize') {
-            args.element.setAttribute('title', getTooltipTextDropdownItems(item.value.toLocaleLowerCase(), null, null, this.parent));
         }
     }
 
@@ -388,7 +370,7 @@ export class DropDownButtons {
     private cellDropDown(type: string, tbElement: HTMLElement, targetElement: Element): void {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_TableCell', tbElement);
         if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
-        this.tableRowsDropDown = this.toolbarRenderer.renderDropDownButton({
+        this.tableCellDropDown = this.toolbarRenderer.renderDropDownButton({
             iconCss: 'e-table-cell e-icons',
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_QUICK_DROPDOWN,
             itemName: 'TableCell',
@@ -501,6 +483,10 @@ export class DropDownButtons {
             this.removeDropDownClasses(this.tableColumnsDropDown.element);
             this.tableColumnsDropDown.destroy();
         }
+        if (this.tableCellDropDown) {
+            this.removeDropDownClasses(this.tableCellDropDown.element);
+            this.tableCellDropDown.destroy();
+        }
         if (this.tableCellVerticalAlignDropDown) {
             this.removeDropDownClasses(this.tableCellVerticalAlignDropDown.element);
             this.tableCellVerticalAlignDropDown.destroy();
@@ -556,7 +542,7 @@ export class DropDownButtons {
         const dropDownObj: DropDownButton[] = [
             this.formatDropDown, this.fontNameDropDown, this.fontSizeDropDown, this.alignDropDown, this.imageAlignDropDown,
             this.displayDropDown, this.numberFormatListDropDown, this.bulletFormatListDropDown, this.tableRowsDropDown,
-            this.tableColumnsDropDown, this.tableCellVerticalAlignDropDown
+            this.tableColumnsDropDown, this.tableCellDropDown, this.tableCellVerticalAlignDropDown
         ];
         for (let i: number = 0; i < dropDownObj.length; i++) {
             this.updateCss(dropDownObj[i as number], e);
@@ -576,7 +562,7 @@ export class DropDownButtons {
     }
 
     private onIframeMouseDown(): void {
-        if (this.parent.getToolbarElement().querySelectorAll('.e-rte-dropdown-btn[aria-expanded="true"]').length > 0) {
+        if (!isNullOrUndefined(this.parent.getToolbarElement()) && (this.parent.getToolbarElement().querySelectorAll('.e-rte-dropdown-btn[aria-expanded="true"]').length > 0 || this.parent.getToolbarElement().querySelectorAll('.e-dropdown-btn.e-rte-inline-dropdown[aria-expanded="true"]').length > 0)) {
             dispatchEvent(document, 'mousedown');
         }
     }

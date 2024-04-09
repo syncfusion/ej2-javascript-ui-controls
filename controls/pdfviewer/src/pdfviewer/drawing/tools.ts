@@ -2008,7 +2008,7 @@ export class PolygonDrawingTool extends ToolBase {
                     this.inAction = false;
                     if (this.drawingObject) {
                         if (!isMouseLeave) {
-                            if (this.drawingObject.vertexPoints.length > 2) {
+                            if (this.drawingObject.vertexPoints.length > 2 && !args.isTouchMode) {
                                 this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
                             }
                         }
@@ -2434,4 +2434,5 @@ export interface MouseEventArgs {
     moveTouches?: TouchList | ITouches[];
     clickCount?: number;
     actualObject?: IElement;
+    isTouchMode?: boolean;
 }

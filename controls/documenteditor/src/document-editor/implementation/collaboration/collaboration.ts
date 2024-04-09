@@ -303,67 +303,7 @@ export class CollaborativeEditingHandler {
                 continue;
             }
             if (action.operations[i].action === 'Update') {
-                if (action.operations[i].text === (CONTROL_CHARACTERS.Marker_Start.toString() + CONTROL_CHARACTERS.Marker_End.toString())) {
-                    let ownerComment: CommentElementBox = undefined;
-                    let commentToDelete: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.commentId);
-                    if (!isNullOrUndefined(markerData.ownerCommentId) && markerData.isReply) {
-                        ownerComment = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.ownerCommentId);
-                        if (!isNullOrUndefined(ownerComment)) {
-                            commentToDelete = this.documentEditor.documentHelper.layout.getCommentById(ownerComment.replyComments, markerData.commentId);
-                        }
-                    }
-                    let isDeleteComment: boolean = !isNullOrUndefined(commentToDelete);
-                    if (!isNullOrUndefined(commentToDelete) && !(!isNullOrUndefined(markerData.done) && isNullOrUndefined(markerData.date))) {
-                        if (commentToDelete.text !== markerData.text) {
-                            let commentView: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(commentToDelete);
-                            commentView.commentText.innerText = markerData.text;
-                            commentToDelete.text = markerData.text;
-                            continue;
-                        }
-                    }
-                    if (isDeleteComment || markerData.commentAction === "remove") {
-                        if (isNullOrUndefined(commentToDelete)) {
-                            continue;
-                        }
-                        if (!isNullOrUndefined(markerData.done) && isNullOrUndefined(markerData.date)) {
-                            let comment: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.commentId);
-                            if (markerData.done) {
-                                this.documentEditor.editorModule.resolveComment(comment);
-                            } else {
-                                this.documentEditor.editorModule.reopenComment(comment);
-                            }
-                            continue;
-                        }
-                        if (markerData.commentAction === "remove") {
-                            let commentView: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(!isNullOrUndefined(ownerComment) ? ownerComment : commentToDelete);
-                            commentView.showDrawer();
-                            this.documentEditor.editorModule.deleteCommentWidget(commentToDelete);
-                            this.deletedComments.push(commentToDelete);
-                            commentView.hideDrawer();
-                        }
-                    }
-                    else {
-                        let item: CommentElementBox = new CommentElementBox(markerData.date);
-                        item.commentId = markerData.commentId;
-                        let commentStart: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsStart, item.commentId);
-                        let commentEnd: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsEnd, item.commentId);
-                        if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentEnd)) {
-                            this.documentEditor.editorModule.updateCommentElement(item, commentStart, commentEnd, markerData);
-                        }
-                        if (markerData.isReply) {
-                            let ownerComment: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.ownerCommentId);
-                            item.ownerComment = ownerComment;
-                            ownerComment.replyComments.splice(markerData.commentIndex, 0, item);
-                            this.documentEditor.commentReviewPane.addReply(item, false, false);
-                        } else if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentEnd)) {
-                            this.documentEditor.editorModule.addCommentWidget(item, true, true, false);
-                            this.commentsStart.splice(this.commentsStart.indexOf(commentStart), 1);
-                            this.commentsEnd.splice(this.commentsEnd.indexOf(commentEnd), 1);
-                            const comment: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(item);
-                            comment.postComment();
-                        }
-                    }
-                } else if (!isNullOrUndefined(action.operations[i].styleData)) {
+                if (!isNullOrUndefined(action.operations[i].styleData)) {
                     let styleData = JSON.parse(action.operations[i].styleData);
                     let styles: WStyles = new WStyles();
                     this.documentEditor.parser.parseStyles(styleData, styles);
@@ -386,7 +326,6 @@ export class CollaborativeEditingHandler {
                         }
                     }
                 }
-
                 continue;
             }
             let startOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset, false, false, false);
@@ -514,8 +453,10 @@ export class CollaborativeEditingHandler {
                                 field.formFieldData = formFieldData;
                             }
                             let characterFormat: WCharacterFormat = new WCharacterFormat();
-                            let data: object = JSON.parse(op2.format);
-                            this.documentEditor.parser.parseCharacterFormat(0, data, characterFormat);
+                            if (op2.format) {
+                                let data: object = JSON.parse(op2.format);
+                                this.documentEditor.parser.parseCharacterFormat(0, data, characterFormat);
+                            }
                             field.characterFormat.copyFormat(characterFormat);
                             this.documentEditor.editorModule.initInsertInline(field);
                         } else {
@@ -610,24 +551,19 @@ export class CollaborativeEditingHandler {
                 // } else {
                 if (op2.text === CONTROL_CHARACTERS.Marker_Start || op2.text === CONTROL_CHARACTERS.Marker_End) {
                     if (!isNullOrUndefined(markerData) && !isNullOrUndefined(markerData.commentId)) {
-                        let deleteComment: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(this.deletedComments, markerData.commentId);
-                        let ownerDeleteComment: CommentElementBox = undefined;
-                        if (isNullOrUndefined(deleteComment)) {
-                            deleteComment = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.commentId);
-                            if (isNullOrUndefined(deleteComment) && !isNullOrUndefined(markerData.ownerCommentId)) {
-                                ownerDeleteComment = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.ownerCommentId);
-                                deleteComment = this.documentEditor.documentHelper.layout.getCommentById(ownerDeleteComment.replyComments, markerData.commentId);
-                            }
-                        }
                         let selection = this.documentEditor.selectionModule;
                         let commentType: number = op2.text === CONTROL_CHARACTERS.Marker_Start ? 0 : 1;
+                        let deleteComment: CommentCharacterElementBox;
+                        if (this.documentEditor.selection.getElementInfo(this.documentEditor.selection.end.currentWidget, this.documentEditor.selection.end.offset).element instanceof CommentCharacterElementBox) {
+                            deleteComment = this.documentEditor.selection.getElementInfo(this.documentEditor.selection.end.currentWidget, this.documentEditor.selection.end.offset).element as CommentCharacterElementBox;
+                        }
                         if (commentType === 1) {
-                            const commentEnd: CommentCharacterElementBox = deleteComment.commentEnd;
+                            const commentEnd: CommentCharacterElementBox = deleteComment;
                             if (commentEnd.indexInOwner !== -1) {
                                 this.documentEditor.editorModule.removeAtOffset(selection.start.currentWidget, this.documentEditor.selectionModule, selection.start.offset);
                             }
                         } else {
-                            const commentStart: CommentCharacterElementBox = deleteComment.commentStart;
+                            const commentStart: CommentCharacterElementBox = deleteComment;
                             if (commentStart.indexInOwner !== -1) {
                                 this.documentEditor.editorModule.removeAtOffset(selection.start.currentWidget, this.documentEditor.selectionModule, selection.start.offset);
                             }
@@ -645,7 +581,9 @@ export class CollaborativeEditingHandler {
                 }
                 //}
             } else if (op2.action === 'Format') {
-                if (!isNullOrUndefined(op2.markerData) && !isNullOrUndefined(op2.markerData.revisionId)) {
+                if (op2.text === (CONTROL_CHARACTERS.Marker_Start.toString() + CONTROL_CHARACTERS.Marker_End.toString())) {
+                    this.updateOperation(op2);
+                } else if (!isNullOrUndefined(op2.markerData) && !isNullOrUndefined(op2.markerData.revisionId)) {
                     if (!isNullOrUndefined(op2.markerData.revisionType)) {
                         if (op2.markerData.revisionType === 'Deletion') {
                             if (op2.text === CONTROL_CHARACTERS.Row) {
@@ -784,6 +722,83 @@ export class CollaborativeEditingHandler {
         if (!isNullOrUndefined(this.documentEditor.commentReviewPane.commentPane.currentEditingComment)) {
             this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea = currentTextArea;
         }
+    }
+    private updateOperation(operation: Operation): void {
+        let markerData = operation.markerData;
+        if (operation.text === (CONTROL_CHARACTERS.Marker_Start.toString() + CONTROL_CHARACTERS.Marker_End.toString())) {
+            let ownerComment: CommentElementBox = undefined;
+            let commentToDelete: CommentElementBox = undefined;
+            if (this.documentEditor.selection.getElementInfo(this.documentEditor.selection.end.currentWidget, this.documentEditor.selection.end.offset).element instanceof CommentCharacterElementBox && operation.offset > 0) {
+                let commentID: string = (this.documentEditor.selection.getElementInfo(this.documentEditor.selection.end.currentWidget, this.documentEditor.selection.end.offset).element as CommentCharacterElementBox).commentId;
+                commentToDelete = this.getComment(commentID);
+            }
+            if (!isNullOrUndefined(commentToDelete) && !(!isNullOrUndefined(markerData.done) && isNullOrUndefined(markerData.date)) && isNullOrUndefined(markerData.isReply)) {
+                if (commentToDelete.text !== markerData.text) {
+                    let commentView: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(commentToDelete);
+                    commentView.commentText.innerText = markerData.text;
+                    commentToDelete.text = markerData.text;
+                    return;
+                }
+            }
+            if (!isNullOrUndefined(commentToDelete)) {
+                if (!isNullOrUndefined(markerData.done) && isNullOrUndefined(markerData.commentAction)) {
+                    if (markerData.done) {
+                        this.documentEditor.editorModule.resolveComment(commentToDelete);
+                    } else {
+                        this.documentEditor.editorModule.reopenComment(commentToDelete);
+                    }
+                    return;
+                }
+                if (markerData.commentAction === "remove") {
+                    let commentView: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(!isNullOrUndefined(ownerComment) ? ownerComment : commentToDelete);
+                    commentView.showDrawer();
+                    this.documentEditor.editorModule.deleteCommentWidget(commentToDelete);
+                    this.deletedComments.push(commentToDelete);
+                    commentView.hideDrawer();
+                } else {
+                    let item: CommentElementBox = new CommentElementBox(markerData.date);
+                    item.commentId = markerData.commentId;
+                    let commentStart: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsStart, item.commentId);
+                    let commentEnd: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsEnd, item.commentId);
+                    if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentEnd)) {
+                        this.documentEditor.editorModule.updateCommentElement(item, commentStart, commentEnd, markerData);
+                        item.ownerComment = commentToDelete;
+                        commentToDelete.replyComments.splice(markerData.commentIndex, 0, item);
+                        this.documentEditor.commentReviewPane.addReply(item, false, false);
+                    }
+                }
+            } else {
+                let item: CommentElementBox = new CommentElementBox(markerData.date);
+                item.commentId = markerData.commentId;
+                let commentStart: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsStart, item.commentId);
+                let commentEnd: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsEnd, item.commentId);
+                if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentEnd)) {
+                    this.documentEditor.editorModule.updateCommentElement(item, commentStart, commentEnd, markerData);
+                    this.documentEditor.editorModule.addCommentWidget(item, true, true, false);
+                    this.commentsStart.splice(this.commentsStart.indexOf(commentStart), 1);
+                    this.commentsEnd.splice(this.commentsEnd.indexOf(commentEnd), 1);
+                    const comment: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(item);
+                    comment.postComment();
+                }
+            }
+        }
+    }
+    private getComment(commentID: string): CommentElementBox {
+        let collection: CommentElementBox[] = this.documentEditor.documentHelper.comments;
+        for (let i: number = 0; i < collection.length; i++) {
+            let comment: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(collection, commentID);
+            if (isNullOrUndefined(comment)) {
+                for (let j: number = 0; j < collection[i].replyComments.length; j++) {
+                    let replyComment: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(collection[i].replyComments, commentID);
+                    if (!isNullOrUndefined(replyComment)) {
+                        return replyComment;
+                    }
+                }
+            } else {
+                return comment;
+            }
+        }
+        return null;
     }
     private updateList(operation: Operation, format?: WParagraphFormat): number {
         let nsid: number = -1;
@@ -1152,6 +1167,8 @@ export class CollaborativeEditingHandler {
                         }
                     }
                     length += element.length;
+                    // this element is present in the widget. so for select insermenting the lenth to offset
+                    offset += element.skipformFieldLength ? element.length : 0;
                     if (currentLength + childBlockLength + length + paragraphStartLength >= offset) {
                         completed.done = true;
                         return { 'offset': offset - 1, 'currentLength': currentLength + childBlockLength, 'paragraph': block };

@@ -830,7 +830,7 @@ export class _PdfCrossReference {
     }
     _copyTrailer(newXref: _PdfDictionary): void {
         newXref.set('Size', this._nextReferenceNumber);
-        this._document._isEncrypted ? newXref.set('Prev', this._prevXRefOffset) : newXref.set('Prev', this._prevStartXref);
+        newXref.set('Prev', this._prevXRefOffset);
         const root: any = this._trailer.getRaw('Root'); // eslint-disable-line
         if (typeof root !== 'undefined' && root !== null) {
             newXref.set('Root', root);

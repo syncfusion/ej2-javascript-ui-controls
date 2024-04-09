@@ -758,11 +758,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public enableColumnVirtualization: boolean;
     /**
      * Specifies whether to display or remove the untrusted HTML values in the TreeGrid component.
-     * By default `enableHtmlSanitizer` is set to true, and it sanitizes any suspected untrusted strings and scripts before rendering them.
+     * If `enableHtmlSanitizer` is set to true, then it will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default true
+     * @default false
      */
-    @Property(true)
+    @Property(false)
     public enableHtmlSanitizer: boolean;
     /**
      * If `enableInfiniteScrolling` set to true, then the data will be loaded in TreeGrid when the scrollbar reaches the end.
@@ -4826,7 +4826,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
     private collapseRemoteChild(rowDetails: { record: ITreeData, rows: HTMLTableRowElement[] }, isChild?: boolean): void {
 
-        if (!isChild) {
+        if (!isNullOrUndefined(isChild) && !isChild && !this.loadChildOnDemand) {
             rowDetails.record.expanded = false;
         }
 

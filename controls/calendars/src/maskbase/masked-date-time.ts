@@ -48,7 +48,7 @@ export class MaskedDateTime {
     private isNavigate : boolean = false;
     private navigated : boolean = false;
     private isBlur : boolean = false;
-    private formatRegex : RegExp = /EEEEE|EEEE|EEE|EE|E|dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yy|y|HH|H|hh|h|mm|m|fff|ff|f|aa|a|ss|s|zzzz|zzz|zz|z|'[^']*'|'[^']*'/g;
+    private formatRegex : RegExp = /EEEEE|EEEE|EEE|EE|E|dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yyy|yy|y|HH|H|hh|h|mm|m|fff|ff|f|aa|a|ss|s|zzzz|zzz|zz|z|'[^']*'|'[^']*'/g;
     private isDeletion: boolean = false;
     private isShortYear: boolean = false;
     private isDeleteKey: boolean = false;
@@ -383,6 +383,7 @@ export class MaskedDateTime {
             let year: number = (this.isYearPart && (newDateValue.getFullYear().toString().length < 4
             && !this.isShortYear) ? newDateValue.getFullYear() * 10 : 0) + parseInt(newVal[start - 1], 10);
             let yearValue: number = (this.dateformat.match(/y/g) || []).length;
+            yearValue = yearValue !== 2 ? 4 : yearValue;
             this.isShortYear = false;
             this.isYearZero = (newVal[start - 1] === '0' );
             if (isNaN(year)) {
@@ -581,6 +582,7 @@ export class MaskedDateTime {
                 result = proxy.zeroCheck(proxy.isYearZero , proxy.isYearPart , result );
                 break;
             case 'y':
+            case 'yyy':
             case 'yyyy':
                 result = proxy.isYearPart ? proxy.roundOff(proxy.maskDateValue.getFullYear(), 4) :  proxy.defaultConstant['year'].toString();
                 result = proxy.zeroCheck(proxy.isYearZero , proxy.isYearPart , result );

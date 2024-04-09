@@ -122,7 +122,7 @@ export class EditRender {
             this.focus.onClick({ target: closest(elem, 'td') }, true);
         } else {
             const isFocus: boolean = (this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && this.parent.editSettings.mode === 'Normal' ? false : true;
-            const focusElement: HTMLElement = elem.parentElement.classList.contains('e-ddl') ? elem.parentElement : elem;
+            const focusElement: HTMLElement = elem.classList.contains('e-dropdownlist') ? elem.parentElement : elem;
             if ((isFocus || ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && this.parent.editSettings.newRowPosition === 'Bottom'
                 && parentsUntil(elem, literals.addedRow))) && (!this.parent.editSettings.showAddNewRow ||
                     (this.parent.editSettings.showAddNewRow && (!parentsUntil(elem, literals.addedRow)) || this.parent.addNewRowFocus))) {

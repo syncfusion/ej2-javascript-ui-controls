@@ -17,6 +17,9 @@ export function renderRTE(options: RichTextEditorModel): RichTextEditor {
     extend(options, options, { saveInterval: 0 })
     let rteObj: RichTextEditor = new RichTextEditor(options);
     rteObj.appendTo(element);
+    if (rteObj.quickToolbarModule) {
+        rteObj.quickToolbarModule.debounceTimeout = 0;
+    }
     return rteObj;
 }
 

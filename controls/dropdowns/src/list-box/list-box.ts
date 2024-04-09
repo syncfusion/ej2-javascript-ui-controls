@@ -7,7 +7,7 @@ import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildP
 import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { prepend, append } from '@syncfusion/ej2-base';
-import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';
+import { cssClass, Sortable, moveTo, SortOrder } from '@syncfusion/ej2-lists';
 import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './list-box-model';
 import { Button } from '@syncfusion/ej2-buttons';
 import { createSpinner, showSpinner, hideSpinner, getZindexPartial } from '@syncfusion/ej2-popups';
@@ -256,6 +256,19 @@ export class ListBox extends DropDownBase {
      */
     @Property(null)
     public filterBarPlaceholder: string;
+
+    /**
+     * Specifies the `sortOrder` to sort the data source. The available type of sort orders are
+     * * `None` - The data source is not sorting.
+     * * `Ascending` - The data source is sorting with ascending order.
+     * * `Descending` - The data source is sorting with descending order.
+     *
+     * @default null
+     * @asptype object
+     * @aspjsonconverterignore
+     */
+    @Property<SortOrder>('None')
+    public sortOrder: SortOrder;
 
     /**
      * Triggers while rendering each list item.
@@ -522,7 +535,7 @@ export class ListBox extends DropDownBase {
     }
 
     protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }, index: number): void {
-        (this.jsonData as { [key: string]: Object }[]).splice(index, 0, item);
+        (this.jsonData as { [key: string]: Object }[]).splice(index === null ? this.jsonData.length : index, 0, item);
     }
 
     private initToolbar(): void {

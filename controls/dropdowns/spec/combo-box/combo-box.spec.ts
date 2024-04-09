@@ -2838,6 +2838,7 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
                 },
             });
             comboBoxObj.appendTo(element);
+            (<any>comboBoxObj).showPopup();
             let list: Array<HTMLElement> = (<any>comboBoxObj).list.querySelectorAll('li');
             mouseEventArgs.target = list[2];
             mouseEventArgs.type = 'click';

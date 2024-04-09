@@ -646,7 +646,8 @@ export class DiagramScroller {
             focusPoint = transformPointByMatrix(matrix, focusPoint);
             //Bug 853566: Fit to page is not working when zoom value less than minZoom.
             // Removed minZoom calculation to call fitToPage even if currentZoom less than minZoom.
-            if ((this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom && ( (this.currentZoom * factor) >= this.diagram.scrollSettings.minZoom || canZoomOut)) {
+            //Bug 878703: ZoomIn and ZoomOut not working properly when canZoomOut set to true. Added factor >= 1 condition to zoom in the diagram even when the currentZoom less than minZoom.
+            if ((this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom && ( (this.currentZoom * factor) >= this.diagram.scrollSettings.minZoom || (canZoomOut || factor >= 1))) {
                 this.currentZoom *= factor;
                 const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
                 pageBounds.x *= this.currentZoom;

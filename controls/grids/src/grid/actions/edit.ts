@@ -823,6 +823,10 @@ export class Edit implements IAction {
             if (formObjects[parseInt(i.toString(), 10)] && formObjects[parseInt(i.toString(), 10)].element
                 && !formObjects[parseInt(i.toString(), 10)].isDestroyed) {
                 formObjects[parseInt(i.toString(), 10)].destroy();
+                if (this.parent.isReact && this.parent.editSettings.mode === 'Dialog'
+                    && !isNullOrUndefined(this.parent.editSettings.template)) {
+                    formObjects[parseInt(i.toString(), 10)].element.remove();
+                }
             }
         }
         this.destroyToolTip();

@@ -98,6 +98,9 @@ export class FocusStrategy {
     }
 
     protected onBlur(e?: FocusEvent): void {
+        if (this.parent.allowPaging && this.parent.pagerModule.pagerObj.element.querySelector('.e-pagercontainer')) {
+            this.parent.pagerModule.pagerObj.element.querySelector('.e-pagercontainer').removeAttribute('aria-hidden');
+        }
         // The below boolean condition for gantt team focus fix.
         const isGantt: boolean = parentsUntil((e.target as Element), 'e-gantt') && (e.target as Element).classList.contains('e-rowcell')
             && (!isNullOrUndefined((e.target as Element).nextElementSibling)
@@ -382,6 +385,9 @@ export class FocusStrategy {
                     returnVal = true;
                     this.setActive(true);
                     let firstContentCellIndex: number[] = [0, 0];
+                    if (this.parent.allowPaging && this.parent.pagerModule.pagerObj.element.querySelector('.e-pagercontainer')) {
+                        this.parent.pagerModule.pagerObj.element.querySelector('.e-pagercontainer').setAttribute('aria-hidden', 'true');
+                    }
                     if (this.active.matrix.matrix[firstContentCellIndex[0]][firstContentCellIndex[1]] === 0) {
                         firstContentCellIndex = findCellIndex(this.active.matrix.matrix, [0, 0], true);
                     }
@@ -405,6 +411,9 @@ export class FocusStrategy {
             }
         }
         if (e.target && parentsUntil(e.target as Element, 'e-gridcontent')) {
+            if (this.parent.allowPaging && this.parent.pagerModule.pagerObj.element.querySelector('.e-pagercontainer')) {
+                this.parent.pagerModule.pagerObj.element.querySelector('.e-pagercontainer').removeAttribute('aria-hidden');
+            }
             if (this.parent.editSettings.mode === 'Batch' && (e.action === 'tab' || e.action === 'shiftTab')) {
                 this.active.matrix.current = this.findBatchEditCell(prevBatchValue, e.action === 'tab' ? true : false);
                 if (e.action === 'tab' && prevBatchValue.toString() === this.active.matrix.current.toString()) {
@@ -1352,7 +1361,7 @@ export class ContentFocus implements IFocus {
         info.elementToFocus = info.element.classList.contains('e-detailcell') && info.element.querySelector('.e-childgrid')
             ? info.element.querySelector('.e-childgrid') : info.elementToFocus;
         if (this.parent.editSettings.mode === 'Batch' && this.parent.isEdit && info.elementToFocus.tagName.toLowerCase() === 'input'
-            && info.elementToFocus.parentElement.classList.contains('e-ddl')) {
+            && info.elementToFocus.classList.contains('e-dropdownlist')) {
             info.elementToFocus = info.elementToFocus.parentElement;
         }
         info.outline = true;

@@ -1,4 +1,4 @@
-import { Input, InputObject } from '@syncfusion/ej2-inputs';import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n, setValue } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { prepend, append } from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner, getZindexPartial } from '@syncfusion/ej2-popups';import { DataManager, Query } from '@syncfusion/ej2-data';
+import { Input, InputObject } from '@syncfusion/ej2-inputs';import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n, setValue } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { prepend, append } from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo, SortOrder } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner, getZindexPartial } from '@syncfusion/ej2-popups';import { DataManager, Query } from '@syncfusion/ej2-data';
 import {SelectionMode,CheckBoxPosition,ToolBarPosition,BeforeItemRenderEventArgs,ListBoxChangeEventArgs,DropEventArgs,DragEventArgs} from "./list-box";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -159,6 +159,18 @@ export interface ListBoxModel extends DropDownBaseModel{
      * @default null
      */
     filterBarPlaceholder?: string;
+
+    /**
+     * Specifies the `sortOrder` to sort the data source. The available type of sort orders are
+     * * `None` - The data source is not sorting.
+     * * `Ascending` - The data source is sorting with ascending order.
+     * * `Descending` - The data source is sorting with descending order.
+     *
+     * @default null
+     * @asptype object
+     * @aspjsonconverterignore
+     */
+    sortOrder?: SortOrder;
 
     /**
      * Triggers while rendering each list item.

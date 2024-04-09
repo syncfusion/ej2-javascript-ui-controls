@@ -692,13 +692,14 @@ export class Table {
         }
         const target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
         const closestTable: Element = closest(target, 'table.e-rte-table, table.e-rte-paste-table');
-        if (!isNOU(this.curTable) && !isNOU(closestTable) && closestTable !== this.curTable &&
+        const isResizing: boolean = this.parent.contentModule.getEditPanel().querySelectorAll('.e-table-box.e-rbox-select, .e-table-rhelper.e-column-helper, .e-table-rhelper.e-row-helper').length > 0;
+        if (!isResizing && !isNOU(this.curTable) && !isNOU(closestTable) && closestTable !== this.curTable &&
             this.parent.contentModule.getEditPanel().contains(closestTable)) {
             this.removeResizeElement();
             this.removeHelper(e as MouseEvent);
             this.cancelResizeAction();
         }
-        if (target.nodeName === 'TABLE' || target.nodeName === 'TD' || target.nodeName === 'TH') {
+        if (!isResizing && (target.nodeName === 'TABLE' || target.nodeName === 'TD' || target.nodeName === 'TH')) {
             this.curTable = (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable))
                 && (target.nodeName === 'TD' || target.nodeName === 'TH') ?
                 (closestTable as HTMLTableElement) : target as HTMLTableElement;
@@ -845,7 +846,6 @@ export class Table {
             e.preventDefault();
             this.parent.preventDefaultResize(e as PointerEvent);
             removeClass(this.curTable.querySelectorAll('td,th'), classes.CLS_TABLE_SEL);
-            this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
             this.pageX = this.getPointX(e);
             this.pageY = this.getPointY(e);
             this.resizeBtnInit();
@@ -1102,7 +1102,8 @@ export class Table {
                                 const width: number = parseFloat(this.curTable.style.width);
                                 currentMarginLeft = 100 - width;
                             }
-                            if (currentMarginLeft && currentMarginLeft < 1) {
+                            // For table pasted from word, Margin left can be anything so we are avoiding the below process.
+                            if (!this.curTable.classList.contains('e-rte-paste-table') && currentMarginLeft && currentMarginLeft < 1) {
                                 this.curTable.style.marginLeft = null;
                                 this.curTable.style.width = '100%';
                                 return;
@@ -1267,7 +1268,13 @@ export class Table {
             tableTrPercentage[i as number] = percentage;
         }
         for (let i:number = 0; i < currentTableTrElement.length; i++) {
-            (currentTableTrElement[i as number] as HTMLElement).style.height = tableTrPercentage[i as number] + '%';
+            if ((currentTableTrElement[i as number] as HTMLElement).parentElement.nodeName === 'THEAD') {
+                (currentTableTrElement[i as number] as HTMLElement).parentElement.style.height = tableTrPercentage[i as number] + '%';
+                (currentTableTrElement[i as number] as HTMLElement).style.height = tableTrPercentage[i as number] + '%';
+            }
+            else {
+                (currentTableTrElement[i as number] as HTMLElement).style.height = tableTrPercentage[i as number] + '%';
+            }
         }
         const args: ResizeArgs = { event: e, requestType: 'table' };
         this.parent.trigger(events.resizeStop, args);
@@ -1420,6 +1427,9 @@ export class Table {
     private onIframeMouseDown(): void {
         if (this.popupObj) {
             this.popupObj.hide();
+        }
+        if (this.parent.inlineMode.enable && this.editdlgObj) {
+            this.editdlgObj.hide();
         }
     }
 

@@ -569,6 +569,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public fontSubstitutionTable: Dictionary<string, string> = undefined;
+    /**
+     * @private
+     */
     public themes: Themes = new Themes();
     /**
      * @private
@@ -951,6 +955,7 @@ export class DocumentHelper {
         this.isMobileDevice = typeof window !== 'undefined' ? /Android|Windows Phone|webOS/i.test(navigator.userAgent) : false;
         this.formFillPopup = new FormFieldPopUp(this.owner);
         this.customXmlData = new Dictionary<string, string>();
+        this.fontSubstitutionTable = new Dictionary<string, string>();
         this.contentControlCollection = [];
         this.footnoteCollection = [];
         this.endnoteCollection = [];
@@ -1055,6 +1060,7 @@ export class DocumentHelper {
             this.formFillPopup.hidePopup();
         }
         this.customXmlData.clear();
+        this.fontSubstitutionTable.clear();
         this.images.clear();
         this.contentControlCollection = [];
         this.backgroundColor='#FFFFFF';
@@ -3984,6 +3990,10 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.owner)) {
             this.images.destroy();
         }
+        if (!isNullOrUndefined(this.owner)) {
+            this.fontSubstitutionTable.destroy();
+        }
+        this.fontSubstitutionTable = undefined;
         this.customXmlData = undefined;
         this.images = undefined;
         this.blockToShift = undefined;

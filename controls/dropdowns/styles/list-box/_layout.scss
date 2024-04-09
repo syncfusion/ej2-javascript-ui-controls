@@ -278,11 +278,15 @@
     }
 
     .e-input-group {
-      padding: 4px 8px;
+      @if $skin-name != 'tailwind' {
+        padding: 4px 8px;
+      }
     }
 
     .e-input-focus {
-      padding: 4px 4px 4px 8px;
+      @if $skin-name != 'tailwind' {
+        padding: 4px 4px 4px 8px;
+      }
     }
 
     .e-hidden-select {

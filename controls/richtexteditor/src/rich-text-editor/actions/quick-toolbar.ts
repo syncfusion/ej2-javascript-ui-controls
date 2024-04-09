@@ -10,7 +10,7 @@ import { BaseQuickToolbar } from './base-quick-toolbar';
 import { BaseToolbar } from './base-toolbar';
 import { PopupRenderer } from '../renderer/popup-renderer';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
-import { CLS_INLINE_POP, CLS_INLINE } from '../base/classes';
+import { CLS_INLINE_POP, CLS_INLINE, CLS_VID_CLICK_ELEM} from '../base/classes';
 
 /**
  * `Quick toolbar` module is used to handle Quick toolbar actions.
@@ -30,6 +30,7 @@ export class QuickToolbar {
     public videoQTBar: BaseQuickToolbar;
     public tableQTBar: BaseQuickToolbar;
     public inlineQTBar: BaseQuickToolbar;
+    public debounceTimeout: number = 1000;
     private renderFactory: RendererFactory;
 
     public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
@@ -234,7 +235,7 @@ export class QuickToolbar {
         clearTimeout(this.deBouncer);
         this.deBouncer = window.setTimeout(() => {
             this.showInlineQTBar(x, y, target);
-        }, 1000);
+        }, this.debounceTimeout);
     }
 
     private mouseUpHandler(e: NotifyArgs): void {
@@ -284,12 +285,21 @@ export class QuickToolbar {
             this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
             const range: Range = this.parent.getRange();
             if ((range.endContainer.parentElement.tagName === range.startContainer.parentElement.tagName && (range.startContainer.parentElement.tagName === 'A' && range.endContainer.parentElement.tagName === 'A')) ||
-             (target.tagName === 'IMG') || (target.tagName === 'VIDEO') || (target.tagName === 'AUDIO') || (target.childNodes[0] && target.childNodes[0].nodeType === 1 && (target.childNodes[0 as number] as HTMLElement).classList.contains('e-rte-audio')) ||
+             (target.tagName === 'IMG') || (target.tagName === 'VIDEO' || this.isEmbedVidElem(target)) || (target.tagName === 'AUDIO') || (target.childNodes[0] && target.childNodes[0].nodeType === 1 && (target.childNodes[0 as number] as HTMLElement).classList.contains('e-rte-audio')) ||
              (this.parent.getRange().startOffset === this.parent.getRange().endOffset)) {
                 return;
             }
             this.target = target;
             this.textQTBar.showPopup(this.offsetX, this.offsetY, target, 'text');
+        }
+    }
+
+    private isEmbedVidElem(target: HTMLElement): boolean {
+        if ((target && target.nodeType !== 3 && target.nodeName !== 'BR' && (target.classList && target.classList.contains(CLS_VID_CLICK_ELEM))) ||
+        (target && target.nodeName === 'IFRAME')) {
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -350,7 +360,7 @@ export class QuickToolbar {
         clearTimeout(this.deBouncer);
         this.deBouncer = window.setTimeout(() => {
             this.onSelectionChange(e);
-        }, 1000);
+        }, this.debounceTimeout);
     }
 
     private onSelectionChange(e: Event): void {

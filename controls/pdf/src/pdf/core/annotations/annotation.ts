@@ -8233,31 +8233,49 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
             }
             if (holder) {
                 const index: number = _getPageIndex(this._crossReference._document, this._crossReference._fetch(holder));
-                const page: PdfPage = this._crossReference._document.getPage(index);
-                if (array[1] instanceof _PdfName) {
-                    const mode: _PdfName = array[1];
-                    if (mode) {
-                        if (mode.name === 'XYZ') {
-                            const left: number = array[2];
-                            const top: number = array[3];
-                            const zoom: number = array[4];
-                            const topValue: number = (typeof top !== 'undefined' && top !== null) ? (page.size[1] - top) : 0;
-                            const leftValue: number = (typeof left !== 'undefined' && left !== null) ? left : 0;
-                            this._destination = new PdfDestination(page, [leftValue, topValue]);
-                            if (typeof zoom !== 'undefined' && zoom !== null) {
-                                this._destination.zoom = zoom;
-                            }
-                            if ((typeof left === 'undefined' && left === null) || (typeof top === 'undefined' && top === null)
-                                || (typeof zoom === 'undefined' && zoom === null)) {
-                                this._destination._setValidation(false);
-                            }
-                        } else {
-                            if (page && mode.name === 'Fit') {
+                if (index >= 0) {
+                    const page: PdfPage = this._crossReference._document.getPage(index);
+                    if (page && array[1] instanceof _PdfName) {
+                        const mode: _PdfName = array[1];
+                        if (mode) {
+                            if (mode.name === 'XYZ') {
+                                const left: number = array[2];
+                                const top: number = array[3];
+                                const zoom: number = array[4];
+                                const topValue: number = (typeof top !== 'undefined' && top !== null) ? (page.size[1] - top) : 0;
+                                const leftValue: number = (typeof left !== 'undefined' && left !== null) ? left : 0;
+                                this._destination = new PdfDestination(page, [leftValue, topValue]);
+                                if (typeof zoom !== 'undefined' && zoom !== null) {
+                                    this._destination.zoom = zoom;
+                                }
+                                if ((typeof left === 'undefined' && left === null) || (typeof top === 'undefined' && top === null)
+                                    || (typeof zoom === 'undefined' && zoom === null)) {
+                                    this._destination._setValidation(false);
+                                }
+                            } else if (mode.name === 'Fit') {
                                 this._destination = new PdfDestination(page);
                                 this._destination.mode = PdfDestinationMode.fitToPage;
                             }
                         }
                     }
+                } else {
+                    this._destination = new PdfDestination();
+                    const zoom: number = array[4];
+                    const mode: _PdfName = array[1];
+                    if (typeof zoom !== 'undefined' && zoom !== null) {
+                        this._destination.zoom = zoom;
+                    }
+                    if (mode.name === 'Fit') {
+                        this._destination.mode = PdfDestinationMode.fitToPage;
+                    } else if (mode.name === 'XYZ') {
+                        const left: number = array[2];
+                        const topValue: number = array[3];
+                        if ((typeof left === 'undefined' && left === null) || (typeof topValue === 'undefined' && topValue === null)
+                            || (typeof zoom === 'undefined' && zoom === null)) {
+                            this._destination._setValidation(false);
+                        }
+                    }
+                    this._destination._index = index;
                 }
             }
         } else if (this._dictionary.has('A') && !this._destination) {
@@ -9932,6 +9950,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
                             }
                         } else if (bounds) {
                             templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
+                            template._size = [bounds[2], bounds[3]];
                         }
                         template._exportStream(dictionary, this._crossReference);
                     }

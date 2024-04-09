@@ -475,9 +475,10 @@ describe(' HTML editor update toolbar ', () => {
             })
             button.click();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             detach(button);
             destroy(rteObj);
+            done();
         });
     });
     describe('The readOnly is true in the Rich Text Editor', function () {
@@ -528,8 +529,9 @@ describe(' HTML editor update toolbar ', () => {
                     done();
                 },100)
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
        });
     });
 });

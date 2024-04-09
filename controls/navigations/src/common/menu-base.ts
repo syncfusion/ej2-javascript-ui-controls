@@ -754,12 +754,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             else if ((action === DOWNARROW) || (action === RIGHTARROW)) {
                 index++;
+            } else if (action === 'tab' && cli.classList.contains(SEPARATOR)) {
+                index++;
             } else {
                 index--;
             }
         }
         cli = cul.children[index as number];
-        if (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE)) {
+        if (cli && (cli.classList.contains(SEPARATOR) || cli.classList.contains(DISABLED) || cli.classList.contains(HIDE))) {
             index = this.isValidLI(cli, index, action);
         }
         return index;

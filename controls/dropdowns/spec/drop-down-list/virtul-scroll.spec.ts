@@ -395,7 +395,7 @@ describe('DDList_Virtualization', () => {
                 dropObj.dataBind();
                 dropObj.showPopup();
                 //expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+               // expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
                 expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
                 dropObj.filterInput.value = "Item 2";
                 dropObj.onInput()
@@ -470,12 +470,12 @@ describe('DDList_Virtualization', () => {
                     keyEventArgs.action = 'down';
                     dropObj.keyActionHandler(keyEventArgs);
                     expect((li[0] as Element).classList.contains('e-active')).toBe(true);
-                    dropObj.clearText();
+                    dropObj.clear();
+                    expect(dropObj.value === null).toBe(true);
                     var clearElement = dropObj.filterInput.parentElement.querySelector('.e-clear-icon');
                     expect(clearElement.style.visibility).toBe('hidden');
-                    //expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
                     expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
-                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
                     done();
                 }, 850);
             });

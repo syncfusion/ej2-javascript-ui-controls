@@ -5929,4 +5929,108 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('876330-After performing cut operations followed by an undo, lanes and nodes in the swimlane are not rendered properly', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let btn: HTMLButtonElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwimlaneUndo' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                            orientation: 'Horizontal',
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                style:{fill:'transparent'},
+                                children: [
+                                    {
+                                        id: 'selectItemaddcart',
+                                        annotations: [{ content: 'Select item\nAdd cart' }],
+                                        margin: { left: 190, top: 20 },
+                                        height: 40, width: 100
+                                    },
+                                ],
+                            },
+                            {
+                                id: 'stackCanvas2',
+                                header: {
+                                    annotation: { content: 'ONLINE' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { annotation: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 420, offsetY: 270,
+                    height: 100,
+                    width: 650,
+                    style:{fill:'transparent'}
+                },
+            ];
+
+            diagram = new Diagram({
+                width: '80%',
+                height: '600px',
+                nodes: nodes,
+            });
+            diagram.appendTo('#diagramSwimlaneUndo');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Add child node to lane and check lane children collection', (done: Function) => {
+            let child =  {
+                id: 'newChild',
+                annotations: [{ content: 'newChild' }],
+                margin: { left: 190, top: 20 },
+                height: 40, width: 100
+            };
+            let swimalne = diagram.nameTable['swimlane'];
+            let lane = swimalne.shape.lanes[1];
+            diagram.addNodeToLane(child,'swimlane',lane.id);
+            expect(lane.children.length === 1).toBe(true);
+            done();
+        });
+        it('Cut the lane and perform undo and check lane count and children', (done: Function) => {
+            diagram.select([diagram.nameTable['swimlanestackCanvas20']]);
+            let swimalne = diagram.nameTable['swimlane'];
+            diagram.cut();
+            let prevLaneCount = swimalne.shape.lanes.length;
+            diagram.undo();
+            let curLaneCount = swimalne.shape.lanes.length;
+            expect(prevLaneCount !== curLaneCount && curLaneCount === 2 && swimalne.shape.lanes[1].children.length > 0).toBe(true);
+            done();
+        });
+        it('Perform redo and check lane count', (done: Function) => {
+            diagram.redo();
+            let swimalne = diagram.nameTable['swimlane'];
+            let prevLaneCount = swimalne.shape.lanes.length;
+            diagram.undo();
+            let curLaneCount = swimalne.shape.lanes.length;
+            expect(prevLaneCount !== curLaneCount && curLaneCount === 2 && swimalne.shape.lanes[1].children.length > 0).toBe(true);
+            done();
+        });
+    });
 });

@@ -1461,9 +1461,6 @@ export class ChartRows extends DateProcessor {
             });
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
                 const tempTemplateData: IGanttData = this.parent.currentViewData[i as number];
-                if (this.parent.editModule && this.parent.editModule.isResourceTaskDeleted || this.parent.isFromOnPropertyChange) {
-                    this.parent.editModule.isResourceTaskDeleted = false;
-                }
                 if (!tempTemplateData.expanded && this.parent.enableMultiTaskbar) {
                     collapsedResourceRecord.push(tempTemplateData);
                 }

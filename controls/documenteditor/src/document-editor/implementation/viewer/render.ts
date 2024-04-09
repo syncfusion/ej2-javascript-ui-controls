@@ -39,6 +39,7 @@ export class Renderer {
     private pageIndex: number = -1;
     private pageCanvasIn: HTMLCanvasElement;
     private isFieldCode: boolean = false;
+    private isRenderHeader: boolean = false;
     private leftPosition: number = 0;
     private topPosition: number = 0;
     private height: number = 0;
@@ -604,19 +605,19 @@ export class Renderer {
         page.viewer.updateClientArea(page.bodyWidgets[0], page);
         let top: number = page.viewer.clientArea.y;
         let parentTable: TableWidget = header.ownerTable.getSplitWidgets()[0] as TableWidget;
-        for (let i: number = 0; i <= header.rowIndex; i++) {
-            if (parentTable.childWidgets.length === 0) {
-                return;
-            }
-            let row: TableRowWidget = (parentTable.childWidgets[i] as TableRowWidget);
-            if (widget.childWidgets.indexOf(row) !== -1) {
-                continue;
-            }
-            let headerWidget: TableRowWidget = row.clone();
-            headerWidget.containerWidget = row.containerWidget;
-
-            page.viewer.updateClientAreaLocation(headerWidget, new Rect(page.viewer.clientArea.x, top, headerWidget.width, headerWidget.height));
-            page.documentHelper.layout.updateChildLocationForRow(top, headerWidget);
+        if (parentTable.childWidgets.length === 0) {
+            return;
+        }
+        if (widget.childWidgets.indexOf(header) !== -1) {
+            return;
+        }
+        let table: TableWidget = parentTable.clone();
+        table.childWidgets = [];
+        page.viewer.updateClientAreaLocation(table, new Rect(page.viewer.clientArea.x, top, table.width, table.height));
+        this.updateTableHeaderRows(header, table, page, top);
+        this.isRenderHeader = true;
+        for (let j: number = 0; j < table.childWidgets.length; j++) {
+            let headerWidget: TableRowWidget = table.childWidgets[j] as TableRowWidget;
             let cell: TableCellWidget = undefined;
             //Renders table cell outline rectangle - Border and background color.
             for (let j: number = 0; j < headerWidget.childWidgets.length; j++) {
@@ -625,9 +626,44 @@ export class Renderer {
             }
             top += headerWidget.height;
         }
+        this.isRenderHeader = false;
         if (widget.y !== top) {
             //this.Location.Y = top;
             page.documentHelper.layout.updateChildLocationForTable(top, widget);
+        }
+    }
+    private updateTableHeaderRows(headerRow: TableRowWidget, clonedTable: TableWidget, page: Page, top: number): void {
+        let table: TableWidget = headerRow.ownerTable;
+        let rowSpan: number = 1;
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            if (row.rowFormat.isHeader) {
+                let clonedRow: TableRowWidget = row.clone();
+                clonedTable.childWidgets.push(clonedRow);
+                clonedRow.containerWidget = clonedTable;
+                page.viewer.updateClientAreaLocation(clonedRow, new Rect(page.viewer.clientArea.x, top, clonedRow.width, clonedRow.height));
+                page.documentHelper.layout.updateChildLocationForRow(top, clonedRow);
+                top += clonedRow.height;
+                if (row == headerRow) {
+                    for (let j: number = 0; j < headerRow.childWidgets.length; j++) {
+                        let cell: TableCellWidget = headerRow.childWidgets[j] as TableCellWidget;
+                        rowSpan = Math.max(rowSpan, cell.cellFormat.rowSpan);
+                    }
+                    if (rowSpan > 1 && i + rowSpan < table.childWidgets.length) {
+                        for (let k: number = 1; k < rowSpan; k++) {
+                            let nextRow: TableRowWidget = table.childWidgets[i + k] as TableRowWidget;
+                            if (!isNullOrUndefined(nextRow)) {
+                                let clonedRow: TableRowWidget = nextRow.clone();
+                                clonedTable.childWidgets.push(clonedRow);
+                                clonedRow.containerWidget = clonedTable;
+                                page.viewer.updateClientAreaLocation(clonedRow, new Rect(page.viewer.clientArea.x, top, clonedRow.width, clonedRow.height));
+                                page.documentHelper.layout.updateChildLocationForRow(top, clonedRow);
+                                top += clonedRow.height;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     private renderParagraphWidget(page: Page, paraWidget: ParagraphWidget): void {
@@ -2420,7 +2456,7 @@ export class Renderer {
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === tableCell.ownerTable.childWidgets.length - 1
             || (tableCell.cellFormat.rowSpan > 1
                 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan >= tableCell.ownerTable.childWidgets.length) ||
-            !nextRowIsInCurrentTableWidget || previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length
+            !nextRowIsInCurrentTableWidget || this.isRenderHeader || previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length
             && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan ||
             ((!isNullOrUndefined(tableCell.cellFormat.borders.bottom) && tableCell.cellFormat.borders.bottom.lineStyle !== 'Cleared' && tableCell.cellFormat.rowSpan === 1 && !isBidiTable) &&
                 ((!isNullOrUndefined(nextRow) && cellWidget.x < ((nextRow.firstChild as TableCellWidget).x - (nextRow.firstChild as TableCellWidget).margin.left) &&

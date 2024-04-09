@@ -471,12 +471,17 @@ export class HtmlEditor {
                 }
                 let lastNode: Node = this.oldRangeElement.lastChild ? this.oldRangeElement.lastChild : this.oldRangeElement;
                 while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text' &&
-                    lastNode.nodeName !== 'BR') {
+                    lastNode.nodeName !== 'BR' && !isNOU(lastNode.lastChild)) {
                     lastNode = lastNode.lastChild;
                 }
-                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),
-                    // eslint-disable-next-line
-                    lastNode as Element, lastNode.textContent.length);
+                if (lastNode.nodeName === 'IMG') {
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(), lastNode.parentElement as Element, lastNode.parentElement.childNodes.length);
+                }
+                else {
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),
+                        // eslint-disable-next-line
+                        lastNode as Element, lastNode.textContent.length);
+                }
                 if (this.oldRangeElement.nodeName !== '#text' && this.oldRangeElement.querySelectorAll('BR').length === 1) {
                     detach(this.oldRangeElement.querySelector('BR'));
                 }

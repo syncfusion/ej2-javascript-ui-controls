@@ -723,7 +723,7 @@ export class ColumnChooser implements IAction {
         const visibleCols: Column[] = this.parent.getVisibleColumns();
         for (let i: number = 0; i < visibleCols.length; i++) {
             const columnUID: string = visibleCols[parseInt(i.toString(), 10)].uid;
-            if (this.prevShowedCols.indexOf(columnUID) === -1) {
+            if (this.prevShowedCols.indexOf(columnUID) === -1 && visibleCols[parseInt(i.toString(), 10)].type !== 'checkbox') {
                 this.prevShowedCols.push(columnUID);
             }
         }

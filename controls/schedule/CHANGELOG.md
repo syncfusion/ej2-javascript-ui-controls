@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 25.1.38 (2024-04-02)
+## 25.1.39 (2024-04-09)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I556008` - An issue with the reading and restoring the current resource in compact view has been fixed.
+- `#I550494` - An issue with appointments overlapping while using `sortComparer` in the timeline views has been fixed.
+
+## 25.1.37 (2024-03-26)
 
 ### Schedule
 

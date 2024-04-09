@@ -2265,7 +2265,6 @@ export class FormDesigner {
         if (isCollection) {
             this.addFieldCollection(obj);
         } else {
-            this.pdfViewerBase.disableTextSelectionMode();
             HTMLElement = this.drawFormField(obj);
         }
         return HTMLElement;

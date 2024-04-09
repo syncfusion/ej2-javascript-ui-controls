@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I570307` - Toolbar refresh script error throws in Gantt issue has been fixed.
+- `#I568101` - The Gantt search toolbar item is not working in mobile mode issue has been fixed.
+- `#I566632` - Duration calculations are incorrect in edit or add dialog in decimals issue has been fixed.
+- `#I566103` - Baseline not showing in multi taskbar view.
+- `#I565427` - Dependency not validated for dynamically updating work week and holidays issue has been fixed.
+- `#I575577`,`#I575505`,`#I576464` - Console error occurred when dynamically changing the data source and other properties of the Gantt chart via button click has been fixed.
+
 ## 25.1.38 (2024-04-02)
 
 ### GanttChart
@@ -35,7 +48,6 @@ fixed.
 - `#I565359` - When `allowEditing` is disabled in a resource view, a console error is thrown issue has been fixed.
 - `#I565427` - Dependency not validated for dynamically updating work week and holidays issue has been fixed.
 - `#I560166` - The context menu using "add child" for any task, dependency line validation is not working properly.
-- `#I566103` - Baseline not showing in multi taskbar view.
 
 ## 25.1.35 (2024-03-15)
 

@@ -2075,7 +2075,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             'stroke-width': 1,
             'stroke': 'Gray'
         };
-        if (!this.seriesElements) {
+        if (!this.seriesElements || (options.height < 0 || options.width < 0)) {
             return;
         }
         let clipRectElement: Element;
@@ -2701,6 +2701,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.element.id + '_ChartAreaBorder', this.chartArea.background,
                 { width: this.chartArea.border.width, color: this.chartArea.border.color || this.themeStyle.areaBorder },
                 this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect, 0, 0, '', this.chartArea.border.dashArray);
+            if (rect.height < 0 || rect.width < 0) { return null; }
             this.htmlObject = this.renderer.drawRectangle(rect) as HTMLElement;
             this.htmlObject.setAttribute('aria-hidden', 'true');
             appendChildElement(

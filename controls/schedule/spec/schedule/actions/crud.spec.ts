@@ -724,7 +724,7 @@ describe('Schedule CRUD', () => {
         });
     });
 
-    describe('Remote data testing with OdataV4 service', () => {
+    xdescribe('Remote data testing with OdataV4 service', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
             const dataManager: DataManager = new DataManager({

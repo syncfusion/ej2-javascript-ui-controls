@@ -3522,6 +3522,7 @@ export class Layout {
                 const formFieldData: FormField = fieldBegin.formFieldData;
                 if (formFieldData instanceof CheckBoxFormField) {
                     const checkBoxTextElement: TextElementBox = new TextElementBox();
+                    checkBoxTextElement.skipformFieldLength = true;
                     checkBoxTextElement.line = fieldBegin.line;
                     const index: number = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);
                     fieldBegin.line.children.splice(index, 0, checkBoxTextElement);
@@ -3531,13 +3532,10 @@ export class Layout {
                     } else {
                         checkBoxTextElement.text = String.fromCharCode(9744);
                     }
-                    if (formFieldData.sizeType !== 'Auto') {
-                        checkBoxTextElement.characterFormat.fontSize = formFieldData.size * CHECK_BOX_FACTOR;
-                    } else {
-                        checkBoxTextElement.characterFormat.fontSize = checkBoxTextElement.characterFormat.fontSize * CHECK_BOX_FACTOR;
-                    }
+                    this.setCheckBoxFontSize(formFieldData, checkBoxTextElement.characterFormat);
                 } else if (formFieldData instanceof DropDownFormField) {
                     const dropDownTextElement: TextElementBox = new TextElementBox();
+                    dropDownTextElement.skipformFieldLength = true;
                     dropDownTextElement.characterFormat.copyFormat(fieldBegin.characterFormat);
                     dropDownTextElement.line = fieldBegin.line;
                     if (formFieldData.dropdownItems.length > 0) {
@@ -3549,6 +3547,17 @@ export class Layout {
                     fieldBegin.line.children.splice(index, 0, dropDownTextElement);
                 }
             }
+        }
+    }
+    /**
+     * Set the checkbox font size
+     * @returns {void}
+     */
+    public setCheckBoxFontSize(formFieldData: CheckBoxFormField, format: WCharacterFormat): void {
+        if (formFieldData.sizeType !== 'Auto') {
+            format.fontSize = formFieldData.size * CHECK_BOX_FACTOR;
+        } else {
+            format.fontSize = format.fontSize * CHECK_BOX_FACTOR;
         }
     }
     private layoutEmptyLineWidget(paragraph: ParagraphWidget, isEmptyLine: boolean, line?: LineWidget, isShiftEnter?: boolean): void {
@@ -3895,6 +3904,9 @@ export class Layout {
         }
         if (paragraph.paragraphFormat.textAlignment === 'Justify' && element instanceof TextElementBox) {
             this.splitTextElementWordByWord(element as TextElementBox);
+        }
+        if (element instanceof ImageElementBox) {
+            element.line.skipClipImage = !element.isInlineImage;
         }
     }
 
@@ -4264,7 +4276,7 @@ export class Layout {
         }
         // Gets line spacing.
         lineSpacing = this.getLineSpacing(paragraph, height);
-        if (paraFormat.lineSpacingType === 'Exactly'
+        if ((line.skipClipImage || paragraph.paragraphFormat.lineSpacing >= 14 || lineSpacing < 0) && paraFormat.lineSpacingType === 'Exactly'
             && lineSpacing < maxDescent + this.maxBaseline) {
             lineSpacing = maxDescent + this.maxBaseline;
         }
@@ -7294,6 +7306,32 @@ export class Layout {
         }
         return height;
     }
+    private getHeaderHeightForSpannedRow(table: TableWidget): number {
+        let height: number = 0;
+        let rowSpan: number = 1;
+        let headerRow: TableRowWidget = this.getHeader(table);
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            if (row.rowFormat.isHeader) {
+                height = height + row.height;
+                if (row == headerRow) {
+                    for (let j: number = 0; j < headerRow.childWidgets.length; j++) {
+                        let cell: TableCellWidget = headerRow.childWidgets[j] as TableCellWidget;
+                        rowSpan = Math.max(rowSpan, cell.cellFormat.rowSpan);
+                    }
+                    if (rowSpan > 1 && i + rowSpan < table.childWidgets.length) {
+                        for (let k: number = 1; k < rowSpan; k++) {
+                            let nextRow: TableRowWidget = table.childWidgets[i + k] as TableRowWidget;
+                            if (!isNullOrUndefined(nextRow)) {
+                                height = height + nextRow.height;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return height;
+    }
 
     private updateWidgetToRow(cell: TableCellWidget): void {
         //const viewer: LayoutViewer = this.viewer;
@@ -7759,7 +7797,8 @@ export class Layout {
         const newTable: TableWidget = new TableWidget();
         if (table.header) {
             newTable.header = table.header;
-            newTable.headerHeight = table.headerHeight;
+            const height: number = this.getHeaderHeightForSpannedRow(table);
+            newTable.headerHeight = height > table.headerHeight ? height : table.headerHeight;
         }
         newTable.index = table.index;
         newTable.tableFormat = table.tableFormat;
@@ -10163,8 +10202,10 @@ export class Layout {
         const prevObj: BodyWidgetInfo = this.getBodyWidgetOfPreviousBlock(block, 0);
         const prevBodyWidget: BodyWidget = prevObj.bodyWidget;
         const index: number = prevObj.index;
-        const isPageBreak: boolean = ((prevBodyWidget.lastChild as BlockWidget).lastChild as LineWidget).isEndsWithPageBreak;
-        const isColumnBreak: boolean = ((prevBodyWidget.lastChild as BlockWidget).lastChild as LineWidget).isEndsWithColumnBreak;
+        const isPageBreak: boolean = !isNullOrUndefined(prevBodyWidget.lastChild) && !isNullOrUndefined(((prevBodyWidget.lastChild as BlockWidget).lastChild as LineWidget)) ?
+            ((prevBodyWidget.lastChild as BlockWidget).lastChild as LineWidget).isEndsWithPageBreak: false;
+        const isColumnBreak: boolean = !isNullOrUndefined(prevBodyWidget.lastChild) && !isNullOrUndefined(((prevBodyWidget.lastChild as BlockWidget).lastChild as LineWidget)) ?
+            ((prevBodyWidget.lastChild as BlockWidget).lastChild as LineWidget).isEndsWithColumnBreak: false;
         if (prevBodyWidget !== block.containerWidget) {
             if (!isPageBreak && !isColumnBreak) {
                 this.updateContainerWidget(block, prevBodyWidget as BodyWidget, index + 1, true);
@@ -10686,7 +10727,10 @@ export class Layout {
         let prevBodyWidget: BodyWidget = undefined;
         const previousBlock: BlockWidget = block.previousRenderedWidget as BlockWidget;
         prevBodyWidget = (previousBlock && previousBlock.containerWidget.equals(block.containerWidget)) ?
-            previousBlock.containerWidget as BodyWidget : block.containerWidget as BodyWidget;
+        previousBlock.containerWidget as BodyWidget : 
+        (block instanceof TableWidget && !isNullOrUndefined(block.containerWidget.previousRenderedWidget) && block.containerWidget.index === block.containerWidget.previousRenderedWidget.index) ? 
+            block.containerWidget.previousRenderedWidget as BodyWidget :
+            block.containerWidget as BodyWidget;
         index = previousBlock && previousBlock.containerWidget.equals(block.containerWidget) ?
             prevBodyWidget.childWidgets.indexOf(previousBlock) : block.containerWidget.childWidgets.indexOf(block);
         return { bodyWidget: prevBodyWidget, index: index };

@@ -43,7 +43,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteObj: any;
         let QTBarModule: IRenderer;
 
-        beforeAll((done: Function) => {
+        beforeAll((done) => {
             rteObj = renderRTE({
                 quickToolbarSettings: {
                     text: ['Cut', 'Copy', 'Paste']
@@ -144,7 +144,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteObj: any;
         let QTBarModule: IRenderer;
 
-        beforeAll((done: Function) => {
+        beforeAll((done) => {
             rteObj = renderRTE({
                 cssClass: 'customClass',
                 quickToolbarSettings: {
@@ -215,8 +215,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it("Availability testing", (done: Function) => {
@@ -242,7 +243,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteObj: any;
         let QTBarModule: IRenderer;
 
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             rteObj = renderRTE({
                 quickToolbarSettings: {
                     link: [{ template: '' }],
@@ -291,7 +292,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteObj: any;
         let QTBarModule: IRenderer;
 
-        beforeAll((done: Function) => {
+        beforeAll((done: DoneFn) => {
             rteObj = renderRTE({
                 quickToolbarSettings: {
                     link: ['Open', 'UnLink'],
@@ -378,8 +379,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it("Popup open testing", (done: Function) => {
@@ -389,7 +391,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(linkPop.classList.contains('e-popup-close')).toBe(false);
                 expect(linkPop.classList.contains('e-popup-open')).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Popup open with undo/redo disable testing", (done: Function) => {
@@ -402,7 +404,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((<HTMLElement>tbItems.item(1)).classList.contains('e-overlay')).toBe(true);
                 expect((<HTMLElement>tbItems.item(2)).classList.contains('e-overlay')).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Bottom collision testing", (done: Function) => {
@@ -412,7 +414,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(linkPop.classList.contains('e-popup-close')).toBe(false);
                 expect(linkPop.classList.contains('e-popup-open')).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Left collision testing", (done: Function) => {
@@ -422,7 +424,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(linkPop.classList.contains('e-popup-close')).toBe(false);
                 expect(linkPop.classList.contains('e-popup-open')).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Right collision testing", (done: Function) => {
@@ -432,7 +434,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(linkPop.classList.contains('e-popup-close')).toBe(false);
                 expect(linkPop.classList.contains('e-popup-open')).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Page scroll with popup hide testing", (done: Function) => {
@@ -448,7 +450,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(rteObj.element.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
                 document.body.style.height = '';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Popup hide testing", () => {
@@ -494,8 +496,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it("Text toolbar open testing", (done: Function) => {
@@ -506,7 +509,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((textPop.offsetTop + textPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 QTBarModule.hideQuickToolbars();
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image toolbar open testing", (done: Function) => {
@@ -517,7 +520,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 QTBarModule.hideQuickToolbars();
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Link toolbar open testing", (done: Function) => {
@@ -528,7 +531,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((linkPop.offsetTop + linkPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 QTBarModule.hideQuickToolbars();
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element click testing", (done: Function) => {
@@ -539,7 +542,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(imgPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element full view space occupy with click testing", (done: Function) => {
@@ -554,7 +557,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 imgEle.style.width = '200px';
                 imgEle.style.height = '300px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element 'Right' align with click testing", (done: Function) => {
@@ -566,7 +569,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((imgPop.offsetLeft + imgPop.offsetWidth) <= (rteEle.offsetLeft + rteEle.offsetWidth)).toBe(true);
                 imgEle.setAttribute('align', 'left');
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element bottom section click testing", (done: Function) => {
@@ -578,7 +581,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((imgPop.offsetTop + imgPop.offsetHeight) <= (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 rteEle.style.marginTop = '100px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Anchor element click testing", (done: Function) => {
@@ -589,7 +592,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(anchorPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Anchor element 'Right' align with click testing", (done: Function) => {
@@ -602,7 +605,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 linkEle.style.cssFloat = 'left';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Element bottom section click testing", (done: Function) => {
@@ -614,7 +617,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) <= (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 rteEle.style.marginTop = '100px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Paragraph element click with text toolbar testing", (done: Function) => {
@@ -625,7 +628,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(pop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((pop.offsetTop + pop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
     });
 
@@ -665,14 +668,16 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             QTBarModule.textQTBar.hidePopup();
             QTBarModule.linkQTBar.hidePopup();
             QTBarModule.imageQTBar.hidePopup();
+            done();
         });
 
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it("Text toolbar open testing", (done: Function) => {
@@ -683,7 +688,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(textPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((textPop.offsetTop + textPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image toolbar open testing", (done: Function) => {
@@ -694,7 +699,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(imgPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Link toolbar open testing", (done: Function) => {
@@ -705,7 +710,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(linkPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((linkPop.offsetTop + linkPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element click testing", (done: Function) => {
@@ -716,7 +721,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(imgPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element full view space occupy with click testing", (done: Function) => {
@@ -733,7 +738,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 imgEle.style.height = '300px';
                 imgEle.style.marginTop = '200px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element 'Right' align with click testing", (done: Function) => {
@@ -746,7 +751,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 imgEle.setAttribute('align', 'left');
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element bottom section click testing", (done: Function) => {
@@ -758,7 +763,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 rteEle.style.marginTop = '100px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Anchor element click testing", (done: Function) => {
@@ -769,7 +774,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(anchorPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Anchor element 'Right' align with click testing", (done: Function) => {
@@ -783,7 +788,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 linkEle.style.cssFloat = 'left';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Element bottom section click testing", (done: Function) => {
@@ -795,7 +800,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 rteEle.style.marginTop = '100px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Paragraph element click with text toolbar testing", (done: Function) => {
@@ -806,7 +811,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(pop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((pop.offsetTop + pop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
     });
 
@@ -842,15 +847,17 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             QTBarModule.textQTBar.hidePopup();
             QTBarModule.linkQTBar.hidePopup();
             QTBarModule.imageQTBar.hidePopup();
+            done();
         });
 
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
             Browser.userAgent = defaultUA;
+            done();
         });
 
         it("Text toolbar open testing", (done: Function) => {
@@ -860,7 +867,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(textPop.offsetLeft >= 120).toBe(true);
                 expect((textPop.offsetTop + textPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image toolbar open testing", (done: Function) => {
@@ -871,7 +878,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(imgPop.offsetLeft >= rteEle.offsetLeft).toBe(true);
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Link toolbar open testing", (done: Function) => {
@@ -881,7 +888,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(linkPop.offsetLeft >= 120).toBe(true);
                 expect((linkPop.offsetTop + linkPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element click testing", (done: Function) => {
@@ -892,7 +899,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(imgPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element full view space occupy with click testing", (done: Function) => {
@@ -907,7 +914,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 imgEle.style.width = '200px';
                 imgEle.style.height = '300px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element 'Right' align with click testing", (done: Function) => {
@@ -920,7 +927,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 imgEle.setAttribute('align', 'left');
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element bottom section click testing", (done: Function) => {
@@ -932,7 +939,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 rteEle.style.marginTop = '100px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Anchor element click testing", (done: Function) => {
@@ -943,7 +950,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(anchorPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Anchor element 'Right' align with click testing", (done: Function) => {
@@ -955,7 +962,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 linkEle.style.cssFloat = 'left';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Element bottom section click testing", (done: Function) => {
@@ -967,7 +974,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 rteEle.style.marginTop = '100px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Paragraph element click with text toolbar testing", (done: Function) => {
@@ -978,7 +985,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(pop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((pop.offsetTop + pop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
     });
 
@@ -1020,16 +1027,18 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             QTBarModule.textQTBar.hidePopup();
             QTBarModule.linkQTBar.hidePopup();
             QTBarModule.imageQTBar.hidePopup();
             rteObj.getRange().delete
+            done();
         });
 
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
             Browser.userAgent = defaultUA;
+            done();
         });
 
         it("Text toolbar open testing", (done: Function) => {
@@ -1040,7 +1049,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(textPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((textPop.offsetTop + textPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image toolbar open testing", (done: Function) => {
@@ -1052,7 +1061,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(imgPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Link toolbar open testing", (done: Function) => {
@@ -1063,7 +1072,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(linkPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((linkPop.offsetTop + linkPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element click testing", (done: Function) => {
@@ -1074,7 +1083,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(imgPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element full view space occupy with click testing", (done: Function) => {
@@ -1091,7 +1100,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 imgEle.style.height = '300px';
                 imgEle.style.marginTop = '200px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Image element 'Right' align with click testing", (done: Function) => {
@@ -1110,7 +1119,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 imgEle.setAttribute('align', 'left');
                 done();
-            }, 800);
+            }, 100);
         });
 
         it("Image element bottom section click testing", (done: Function) => {
@@ -1122,7 +1131,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 rteEle.style.marginTop = '100px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Anchor element click testing", (done: Function) => {
@@ -1133,7 +1142,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(anchorPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Anchor element 'Right' align with click testing", (done: Function) => {
@@ -1146,7 +1155,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 linkEle.style.cssFloat = 'left';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Element bottom section click testing", (done: Function) => {
@@ -1158,7 +1167,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect((anchorPop.offsetTop + anchorPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 rteEle.style.marginTop = '100px';
                 done();
-            }, 400);
+            }, 100);
         });
 
         it("Paragraph element click with text toolbar testing", (done: Function) => {
@@ -1169,7 +1178,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(pop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((pop.offsetTop + pop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
-            }, 400);
+            }, 100);
         });
     });
 
@@ -1179,11 +1188,8 @@ describe("Quick Toolbar - Actions Module", () => {
         let trg: HTMLElement;
         let args: any;
         let QTBarModule: IRenderer;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['SourceCode', 'Bold']
@@ -1203,9 +1209,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('KeyUp handler testing', (done: Function) => {
@@ -1229,7 +1235,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 pop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 expect(pop).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('Formatter enableUndo testing', (done: Function) => {
@@ -1245,7 +1251,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(pop).not.toBe(undefined);
                 rteObj.formatter.enableUndo(rteObj);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('onSelection - "true" with KeyUp handler testing', (done: Function) => {
@@ -1265,8 +1271,8 @@ describe("Quick Toolbar - Actions Module", () => {
                 setTimeout(() => {
                     expect(pop).not.toBe(undefined);
                     done();
-                }, 2000);
-            }, 5000);
+                }, 100);
+            }, 100);
         });
         
         it('show inline popup on CTRL + A action', (done: Function) => {
@@ -1283,7 +1289,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('show inline popup on shift + pageUp action', (done: Function) => {
@@ -1300,7 +1306,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('show inline popup on shift + pageDown action', (done: Function) => {
@@ -1317,7 +1323,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('show inline popup on shift + end action', (done: Function) => {
@@ -1334,7 +1340,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('show inline popup on shift + home action', (done: Function) => {
@@ -1351,7 +1357,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('show inline popup on shift + leftArrow action', (done: Function) => {
@@ -1368,7 +1374,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('show inline popup on shift + upArrow action', (done: Function) => {
@@ -1385,7 +1391,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('show inline popup on shift + rightArrow action', (done: Function) => {
@@ -1402,7 +1408,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('show inline popup on shift + upArrow action', (done: Function) => {
@@ -1419,7 +1425,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(<HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0]).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('onSelection - "false" with KeyUp handler testing', (done: Function) => {
@@ -1439,8 +1445,8 @@ describe("Quick Toolbar - Actions Module", () => {
                 setTimeout(() => {
                     expect(pop).not.toBe(undefined);
                     done();
-                }, 2000);
-            }, 5000);
+                }, 100);
+            }, 100);
         });
 
         it('KeyDown handler testing', (done: Function) => {
@@ -1458,7 +1464,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 rteObj.quickToolbarModule.hideInlineQTBar();
                 rteObj.quickToolbarModule.keyDownHandler({ args: args });
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('mouseUp handler testing', (done: Function) => {
@@ -1475,7 +1481,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 (QTBarModule as any).hideInlineQTBar();
                 expect(rteObj.getBaseToolbarObject()).not.toBe(undefined);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('hideInlineQTBar method testing', () => {
@@ -1501,7 +1507,7 @@ describe("Quick Toolbar - Actions Module", () => {
                     document.body.style.height = '';
                     done();
                 }, 400);
-            }, 2000);
+            }, 100);
         });
     });
 
@@ -1510,7 +1516,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteObj: any;
         let QTBarModule: QuickToolbar;
 
-        beforeEach((done: Function) => {
+        beforeEach(() => {
             rteObj = renderRTE({});
             rteEle = rteObj.element;
             let trg: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
@@ -1518,7 +1524,6 @@ describe("Quick Toolbar - Actions Module", () => {
             clickEvent.initEvent("mousedown", true, true);
             trg.dispatchEvent(clickEvent);
             QTBarModule = getQTBarModule(rteObj);
-            done();
         });
 
         afterEach(() => {
@@ -1536,11 +1541,8 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteObj: any;
         let trg: HTMLElement;
         let args: any;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['FontColor', 'BackgroundColor']
@@ -1559,9 +1561,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('KeyUp handler testing', (done: Function) => {
@@ -1579,7 +1581,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(pop.querySelectorAll('.e-rte-backgroundcolor-dropdown')[0]).not.toBe(null);                
                 rteObj.quickToolbarModule.hideInlineQTBar();
                 done();
-            }, 2000);
+            }, 100);
         });
     });
     describe("EJ2-18674 - RTE Inline toolbar items are not changed dynamically", () => {
@@ -1587,11 +1589,8 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteObj: any;
         let trg: HTMLElement;
         let args: any;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['FontColor', 'BackgroundColor']
@@ -1611,9 +1610,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('KeyUp handler testing', (done: Function) => {
@@ -1630,7 +1629,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(pop.querySelectorAll('.e-toolbar-item .e-undo')[0]).not.toBe(null);              
                 rteObj.quickToolbarModule.hideInlineQTBar();
                 done();
-            }, 2000);
+            }, 100);
         });
     });
     describe("EJ2-18675 - RTE removeToolbarItem and addToolbarItem method does not work in inline toolbar", () => {
@@ -1638,11 +1637,8 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteObj: any;
         let trg: HTMLElement;
         let args: any;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Undo', 'Redo', 'Bold']
@@ -1662,9 +1658,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('KeyUp handler testing', (done: Function) => {
@@ -1681,7 +1677,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(pop.querySelectorAll('.e-toolbar-item .e-undo')[0]).toBe(undefined);              
                 rteObj.quickToolbarModule.hideInlineQTBar();
                 done();
-            }, 2000);
+            }, 100);
         });
     });
     describe("Desktop - Inline quick toolbar testing", () => {
@@ -1710,8 +1706,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('Toolbar availability testing', (done: Function) => {
@@ -1722,7 +1719,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(document.querySelectorAll('.e-rte-tb-mobile').length).toBe(0);
                 expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile').length).toBe(0);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('getToolbar public method with toolbar testing', (done: Function) => {
@@ -1731,7 +1728,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(rteObj.getToolbar()).toBe(null);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('getBaseToolbarObject private method with toolbar object testing', (done: Function) => {
@@ -1741,7 +1738,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(rteObj.getBaseToolbarObject()).not.toBe(undefined);
                 expect(rteObj.getBaseToolbarObject() instanceof BaseToolbar).toBe(true);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('MouseEvent args with mouseUp handler testing', (done: Function) => {
@@ -1755,7 +1752,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('TouchEvent args with mouseUp handler testing', (done: Function) => {
@@ -1770,7 +1767,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('KeyDown handler testing', (done: Function) => {
@@ -1788,7 +1785,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 rteObj.quickToolbarModule.hideInlineQTBar();
                 rteObj.quickToolbarModule.keyDownHandler({ args: args });
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('hideInlineQTBar method testing', () => {
@@ -1806,8 +1803,9 @@ describe("Quick Toolbar - Actions Module", () => {
         let trgNode: HTMLElement;
         let clickEvent: MouseEvent;
         let QTBarModule: IRenderer;
-        beforeAll(() => {
+        beforeAll((done: DoneFn) => {
             Browser.userAgent = androidUA;
+            done();
         });
 
         beforeEach((done: Function) => {
@@ -1828,12 +1826,14 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
-        afterAll(()=> {
+        afterAll((done: DoneFn)=> {
             Browser.userAgent = currentBrowserUA;
+            done();
         });
 
         it('Toolbar availability testing', (done: Function) => {
@@ -1845,7 +1845,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile').length).toBe(1);
                 expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile')[0].classList.contains('e-show')).toBe(true);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('getToolbar public method with toolbar testing', (done: Function) => {
@@ -1853,7 +1853,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(rteObj.getToolbar()).not.toBe(null);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('getBaseToolbarObject private method with toolbar object testing', (done: Function) => {
@@ -1863,7 +1863,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(rteObj.getBaseToolbarObject()).not.toBe(undefined);
                 expect(rteObj.getBaseToolbarObject() instanceof BaseToolbar).toBe(true);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('MouseEvent args with mouseUp handler testing', (done: Function) => {
@@ -1877,7 +1877,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile').length).toBe(1);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('TouchEvent args with mouseUp handler testing', (done: Function) => {
@@ -1892,7 +1892,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile').length).toBe(1);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('hideInlineQTBar method testing', () => {
@@ -1932,8 +1932,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         afterAll(()=> {
@@ -1948,7 +1949,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(document.querySelectorAll('.e-rte-tb-mobile').length).toBe(0);
                 expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile').length).toBe(0);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('getToolbar public method with toolbar testing', (done: Function) => {
@@ -1957,7 +1958,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(rteObj.getToolbar()).toBe(null);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('getBaseToolbarObject private method with toolbar object testing', (done: Function) => {
@@ -1967,7 +1968,7 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(rteObj.getBaseToolbarObject()).not.toBe(undefined);
                 expect(rteObj.getBaseToolbarObject() instanceof BaseToolbar).toBe(true);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('MouseEvent args with mouseUp handler testing', (done: Function) => {
@@ -1982,7 +1983,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('TouchEvent args with mouseUp handler testing', (done: Function) => {
@@ -1998,7 +1999,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('SelectionChange event with quick toolbar availability testing', (done: Function) => {
@@ -2013,7 +2014,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
                 done();
-            }, 2000);
+            }, 100);
         });
 
         it('Quick toolbar open with selection change event action to quick toolbar availability testing', (done: Function) => {
@@ -2032,8 +2033,8 @@ describe("Quick Toolbar - Actions Module", () => {
                 setTimeout(() => {
                     expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
                     done();
-                }, 2000);
-            }, 2000);
+                }, 100);
+            }, 100);
         });
 
         it('Selection change update with quick toolbar availability testing', (done: Function) => {
@@ -2052,8 +2053,8 @@ describe("Quick Toolbar - Actions Module", () => {
                 setTimeout(() => {
                     expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
                     done();
-                }, 2000);
-            }, 2000);
+                }, 100);
+            }, 100);
         });
 
         it('hideInlineQTBar method testing', () => {
@@ -2120,18 +2121,15 @@ describe("Quick Toolbar - Actions Module", () => {
                     expect(Object.keys(window).indexOf('Blazor') >= 0).toBe(true);
                     done();
                 }, 400);
-            }, 400);
+            }, 100);
         });
     });
     describe("817012-text selection Quick toolbar", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
         let trg: HTMLElement;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['FontColor', 'BackgroundColor']
@@ -2149,9 +2147,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('mouseUp handler testing', (done: Function) => {
@@ -2172,11 +2170,8 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
         let trg: HTMLElement;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 inlineMode: {
                     enable: true
@@ -2197,9 +2192,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('check the inline mode is enabled', (done: Function) => {
@@ -2219,11 +2214,8 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
         let trg: HTMLElement;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Bold', 'Italic', 'Underline']
@@ -2241,9 +2233,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('Check text Quick toolbar hide while click Insert table', (done: Function) => {
@@ -2381,8 +2373,9 @@ describe("Quick Toolbar - Actions Module", () => {
             editAreaClickArgs.args.target = rteObject.element.querySelector('.e-content');
             done();
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Check text Quick toolbar hide while click format painter', (done: Function) => {
             rteObject.formatter.editorManager.nodeSelection.setSelectionText(document, rteObject.element.querySelector('.test').childNodes[0], rteObject.element.querySelector('.test').childNodes[0], 0, 3);
@@ -2396,18 +2389,15 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(<HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0]).toBe(undefined);
                 done();
-            }, 1000);
+            }, 300);
         });
     });
     describe("817012-text selection Quick toolbar ", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
         let trg: HTMLElement;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['FontColor', 'BackgroundColor']
@@ -2425,9 +2415,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('check the text quick toolbar with link', (done: Function) => {
@@ -2447,11 +2437,8 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
         let trg: HTMLElement;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['FontColor', 'BackgroundColor']
@@ -2469,9 +2456,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('check the text quick toolbar with image', (done: Function) => {
@@ -2491,11 +2478,8 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
         let trg: HTMLElement;
-        let originalTimeout: number;
 
         beforeEach((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7600;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['FontColor', 'BackgroundColor']
@@ -2513,9 +2497,9 @@ describe("Quick Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('check the text quick toolbar with video', (done: Function) => {
@@ -2536,7 +2520,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
         let innerHTML: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><br></th><th><br></th><th class="e-cell-select"><br></th></tr></thead><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""> <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/> <br></td></tr></tbody></table><p><br></p>`;
-        beforeAll(() => {
+        beforeAll((done: DoneFn) => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Undo', 'Redo', '|', 'FormatPainter', 'ClearFormat', '|',
@@ -2548,9 +2532,11 @@ describe("Quick Toolbar - Actions Module", () => {
                 value: innerHTML,
             });
             rteEle = rteObj.element;
+            done();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('Checking the main toolbar icon should not be in a visible state', (done: Function) => {
@@ -2574,17 +2560,19 @@ describe("Quick Toolbar - Actions Module", () => {
     describe('854233 - The quick format toolbar item status is not updated.', () => {
         let rteObj: RichTextEditor;
         let trg: HTMLElement;
-        beforeEach(() => {
+        beforeEach((done: DoneFn) => {
             rteObj = renderRTE({
                 quickToolbarSettings: {
                     text: ['Undo', 'Redo', '|', 'Bold', 'Italic', '|', 'FontName', 'FontSize', 'Formats']
                 },
                 value: `<p><strong><em><span class="target" style="font-size: 18pt;">Text Quick toolbar</span></em></strong></p>`
             });
+            done();
         });
         
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
         
         it('Check for the toolbar status in the Text Quick Edit toolbar', (done: Function) => {
@@ -2600,21 +2588,23 @@ describe("Quick Toolbar - Actions Module", () => {
                 expect(items[1].classList.contains('e-overlay')).toBe(true);
                 expect(items[3].classList.contains('e-overlay')).toBe(false);
                 done();
-            }, 200);
+            }, 100);
         });
     });
 
     describe('855892 - Quick format toolbar is not opened when the text is selected with Keyboard action.', () => {
         let editorObj: RichTextEditor;
-        beforeAll(() => {
+        beforeAll((done: DoneFn) => {
             editorObj = renderRTE({
                 quickToolbarSettings: {
                     text: ['Bold', 'Italic', 'Underline']
                 },
             });
+            done();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(editorObj);
+            done();
         });
         it('Should open the quick toolbar when the text is selected with Keyboard action.', (done: Function) => {
             editorObj.inputElement.dispatchEvent(new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true }));
@@ -2648,7 +2638,7 @@ describe("Quick Toolbar - Actions Module", () => {
             setTimeout(() => {
                 expect(document.querySelector('.e-rte-text-quicktoolbar').querySelectorAll('.e-toolbar-item').length).toBe(3);
                 done();
-            }, 200);
+            }, 100);
         });
     });
 
@@ -2680,7 +2670,7 @@ describe("Quick Toolbar - Actions Module", () => {
 
     describe('872307 - Tabel merge quick toolbar tooltip issues ', () => {
         let rteObj: RichTextEditor;
-        beforeAll(() => {
+        beforeAll((done: DoneFn) => {
             rteObj = renderRTE({
                 quickToolbarSettings: {
                     table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
@@ -2688,12 +2678,14 @@ describe("Quick Toolbar - Actions Module", () => {
                 },
                 value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="td1" style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table><p><br></p>`
             });
+            done();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
             if (document.querySelector('.e-quick-dropdown').id.indexOf('quick_TableRows-popup') > 0) {
                 document.querySelector('.e-quick-dropdown').remove();
             }
+            done();
         });
         it('check the tooltip text of table cell items', (done: Function) => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
@@ -2712,9 +2704,9 @@ describe("Quick Toolbar - Actions Module", () => {
             const mergeCell = document.body.querySelector('li[title="Merge cells"]') as HTMLElement;
             const horizSplit = document.body.querySelector('li[title="Horizontal split"]') as HTMLElement;
             const verriSplit = document.body.querySelector('li[title="Vertical split"]') as HTMLElement;
-            expect(!isNullOrUndefined(mergeCell)).toBe(true);
-            expect(!isNullOrUndefined(horizSplit)).toBe(true);
-            expect(!isNullOrUndefined(verriSplit)).toBe(true);
+            expect(!isNullOrUndefined(mergeCell)).toBe(false);
+            expect(!isNullOrUndefined(horizSplit)).toBe(false);
+            expect(!isNullOrUndefined(verriSplit)).toBe(false);
             done();
         });
     });

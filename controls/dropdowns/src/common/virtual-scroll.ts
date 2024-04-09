@@ -205,10 +205,8 @@ export class VirtualScroll {
                     this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(reOrderList);
                 }
                 var query = this.parent.getForQuery(this.parent.value).clone();
-                if (!this.parent.allowFiltering) { //need to check with allowFiltering false
-                    var skipvalue = this.parent.viewPortInfo.startIndex - this.parent.value.length >= 0 ? this.parent.viewPortInfo.startIndex - this.parent.value.length : 0;
-                    query = query.skip(skipvalue);
-                }
+                var skipvalue = this.parent.viewPortInfo.startIndex - this.parent.value.length >= 0 ? this.parent.viewPortInfo.startIndex - this.parent.value.length : 0;
+                query = query.skip(skipvalue);
                 this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                 isListUpdated = false;
             }
@@ -368,7 +366,9 @@ export class VirtualScroll {
         if (this.parent.keyboardEvent != null) {
             this.parent.handleVirtualKeyboardActions(this.parent.keyboardEvent, this.parent.pageCount);
         }
-        this.parent.isCustomFilter = false;
+        if (!this.parent.customFilterQuery) {
+            this.parent.isCustomFilter = false;
+        }
     }
 
     public scrollListener(scrollArgs: ScrollArg): void {

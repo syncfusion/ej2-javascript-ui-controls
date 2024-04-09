@@ -187,15 +187,15 @@ export class BaseToolbar {
             for (let num : number = 0; num < items.length; num++) {
                 const tooltipText : string = items[num as number].tooltipText;
                 let shortCutKey : string;
+                const isMacDev = window.navigator.platform.toLocaleLowerCase().includes('mac')
                 if (windowKeys[`${tooltipText}`]){
-                    shortCutKey = window.navigator.platform.toLocaleLowerCase().includes('mac') ? windowKeys[`${tooltipText}`].replace('Ctrl', 'Cmd') : windowKeys[`${tooltipText}`];
-                }
-                else{
+                    shortCutKey = isMacDev ? windowKeys[`${tooltipText}`].replace('Ctrl+', '⌘').replace('Shift+', '⇧').replace('Alt+', '⌥') : windowKeys[`${tooltipText}`];
+                } else{
                     shortCutKey = tooltipText;
                 }
                 if (shortCutKey) {
                     if (!((items[num as number] as any).command === "Images" && (items[num as number] as any).subCommand === "InsertLink")) {
-                        items[num as number].tooltipText = (tooltipText !== shortCutKey) ? tooltipText + ' (' + shortCutKey + ')' : tooltipText;
+                        items[num as number].tooltipText = (tooltipText !== shortCutKey) ? (isMacDev)? shortCutKey : tooltipText + ' (' + shortCutKey + ')' : tooltipText;
                     }
                 }
             }

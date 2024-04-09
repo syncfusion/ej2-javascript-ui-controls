@@ -918,8 +918,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             itemObj = tempItem;
         }
         const eventArgs: ClickEventArgs = { originalEvent: e, item: itemObj };
-        if (itemObj && !isNOU(itemObj.click)) {
-            this.trigger('items[' + this.tbarEle.indexOf(clst) + '].click', eventArgs);
+        let isClickBinded = ((this as any).isAngular) ? itemObj && !isNOU(itemObj.click) && (itemObj as any).click.observers.length > 0 : itemObj && !isNOU(itemObj.click);
+        if (isClickBinded) {
+           this.trigger('items[' + this.tbarEle.indexOf(clst) + '].click', eventArgs);
         }
         if (!eventArgs.cancel) {
             this.trigger('clicked', eventArgs, (clickedArgs: ClickEventArgs) => {

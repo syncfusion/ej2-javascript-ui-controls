@@ -1,4 +1,4 @@
-import { addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
+import { addClass, Browser, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
 import { ActionBeginEventArgs, IExecutionGroup, IFormatPainter, IFormatPainterArgs, IRichTextEditor, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { ClickEventArgs } from '@syncfusion/ej2-buttons';
@@ -50,6 +50,9 @@ export class FormatPainter implements IFormatPainter {
             || (originalEvent.action === 'escape' && (this.previousAction === 'format-copy' || this.previousAction === 'format-paste' ))) {
             if ((originalEvent.action === 'format-copy' ||  originalEvent.action === 'format-paste')) {
                 originalEvent.stopPropagation();
+            }
+            if (Browser.userAgent.indexOf('Firefox') !== -1) {
+                originalEvent.preventDefault();
             }
             this.actionHandler(event, 'keyBoard');
         }

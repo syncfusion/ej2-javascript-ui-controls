@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { append, createElement, extend, EventHandler, Animation, formatUnit } from '@syncfusion/ej2-base';
+import { append, createElement, extend, EventHandler, Animation, formatUnit, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setStyleAttribute, remove, removeClass, addClass } from '@syncfusion/ej2-base';
 import { EventFieldsMapping, ElementData, EventRenderedArgs, TdData } from '../base/interface';
 import { Schedule } from '../base/schedule';
@@ -51,6 +51,14 @@ export class VerticalEvent extends EventBase {
         const wrapperElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS +
             ',.' + cls.APPOINTMENT_CLASS + ',.' + cls.ROW_COUNT_WRAPPER_CLASS));
         const isDragging: boolean = (this.parent.crudModule && this.parent.crudModule.crudObj.isCrudAction) ? true : false;
+        const hideWrapper: (wrapper: HTMLElement) => void = (wrapper: HTMLElement): void => {
+            if ((this.parent as any).isReact && !isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
+                const appWrapper: Element = closest(wrapper, '.' + cls.DAY_WRAPPER_CLASS + ',.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS);
+                if (appWrapper && !appWrapper.classList.contains(cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS)) {
+                    addClass([appWrapper], cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS);
+                }
+            }
+        }
         for (const wrapper of wrapperElements) {
             if (isDragging && !(wrapper.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS) ||
                 wrapper.classList.contains(cls.ROW_COUNT_WRAPPER_CLASS))) {
@@ -58,10 +66,12 @@ export class VerticalEvent extends EventBase {
                 for (let j: number = 0, len: number = this.parent.crudModule.crudObj.sourceEvent.length; j < len; j++) {
                     if (groupIndex === this.parent.crudModule.crudObj.sourceEvent[parseInt(j.toString(), 10)].groupIndex ||
                         groupIndex === this.parent.crudModule.crudObj.targetEvent[parseInt(j.toString(), 10)].groupIndex) {
+                        hideWrapper(wrapper);
                         remove(wrapper);
                     }
                 }
             } else {
+                hideWrapper(wrapper);
                 remove(wrapper);
             }
         }

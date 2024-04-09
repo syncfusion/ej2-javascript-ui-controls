@@ -438,13 +438,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 firsttdinx = +attr; // this.parent.getContent().querySelector('.e-content tr').getAttribute('data-rowindex');
             }
             if (firsttdinx === 0) {
-                scrollArgs.offset.top = content.scrollTop;
-                if (this.parent.allowRowDragAndDrop) {
-                    this.translateY = scrollArgs.offset.top - rowHeight * 2;
-                }
-                else {
-                    this.translateY = scrollArgs.offset.top;
-                }
+                this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
+                    scrollArgs.offset.top - (outBuffer * this.parent.getRowHeight()) + 10 : 0;
             } else {
                 this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
                     scrollArgs.offset.top - (outBuffer * rowHeight) + 10 : 0;

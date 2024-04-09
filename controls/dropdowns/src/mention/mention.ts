@@ -742,7 +742,7 @@ export class Mention extends DropDownBase {
                 this.lineBreak = false;
             }
         } else if (this.allowSpaces && this.queryString !== '' && currentRange && currentRange.trim() !== '' && currentRange.replace('\u00a0', ' ').lastIndexOf(' ') < currentRange.length - 1 &&
-            e.keyCode !== 38 && e.keyCode !== 40 && e.keyCode !== 8 && this.mentionChar.charCodeAt(0) === lastWordRange.charCodeAt(0)) {
+            e.keyCode !== 38 && e.keyCode !== 40 && e.keyCode !== 8 && (this.mentionChar.charCodeAt(0) === lastWordRange.charCodeAt(0) || (this.liCollections && this.liCollections.length > 0))) {
             this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
             this.searchLists(e);
         } else if (this.queryString === '' && this.isPopupOpen && e.keyCode !== 38 && e.keyCode !== 40 && this.mentionChar.charCodeAt(0) === lastWordRange.charCodeAt(0)) {

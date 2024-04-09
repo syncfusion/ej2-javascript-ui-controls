@@ -1096,6 +1096,74 @@ describe('Event Base Module', () => {
         });
     });
 
+    describe('ES-870037 - Checking the appointments sorting and overflow', () => {
+        let schObj: Schedule;
+        const generateStaticEvents = (start: Date): Record<string, any>[] => {
+            var data = [];
+            var startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+            var endDate = new Date(startDate.getTime() + (((1440 + 30) * (1000 * 60)) * 2));
+            data.push({
+                Id: 1,
+                Subject: 'Event #' + 1,
+                StartTime: startDate,
+                EndTime: endDate,
+                IsAllDay: false,
+                ResourceId: 1,
+                Type: 2
+            });
+            data.push({
+                Id: 2,
+                Subject: 'Event #' + 2,
+                StartTime: new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1),
+                EndTime: new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()),
+                IsAllDay: false,
+                ResourceId: 1,
+                Type: 1
+            });
+            data.push({
+                Id: 3,
+                Subject: 'Event #' + 3,
+                StartTime: new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1),
+                EndTime: new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()),
+                IsAllDay: false,
+                ResourceId: 1,
+                Type: 1
+            });
+            return data;
+        }
+        let ownerData = [{ Id: 1, Text: 'Nancy', Color: '#ffaa00' }, { Id: 2, Text: 'Steven', Color: '#f8a398' }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '500px',
+                headerRows: [{ option: 'Date' }],
+                currentView: 'TimelineWeek',
+                views: [{ option: 'TimelineWeek' }],
+                eventSettings: {
+                    sortComparer: (evt) => evt.sort((a, b) => (a.Type == b.Type) ? a.StartTime.getTime() - b.StartTime.getTime() : a.Type > b.Type ? 1 : -1)
+                },
+                group: { byGroupID: false, resources: ['Resources'] },
+                resources: [{
+                    field: 'ResourceId', title: 'Resource', name: 'Resources', allowMultiple: true,
+                    dataSource: ownerData, textField: 'Text', idField: 'Id', colorField: 'Color'
+                }],
+                rowAutoHeight: true,
+                selectedDate: new Date(2024, 3, 2),
+            };
+            schObj = util.createSchedule(model, generateStaticEvents(new Date(2024, 3, 2)), done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking appointments overlapping by checking top values', () => {
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(app.length).toEqual(3);
+            expect(app[0].offsetTop).toEqual(2);
+            expect(app[1].offsetTop).toEqual(42);
+            expect(app[2].offsetTop).toEqual(82);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

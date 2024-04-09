@@ -3871,3 +3871,31 @@ export function _updateBounds(annotation: PdfAnnotation, bounds?: number[]): num
     }
     return rect;
 }
+/**
+ * Decode text.
+ *
+ * @param {string} text Text to decode.
+ * @param {boolean} isColorSpace Color space or not
+ * @param {boolean} isPassword Password or not
+ * @returns {string} Decoded text.
+ */
+export function _decodeText(text: string, isColorSpace: boolean, isPassword: boolean): string {
+    if (text && typeof text === 'string' && !isColorSpace && !isPassword) {
+        if (text.startsWith('þÿ')) {
+            text = text.substring(2);
+            if (text.endsWith('ÿý')) {
+                text = text.substring(0, text.length - 2);
+            }
+            const bytes: Uint8Array = _stringToBytes(text) as Uint8Array;
+            let result: string = '';
+            for (let i: number = 0; i < bytes.length; i += 2) {
+                const x: number = bytes[Number.parseInt(i.toString(), 10)] << 8;
+                const y: number = bytes[Number.parseInt((i + 1).toString(), 10)];
+                const codeUnit: number = x | y;
+                result += String.fromCharCode(codeUnit);
+            }
+            text = result;
+        }
+    }
+    return text;
+}

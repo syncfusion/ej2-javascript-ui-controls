@@ -150,6 +150,11 @@
         padding: $rte-big-toolbar-expaned-padding;
       }
     }
+    .e-dialog .e-img-uploadwrap.e-droparea .e-upload .e-upload-files .e-file-abort-btn.e-icons {
+      margin-right: $rte-big-img-upload-abort-icon-btn-margin-right;
+      margin-top: $rte-big-img-upload-abort-icon-btn-margin-top;
+      padding: $rte-big-img-upload-abort-icon-btn-padding;
+    }
   }
 
   .e-richtexteditor {
@@ -1125,6 +1130,11 @@
     .e-vid-uploadwrap.e-droparea .e-upload {
       border: 0 solid transparent;
       float: none;
+    }
+
+    .e-dialog .e-img-uploadwrap.e-droparea .e-upload .e-upload-files .e-file-abort-btn.e-icons {
+      margin-right: $rte-img-upload-abort-icon-btn-margin-right;
+      margin-top: $rte-img-upload-abort-icon-btn-margin-top;
     }
 
     .e-dialog .e-img-uploadwrap.e-droparea .e-browsebtn,

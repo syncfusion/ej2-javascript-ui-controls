@@ -1,6 +1,6 @@
 import { detach, getUniqueID, append, closest, selectAll, select, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { addClass, removeClass, Browser, isNullOrUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
-import { Popup, isCollide, Tooltip } from '@syncfusion/ej2-popups';
+import { Popup, isCollide, Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { OverflowMode } from '@syncfusion/ej2-navigations';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
@@ -125,25 +125,18 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         }
         target = isAligned ? e.target : target;
         let targetOffsetLeft: number;
-        let currentOffsetWidth: number;
         if (!isNOU(closest(target, 'table'))) {
             targetOffsetLeft = target.offsetLeft;
-            let parentTable: Element = closest(target, 'table');
-            let checkOffSetParentWidth: boolean = false;
-            if (!isNOU(closest(parentTable, 'TD'))) {
-                checkOffSetParentWidth = true;
-            }
+            let parentTable: Element = closest(target.parentElement, 'td');
             while (!isNOU(parentTable)) {
                 targetOffsetLeft += (parentTable as HTMLElement).offsetLeft;
-                currentOffsetWidth = checkOffSetParentWidth ? (parentTable as HTMLElement).offsetWidth : target.offsetWidth;
                 parentTable = closest(parentTable.parentElement, 'table');
             }
         } else {
-            currentOffsetWidth = target.offsetWidth;
             targetOffsetLeft = (target.classList.contains("e-rte-audio")) ? target.parentElement.offsetLeft : target.offsetLeft;
         }
-        if (currentOffsetWidth > e.popWidth) {
-            x = (currentOffsetWidth / 2) - (e.popWidth / 2) + e.parentData.left + targetOffsetLeft;
+        if (target.offsetWidth > e.popWidth) {
+            x = (target.offsetWidth / 2) - (e.popWidth / 2) + e.parentData.left + targetOffsetLeft;
         } else {
             x = e.parentData.left + targetOffsetLeft;
         }
@@ -274,6 +267,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                         target: '#' + this.element.id + ' [title]',
                         openDelay: 400,
                         showTipPointer: true,
+                        beforeRender: this.tooltipBeforeRender.bind(this),
                         windowCollision: true,
                         position: 'BottomCenter',
                         cssClass: this.parent.getCssClass()
@@ -335,6 +329,12 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         });
     }
 
+    private tooltipBeforeRender(args: TooltipEventArgs): void {
+        if (args.target.querySelector('.e-active')) {
+            args.cancel = true;
+        }
+    }
+
     /**
      * hidePopup method
      *
@@ -366,9 +366,6 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             if (isNullOrUndefined(viewSourcePanel) || viewSourcePanel.style.display === 'none') {
                 this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
             }
-        }
-        if (this.parent.showTooltip && !isNOU(document.querySelector('.e-tooltip-wrap'))) {
-            this.parent.notify(events.destroyTooltip, {args: event});
         }
         this.removeEleFromDOM();
         this.isRendered = false;

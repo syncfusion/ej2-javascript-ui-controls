@@ -86,8 +86,16 @@ export class TimelineEvent extends MonthEvent {
         const appointments: Record<string, any>[] = [];
         for (const app of appointmentsCollection) {
             if (this.renderType === 'day') {
-                if ((util.resetTime(<Date>app[this.fields.startTime]).getTime() <= util.resetTime(new Date(startDate.getTime())).getTime()) &&
-                    (util.resetTime(<Date>app[this.fields.endTime]).getTime() >= util.resetTime(new Date(startDate.getTime())).getTime())) {
+                const start: number = util.resetTime(startDate).getTime();
+                const end: number = util.resetTime(endDate).getTime();
+                const appStart: number = util.resetTime(<Date>app[this.fields.startTime]).getTime();
+                const appEnd: number = util.resetTime(<Date>app[this.fields.endTime]).getTime();
+                const isEndOverlap = () => {
+                    let endTime: number = (end - (util.getDateInMs(endDate) <= 0 ? util.MS_PER_DAY : 0));
+                    endTime = start > endTime ? start : endTime;
+                    return appEnd >= endTime && appStart <= endTime;
+                };
+                if (appStart <= start && appEnd >= start || isEndOverlap() || appStart > start && appEnd < end) {
                     appointments.push(app);
                 }
             } else {

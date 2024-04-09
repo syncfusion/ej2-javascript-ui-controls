@@ -44,6 +44,7 @@ export interface IDropdownlist extends Component<HTMLElement> {
     typedString: string
     isVirtualScrolling: boolean;
     isCustomFilter: boolean;
+    customFilterQuery: Query;
     allowFiltering: boolean;
     isPopupOpen: boolean;
     isTyped: boolean;

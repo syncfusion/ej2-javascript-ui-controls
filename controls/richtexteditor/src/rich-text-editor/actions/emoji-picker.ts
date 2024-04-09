@@ -656,7 +656,7 @@ export class EmojiPicker {
                     }
                 }
             }
-            if (noEMoji && !this.parent.element.querySelector('.e-rte-emojiSearch-noEmoji') && (inputValue !== '' && value !== ':')) {
+            if (noEMoji && !this.parent.element.querySelector('.e-rte-emojiSearch-noEmoji') && (inputValue !== '' && value !== ':' && value !== ': :')) {
                 noEmojiObj.innerHTML = '<span style="color: rgba(0, 0, 0, 0.75); font-weight: 500; font-size: 16px;">' + this.i10n.getConstant('emojiPickerNoResultFound') + ' 😥 </span>' + '<br>' + '<span style="color: rgba(0, 0, 0, 0.75);"> ' + this.i10n.getConstant('emojiPickerTrySomethingElse') + ' ? </span>';
                 noEmojiObj.style.margin = '55px';
                 emojipickerAll.appendChild(noEmojiObj);

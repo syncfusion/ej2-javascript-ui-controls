@@ -404,6 +404,10 @@ export class SelectionCommands {
                     liElement.style.fontStyle = 'normal';
                 }
             }
+            else if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
+                && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
+                SelectionCommands.conCatenateTextNode(liElement, format, '', 'normal');
+            }
         }
         if (child[0] && !isFontStyle) {
             let nodeTraverse: Node = child[index as number] ? child[index as number] : child[0];
@@ -462,6 +466,10 @@ export class SelectionCommands {
                                 liElement.style.fontFamily = value;
                             }
                         }
+                    if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
+                        && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
+                        SelectionCommands.conCatenateTextNode(liElement, format, liElement.textContent, format, value);
+                    }
                     if (child[num as number].textContent === startText) {
                         if (num === 0) {
                             range.setStartBefore(child[num as number]);
@@ -582,7 +590,7 @@ export class SelectionCommands {
                             parentElement = parentElement.parentElement;
                             liElement = parentElement;
                         }
-                        if (format === 'fontcolor' || format === 'fontname') {
+                        if (format === 'fontcolor' || format === 'fontname' || format === 'fontsize') {
                             const parentElem: HTMLElement = nodes[index as number].parentElement;
                             if (!isNOU(parentElem) && parentElem.childNodes){
                                 for (let i: number = 0; i < parentElem.childNodes.length; i++) {
@@ -601,6 +609,9 @@ export class SelectionCommands {
                                             case 'fontname':
                                                 liElement.style.fontFamily = value;
                                                 break;
+                                            case 'fontsize':
+                                                liElement.style.fontSize = value;
+                                                break;
                                             default:
                                                 break; 
                                            }
@@ -615,6 +626,9 @@ export class SelectionCommands {
                                                 break;
                                             case 'fontname':
                                                 childElement.style.fontFamily = 'initial';
+                                                break;
+                                            case 'fontsize':
+                                                childElement.style.fontSize = 'initial';
                                                 break;
                                             default:
                                                 break;
@@ -672,6 +686,10 @@ export class SelectionCommands {
                             }
                             nodeList[0] = currentFormatNode;
                             this.applyStyles(nodeList, 0, element);
+                            if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
+                                && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
+                                SelectionCommands.conCatenateTextNode(liElement, format, liElement.textContent, format, value);
+                            }
                         } else {
                             nodes[index as number] = this.applyStyles(nodes, index, element);
                         }
@@ -688,6 +706,10 @@ export class SelectionCommands {
                             } else if (format === "italic") {
                                 liElement.style.fontStyle = 'italic';
                             }
+                        }
+                        else if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
+                            && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
+                            SelectionCommands.conCatenateTextNode(liElement, format, liElement.textContent, format);
                         }
                     }
                 }
@@ -903,7 +925,9 @@ export class SelectionCommands {
             }
             const blockChildNodes: NodeList =  parent.parentElement.childNodes;
             for (let k: number = 0; k < blockChildNodes.length; k++ ) {
-                if (blockChildNodes[k as number].textContent.trim() === '' || blockChildNodes[k as number].textContent.length === 0 ) {
+                if ((blockChildNodes[k as number].textContent.trim() === '' || blockChildNodes[k as number].textContent.length === 0) &&
+                    blockChildNodes[k as number].textContent.charCodeAt(0) !== 160) {
+                    // 160 is the char code for &nbsp;
                     detach(blockChildNodes[k as number]);
                 }
             }
@@ -936,5 +960,63 @@ export class SelectionCommands {
             }
         }
         return result;
+    }
+    private static conCatenateTextNode(liElement: HTMLElement, format: string, value: string, formatStr: string, constVal?: string) {
+        let result: string = '';
+        switch (format) {
+            case 'bold':
+                liElement.querySelectorAll('strong').forEach(function (e) {
+                    result = result + e.textContent;
+                });
+                if (result === value) {
+                    liElement.style.fontWeight = formatStr;
+                }
+                break;
+            case 'italic':
+                liElement.querySelectorAll('em').forEach(function (e) {
+                    result = result + e.textContent;
+                });
+                if (result === value) {
+                    liElement.style.fontStyle = formatStr;
+                }
+                break;
+            case 'fontcolor':
+                let colorStyle = '';
+                liElement.querySelectorAll('span').forEach(function (span) {
+                    colorStyle = span.style.color;
+                    if (colorStyle === constVal) {
+                        result = result + span.textContent;
+                    }
+                });
+                if (result === value) {
+                    liElement.style.color = colorStyle;
+                    liElement.style.textDecoration = 'inherit';
+                }
+                break;
+            case 'fontsize':
+                let fontSize = '';
+                liElement.querySelectorAll('span').forEach(function (span) {
+                    fontSize = span.style.getPropertyValue('font-size');
+                    if (fontSize === constVal) {
+                        result = result + span.textContent;
+                    }
+                });
+                if (result === value) {
+                    liElement.style.fontSize = fontSize;
+                }
+                break;
+            case 'fontname':
+                let fontFamily = '';
+                liElement.querySelectorAll('span').forEach(function (span) {
+                    fontFamily = span.style.getPropertyValue('font-family');
+                    if (fontFamily === constVal) {
+                        result = result + span.textContent;
+                    }
+                });
+                if (result === value) {
+                    liElement.style.fontFamily = fontFamily;
+                }
+                break;
+        }
     }
 }

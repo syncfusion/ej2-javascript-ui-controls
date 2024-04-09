@@ -152,6 +152,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public scrollTop: number;
     public scrollLeft: number;
     public isPrinting: boolean;
+    public adaptiveGroupIndex: number = 0;
 
     // Schedule Options
     /**
@@ -1125,6 +1126,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             removeClasses.push(cls.DEVICE_CLASS);
         }
+        if (this.enableAdaptiveUI) {
+            addClasses.push(cls.ADAPTIVE_CLASS);
+        } else {
+            removeClasses.push(cls.ADAPTIVE_CLASS);
+        }
         if (this.allowMultiDrag) {
             addClasses.push(cls.MULTI_DRAG);
         } else {
@@ -1746,7 +1752,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this && isNullOrUndefined(this.uiStateValues) || !(this.enablePersistence)) {
             this.uiStateValues = {
                 expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
-                isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false, isCustomMonth: true, isPreventTimezone: false
+                isIgnoreOccurrence: false, groupIndex: this.adaptiveGroupIndex, action: false, isBlock: false, isCustomMonth: true, isPreventTimezone: false
             };
         }
         this.currentTimezoneDate = this.getCurrentTime();
@@ -2474,7 +2480,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     protected getPersistData(): string {
-        return this.addOnPersist(['currentView', 'selectedDate', 'scrollTop', 'scrollLeft']);
+        return this.addOnPersist(['currentView', 'selectedDate', 'scrollTop', 'scrollLeft', 'adaptiveGroupIndex']);
     }
 
     /**

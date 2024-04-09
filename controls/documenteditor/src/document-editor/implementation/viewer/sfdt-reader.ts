@@ -96,6 +96,9 @@ export class SfdtReader {
         if (!isNullOrUndefined(jsonObject.optimizeSfdt) && jsonObject.optimizeSfdt) {
             this.keywordIndex = 1;
         }
+        if (!isNullOrUndefined(jsonObject[fontSubstitutionTableProperty[this.keywordIndex]])) {
+            this.parseFontSubstitutionTable(jsonObject[fontSubstitutionTableProperty[this.keywordIndex]]);
+        }
         if (isNullOrUndefined(jsonObject[characterFormatProperty[this.keywordIndex]])) {
             this.parseCharacterFormat(0, this.viewer.owner.characterFormat, this.documentHelper.characterFormat);
         } else {
@@ -184,6 +187,16 @@ export class SfdtReader {
             this.documentHelper.fieldStacks = [];
         }
         return sections;
+    }
+    private parseFontSubstitutionTable(fontSubstitutionTable: any): void {
+        if (!isNullOrUndefined(this.documentHelper) && !isNullOrUndefined(this.documentHelper.fontSubstitutionTable)) {
+            if (Object.keys(fontSubstitutionTable).length > 0) {
+                let keys: string[] = Object.keys(fontSubstitutionTable);
+                for (let key of keys) {
+                    this.documentHelper.fontSubstitutionTable.add(key, fontSubstitutionTable[key]);
+                }
+            }
+        }
     }
     private removeUnmappedBookmark(): void {
         let bookmarkKeys: string[] = this.documentHelper.bookmarks.keys;
@@ -875,6 +888,14 @@ export class SfdtReader {
                     }
                     this.isPageBreakInsideTable = true;
                     this.parseTextBody(tableCell[blocksProperty[this.keywordIndex]], cell, false);
+                    if (isNullOrUndefined(cell.contentControlProperties) && cell.childWidgets.length === 1  
+                        && cell.firstChild instanceof ParagraphWidget && cell.firstChild.childWidgets.length === 0 
+                        && !isNullOrUndefined(cell.firstChild.paragraphFormat)) {
+                        const listFormat: WListFormat = cell.firstChild.paragraphFormat.listFormat;
+                        if (listFormat.listId !== -1 && cell.firstChild.paragraphFormat.leftIndent === 0 && cell.firstChild.paragraphFormat.firstLineIndent !== 0) {
+                            cell.firstChild.paragraphFormat.clearIndent();
+                        }
+                    }
                     if (!isNullOrUndefined(cell.contentControlProperties)) {
                         const cellStartContentControl: ContentControl = new ContentControl('Cell');
                         const cellEndContentControl: ContentControl = new ContentControl('Cell');
@@ -2144,15 +2165,19 @@ export class SfdtReader {
                 if (sourceFormat[fontFamilyProperty[keyIndex]].indexOf('"') !== -1) {
                     sourceFormat[fontFamilyProperty[keyIndex]] = sourceFormat[fontFamilyProperty[keyIndex]].replace('"', '');
                 }
-                characterFormat.fontFamily = sourceFormat[fontFamilyProperty[keyIndex]];
+                let fontFamily: string = sourceFormat[fontFamilyProperty[keyIndex]];
+                if (!isNullOrUndefined(this.documentHelper.fontSubstitutionTable) && this.documentHelper.fontSubstitutionTable.containsKey(fontFamily) && !this.isFontInstalled(fontFamily)) {
+                    fontFamily = this.documentHelper.fontSubstitutionTable.get(fontFamily);
+                }
+                characterFormat.fontFamily = fontFamily;
                 if (isNullOrUndefined(sourceFormat[fontFamilyFarEastProperty[keyIndex]])) {
-                    characterFormat.fontFamilyFarEast = sourceFormat[fontFamilyProperty[keyIndex]];
+                    characterFormat.fontFamilyFarEast = fontFamily;
                 }
                 if (isNullOrUndefined(sourceFormat[fontFamilyAsciiProperty[keyIndex]])) {
-                    characterFormat.fontFamilyAscii = sourceFormat[fontFamilyProperty[keyIndex]];
+                    characterFormat.fontFamilyAscii = fontFamily;
                 }
                 if (isNullOrUndefined(sourceFormat[fontFamilyNonFarEastProperty[keyIndex]])) {
-                    characterFormat.fontFamilyNonFarEast = sourceFormat[fontFamilyProperty[keyIndex]];
+                    characterFormat.fontFamilyNonFarEast = fontFamily;
                 }
             }
             if (!isNullOrUndefined(sourceFormat[boldProperty[keyIndex]])) {
@@ -2180,7 +2205,11 @@ export class SfdtReader {
                 if (sourceFormat[fontFamilyBidiProperty[keyIndex]].indexOf('"') !== -1) {
                     sourceFormat[fontFamilyBidiProperty[keyIndex]] = sourceFormat[fontFamilyBidiProperty[keyIndex]].replace('"', '');
                 }
-                characterFormat.fontFamilyBidi = sourceFormat[fontFamilyBidiProperty[keyIndex]];
+                let fontFamilyBidi: string = sourceFormat[fontFamilyBidiProperty[keyIndex]];
+                if (!isNullOrUndefined(this.documentHelper.fontSubstitutionTable) && this.documentHelper.fontSubstitutionTable.containsKey(fontFamilyBidi) && !this.isFontInstalled(fontFamilyBidi)) {
+                    fontFamilyBidi = this.documentHelper.fontSubstitutionTable.get(fontFamilyBidi);
+                }
+                characterFormat.fontFamilyBidi = fontFamilyBidi;
             }
             if (!isNullOrUndefined(sourceFormat[boldBidiProperty[keyIndex]])) {
                 characterFormat.boldBidi = HelperMethods.parseBoolValue(sourceFormat[boldBidiProperty[keyIndex]]);
@@ -2210,19 +2239,31 @@ export class SfdtReader {
                 if (sourceFormat[fontFamilyFarEastProperty[keyIndex]].indexOf('"') !== -1) {
                     sourceFormat[fontFamilyFarEastProperty[keyIndex]] = sourceFormat[fontFamilyFarEastProperty[keyIndex]].replace('"', '');
                 }
-                characterFormat.fontFamilyFarEast = sourceFormat[fontFamilyFarEastProperty[keyIndex]];
+                let fontFamilyFarEast: string = sourceFormat[fontFamilyFarEastProperty[keyIndex]];
+                if (!isNullOrUndefined(this.documentHelper.fontSubstitutionTable) && this.documentHelper.fontSubstitutionTable.containsKey(fontFamilyFarEast) && !this.isFontInstalled(fontFamilyFarEast)) {
+                    fontFamilyFarEast = this.documentHelper.fontSubstitutionTable.get(fontFamilyFarEast);
+                }
+                characterFormat.fontFamilyFarEast = fontFamilyFarEast;
             }
             if (!isNullOrUndefined(sourceFormat[fontFamilyAsciiProperty[keyIndex]])) {
                 if (sourceFormat[fontFamilyAsciiProperty[keyIndex]].indexOf('"') !== -1) {
                     sourceFormat[fontFamilyAsciiProperty[keyIndex]] = sourceFormat[fontFamilyAsciiProperty[keyIndex]].replace('"', '');
                 }
-                characterFormat.fontFamilyAscii = sourceFormat[fontFamilyAsciiProperty[keyIndex]];
+                let fontFamilyAscii: string = sourceFormat[fontFamilyAsciiProperty[keyIndex]];
+                if (!isNullOrUndefined(this.documentHelper.fontSubstitutionTable) && this.documentHelper.fontSubstitutionTable.containsKey(fontFamilyAscii) && !this.isFontInstalled(fontFamilyAscii)) {
+                    fontFamilyAscii = this.documentHelper.fontSubstitutionTable.get(fontFamilyAscii);
+                }
+                characterFormat.fontFamilyAscii = fontFamilyAscii;
             }
             if (!isNullOrUndefined(sourceFormat[fontFamilyNonFarEastProperty[keyIndex]])) {
                 if (sourceFormat[fontFamilyNonFarEastProperty[keyIndex]].indexOf('"') !== -1) {
                     sourceFormat[fontFamilyNonFarEastProperty[keyIndex]] = sourceFormat[fontFamilyNonFarEastProperty[keyIndex]].replace('"', '');
                 }
-                characterFormat.fontFamilyNonFarEast = sourceFormat[fontFamilyNonFarEastProperty[keyIndex]];
+                let fontFamilyNonFarEast: string = sourceFormat[fontFamilyNonFarEastProperty[keyIndex]];
+                if (!isNullOrUndefined(this.documentHelper.fontSubstitutionTable) && this.documentHelper.fontSubstitutionTable.containsKey(fontFamilyNonFarEast) && !this.isFontInstalled(fontFamilyNonFarEast)) {
+                    fontFamilyNonFarEast = this.documentHelper.fontSubstitutionTable.get(fontFamilyNonFarEast);
+                }
+                characterFormat.fontFamilyNonFarEast = fontFamilyNonFarEast;
             }
             if (!isNullOrUndefined(sourceFormat[characterSpacingProperty[keyIndex]])) {
                 characterFormat.characterSpacing = sourceFormat[characterSpacingProperty[keyIndex]];
@@ -2231,6 +2272,37 @@ export class SfdtReader {
                 characterFormat.scaling = sourceFormat[scalingProperty[keyIndex]];
             }
         }
+    }
+    // Bug 864876: Here, we have checking whether the font is installed or not. If not installed, then we have changed the font name from the font substitution table.
+    // The below code is implemented by refering the following link. (https://www.samclarke.com/javascript-is-font-available/#:~:text=Then%20to%20check%20a%20font,otherwise%20another%20fallback%20is%20tried.)
+    private isFontInstalled(fontFamily: string): boolean {
+        const monoWidth: number = this.getWidth('monospace');
+        const sansWidth: number = this.getWidth('sans-serif');
+        const serifWidth: number = this.getWidth('serif');
+        return monoWidth !== this.getWidth(fontFamily + ', monospace', monoWidth) ||
+            sansWidth !== this.getWidth(fontFamily + ', sans-serif', sansWidth) ||
+            serifWidth !== this.getWidth(fontFamily + ', serif', serifWidth);
+    }
+    private getWidth(fontFamily: string, defaultWidth?: number): number {
+        let width: number;
+        let container: HTMLElement = document.createElement('span');
+        container.innerHTML = Array(100).join('wi');
+        container.style.cssText = [
+            'position:absolute',
+            'width:auto',
+            'font-size:128px',
+            'left:-99999px'
+        ].join(' !important;');
+        container.style.fontFamily = fontFamily;
+
+        document.body.appendChild(container);
+        width = container.clientWidth;
+        if (container.style.fontFamily === "" && !isNullOrUndefined(defaultWidth)) {
+            width = defaultWidth;
+        }
+        document.body.removeChild(container);
+
+        return width;
     }
     private getColor(color: string): string {
         let convertColor: string = color;

@@ -12,7 +12,7 @@ import { getRowHeight, setColumnIndex, Global, ispercentageWidth, getNumberForma
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
-import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs } from './interface';
+import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs } from './interface';
 import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
@@ -2510,7 +2510,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @event contextMenuClick
      */
     @Event()
-    public contextMenuClick: EmitType<MenuEventArgs>;
+    public contextMenuClick: EmitType<ContextMenuClickEventArgs>;
 
     /**
      * Triggers before column menu opens.
@@ -2873,6 +2873,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.isCheckBoxSelection = false;
         this.isPersistSelection = false;
         this.componentRefresh = Component.prototype.refresh;
+        this.freezeColumnRefresh = true;
         this.filterOperators = {
             contains: 'contains', endsWith: 'endswith', equal: 'equal', greaterThan: 'greaterthan', greaterThanOrEqual: 'greaterthanorequal',
             lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith', wildCard: 'wildcard',
@@ -3944,7 +3945,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (checkCursor) { this.updateDefaultCursor(); }
         if (requireGridRefresh) {
-            if (freezeRefresh || this.getFrozenColumns() || this.frozenRows) {
+            if (freezeRefresh || this.getFrozenColumns() || this.frozenRows
+                || (this.frozenLeftColumns.length || this.frozenRightColumns.length)) {
                 this.freezeRefresh();
             } else {
                 this.refresh();

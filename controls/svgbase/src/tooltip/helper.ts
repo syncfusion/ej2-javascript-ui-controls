@@ -228,10 +228,11 @@ export interface IShapes {
     functionName?: string;
 }
 /** @private */
-export function drawSymbol(location: TooltipLocation, shape: string, size: Size, url: string, options: PathOption, label: string): Element {
+export function drawSymbol(location: TooltipLocation, shape: string, size: Size, url: string, options: PathOption, role: string, label: string): Element {
     const renderer: SvgRenderer = new SvgRenderer('');
     const temp: IShapes = calculateShapes(location, size, shape, options, url);
     const htmlObject: Element = renderer['draw' + temp.functionName](temp.renderOption);
+    htmlObject.setAttribute('role', role);
     htmlObject.setAttribute('aria-label', label);
     return htmlObject;
 }

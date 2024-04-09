@@ -161,6 +161,22 @@
       }
     }
 
+    &.e-adaptive {
+      .e-schedule-toolbar {
+        .e-toolbar-items {
+          .e-toolbar-item {
+            &.e-today .e-icon-today {
+              display: block;
+            }
+
+            &.e-today .e-icon-today + .e-tbar-btn-text {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+
     #{if(&, '&', '*')}.e-device {
       .e-schedule-toolbar {
         height: $schedule-tbar-bgr-size;

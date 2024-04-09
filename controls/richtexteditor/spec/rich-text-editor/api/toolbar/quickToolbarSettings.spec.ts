@@ -36,7 +36,6 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
                     expect(!isNullOrUndefined(document.querySelector(".e-rte-quick-toolbar"))).toBe(true);
                     done();
                 }, 500);
-                done();
             }, 500);
         });
     });
@@ -68,7 +67,6 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
                     expect(isNullOrUndefined(document.querySelector(".e-rte-quick-toolbar"))).toBe(true);
                     done();
                 }, 500);
-                done();
             }, 500);
         });
     });

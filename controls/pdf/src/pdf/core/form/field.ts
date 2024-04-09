@@ -2947,8 +2947,7 @@ export class PdfTextBoxField extends PdfField {
                             }
                         }
                         parameter.bounds[2] = width;
-                        format.alignment = PdfTextAlignment.center;
-                        this._drawTextBox(g, parameter, text, font, format, multiline, scroll);
+                        this._drawTextBox(g, parameter, text, font, new PdfStringFormat(PdfTextAlignment.center), multiline, scroll);
                         parameter.bounds[0] = parameter.bounds[0] + width;
                         if (parameter.borderWidth) {
                             g.drawLine(parameter.borderPen,

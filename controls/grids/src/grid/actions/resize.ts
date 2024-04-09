@@ -375,6 +375,9 @@ export class Resize implements IAction {
                 return;
             }
             this.resizeColumn(col.field, this.parent.getNormalizedColumnIndex(col.uid), col.uid);
+            if (this.parent.isFrozenGrid()) {
+                this.refreshResizefrzCols(true, true);
+            }
             const header: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, resizeClassList.header);
             header.classList.add('e-resized');
         }

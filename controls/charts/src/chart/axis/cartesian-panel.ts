@@ -1435,8 +1435,8 @@ export class CartesianAxisLayoutPanel {
                         }
                         else if (isLeft && angle !== 0) {
                             intervalLength = rect.width / length;
-                            if (intervalLength > rect.x + rotatedLabelSize.width) {
-                                options.x = pointX = rect.x + rotatedLabelSize.width;
+                            if (rect.x + intervalLength > options.x + rotatedLabelSize.width) {
+                                options.x = pointX = rect.x + padding;
                             }
                             else{
                                 options.x = pointX = rect.x + intervalLength - padding;

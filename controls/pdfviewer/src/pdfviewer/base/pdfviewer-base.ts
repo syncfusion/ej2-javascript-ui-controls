@@ -2365,6 +2365,7 @@ export class PdfViewerBase {
      */
     // eslint-disable-next-line
     public unloadDocument(proxy: PdfViewerBase): void {
+        if (!this.clientSideRendering) {
         let documentId: string = '';
         let hashId: string = window.sessionStorage.getItem(this.documentId + '_hashId');
         let documentLiveCount: string = window.sessionStorage.getItem(this.documentId + '_documentLiveCount');
@@ -2400,6 +2401,7 @@ export class PdfViewerBase {
             } else if (isBlazor()) {
                 this.clearCache(actionName, jsonObject, proxy);
             }
+        }
         }
         if (this.pdfViewer.magnificationModule) {
             this.pdfViewer.magnificationModule.zoomFactor = 1;
@@ -2934,6 +2936,7 @@ export class PdfViewerBase {
      * @returns {void}
      */
     private clearSessionStorage = (): void => {
+        if (!this.clientSideRendering) {
         let documentId: string = '';
         let hashId: string = window.sessionStorage.getItem(this.documentId + '_hashId');
         let documentLiveCount: string = window.sessionStorage.getItem(this.documentId + '_documentLiveCount');
@@ -2964,6 +2967,7 @@ export class PdfViewerBase {
             } else if (isBlazor()) {
                 this.clearCache(actionName, jsonObject, this);
             }
+        }
         }
         window.sessionStorage.removeItem(this.documentId + '_annotations_textMarkup');
         window.sessionStorage.removeItem(this.documentId + '_annotations_shape');
@@ -3529,9 +3533,9 @@ export class PdfViewerBase {
                     bounds = this.pdfViewer.textSelectionModule.getCurrentSelectionBounds(i);
                     if (bounds) {
                         const currentBound: IRectangle = bounds;
-                        if (this.getHorizontalValue(currentBound.left, i) < event.clientX && this.getHorizontalValue(currentBound.right, i) >
+                        if ((this.getHorizontalValue(currentBound.left, i) < event.clientX && this.getHorizontalValue(currentBound.right, i) >
                             event.clientX && this.getVerticalValue(currentBound.top, i) < event.clientY &&
-                            this.getVerticalValue(currentBound.bottom, i) > event.clientY) {
+                            this.getVerticalValue(currentBound.bottom, i) > event.clientY) || (this.pdfViewer.textSelectionModule.selectionRangeArray[0].rectangleBounds.length === 1 && event.clientX !== 0) && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.isTextMarkupAnnotationMode) {
                             isWithin = true;
                             break;
                         }
@@ -4474,6 +4478,7 @@ export class PdfViewerBase {
                 const info: Info = { ctrlKey: event.ctrlKey, shiftKey: event.shiftKey };
                 this.eventArgs.info = info;
                 this.eventArgs.clickCount = event.detail;
+                this.eventArgs.isTouchMode = false;
                 (this.tool as PolygonDrawingTool).mouseUp(this.eventArgs, true);
 
             }
@@ -5123,6 +5128,14 @@ export class PdfViewerBase {
             }
         }
         this.diagramMouseUp(event);
+        if (this.pdfViewer.selectedItems.annotations.length !== 0) {
+            this.disableTextSelectionMode();
+        }
+        else {
+            if (this.pdfViewer.textSelectionModule) {
+                this.pdfViewer.textSelectionModule.enableTextSelectionMode();
+            }
+        }
         this.renderStampAnnotation(event);
         if (!Browser.isDevice) {
             this.focusViewerContainer();
@@ -9506,6 +9519,11 @@ export class PdfViewerBase {
                 const info: Info = { ctrlKey: evt.ctrlKey, shiftKey: evt.shiftKey };
                 this.eventArgs.info = info;
                 this.eventArgs.clickCount = evt.detail;
+                if (evt.type == "touchend") {
+                    this.eventArgs.isTouchMode = true;
+                } else {
+                    this.eventArgs.isTouchMode = false;
+                }
                 this.tool.mouseUp(this.eventArgs);
                 this.isAnnotationMouseDown = false;
                 this.isFormFieldMouseDown = false;
@@ -9548,7 +9566,7 @@ export class PdfViewerBase {
         if (target.parentElement && target.parentElement.className !== 'foreign-object' && !target.classList.contains('e-pv-radio-btn') && !target.classList.contains('e-pv-radiobtn-span') && !target.classList.contains('e-pv-checkbox-div') && !target.classList.contains('e-pdfviewer-formFields')
             && !target.classList.contains('e-pdfviewer-ListBox') && !target.classList.contains('e-pdfviewer-signatureformfields')
             && !((target).className === 'free-text-input' && (target).tagName === 'TEXTAREA')
-            && !isSkip && !((target).className === 'e-pv-hyperlink') && target.parentElement.classList.length > 0 && !target.parentElement.classList.contains("e-editable-elements")) {
+            && !isSkip && !((target).className === 'e-pv-hyperlink') && target.parentElement.classList.length > 0 && !target.parentElement.classList.contains("e-editable-elements") && !this.isAddComment) {
             isSkipped = true;
         }
         return isSkipped;
@@ -9588,7 +9606,14 @@ export class PdfViewerBase {
         if (this.pdfViewer.annotation) {
             this.activeElements.activePageID = this.pdfViewer.annotation.getEventPageNumber(evt) ? this.pdfViewer.annotation.getEventPageNumber(evt) : this.pdfViewer.currentPageNumber - 1;
         }
-        const obj: IElement = findActiveElement(evt, this, this.pdfViewer);
+        let obj: IElement = findActiveElement(evt, this, this.pdfViewer);
+        if (isNullOrUndefined(obj)) {
+            const eventTarget: HTMLElement = evt.target as HTMLElement;
+            if (!isNullOrUndefined(eventTarget) && !isNullOrUndefined(eventTarget.id)) {
+                let id: string = eventTarget.id.split('_')[0];
+                obj = (this.pdfViewer.nameTable as any)[id];
+            }
+        }
         if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && (obj && !(obj instanceof PdfFormFieldBase))) {
             evt.preventDefault();
         }
@@ -9764,6 +9789,10 @@ export class PdfViewerBase {
             this.isFormFieldMouseDown = false;
             this.isAnnotationMouseMove = false;
             this.isFormFieldMouseMove = false;
+            if(!isNullOrUndefined(obj))
+            {
+                this.eventArgs.source = obj;
+            }
             this.tool.mouseDown(this.eventArgs);
             this.isAnnotationDrawn = true;
             this.signatureAdded = true;

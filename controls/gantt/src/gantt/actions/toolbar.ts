@@ -133,7 +133,14 @@ export class Toolbar {
         if (updateItem) {
             addClass([updateItem], cls.focusCell);
         }
-        if (this.parent.isAdaptive) {
+        let template :boolean = false;
+
+        this.parent.toolbar.map((e: any) => {
+            if (e === 'Search') {
+                template = true;
+            }
+        })    
+        if (this.parent.isAdaptive && template) {
             this.element.insertBefore(this.getSearchBarElement(), this.element.childNodes[0]);
             this.searchElement = this.element.querySelector('#' + this.parent.element.id + '_searchbar');
             const textObj: TextBox = new TextBox({
@@ -450,7 +457,7 @@ export class Toolbar {
                 disableItems.push(gID + '_indent');
                 disableItems.push(gID + '_outdent');
             } else {
-                if (gObj.updatedRecords[ind as number].level === 0 && hasData && !touchEdit) {
+                if ( !isNullOrUndefined(gObj.updatedRecords[ind as number]) && gObj.updatedRecords[ind as number].level === 0 && hasData && !touchEdit) {
                     enableItems.push(gID + '_indent');
                     disableItems.push(gID + '_outdent');
                 } else {

@@ -1454,6 +1454,26 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
+        describe('876790 - applying list to the content with indentation and other style applied in block element', () => {
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true"><p class="startFocus" style="margin-left: 120px; color: red; background-color: yellow;">sdvsdvsdv</p><p style="margin-left: 80px; color: yellow; background-color: red;">sdvdsvdsvsdvsdv</p><p>sdv</p><p class="endFocus" style="margin-left: 40px;">sdvsdvdsvsdv</p></div>`
+            });
+            beforeAll(() => {
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            it('console error occurs when you apply the number format when end of the selection is a empty line', () => {
+                startNode = editNode.querySelector('.startFocus');
+                endNode = editNode.querySelector('.endFocus');
+                editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 1, 3);
+                editorObj.execCommand("Lists", 'OL', null);
+                expect(editNode.innerHTML === `<ol style="margin-left: 120px;"><li class="startfocus" style="color: red; background-color: yellow;">sdvsdvsdv</li><li style="color: yellow; background-color: red;">sdvdsvdsvsdvsdv</li><li>sdv</li><li class="endfocus" style="">sdvsdvdsvsdv</li></ol>`).toBe(true);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
     });
 
     describe(' UL testing', () => {
@@ -2562,6 +2582,16 @@ describe ('left indent testing', () => {
             keyBoardEvent.code = 'cut';
             (editorObj as any).keyDown(keyBoardEvent);
             expect(editorObj.inputElement.innerHTML === '').toBe( true);
+        });
+        it('remove the single letter using backspace', () => {
+            editorObj.value = `<ol><li>rte</li><li>rte</li></ol>`;
+            editorObj.dataBind();
+            startNode = editorObj.inputElement.querySelector( 'ol' ).querySelectorAll('li')[0];
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText( document, startNode.firstChild,startNode.firstChild,2,3);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(startNode.textContent === 'rt').toBe( true);
         });
     });
 });

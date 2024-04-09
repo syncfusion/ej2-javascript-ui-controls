@@ -346,14 +346,68 @@ export class TablePropertiesDialog {
             }
             this.rowFormat.height = this.rowHeightValue;
         }
-        this.documentHelper.owner.editorModule.initComplexHistory('TableProperties');
-        this.documentHelper.owner.editorModule.onTableFormat(this.tableFormat);
-        this.documentHelper.owner.editorModule.onRowFormat(this.rowFormat);
-        this.documentHelper.owner.editorModule.onCellFormat(this.cellFormat);
-        this.documentHelper.owner.editorHistoryModule.updateComplexHistory();
+        if (!(this.isEqualTableFormat(selection.tableFormat, this.tableFormat) && this.isEqualRowFormat(selection.rowFormat, this.rowFormat)
+            && this.isEqualCellFormat(selection.cellFormat, this.cellFormat))) {
+            this.documentHelper.owner.editorModule.initComplexHistory('TableProperties');
+            this.documentHelper.owner.editorModule.onTableFormat(this.tableFormat);
+            this.documentHelper.owner.editorModule.onRowFormat(this.rowFormat);
+            this.documentHelper.owner.editorModule.onCellFormat(this.cellFormat);
+            this.documentHelper.owner.editorHistoryModule.updateComplexHistory();
+        }
         this.closeTablePropertiesDialog();
         this.documentHelper.updateFocus();
     };
+    private isEqualTableFormat(sourceFormat: SelectionTableFormat, applyFormat: WTableFormat): boolean {
+        if (applyFormat.hasValue('preferredWidth') && sourceFormat.preferredWidth !== applyFormat.preferredWidth) {
+            return false;
+        }
+        if (applyFormat.hasValue('preferredWidthType') && sourceFormat.preferredWidthType !== applyFormat.preferredWidthType) {
+            return false;
+        }
+        if (applyFormat.hasValue('tableAlignment') && sourceFormat.tableAlignment !== applyFormat.tableAlignment) {
+            return false;
+        }
+        if (applyFormat.hasValue('leftIndent') && sourceFormat.leftIndent !== applyFormat.leftIndent) {
+            return false;
+        }
+        if (applyFormat.hasValue('bidi') && sourceFormat.bidi !== applyFormat.bidi) {
+            return false;
+        }
+        if (isNullOrUndefined(sourceFormat.title) ? "" !== applyFormat.title : sourceFormat.title !== applyFormat.title) {
+            return false;
+        }
+        if (isNullOrUndefined(sourceFormat.description) ? "" !== applyFormat.description : sourceFormat.description !== applyFormat.description) {
+            return false;
+        }
+        return true;
+    }
+    private isEqualRowFormat(sourceFormat: SelectionRowFormat, applyFormat: WRowFormat): boolean {
+        if (applyFormat.hasValue('height') && sourceFormat.height !== applyFormat.height) {
+            return false;
+        }
+        if (applyFormat.hasValue('heightType') && sourceFormat.heightType !== applyFormat.heightType) {
+            return false;
+        }
+        if (applyFormat.hasValue('allowBreakAcrossPages') && sourceFormat.allowBreakAcrossPages !== applyFormat.allowBreakAcrossPages) {
+            return false;
+        }
+        if (applyFormat.hasValue('isHeader') && sourceFormat.isHeader !== applyFormat.isHeader) {
+            return false;
+        }
+        return true;
+    }
+    private isEqualCellFormat(sourceFormat: SelectionCellFormat, applyFormat: WCellFormat): boolean {
+        if (applyFormat.hasValue('preferredWidth') && sourceFormat.preferredWidth !== applyFormat.preferredWidth) {
+            return false;
+        }
+        if (applyFormat.hasValue('preferredWidthType') && sourceFormat.preferredWidthType !== applyFormat.preferredWidthType) {
+            return false;
+        }
+        if (applyFormat.hasValue('verticalAlignment') && sourceFormat.verticalAlignment !== applyFormat.verticalAlignment) {
+            return false;
+        }
+        return true;
+    }
     /**
      * @private
      * @param {TableWidget} table - Specifies the table widget.

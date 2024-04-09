@@ -304,6 +304,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected incrementalPreQueryString: string = '';
     protected isObjectCustomValue: boolean = false;
     protected appendUncheckList: boolean = false;
+    protected getInitialData: boolean = false;
+    protected preventPopupOpen: boolean = true;
+    protected customFilterQuery: Query = new Query();
     protected virtualSelectAllData: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     protected firstItem: string | number | boolean | object;
     protected virtualListInfo: VirtualInfo = {
@@ -837,6 +840,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         const actualCount: number = this.virtualListHeight > 0 ? Math.floor(this.virtualListHeight / this.listItemHeight) : 0;
         this.skeletonCount = actualCount * 2 < this.itemCount ? this.itemCount : actualCount * 2;
         this.itemCount = retainSkeleton ? this.itemCount : this.skeletonCount;
+        this.virtualItemCount = this.itemCount;
         this.skeletonCount = Math.floor(this.skeletonCount / 2) + 2;
     }
 
@@ -933,6 +937,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     private initialize(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         this.bindEvent = true;
+        this.preventPopupOpen = true;
         this.actionFailureTemplateId = `${this.element.id}${ACTIONFAILURETEMPLATE_PROPERTY}`;
         if (this.element.tagName === 'UL') {
             const jsonElement: { [key: string]: Object }[] = ListBase.createJsonFromElement(this.element);
@@ -1121,6 +1126,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     }
                                     this.isRequested = false;
                                     this.bindChildItems(listItems, ulElement, fields, e);
+                                    if(this.getInitialData){
+                                        this.setListData(dataSource, fields, query, event);
+                                        this.getInitialData = false;
+                                        this.preventPopupOpen = false;
+                                        return;
+                                    }
                                 }
                             });
                         }).catch((e: Object) => {
@@ -1192,6 +1203,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     this.renderGroupTemplate(ulElement);
                                 }
                                 this.bindChildItems(localDataArgs.result as { [key: string]: Object }[], ulElement, fields);
+                                if(this.getInitialData){
+                                    this.getInitialData = false;
+                                    this.preventPopupOpen = false;
+                                    return;
+                                }
                                 setTimeout(() => {
                                     if (this.getModuleName() === 'multiselect' && this.itemTemplate != null && (ulElement.childElementCount > 0 && (ulElement.children[0].childElementCount > 0 || (this.fields.groupBy && ulElement.children[1] && ulElement.children[1].childElementCount > 0)))) {
                                         this.updateDataList();
@@ -1314,7 +1330,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         e?: Object): void {
     /* eslint-enable @typescript-eslint/no-unused-vars */
         this.listData = list;
-        if (this.isVirtualizationEnabled && !this.isCustomDataUpdated) {
+        if (this.isVirtualizationEnabled && !this.isCustomDataUpdated && !this.virtualSelectAll) {
             this.notify("setGeneratedData", {
                 module: "VirtualScroll",
             });
@@ -1551,6 +1567,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected getValidLi() : HTMLElement {
+        if(this.isVirtualizationEnabled){
+            return this.liCollections[0].classList.contains('e-virtual-list') ? this.liCollections[this.skeletonCount] : this.liCollections[0];
+        }
         return this.liCollections[0];
     }
 
@@ -1625,7 +1644,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     }
                     this.updateListElements(listData);
                 }
-                else if ((!virtualUlElement)) {
+                else if ((!virtualUlElement) || (!virtualUlElement.firstChild)) {
                     this.list.innerHTML = '';
                     this.createVirtualContent();
                     this.list.querySelector('.e-virtual-ddl-content').appendChild(ulElement);
@@ -1985,6 +2004,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         const itemsCount: number = this.getItems().length;
+        const isListboxEmpty: boolean = itemsCount === 0;
         const selectedItemValue: Element = this.list.querySelector('.' + dropDownBaseClasses.selected);
         items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
         let index: number;
@@ -2022,11 +2042,20 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             li.setAttribute('role', 'option');
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
-            (this.listData as { [key: string]: Object }[]).push(item as { [key: string]: Object });
+            if (this.getModuleName() === 'listbox') {
+                (this.listData as { [key: string]: Object }[]).splice(isListboxEmpty ? this.listData.length : index, 0, item as { [key: string]: Object });
+                if (this.listData.length !== this.sortedData.length) { this.sortedData = this.listData; }
+            } else {
+                (this.listData as { [key: string]: Object }[]).push(item as { [key: string]: Object });
+            }
             if (this.sortOrder === 'None' && isNullOrUndefined(itemIndex) && index === 0 ) {
                 index = null;
             }
-            this.updateActionCompleteData(li, item as { [key: string]: Object }, index);
+            if (this.getModuleName() === 'listbox') {
+                this.updateActionCompleteData(li, item as { [key: string]: Object }, isListboxEmpty ? null : index);
+            } else {
+                this.updateActionCompleteData(li, item as { [key: string]: Object }, index);
+            }
             //Listbox event
             this.trigger('beforeItemRender', {element: li, item: item});
         }

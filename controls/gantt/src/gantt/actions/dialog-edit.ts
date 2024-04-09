@@ -1419,7 +1419,7 @@ export class DialogEdit {
         const ganttProp: ITaskData = currentData.ganttProperties;
         const taskSettings: TaskFieldsModel = ganttObj.taskFields;
         if (taskSettings.duration === columnName) {
-            if (!isNullOrUndefined(value) && value !== '' && parseInt(value) >= 0) {
+            if (!isNullOrUndefined(value) && value !== '' && (parseInt(value) >= 0 || parseFloat(value) >= 0)) {
                 ganttObj.dataOperation.updateDurationValue(value, ganttProp);
                 this.parent.setRecordValue(taskSettings.duration, value, currentData);
                 this.parent.setRecordValue('taskData.' + taskSettings.duration, ganttProp.duration, currentData);

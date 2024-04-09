@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an exception encountered while parsing the removed page destination from the document link annotation.
+- Resolved an exception encountered while filling the text box field.
+- Resolved an exception encountered while exporting the rubber stamp annotation appearance template.
+- The options parsing issue in the list box field have been resolved.
+
 ## 25.1.38 (2024-04-02)
 
 ### PDF Parser

@@ -60,7 +60,8 @@ export class LinkCommand {
             }
             if (!isNOU(e.item.text) && e.item.text !== '') {
                 linkText = anchorEle.innerText;
-                anchorEle.innerText = e.item.text;
+                anchorEle.firstChild.nodeName === '#text' ? anchorEle.innerText =  e.item.text :
+                 (anchorEle.firstChild as HTMLElement).innerText =  e.item.text;
             }
             if (!isNOU(e.item.target)) {
                 anchorEle.setAttribute('target', e.item.target);
@@ -74,10 +75,11 @@ export class LinkCommand {
                 e.item.selection.restore();
             } else {
                 const startIndex: number = e.item.action === 'Paste' ? anchorEle.childNodes[0].textContent.length : 0;
-                e.item.selection.setSelectionText(
-                    this.parent.currentDocument,
-                    anchorEle.childNodes[0],
-                    anchorEle.childNodes[0], startIndex, anchorEle.childNodes[0].textContent.length);
+                const endIndex = anchorEle.firstChild.nodeName === '#text' ? anchorEle.childNodes[0].textContent.length : anchorEle.childNodes.length;
+                    e.item.selection.setSelectionText(this.parent.currentDocument,
+                         anchorEle.childNodes[0],
+                         anchorEle.childNodes[0],
+                         startIndex, endIndex);
             }
         } else {
             const domSelection: NodeSelection = new NodeSelection();

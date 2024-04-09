@@ -9,10 +9,11 @@ import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE
     CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE,
     CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM,
     CLS_BULLETFORMATLIST_TB_BTN, CLS_NUMBERFORMATLIST_TB_BTN, CLS_LIST_PRIMARY_CONTENT } from '../base/classes';
-import { IRenderer, IRichTextEditor, IToolbarOptions, IDropDownModel, IColorPickerModel, IColorPickerEventArgs } from '../base/interface';
+import { IRenderer, IRichTextEditor, IToolbarOptions, IDropDownModel, IColorPickerModel, IColorPickerEventArgs, IDropDownItemModel } from '../base/interface';
 import { ColorPicker, PaletteTileEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { hasClass } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
+import { ToolbarStatus } from '../../editor-manager/plugin/toolbar-status';
 
 /**
  * `Toolbar renderer` module is used to render toolbar in RichTextEditor.
@@ -33,7 +34,6 @@ export class ToolbarRenderer implements IRenderer {
     private currentDropdown: DropDownButton;
     private tooltip: Tooltip;
     private l10n: L10n;
-    private dropdownTooltip :Tooltip;
     private tooltipTargetEle: Element;
 
     /**
@@ -93,7 +93,7 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private dropDownSelected(args: MenuEventArgs): void {
-        this.parent.notify(events.dropDownSelect, args);
+        this.parent.notify(events.dropDownSelect, { element: args.element, item: args.item, originalEvent: args.event });
         this.destroyTooltip();
     }
 
@@ -119,6 +119,9 @@ export class ToolbarRenderer implements IRenderer {
                 break;
             }
         }
+        if (args.target.querySelector('.e-active')) {
+            args.cancel = true;
+        }
     }
 
     private dropDownOpen(args: MenuEventArgs): void {
@@ -139,19 +142,6 @@ export class ToolbarRenderer implements IRenderer {
                 }
                 addClass([listEle[1], listEle[2]], 'e-disabled');
             }
-        }
-        if (this.parent.showTooltip) {
-            this.dropdownTooltip = new Tooltip({
-                target: '[aria-owns="'+ this.parent.getID() +'"].e-rte-elements [title]',
-                showTipPointer: true,
-                openDelay: 400,
-                opensOn: 'Hover',
-                beforeRender: this.tooltipBeforeRender.bind(this),
-                cssClass: this.parent.getCssClass(),
-                windowCollision: true,
-                position: 'BottomCenter'
-            });
-            this.dropdownTooltip.appendTo(args.element);
         }
         this.parent.notify(events.selectionSave, args);
     }
@@ -298,11 +288,29 @@ export class ToolbarRenderer implements IRenderer {
                     }
                     //Formats preselect
                     if ((args.items[0 as number] as any).command === 'Formats' || (args.items[0 as number] as any).command === 'Font') {
+                        const fontName: string[] = [];
+                        const formats: string[] = [];
+                        this.parent.format.types.forEach((item: IDropDownItemModel): void => {
+                            formats.push(item.value.toLocaleLowerCase());
+                        });
+                        this.parent.fontFamily.items.forEach((item: IDropDownItemModel): void => {
+                            fontName.push(item.value);
+                        });
+                        const toolbarStatus = ToolbarStatus.get(
+                            this.parent.contentModule.getDocument(),
+                            this.parent.contentModule.getEditPanel(),
+                            formats,
+                            null,
+                            fontName
+                        );
                         for (let index: number = 0; index < args.element.childNodes.length; index++) {
                             const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
                             divNode.innerHTML = dropDown.content.trim();
-                            if (divNode.textContent.trim() !== ''
-                                && args.element.childNodes[index as number].textContent.trim() === divNode.textContent.trim()) {
+                            if ((divNode.textContent.trim() !== ''
+                                && args.element.childNodes[index as number].textContent.trim() === divNode.textContent.trim()) ||
+                                (((args.items[0 as number] as any).command === 'Formats' && !isNOU(toolbarStatus.formats) && this.parent.format.types[index as number].value.toLowerCase() === toolbarStatus.formats.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.format.types[index as number].cssClass))
+                                    || ((args.items[0 as number] as any).command === 'Font' && !isNOU(toolbarStatus.fontname) && this.parent.fontFamily.items[index as number].value.toLowerCase() === toolbarStatus.fontname.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.fontFamily.items[index as number].cssClass)))
+                            ) {
                                 if (!(args.element.childNodes[index as number] as HTMLElement).classList.contains('e-active')) {
                                     addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
                                 }
@@ -481,6 +489,8 @@ export class ToolbarRenderer implements IRenderer {
             target: colorPicker.element.parentElement, cssClass: css,
             enablePersistence: this.parent.enablePersistence, enableRtl: this.parent.enableRtl,
             beforeOpen: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
+                colorPicker.inline = true;
+                colorPicker.dataBind();
                 if (proxy.parent.readonly || !proxy.parent.enabled) {
                     dropDownArgs.cancel = true; return;
                 }
@@ -607,18 +617,14 @@ export class ToolbarRenderer implements IRenderer {
         const colorPicker: ColorPicker = new ColorPicker({
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
-            inline: true,
-            value: null,
-            cssClass : ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER) + ' ' + args.cssClass + ' ' + 'e-rte-picker-init',
+            inline: false,
+            value: '#fff',
             created: () => {
                 const value: string = (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
-                colorPicker.cssClass = ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER) + ' ' + args.cssClass;
-                colorPicker.value = value;
+                colorPicker.setProperties({ value: value });
             },
             mode: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.mode : proxy.parent.fontColor.mode),
             modeSwitcher: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.modeSwitcher : proxy.parent.fontColor.modeSwitcher),
-            presetColors: (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode : this.parent.fontColor.colorCode,
-            columns: (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns,
             beforeTileRender: (args: PaletteTileEventArgs) => {
                 args.element.classList.add(CLS_COLOR_PALETTE);
                 args.element.classList.add(CLS_CUSTOM_TILE);
@@ -662,6 +668,10 @@ export class ToolbarRenderer implements IRenderer {
             }
         });
         colorPicker.isStringTemplate = true;
+        colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
+        colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
+            this.parent.fontColor.colorCode;
+        colorPicker.cssClass = ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER) + ' ' + args.cssClass;
         colorPicker.createElement = this.parent.createElement;
         colorPicker.appendTo(document.getElementById(args.target) as HTMLElement);
         return colorPicker;

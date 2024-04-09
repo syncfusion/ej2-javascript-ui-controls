@@ -83,8 +83,10 @@ export class AccessibilityTags {
         if (text.trim() != "") {
             textTag.innerText = text;
         }
-        if (altText && altText.trim() !== "" && (tagType === "Image" || tagType === "Figure")) {
-            textTag.alt = altText;
+        if (tagType === "Image" || tagType === "Figure") {
+            if(altText && altText.trim() !== ""){
+                textTag.alt = altText;
+            }
             textTag.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNgYAAAAAMAASsJTYQAAAAASUVORK5CYII="
         }
         if (childTags && childTags.length > 0) {

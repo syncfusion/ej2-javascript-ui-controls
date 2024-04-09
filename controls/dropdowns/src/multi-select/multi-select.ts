@@ -869,7 +869,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 attributes(this.inputElement, { 'aria-expanded': 'true' , 'aria-owns': this.element.id + '_popup', 'aria-controls': this.element.id});
                 this.updateAriaActiveDescendant();
                 if (this.isFirstClick) {
-                    if(this.enableVirtualization && this.mode === 'CheckBox' && this.value){
+                    if(this.enableVirtualization && this.mode === 'CheckBox' && this.value && this.enableSelectionOrder){
                         this.updateVirtualReOrderList();
                     }
                     this.loadTemplate();
@@ -946,9 +946,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if(this.enableVirtualization){
             const focusedItem: HTMLElement = <HTMLElement>this.list.querySelector('.' + dropDownBaseClasses.focus);
-            if(focusedItem){
-                this.scrollBottom(focusedItem);
-            }
+            this.scrollBottom(focusedItem);
         }
     }
     private focusAtFirstListItem(): void {
@@ -1327,7 +1325,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if ((!this.enableVirtualization &&  ((searchCount === searchActiveCount || searchActiveCount === this.maximumSelectionLength)
         && (this.mode === 'CheckBox' && this.showSelectAll))) || (this.enableVirtualization && this.mode === 'CheckBox' && this.showSelectAll && this.virtualSelectAll && this.value && this.value.length === this.totalItemCount)) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'check' });
-        } else if ((searchCount !== searchActiveCount) && (this.mode === 'CheckBox' && this.showSelectAll)) {
+        } else if ((searchCount !== searchActiveCount) && (this.mode === 'CheckBox' && this.showSelectAll) && ((!this.enableVirtualization) || (this.enableVirtualization && !this.virtualSelectAll))) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'uncheck' });
         }
         if (this.enableGroupCheckBox && this.fields.groupBy && !this.enableSelectionOrder) {
@@ -1386,9 +1384,14 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.dataUpdater(dataSource, query, fields);
     }
     protected getQuery(query: Query): Query {
-        const filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
+        let filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
         if (this.isFiltered) {
-            return filterQuery;
+            if ((this.enableVirtualization && !isNullOrUndefined(this.customFilterQuery))) {
+                filterQuery = this.customFilterQuery.clone() as Query;
+            }
+            else if(!this.enableVirtualization){
+                return filterQuery;
+            }
         }
         if (this.filterAction) {
             if ((this.targetElement() !== null && !this.enableVirtualization) || (this.enableVirtualization && this.targetElement() !== null && this.targetElement().trim() !== '')) {
@@ -1409,7 +1412,15 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             if (this.enableVirtualization && (this.viewPortInfo.endIndex != 0) && !this.virtualSelectAll && (!(this.dataSource instanceof DataManager) || (this.dataSource instanceof DataManager && this.virtualGroupDataSource))) {
                 return this.virtualFilterQuery(filterQuery);
-                
+            }
+            else if(this.enableVirtualization && (this.dataSource instanceof DataManager && !this.virtualGroupDataSource)) {
+                for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
+                    if (filterQuery.queries[queryElements as number].fn === 'onSkip' || filterQuery.queries[queryElements as number].fn === 'onTake') {
+                        filterQuery.queries.splice(queryElements,1);
+                        --queryElements; 
+                    }
+                }
+                return filterQuery;
             }
             return query ? query : this.query ? this.query : new Query();
         }
@@ -1431,6 +1442,31 @@ export class MultiSelect extends DropDownBase implements IInput {
                 isTake = false;
             }
         }
+        let queryTakeValue = 0;
+        if (filterQuery && filterQuery.queries.length > 0) {
+            for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
+                if (filterQuery.queries[queryElements as number].fn === 'onTake') {
+                    queryTakeValue = takeValue <= filterQuery.queries[queryElements as number].e.nos ? filterQuery.queries[queryElements as number].e.nos : takeValue;
+                }
+
+            }
+        }
+        if(queryTakeValue <= 0 && this.query && this.query.queries.length > 0){
+            for (let queryElements: number = 0; queryElements < this.query.queries.length; queryElements++) {
+                if (this.query.queries[queryElements as number].fn === 'onTake') {
+                    queryTakeValue = takeValue <= this.query.queries[queryElements as number].e.nos ? this.query.queries[queryElements as number].e.nos : takeValue;
+                }
+            }
+        }
+        if (filterQuery && filterQuery.queries.length > 0) {
+            for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
+                if (filterQuery.queries[queryElements as number].fn === 'onTake') {
+                    queryTakeValue = filterQuery.queries[queryElements as number].e.nos <= queryTakeValue ? queryTakeValue : filterQuery.queries[queryElements as number].e.nos;
+                    filterQuery.queries.splice(queryElements,1);
+                    --queryElements;
+                }
+            }
+        }
         if ((this.allowFiltering && isSkip) || !isReOrder || (!this.allowFiltering && isSkip)) {
             if(!isReOrder){
                 filterQuery.skip(this.viewPortInfo.startIndex);
@@ -1439,12 +1475,13 @@ export class MultiSelect extends DropDownBase implements IInput {
                filterQuery.skip(this.virtualItemStartIndex);
             }
         }
-        if (isTake) {
-            if (this.isIncrementalRequest) {
-                filterQuery.take(this.incrementalEndIndex);
-            } else {
-                filterQuery.take(takeValue);
-            }
+        if (this.isIncrementalRequest) {
+            filterQuery.take(this.incrementalEndIndex);
+        } else if (queryTakeValue > 0) {
+            filterQuery.take(queryTakeValue);
+        }
+        else {
+            filterQuery.take(takeValue);
         }
         filterQuery.requiresCount();
         return filterQuery;
@@ -1778,7 +1815,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 parseInt(getComputedStyle(this.dropIcon).marginRight)
                 elementWidth = this.overAllWrapper.clientWidth - (downIconWidth + 2 * (parseInt(getComputedStyle(this.inputElement).paddingRight)));
             }
-            if (this.floatLabelType === 'Auto') {
+            if (this.floatLabelType !== 'Never') {
                 Input.calculateWidth(elementWidth, this.overAllWrapper, this.getModuleName()); 
             }
         }
@@ -3017,7 +3054,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 let currentText = [];
                 const value: string | number | boolean  = this.allowObjectBinding ? getValue(((this.fields.value) ? this.fields.value : ''), this.value[this.value.length - 1]) : this.value[this.value.length - 1];
                 temp = this.getTextByValue(value);
-                var textValues = this.text != null ? this.text + ',' + temp : temp;
+                var textValues = this.text != null && this.text != "" ? this.text + ',' + temp : temp;
                 currentText.push(textValues);
                 this.setProperties({ text: currentText.toString() }, true);
             }
@@ -3669,6 +3706,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             return;
                         }
                         this.isFiltered = true;
+                        this.customFilterQuery = query;
                         this.remoteFilterAction = true;
                         this.dataUpdater(dataSource, query, fields);
                     },
@@ -3964,7 +4002,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         (element && (element.getAttribute('aria-selected') === 'true' && this.hideSelectedItem) &&
                             (this.mode === 'Box' || this.mode === 'Default'))) || (this.enableVirtualization && value != null && text != null && !isCustomData)) {
                         let currentText = [];
-                        var textValues = this.text != null ? this.text + ',' + text : text;
+                        var textValues = this.text != null && this.text != "" ? this.text + ',' + text : text;
                         currentText.push(textValues);
                         this.setProperties({ text: currentText.toString() }, true);
                         this.addChip(text, value);
@@ -3991,7 +4029,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             this.wireListEvents();
                         }
                         let currentText = [];
-                        var textValues = this.text != null ? this.text + ',' + text : text;
+                        var textValues = this.text != null && this.text != "" ? this.text + ',' + text : text;
                         currentText.push(textValues);
                         this.setProperties({ text: currentText.toString() }, true);
                         this.addChip(text, value);
@@ -4846,7 +4884,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.enableVirtualization) {
                     if (state) {
                         this.virtualSelectAll = true;
-                        this.resetList(this.dataSource, this.fields, new Query().skip(this.viewPortInfo.startIndex));
+                        this.resetList(this.dataSource, this.fields, new Query());
                         if (this.virtualSelectAllData instanceof Array) {
                             for (var i = 0; i < this.virtualSelectAllData.length; i++) {
                                 if (li[this.skeletonCount + i]) {
@@ -4920,8 +4958,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                         }
                         this.value = [];
                         this.virtualSelectAll = false;
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        let ulElement = this.renderItems(this.listData as any[], this.fields);
+                        if (!isNullOrUndefined(this.viewPortInfo.startIndex) && !isNullOrUndefined(this.viewPortInfo.endIndex)) {
+                            this.notify("setCurrentViewDataAsync", {
+                                component: this.getModuleName(),
+                                module: "VirtualScroll",
+                            });
+                        }
                     }
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const virtualTrackElement = this.list.getElementsByClassName('e-virtual-ddl')[0] as any;
@@ -5407,6 +5449,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 duration: 100,
                 delay: delay ? delay : 0
             };
+            this.customFilterQuery = null;
             const eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel , event: e || null };
             this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
                 if (!eventArgs.cancel) {
@@ -5429,7 +5472,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     if(this.mode === 'CheckBox' && this.showSelectAll){
                         EventHandler.remove((this as any).popupObj.element, 'click', this.clickHandler);
                     }
-                    if(this.enableVirtualization && this.mode === 'CheckBox') {
+                    if(this.enableVirtualization && this.mode === 'CheckBox' && this.enableSelectionOrder) {
                         this.viewPortInfo.startIndex = this.virtualItemStartIndex = 0;
                         this.viewPortInfo.endIndex = this.virtualItemEndIndex = this.viewPortInfo.startIndex > 0 ? this.viewPortInfo.endIndex : this.itemCount;                
                         this.previousStartIndex = 0;

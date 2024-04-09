@@ -762,28 +762,22 @@ export class TableCommand {
         const newCell: HTMLElement = this.activeCell.cloneNode(true) as HTMLElement;
         newCell.removeAttribute('class');
         newCell.innerHTML = '</br>';
-        let avgWidth: number = parseFloat(this.activeCell.style.width) / 2;
-        if (this.activeCell.tagName === 'TH' &&  isNaN(avgWidth)) {
-            const cellCount: number = this.curTable.querySelector('tr').childElementCount;
-            let colSpanCount: number = 0;
-            for (let i:  number = 0; i < cellCount; i++) {
-                colSpanCount = colSpanCount + (parseInt(this.curTable.querySelector('tr').children[i as number].getAttribute('colspan'), 10) || 1);
-            }
-            avgWidth = parseFloat((((this.activeCell.offsetWidth / 2) / this.curTable.offsetWidth) * 100).toFixed(1));
-
-        }
         const activeCellIndex: number[] = this.getCorrespondingIndex(this.activeCell, this.getCorrespondingColumns());
         const correspondingColumns: HTMLElement[][] = this.getCorrespondingColumns();
-        const activeCellcolSpan: number = parseInt(this.activeCell.getAttribute('colspan'), 10);
+        const activeCellcolSpan: number = parseInt(this.activeCell.getAttribute('colspan'), 10) || 1;
         if (activeCellcolSpan > 1) {
-            // eslint-disable-next-line
-            1 < Math.ceil(activeCellcolSpan / 2) ? this.activeCell.setAttribute('colspan', (activeCellcolSpan / 2).toString())
-                : this.activeCell.removeAttribute('colspan');
-            // eslint-disable-next-line
-            1 < (activeCellcolSpan - activeCellcolSpan / 2) ? newCell.setAttribute('colspan',
-                // eslint-disable-next-line
-                (activeCellcolSpan - activeCellcolSpan / 2).toString()) : newCell.removeAttribute('colspan');
+            const colSpan: number = Math.ceil(activeCellcolSpan / 2);
+            const getColSizes: number[] = this.getColSizes(this.curTable);
+            const activeCellUpdatedWidth: number = this.getSplitColWidth(activeCellIndex[1], activeCellIndex[1] + colSpan - 1 , getColSizes);
+            let newCellWidth: number = this.getSplitColWidth(activeCellIndex[1] + colSpan, activeCellIndex[1] + activeCellcolSpan - 1 , getColSizes);
+            const activeCellWidth: number = this.convertPixelToPercentage(this.activeCell.offsetWidth, this.curTable.offsetWidth);
+            newCellWidth = (activeCellWidth - activeCellUpdatedWidth) < newCellWidth ? (activeCellWidth - activeCellUpdatedWidth) : newCellWidth;
+            1 < colSpan ? this.activeCell.setAttribute('colspan', colSpan.toString()) : this.activeCell.removeAttribute('colspan');
+            1 < activeCellcolSpan - colSpan ? newCell.setAttribute('colspan', (activeCellcolSpan - colSpan).toString()) : newCell.removeAttribute('colspan');
+           this.activeCell.style.width = activeCellUpdatedWidth + '%';
+           newCell.style.width = newCellWidth + '%';
         } else {
+            let avgWidth: number = parseFloat(this.activeCell.style.width) / 2;
             for (let i: number = 0; i <= allRows.length - 1; i++) {
                 if (0 === i || correspondingColumns[i as number][activeCellIndex[1]] !== correspondingColumns[i - 1][activeCellIndex[1]]) {
                     const currentCell: HTMLElement = correspondingColumns[i as number][activeCellIndex[1]];
@@ -793,9 +787,9 @@ export class TableCommand {
                     }
                 }
             }
+            this.activeCell.style.width = avgWidth + '%';
+            newCell.style.width = avgWidth + '%';
         }
-        this.activeCell.style.width = avgWidth + '%';
-        newCell.style.width = avgWidth + '%';
         this.activeCell.parentNode.insertBefore(newCell, this.activeCell.nextSibling);
         if (e.callBack) {
             e.callBack({
@@ -807,7 +801,54 @@ export class TableCommand {
             });
         }
     }
-
+    private getSplitColWidth(startIndex: number, endInex:number, sizes: number[]): number {
+        let width: number = 0;
+        for(let i:number = startIndex; i <= endInex; i++)
+        {
+            width += sizes[i as number];
+        }
+        return this.convertPixelToPercentage (width, this.curTable.offsetWidth);
+    }
+    private getColSizes(curTable: HTMLTableElement): number[] {
+        const cellColl: HTMLCollectionOf<HTMLTableDataCellElement> = curTable.rows[0].cells;
+        let cellCount: number = 0;
+        for (let cell: number = 0; cell < cellColl.length; cell++) {
+            cellCount = cellCount + cellColl[cell as number].colSpan;
+        }
+        const sizes: number[] = new Array(cellCount);
+        const rowSpanCells: Map<string, HTMLTableDataCellElement> = new Map();
+        for (let i: number = 0; i < curTable.rows.length; i++) {
+            let currentColIndex: number = 0;
+            for (let k: number = 0; k < curTable.rows[i as number].cells.length; k++) {
+                for (let l: number = 1; l < curTable.rows[i as number].cells[k as number].rowSpan; l++) {
+                    const key: string = `${i + l}${currentColIndex}`;
+                    rowSpanCells.set(key, curTable.rows[i as number].cells[k as number]);
+                }
+                const cellIndex: number = this.getCellIndex(rowSpanCells, i, k);
+                if (cellIndex > currentColIndex) {
+                    currentColIndex = cellIndex;
+                }
+                const width: number = curTable.rows[i as number].cells[k as number].offsetWidth;
+                if (!sizes[currentColIndex as number] || width < sizes[currentColIndex as number]) {
+                    sizes[currentColIndex as number] = width;
+                }
+                currentColIndex += 1 + curTable.rows[i as number].cells[k as number].colSpan - 1;
+            }
+        }
+        return sizes;
+    }
+    private getCellIndex(rowSpanCells: Map<string, HTMLTableDataCellElement>, rowIndex: number, colIndex: number): number {
+        const cellKey: string = `${rowIndex}${colIndex}`;
+        const spannedCell: HTMLTableDataCellElement = rowSpanCells.get(cellKey);
+        if (spannedCell) {
+            return this.getCellIndex(rowSpanCells, rowIndex, colIndex + spannedCell.colSpan);
+        } else {
+            return colIndex;
+        }
+    }
+    private convertPixelToPercentage(value: number, offsetValue: number): number {
+        return (value / offsetValue) * 100;
+    }
     private getCorrespondingColumns(): HTMLElement[][] {
         const elementArray: HTMLElement[][] = [];
         // eslint-disable-next-line

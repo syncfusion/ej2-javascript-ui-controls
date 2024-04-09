@@ -591,7 +591,8 @@ export class TextSelection {
         if(!isNullOrUndefined(this.pdfViewerBase.viewerContainer)){
             this.pdfViewerBase.viewerContainer.classList.remove('e-disable-text-selection');
             this.pdfViewerBase.viewerContainer.classList.add('e-enable-text-selection');
-            this.pdfViewerBase.viewerContainer.addEventListener('selectstart', () => {
+            this.pdfViewerBase.viewerContainer.addEventListener('selectstart', (e) => {
+                e.preventDefault();
                 return true;
             });
         }
@@ -1465,7 +1466,7 @@ export class TextSelection {
                     let textselection = newRange.toString();
                     selectionTexts.push(textselection);
                     newRange.detach();
-                    if (textselection === '\r\n') {
+                    if (textselection === '\r\n' || textselection === ' ') {
                         if (j === focusTextId + 1) {
                             break;
                         }
@@ -1892,6 +1893,8 @@ export class TextSelection {
 
     private createTouchSelectElement(event: TouchEvent): void {
         let topMargin: number = 10;
+        let dropTopAboveTwoHundred: number = 8;
+        let dropTopAboveHundard: number = 4;
         this.isTouchSelection = true;
         const selection: Selection = window.getSelection();
         if (selection.type === 'Range') {
@@ -1916,7 +1919,9 @@ export class TextSelection {
             const viewerLeftPosition: number = this.pdfViewerBase.viewerContainer.getBoundingClientRect().left;
             const topClientValue: number = this.getClientValueTop(rangePosition.top, this.pdfViewerBase.currentPageNumber - 1);
             // eslint-disable-next-line max-len
-            const topPositionValue: string = topClientValue + pageTopValue * this.pdfViewerBase.getZoomFactor() + (dropElementRect.height / 2) * this.pdfViewerBase.getZoomFactor() + 'px';
+            let dropElementTop: number = this.pdfViewerBase.getZoomFactor() > 2 ? dropTopAboveTwoHundred : this.pdfViewerBase.getZoomFactor() > 1 ? dropTopAboveHundard : 0;
+            // eslint-disable-next-line max-len
+            const topPositionValue: string = (topClientValue - dropElementTop) + pageTopValue * this.pdfViewerBase.getZoomFactor() + (dropElementRect.height / 2) * this.pdfViewerBase.getZoomFactor() + 'px';
             this.dropDivElementLeft.style.top = topPositionValue;
             this.dropDivElementLeft.style.left = rangePosition.left - (viewerLeftPosition + (dropElementRect.width)) + this.pdfViewerBase.viewerContainer.scrollLeft + 'px';
             this.dropDivElementRight.style.top = topPositionValue;
@@ -2038,7 +2043,6 @@ export class TextSelection {
                 } else {
                     top = spanBounds.bottom + this.pdfViewerBase.toolbarHeight - topMargin;
                 }
-                this.pdfViewerBase.contextMenuModule.open(top, (spanBounds.right - spanBounds.left) / 2, this.pdfViewerBase.viewerContainer);
             }
         }
     }
@@ -2065,6 +2069,10 @@ export class TextSelection {
     private onLeftTouchSelectElementTouchMove = (event: TouchEvent): void => {
         let range: Range;
         let nodeElement: Node;
+        let zoomFactorabovehundard: number = 15;
+        let zoomFactorAboveSeventy: number = 10;
+        let zoomFactoraboveFifty: number = 8;
+        let zoomFactorbelowFifty: number = 4;
         event.preventDefault();
         (event.target as HTMLElement).style.zIndex = '0';
         const rightElement: HTMLElement = this.dropDivElementRight;
@@ -2080,7 +2088,12 @@ export class TextSelection {
                 const currentDifference: number = Math.sqrt((yTouch - dropBounds.top) * (yTouch - dropBounds.top) + (xTouch - dropBounds.left) * (xTouch - dropBounds.left));
                 const isCloserMovement: boolean = this.isCloserTouchScroll(currentDifference);
                 let isTextSelected: boolean = false;
-                if (yTouch <= dropBounds.top) {
+                let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+                let topDifference: number = Math.abs(yTouch - dropBounds.top);
+                // eslint-disable-next-line max-len
+                let textHeight: number = zoomFactor > 1 ? zoomFactorabovehundard : zoomFactor > 0.7 ? zoomFactorAboveSeventy : zoomFactor > 0.5 ? zoomFactoraboveFifty : zoomFactorbelowFifty;
+                // eslint-disable-next-line max-len
+                if (parseInt(yTouch.toString()) <= parseInt(dropBounds.top.toString()) && (parseInt(topDifference.toString()) >= textHeight) || parseInt(xTouch.toString()) <= parseInt(dropBounds.left.toString()) && (parseInt(topDifference.toString()) <= textHeight)) {
                     this.dropElementLeft.style.transform = 'rotate(0deg)';
                     this.dropElementRight.style.transform = 'rotate(-90deg)';
                     isTextSelected = this.selectTextByTouch(nodeElement.parentElement, xTouch, yTouch, false, 'left', isCloserMovement);
@@ -2111,6 +2124,10 @@ export class TextSelection {
     private onRightTouchSelectElementTouchMove = (event: TouchEvent): void => {
         let range: Range;
         let nodeElement: Node;
+        let zoomFactorabovehundard: number = 25;
+        let zoomFactorAboveSeventy: number = 15;
+        let zoomFactoraboveFifty: number = 8;
+        let zoomFactorbelowFifty: number = 7;
         event.preventDefault();
         (event.target as HTMLElement).style.zIndex = '0';
         const leftElement: HTMLElement = this.dropDivElementLeft;
@@ -2126,7 +2143,12 @@ export class TextSelection {
                 const currentDifference: number = Math.sqrt((touchY - dropPosition.top) * (touchY - dropPosition.top) + (touchX - dropPosition.left) * (touchX - dropPosition.left));
                 const isCloserMovement: boolean = this.isCloserTouchScroll(currentDifference);
                 let isTextSelected: boolean = false;
-                if (touchY >= dropPosition.top) {
+                let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+                let topDifference: number = Math.abs(touchY - dropPosition.top);
+                // eslint-disable-next-line max-len
+                let textHeight: number = zoomFactor > 1 ? (zoomFactor * zoomFactorabovehundard) : (zoomFactor > 0.7 ?  zoomFactorAboveSeventy : (zoomFactor > 0.5 ? zoomFactoraboveFifty : zoomFactorbelowFifty));
+                // eslint-disable-next-line max-len
+                if ((parseInt(touchY.toString()) >= parseInt(dropPosition.top.toString()) && parseInt(topDifference.toString()) >=  textHeight) || (parseInt(topDifference.toString()) <=  textHeight && parseInt(touchX.toString()) >= parseInt(dropPosition.left.toString()))) {
                     this.dropElementRight.style.transform = 'rotate(-90deg)';
                     this.dropElementLeft.style.transform = 'rotate(0deg)';
                     isTextSelected = this.selectTextByTouch(nodeElement.parentElement, touchX, touchY, true, 'right', isCloserMovement);

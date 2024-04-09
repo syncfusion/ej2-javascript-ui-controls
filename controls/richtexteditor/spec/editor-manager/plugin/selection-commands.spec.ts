@@ -583,16 +583,19 @@ describe('EJ2-52289- Textcolor is removed for the range node, when removing the 
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('Checking the fontColor for the node not being removed', (done) => {
         rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.lastElementChild.firstElementChild.lastElementChild.lastElementChild.lastElementChild.firstChild, rteObj.inputElement.lastElementChild.firstElementChild.lastElementChild.lastElementChild.lastElementChild.firstChild.textContent.length);
         underlineItem.click();
         italicItem.click();
         boldItem.click();
-        expect((rteObj as any).inputElement.children[1].firstElementChild.style.color).toBe('rgb(68, 114, 196)');
-        done();
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.children[1].firstElementChild.style.color).toBe('rgb(68, 114, 196)');
+            done();
+        }, 200);
     });
 });
 
@@ -620,8 +623,9 @@ describe('EJ2-57778- Console error occurs and format not applied, when removing 
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('when removing all formats in the editor', (done) => {
         rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.lastElementChild.firstElementChild.lastElementChild.firstElementChild.lastChild, 7);
@@ -658,8 +662,9 @@ describe('EJ2-57778- Console error occurs, when removing the particular format',
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('when adding/removing bold format', (done) => {
         rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.lastElementChild.lastChild, 7);
@@ -684,8 +689,9 @@ describe('EJ2-59075 - The font name is not getting properly while loading custom
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('The font name is not changed properly issue - EJ2-59075 ', (done) => {
         let focusNode = rteObj.inputElement.querySelector('.focusNode');
@@ -709,8 +715,9 @@ describe('EJ2-60277 - Formatting is not maintained properly while unselecting th
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('Formatting is not maintained properly while unselecting the strikethrough style', (done) => {
         let focusNode = rteObj.inputElement.querySelector('.focusNode');
@@ -734,8 +741,9 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('Case 1 of the formating issue - EJ2-58803 ', (done) => {
         let focusNode = rteObj.inputElement.querySelector('.focusNode');
@@ -761,8 +769,9 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 
     it('Case 2 of the formating issue - EJ2-58803 ', (done) => {
@@ -790,8 +799,9 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 
     it('Case 4 of the formating issue - EJ2-58803 ', (done) => {
@@ -820,8 +830,9 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 
     it('Case 5 of the formating issue - EJ2-58803 ', (done) => {
@@ -861,8 +872,9 @@ describe('Selection Testing with Multiple nodes', () => {
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('Checking the nodes innerHTML', (done) => {
         rteObj.inputElement.childNodes[1].focus();
@@ -899,8 +911,9 @@ describe('Remove non zero width space testing', () => {
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('EJ2-46922 - Non zero width space removed testing', (done) => {
         rteObj.inputElement.focus();
@@ -940,8 +953,9 @@ describe('Removing multiple strong node Testing', () => {
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('Checking the multiple strong tags removal', (done) => {
         rteObj.inputElement.childNodes[0].focus();
@@ -978,8 +992,9 @@ describe('Removing multiple strong and em nodes Testing', () => {
         });
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('Checking the multiple strong and em tags removal', (done) => {
         rteObj.inputElement.childNodes[0].focus();
@@ -1035,8 +1050,9 @@ describe('EJ2-52390 - When using the list which contains multiple spans inside w
         parentDiv = document.getElementById('div1') as HTMLDivElement;
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('Applying background color for the range li nodes', (done) => {
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.children[0].firstElementChild.firstElementChild.firstElementChild.firstChild.firstChild, rteObj.inputElement.children[0].firstElementChild.lastElementChild.firstElementChild.firstChild.firstChild, 0, 125);
@@ -1068,8 +1084,9 @@ describe('Remove Br tags when applying formatting', () => {
         controlId = rteObj.element.id;
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     it('if value is empty', (done) => {
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0], rteObj.inputElement.childNodes[0], 0, 0);
@@ -1394,28 +1411,36 @@ describe('BLAZ-29736 - Font Color not Applying for the hyperlink Text', () => {
 describe('EJ2-70136 - Font Size value not updating while on selected text', () => {
     let rteObj: any;
     let domSelection: NodeSelection = new NodeSelection();
-    it('EJ2-70136 - Font Size value not updating while on selected text', () => {
+    beforeAll(() => {
         rteObj = renderRTE({
             value: `<p class="focusNode">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href='https://ej2.syncfusion.com/home/'>HTML markup</a> or <a href='https://ej2.syncfusion.com/home/'>markdown</a> of the content</p>`,
             toolbarSettings: {
                 items: ['FontSize']
             }
         });
+    });
+    it('EJ2-70136 - Font Size value not updating while on selected text', (done) => {
         let rteEle = rteObj.element;
         let focusNode = rteObj.inputElement.querySelector('.focusNode');
-        const range:Range =new Range();
+        const range:Range = new Range();
         range.setStart(focusNode.childNodes[0],0);
         range.setEnd (focusNode.childNodes[4],focusNode.childNodes[4].textContent.length);
         domSelection.setRange(document,range);
         let fontSizePicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
         fontSizePicker.click();
-        var fontSizeChooser : HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[5];
-        fontSizeChooser.click();
-        expect(rteEle.childNodes[2].childNodes[0].innerHTML).toBe('<p class="focusNode"><span style="font-size: 24pt;">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/">HTML markup</a></span><span style="font-size: 24pt;"> or </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/">markdown</a></span><span style="font-size: 24pt;"> of the content</span></p>');
-        expect(fontSizePicker.childNodes[0].textContent).toEqual('24 pt');
+        setTimeout(() => {
+            var fontSizeChooser : HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[5];
+            fontSizeChooser.click();
+            setTimeout(() => {
+                expect(rteEle.childNodes[2].childNodes[0].innerHTML).toBe('<p class="focusNode"><span style="font-size: 24pt;">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/">HTML markup</a></span><span style="font-size: 24pt;"> or </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/">markdown</a></span><span style="font-size: 24pt;"> of the content</span></p>');
+                expect(fontSizePicker.childNodes[0].textContent).toEqual('24 pt');
+                done();
+            }, 100);
+        }, 100);
     });
-    afterEach(() => {
+    afterAll((done) => {
         destroy(rteObj);
+        done();
     });
 });
 describe('EJ2-70405 - Background Color not applied properly when nested styles are applied', () => {
@@ -1691,5 +1716,113 @@ describe(' 873091 - Hyperlinks got removed when we apply font color to the link 
         domSelection.setSelectionText(document, fontFamNode, fontFamNode, 0, 1);
         SelectionCommands.applyFormat(document, 'fontname', parentP, 'P', 'Tahoma,Geneva,sans-serif');
         expect((fontFamNode as HTMLElement).parentElement.style.fontFamily === 'Tahoma, Geneva, sans-serif').toEqual(true);
+    });
+});
+
+describe('876813 - Font color did not apply all lists properly', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value: `<ol><li class="li1">FristLI<ol><li class="li2">SecondLI<ol><li class="li3">ThirdLI</li><li class="li4">FourthLI<ol><li class="li5">FIfthLI<ol><li class="li6">SixthLI</li></ol></li></ol></li></ol></li></ol></li></ol>`,
+            toolbarSettings: {
+                items: ['FontSize']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it('Test for font size for select all text node', () => {
+        const range: Range = document.createRange();
+        range.setStart(rteObj.element.querySelector('.li1').childNodes[0], 0);
+        range.setEnd(rteObj.element.querySelector('.li6').childNodes[0], 7);
+        domSelection.setRange(document, range);
+        // Apply font size
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', '18pt');
+        let fristLI: HTMLElement = rteObj.element.querySelector('.li1')
+        expect(fristLI.style.fontSize === '18pt').toEqual(true);
+        let lastLI: HTMLElement = rteObj.element.querySelector('.li6')
+        expect(lastLI.style.fontSize === '18pt').toEqual(true);
+    });
+    it('Test for font size for selected text node', () => {
+        const range: Range = document.createRange();
+        range.setStart(rteObj.element.querySelector('.li2').childNodes[0], 3);
+        range.setEnd(rteObj.element.querySelector('.li5').childNodes[0], 2);
+        domSelection.setRange(document, range);
+        // Apply font size
+        SelectionCommands.applyFormat(document, 'fontsize', rteObj.element.querySelector('.e-content'), 'P', '18pt');
+        let fristLI: HTMLElement = rteObj.element.querySelector('.li1')
+        expect(fristLI.style.fontSize === '').toEqual(true);
+        let thirdLI: HTMLElement = rteObj.element.querySelector('.li3')
+        expect(thirdLI.style.fontSize === '18pt').toEqual(true);
+        let fourthLI: HTMLElement = rteObj.element.querySelector('.li4')
+        expect(fourthLI.style.fontSize === '18pt').toEqual(true);
+    });
+});
+
+describe("876837: Bold format not applied to the list number when already bold content is present in the list content.", () => {
+    let rteEle: HTMLElement;
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value:`<ol><li id="list"><p id="paragraph1">Options
+            to get the HTML elements with styles.<strong>Hello</strong></p></li></ol>`
+        });
+        rteEle = rteObj.element;
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it('Apply Bold tag for the list', () => {
+        let node1: Node = document.querySelector('p');
+        let text1: Text = node1.childNodes[0] as Text;
+        let text2: Text = node1.childNodes[1] as Text;
+        domSelection.setSelectionText(document, text1, text2, 0, 1);
+        SelectionCommands.applyFormat(document, 'bold', text1, 'P');
+        let LiContent=document.querySelector('li');
+        let style=LiContent.getAttribute('style');
+        expect(style).toEqual('font-weight: bold;');
+    });
+    it('Apply italic for the list', () => {
+        let node1: Node = document.querySelector('p');
+        let text1: Text = node1.childNodes[0] as Text;
+        let text2: Text = node1.childNodes[1] as Text;
+        domSelection.setSelectionText(document, text1, text2, 0, 1);
+        SelectionCommands.applyFormat(document, 'italic', text1, 'P');
+        let LiContent=document.querySelector('li');
+        let style1=LiContent.getAttribute('style');
+        expect(style1).toEqual('font-style: italic;');
+    });
+    it('Apply font family for the list', () => {
+        let node1: Node = document.querySelector('p');
+        let text1: Text = node1.childNodes[0] as Text;
+        let text2: Text = node1.childNodes[1] as Text;
+        domSelection.setSelectionText(document, text1, text2, 0, 1);
+        SelectionCommands.applyFormat(document, 'fontname', text1, 'P', 'Tahoma,Geneva,sans-serif');
+        let LiContent=document.querySelector('li');
+        let style1=LiContent.getAttribute('style');
+        expect(style1).toEqual('font-family: Tahoma, Geneva, sans-serif;');
+    });
+    it('Apply font color for the list', () => {
+        let node1: Node = document.querySelector('p');
+        let text1: Text = node1.childNodes[0] as Text;
+        let text2: Text = node1.childNodes[1] as Text;
+        domSelection.setSelectionText(document, text1, text2, 0, 1);
+        SelectionCommands.applyFormat(document, 'fontcolor', text1, 'P', 'rgb(255, 0, 0)');
+        let LiContent=document.querySelector('li');
+        let style1=LiContent.getAttribute('style');
+        expect(style1).toEqual('color: rgb(255, 0, 0); text-decoration: inherit;');
+    });
+    it('Apply font size for the list', () => {
+        let node1: Node = document.querySelector('p');
+        let text1: Text = node1.childNodes[0] as Text;
+        let text2: Text = node1.childNodes[1] as Text;
+        domSelection.setSelectionText(document, text1, text2, 0, 1);
+        SelectionCommands.applyFormat(document, 'fontsize', text1, 'P', '14px');
+        let LiContent=document.querySelector('li');
+        let style1=LiContent.getAttribute('style');
+        expect(style1).toEqual('font-size: 14px;');
     });
 });

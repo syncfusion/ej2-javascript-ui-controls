@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I574511` - The issue with "script error thrown while clicking the checkbox through JS." has been resolved.
+
 ## 25.1.35 (2024-03-15)
 
 ### Checkbox

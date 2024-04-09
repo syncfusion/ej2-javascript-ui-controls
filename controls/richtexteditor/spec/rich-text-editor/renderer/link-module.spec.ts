@@ -2011,4 +2011,42 @@ describe('Link Module', () => {
             expect(outsideClickClosedBy).toBe(true);
         });
     });
+
+    describe('876805 - Bold format reverted if we edit the link which has bold style', function () {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateLink', 'Image']
+                },
+                value: `<p><a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank" aria-label="Open in new window"><strong>RichTextEditor</strong></a></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function () {
+            destroy(rteObj);
+        });
+        it('edit the dispaly text of link using quick toolbar ', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('a');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 3, 3);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).linkModule.editAreaClickHandler({args:clickEvent});
+            setTimeout(() => {
+                const editlink: HTMLElement = document.querySelector('[title="Edit Link"]');
+                (editlink.childNodes[0] as HTMLElement).click();
+                (document.querySelector('.e-rte-linkText') as HTMLInputElement).value = 'Editor';
+                let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+                (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+                let result : string = document.querySelector('a').childNodes[0].nodeName;
+                expect(result == 'STRONG').toBe(true);
+                done();
+            },200);
+        });
+    });
 });

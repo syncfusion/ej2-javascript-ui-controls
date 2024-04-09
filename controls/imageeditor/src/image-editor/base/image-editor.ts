@@ -1782,14 +1782,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * Enable or disable a panning on the Image Editor.
      *
      * @param {boolean} value - Specifies a value whether enable or disable panning.
+     * @param {number} x - Optional, Specifies a value to pan the image horizontally.
+     * @param {number} y - Optional, Specifies a value to pan the image vertically.
      *
      * @remarks
      * This option will take into effect once the image's visibility is hidden when zooming an image or selection has been performed.
      *
      * @returns {void}.
      */
-    public pan(value: boolean): void {
-        this.notify('transform', { prop: 'pan', onPropertyChange: false, value: {value: value}});
+    public pan(value: boolean, x?: number, y?: number): void {
+        this.notify('transform', { prop: 'pan', onPropertyChange: false, value: {value: value, x: x, y: y}});
     }
 
     /**
@@ -2754,7 +2756,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('selection', {prop: 'setFreehandDrawCustomized', value: {isFreehandDrawCustomized: false }});
             this.notify('toolbar', {prop: 'destroy-qa-toolbar' });
             this.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
-        } else if ((this.activeObj.activePoint.width !== 0 && this.activeObj.activePoint.height !== 0) ||
+        } else if ((this.activeObj.activePoint.width !== 0 || this.activeObj.activePoint.height !== 0) ||
             (this.activeObj.shape === 'path' && this.activeObj.pointColl.length > 0)) {
             if (this.activeObj.shape === 'image') {
                 this.notify('draw', { prop: 'setImageApply', onPropertyChange: false, value: {bool: true }});
@@ -2913,6 +2915,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * An string which returns the SelectionType.
      */
     public getSelectionType(type: string): string {
+        type = type === 'crop-custom' ? 'CropCustom' : type;
         const typeToSelectionType: Object = {'CropCustom': 'Custom', 'CropSquare': 'Square', 'CropCircle': 'Circle',
             'Crop3:2': '3:2', 'Crop4:3': '4:3', 'Crop5:4': '5:4', 'Crop7:5': '7:5', 'Crop16:9': '16:9',
             'Crop2:3': '2:3', 'Crop3:4': '3:4', 'Crop4:5': '4:5', 'Crop5:7': '5:7', 'Crop9:16': '9:16' };

@@ -521,9 +521,9 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
      * Specifies whether to display or remove the untrusted HTML values in the TreeGrid component.
-     * By default `enableHtmlSanitizer` is set to true, and it sanitizes any suspected untrusted strings and scripts before rendering them.
+     * If `enableHtmlSanitizer` is set to true, then it will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default true
+     * @default false
      */
     enableHtmlSanitizer?: boolean;
 

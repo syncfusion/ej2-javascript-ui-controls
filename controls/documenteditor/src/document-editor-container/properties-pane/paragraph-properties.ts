@@ -1,5 +1,5 @@
 import { createElement, isNullOrUndefined, classList, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { DocumentEditor, WAbstractList, WListLevel } from '../../document-editor/index';
+import { DocumentEditor, ParagraphWidget, WAbstractList, WListLevel, WStyle } from '../../document-editor/index';
 import { ComboBox, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel, DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -265,7 +265,8 @@ export class Paragraph {
                     else {
                         let list = this.documentEditor.documentHelper.getListById(this.documentEditor.selectionModule.paragraphFormat.listId);
                         let abstractList: WAbstractList = this.documentEditor.documentHelper.getAbstractListById(list.abstractListId);
-                        let level: WListLevel = abstractList.levels[this.documentEditor.selectionModule.paragraphFormat.listLevelNumber];
+                        let startParagraph: ParagraphWidget = this.documentEditor.selectionModule.isForward ? this.documentEditor.selectionModule.start.paragraph : this.documentEditor.selectionModule.end.paragraph;
+                        let level: WListLevel = abstractList.levels[startParagraph.paragraphFormat.listFormat.listLevelNumber];
                         levelPattern = level.listLevelPattern;
                     }
                 }
@@ -398,7 +399,8 @@ export class Paragraph {
             cssClass: this.splitButtonClass,
             beforeOpen: (): void => {
                 div.style.display = 'block';
-                this.updateSelectedBulletListType(this.documentEditor.selectionModule.paragraphFormat.listText);
+                let startParagraph: ParagraphWidget = this.documentEditor.selectionModule.isForward ? this.documentEditor.selectionModule.start.paragraph : this.documentEditor.selectionModule.end.paragraph;
+                this.updateSelectedBulletListType(startParagraph.paragraphFormat.listFormat.listLevel.numberFormat);
             },
             beforeClose: (): void => {
                 div.style.display = 'none';
@@ -712,8 +714,9 @@ export class Paragraph {
     private applyStyleValue(args: any): void {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
             let styleName: string = this.documentEditor.stylesDialogModule.getStyleName(SanitizeHtmlHelper.sanitize(args.itemData.StyleName));
-            if (!isNullOrUndefined(this.documentEditor.documentHelper.styles.findByName(styleName))) {
-                this.documentEditor.editorModule.applyStyle(styleName, true);
+            let styleObj: Object = this.documentEditor.documentHelper.styles.findByName(styleName);
+            if (!isNullOrUndefined(styleObj)) {
+                this.documentEditor.editorModule.applyStyle(styleName, (styleObj as WStyle).type === 'Paragraph');
                 let treeViewResult: HTMLElement = document.getElementById(this.documentEditor.containerId + '_treeDiv');
                 if (!isNullOrUndefined(treeViewResult) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.optionsPaneModule.isOptionsPaneShow) {
                     treeViewResult.innerHTML = '';

@@ -287,7 +287,7 @@ export class HeaderRenderer {
                 switch (item.name) {
                     case 'Today':
                         tbItem = {
-                            showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-day',
+                            showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-today',
                             text: this.l10n.getConstant('today'), cssClass: 'e-today', overflow: 'Show'
                         };
                         tbItem.align = propItem.align ? propItem.align : item.align;
@@ -372,7 +372,7 @@ export class HeaderRenderer {
             });
         } else {
             items.push({
-                align: 'Right', showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-day',
+                align: 'Right', showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-today',
                 text: this.l10n.getConstant('today'), cssClass: 'e-today', overflow: 'Show'
             });
             if (this.parent.views.length > 1) {

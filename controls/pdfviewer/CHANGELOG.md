@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I571236` - Now, the extra border will not appear on the page for the image element in the tagged PDF.
+- `#I569364` - Now, the form field click event is triggered properly for radio button in the customer provided document.
+- `#I570815` - Now, the unload request has not been triggered in the Stand-alone PDF Viewer on reloading the current page.
+
 ## 25.1.38 (2024-04-02)
 
 ### PDF Viewer

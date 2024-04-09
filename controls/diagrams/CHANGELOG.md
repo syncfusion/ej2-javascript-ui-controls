@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I570446` - Now, zoom in and zoom out works properly while setting canZoomOut as true.
+- `#I561938` - Now, the connectors routed properly with shortest routing distance while using enable routing.
+- `#I565099` - Now, the undo redo works properly for swimlane after cut and delete.
+
 ## 25.1.38 (2024-04-02)
 
 ### Diagram

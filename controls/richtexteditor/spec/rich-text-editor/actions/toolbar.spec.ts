@@ -69,8 +69,9 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             done();
         }, 200)
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -126,8 +127,9 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
                 done();
             }, 200)
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
     describe('Checking the NumberFormatList dropdownItems', () => {
@@ -236,8 +238,9 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
         done();
     });
-    afterEach(() => {
+    afterEach((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     });
 
@@ -308,8 +311,9 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         expect(rteObj.element.querySelector('#rte').tagName === 'P').toBe(true);
         done();
     });
-    afterEach(() => {
+    afterEach((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
     });
     describe('Applying ordered and unordered list then, advanced ol,ul to p tag', () => {
@@ -369,8 +373,9 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             expect(Elem.parentElement.style.listStyleType === 'square').toBe(true);
             done();
             });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -456,11 +461,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             expect(Elem.style.listStyleType === 'square').toBe(true);
             expect(Elem.style.listStyleImage === 'none').toBe(true);
             done();
-            });
-            afterEach(() => {
-                destroy(rteObj);
-            });
         });
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
 
     describe('Checking the LI tag', () => {
         let rteObj: RichTextEditor;
@@ -505,11 +511,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
             expect(pEle.style.listStyleType === 'circle').toBe(true);
             done();
-            });
-            afterEach(() => {
-                destroy(rteObj);
-            });
         });
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
 
     describe('Checking the OL tag to UL', () => {
         let rteObj: RichTextEditor;
@@ -617,8 +624,9 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
             done();
             });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -1146,14 +1154,16 @@ describe("Toolbar - Actions Module", () => {
         let defaultUA: string = navigator.userAgent;
         inputEle = createElement('input', { id: 'trgBtn', attrs: { type: 'text' } }) as HTMLInputElement;
 
-        beforeEach(() => {
+        beforeEach((done: DoneFn) => {
             document.body.appendChild(inputEle);
+            done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             Browser.userAgent = defaultUA;
             detach(inputEle);
             destroy(rteObj);
+            done();
         });
 
         it("DIV - Class testing", () => {
@@ -1403,10 +1413,11 @@ describe("Toolbar - Actions Module", () => {
             done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             document.body.style.height = '';
             destroy(rteObj);
             detach(ele1);
+            done();
         });
 
         it("Class testing", () => {
@@ -1438,9 +1449,10 @@ describe("Toolbar - Actions Module", () => {
             done();
         });
 
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
             detach(ele1);
+            done();
         });
 
         it("Preventing the SourceCode view while updating the enableFloating dynamically", () => {
@@ -1463,8 +1475,9 @@ describe("Toolbar - Actions Module", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it("toolbar element availability with OnPropertyChange testing", () => {
@@ -1509,8 +1522,9 @@ describe("Toolbar - Actions Module", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it("Click event testing", () => {
@@ -1620,7 +1634,7 @@ describe("Toolbar - Actions Module", () => {
         let rteObj: any;
         let rteEle: HTMLElement;
 
-        beforeAll(() => {
+        beforeAll((done: DoneFn) => {
             rteObj = renderRTE({
                 width: '200px',
                 toolbarSettings: {
@@ -1629,10 +1643,12 @@ describe("Toolbar - Actions Module", () => {
             });
             rteEle = rteObj.element;
             rteEle.style.height = 300 + 'px';
+            done();
         });
 
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it("Class testing", () => {
@@ -1907,7 +1923,7 @@ describe("Toolbar - Actions Module", () => {
         let container: HTMLElement = createElement('div', { id: getUniqueID('container'), styles: 'height:800px;' });
         let element1: HTMLElement = createElement('div', { id: getUniqueID('rte-test'),  });
 
-        beforeEach(() => {
+        beforeEach((done: DoneFn) => {
             document.body.appendChild(container);
             container.appendChild(element1);
             rteObj = new RichTextEditor({
@@ -1923,11 +1939,13 @@ describe("Toolbar - Actions Module", () => {
                 }
             });
             rteObj.appendTo(element1);
+            done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
             detach(container);
+            done();
         });
 
         it("Testing custom toolbar event", (done) => {
@@ -1942,17 +1960,19 @@ describe("Toolbar - Actions Module", () => {
 
     describe("MD - Table creation using toolbar item", () => {
         let rteObj: any;
-        beforeEach(() => {
+        beforeEach((done: DoneFn) => {
             rteObj = renderRTE({
                 editorMode: 'Markdown',
                 toolbarSettings: {
                     items: ['CreateTable']
                 }
             })
+            done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it("Testing custom toolbar event", (done) => {
@@ -1967,7 +1987,7 @@ describe("Toolbar - Actions Module", () => {
         let container: HTMLElement = createElement('div', { id: getUniqueID('container'), styles: 'height:800px;' });
         let element1: HTMLElement = createElement('div', { id: getUniqueID('rte-test'),  });
 
-        beforeEach(() => {
+        beforeEach((done: DoneFn) => {
             document.body.appendChild(container);
             container.appendChild(element1);
             rteObj = new RichTextEditor({
@@ -1987,11 +2007,13 @@ describe("Toolbar - Actions Module", () => {
                 }
             });
             rteObj.appendTo(element1);
+            done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
             detach(container);
+            done();
         });
 
         it("Testing custom toolbar event", (done) => {
@@ -2006,17 +2028,19 @@ describe("Toolbar - Actions Module", () => {
     describe("Check toolbar click event in readyOnly", () => {
         let rteObj: any;
         let clickEventSpy: jasmine.Spy = jasmine.createSpy('toolbarClick');
-        beforeEach(() => {
+        beforeEach((done: DoneFn) => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ["Print"]
                 },
                 toolbarClick : clickEventSpy
             });
+            done();
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it("Check style", (done) => {
@@ -2154,8 +2178,9 @@ describe("Toolbar - Actions Module", () => {
                 done();
             }, 200)
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
     describe('Check whether the selected text changed to the selected format and font name', () => {
@@ -2198,8 +2223,9 @@ describe("Toolbar - Actions Module", () => {
             expect(rteObj.element.querySelector('#rte').tagName === 'H1').toBe(true);
             done();
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 });
@@ -2247,8 +2273,9 @@ describe('849075 - The screen reader does not read the toolbar items in the Rich
             }
         });
     });
-    afterEach(() => {
+    afterEach((done: DoneFn) => {
         destroy(editorObj);
+        done();
     });
     it('Case 1: Checking the tab index on the focus action of the editor', () => {
         editorObj.focusIn();
@@ -2322,8 +2349,9 @@ describe('849075 - Checking the tab index on navigating the toolbar items using 
             }
         });
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(editorObj);
+        done();
     });
     it('Case 1:', (done: DoneFn) => {
         editorObj.focusIn();
@@ -2437,8 +2465,9 @@ describe("863056-Code view shortcut key tooltip is not displaying properly", () 
               }, 1000);
             }, 1000);
     });
-    afterAll( () => {
+    afterAll( (done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -2461,8 +2490,9 @@ describe('865043 - In toolbar settings, enable floating set to false the tooltip
         expect((toolbarItems[0] as HTMLElement).getAttribute('data-content')).not.toBe(null);
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });
 
@@ -2491,13 +2521,14 @@ describe('821312: Bullet list does not reverted after click on the bullet list i
         bulletListFristChild.dispatchEvent(mouseDownEvent);
         (bulletListFristChild as HTMLElement).click();
         dropdownBtn.dispatchEvent(mouseDownEvent);
-        (document.querySelector('.e-dropdown-popup [title="Circle"]') as HTMLElement).click();
+        (document.querySelector('.e-dropdown-popup') as HTMLElement).click();
         bulletListFristChild.dispatchEvent(mouseDownEvent);
         (bulletListFristChild as HTMLElement).click();
         expect(rteObj.inputElement.innerHTML === `<p class="pele">Description</p>`).toBe(true);
         done();
     });
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 });

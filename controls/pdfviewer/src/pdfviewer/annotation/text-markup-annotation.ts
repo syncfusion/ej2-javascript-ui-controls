@@ -702,6 +702,7 @@ export class TextMarkupAnnotation {
      * @private
      */
     public drawTextMarkupAnnotations(type: string): void {
+        let isDrawn: boolean = false;
         this.isTextMarkupAnnotationMode = true;
         this.pdfViewer.annotationModule.isFormFieldShape = false;
         this.currentTextMarkupAddMode = type;
@@ -709,6 +710,7 @@ export class TextMarkupAnnotation {
         this.multiPageCollection = [];
         const selectionObject: ISelection[] = this.pdfViewer.textSelectionModule ? this.pdfViewer.textSelectionModule.selectionRangeArray : [];
         if (selectionObject.length > 0 && !this.isSelectionMaintained) {
+            isDrawn = true;
             this.convertSelectionToTextMarkup(type, selectionObject, this.pdfViewerBase.getZoomFactor());
         }
         let selection: any = window.getSelection();
@@ -748,7 +750,7 @@ export class TextMarkupAnnotation {
                     }
                 }
             }
-        } else if (window.getSelection().toString()) {
+        } else if (window.getSelection().toString()  && !isDrawn) {
             const pageBounds: IPageAnnotationBounds[] = this.getDrawnBounds();
             const isMultiSelect: boolean = this.isMultiPageAnnotations(pageBounds, type);
             if (pageBounds.length > 0) {

@@ -97,7 +97,7 @@ export class Transform {
             this.resetZoom();
             break;
         case 'pan':
-            this.pan(args.value['value']);
+            this.pan(args.value['value'], args.value['x'], args.value['y']);
             break;
         case 'zoom':
             this.zoom(args.value['zoomFactor'], args.value['zoomPoint']);
@@ -1026,11 +1026,12 @@ export class Transform {
         const obj: Object = {panDown: null };
         parent.notify('selection', { prop: 'getPanDown', onPropertyChange: false, value: {obj: obj }});
         const panEventArgs: PanEventArgs = {startPoint: obj['panDown'], endPoint: this.panMove, cancel: false};
-        parent.trigger('panning', panEventArgs); this.panEvent(panEventArgs, xDiff, yDiff);
+        parent.trigger('panning', panEventArgs);
+        if (panEventArgs.cancel) { return; }
+        this.panEvent(xDiff, yDiff);
     }
 
-    private panEvent(panEventArgs: PanEventArgs, xDiff?: number, yDiff?: number): void {
-        if (panEventArgs.cancel) { return; }
+    private panEvent(xDiff?: number, yDiff?: number, isPanMethod?: boolean): void {
         const parent: ImageEditor = this.parent; let isObjCreated: boolean = false;
         if (parent.activeObj.shape && parent.activeObj.shape === 'shape') {
             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
@@ -1059,8 +1060,13 @@ export class Transform {
         }
         if (parent.transform.degree === 0) {
             let point: Point;
-            if (isNullOrUndefined(xDiff) && isNullOrUndefined(yDiff)) {point = this.updatePanPoints(); }
-            else {point = {x: xDiff, y: yDiff}; }
+            if ((isNullOrUndefined(xDiff) && isNullOrUndefined(yDiff)) || isPanMethod) {
+                if (isPanMethod) {
+                    point = this.updatePanPoints(xDiff, yDiff);
+                } else {
+                    point = this.updatePanPoints();
+                }
+            } else {point = {x: xDiff, y: yDiff}; }
             parent.panPoint.totalPannedPoint.x += point.x; parent.panPoint.totalPannedPoint.y += point.y;
             const tempSelectionObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
             const temp: string = this.lowerContext.filter;
@@ -1073,8 +1079,12 @@ export class Transform {
             }
         } else {
             const tempFlipState: string = parent.transform.currFlipState; parent.isCropTab = true;
-            if (isNullOrUndefined(xDiff) && isNullOrUndefined(yDiff)) {
-                parent.panPoint.currentPannedPoint = this.updatePanPoints();
+            if ((isNullOrUndefined(xDiff) && isNullOrUndefined(yDiff)) || isPanMethod) {
+                if (isPanMethod) {
+                    parent.panPoint.currentPannedPoint = this.updatePanPoints(xDiff, yDiff);
+                } else {
+                    parent.panPoint.currentPannedPoint = this.updatePanPoints();
+                }
             } else {
                 parent.panPoint.currentPannedPoint = {x: xDiff, y: yDiff};
             }
@@ -1325,7 +1335,7 @@ export class Transform {
             obj: parent.activeObj, isMouseMove: null, x: null, y: null }});
     }
 
-    private pan(value: boolean): void {
+    private pan(value: boolean, x?: number, y?: number): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
             if (value) {
@@ -1335,6 +1345,15 @@ export class Transform {
                 parent.notify('selection', {prop: 'setDragCanvas', value: {bool: true }});
                 parent.lowerCanvas.style.cursor = parent.upperCanvas.style.cursor = parent.cursor = 'grab';
                 parent.notify('selection', { prop: 'setPanDown', onPropertyChange: false, value: {panDown: null }});
+                if (x || y) {
+                    x = x ? x : 0; y = y ? y : 0;
+                    if (isNullOrUndefined(this.panMove)) {
+                        this.panMove = {x: x, y: y};
+                    }
+                    if (isNullOrUndefined(this.tempPanMove)) {this.tempPanMove = {x: this.panMove.x, y: this.panMove.y}; }
+                    this.panEvent(x, y, true);
+                    this.tempPanMove = null;
+                }
             } else {
                 parent.togglePan = parent.currObjType.isCustomCrop = false;
                 parent.notify('selection', {prop: 'setDragCanvas', value: {bool: false }});
@@ -1646,12 +1665,13 @@ export class Transform {
         return {width: cssMaxWidth, height: cssMaxHeight};
     }
 
-    private updatePanPoints(): Point {
+    private updatePanPoints(x?: number, y?: number): Point {
         const parent: ImageEditor = this.parent;
         const tempActObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
         const tempDestLeft: number = parent.img.destLeft; const tempDestTop: number = parent.img.destTop;
         if (isNullOrUndefined(this.tempPanMove)) {this.tempPanMove = {x: this.panMove.x, y: this.panMove.y}; }
         let xDiff: number = this.panMove.x - this.tempPanMove.x; let yDiff: number = this.panMove.y - this.tempPanMove.y;
+        if (x || y) {xDiff = x; yDiff = y; }
         parent.img.destLeft += xDiff; parent.img.destTop += yDiff;
         this.limitPan();
         const obj: Object = {bool: null };

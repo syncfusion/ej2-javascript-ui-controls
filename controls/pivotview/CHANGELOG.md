@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.39 (2024-04-09)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I572220` - The issue with persistence not working properly in the Pivot Table with remote data has been fixed.
+
 ## 25.1.38 (2024-04-02)
 
 ### PivotTable

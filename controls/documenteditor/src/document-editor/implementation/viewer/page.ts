@@ -1340,9 +1340,17 @@ export class ParagraphWidget extends BlockWidget {
                 maximumWordWidth = maximum;
             }
         }
+        let leftIndent: number = 0;
+        if (!this.isEmpty() && this.floatingElements.length == 0 && !isNullOrUndefined(this.paragraphFormat) && this.paragraphFormat.leftIndent > 0
+            && !isNullOrUndefined(this.associatedCell) && !isNullOrUndefined(this.associatedCell.cellFormat) && this.associatedCell.cellFormat.preferredWidthType === 'Point') {
+            const paraIndent: number = this.paragraphFormat.leftIndent + this.paragraphFormat.firstLineIndent;
+            if ((paraIndent + minimumWordWidth) > this.associatedCell.cellFormat.preferredWidth) {
+                leftIndent = paraIndent;
+            }
+        }
         return {
             'maximumWordWidth': HelperMethods.convertPixelToPoint(maximumWordWidth),
-            'minimumWordWidth': HelperMethods.convertPixelToPoint(minimumWordWidth)
+            'minimumWordWidth': HelperMethods.convertPixelToPoint(minimumWordWidth) + leftIndent
         };
     }
     private measureParagraph(): number {
@@ -2650,6 +2658,7 @@ export class TableWidget extends BlockWidget {
         table.y = this.y;
         table.height = this.height;
         table.width = this.width;
+        table.isBidiTable = this.isBidiTable;
         table.containerWidget = this.containerWidget;
         if (this.contentControlProperties) {
             table.contentControlProperties = this.contentControlProperties;
@@ -4373,6 +4382,10 @@ export class LineWidget implements IWidget {
      */
     public maxBaseLine: number = 0;
     /**
+    * @private
+    */
+        public skipClipImage: boolean = false;
+    /**
      * Rendered elements contains reordered element for RTL layout 
      */
     get renderedElements(): ElementBox[] {
@@ -4750,7 +4763,10 @@ export abstract class ElementBox {
      * @private
      */
     public contentControlProperties: ContentControlProperties;
-    
+    /**
+     * @private
+     */
+    public skipformFieldLength: boolean = false;
     /**
      * @private
      */

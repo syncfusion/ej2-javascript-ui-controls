@@ -1,5 +1,5 @@
 import { _PdfCommand, _PdfName, _PdfDictionary, _isCommand, _PdfReference, _isName } from './pdf-primitives';
-import { _isWhiteSpace, _stringToBytes, FormatError, ParserEndOfFileException } from './utils';
+import { _isWhiteSpace, _stringToBytes, FormatError, ParserEndOfFileException, _decodeText } from './utils';
 import { _PdfStream, _PdfNullStream, _PdfBaseStream } from './base-stream';
 import { PdfPredictorStream } from './predictor-stream';
 import { _PdfFlateStream } from './flate-stream';
@@ -488,10 +488,11 @@ export class _PdfParser {
             case '[':
                 const array = []; // eslint-disable-line
                 while (!_isCommand(this.first, ']') && this.first !== endOfFile) {
-                    const entry: any = this.getObject(cipherTransform); // eslint-disable-line
+                    let entry: any = this.getObject(cipherTransform); // eslint-disable-line
                     if (array.length === 0 && _isName(entry, 'Indexed')) {
                         this._isColorSpace = true;
                     }
+                    entry = _decodeText(entry, this._isColorSpace, this._isPassword);
                     array.push(entry);
                 }
                 if (this.first === endOfFile) {
@@ -520,23 +521,7 @@ export class _PdfParser {
                         break;
                     }
                     let value: any = this.getObject(cipherTransform); // eslint-disable-line
-                    if (value && typeof value === 'string' && !this._isColorSpace && !this._isPassword) {
-                        if (value.startsWith('þÿ')) {
-                            value = value.substring(2);
-                            if (value.endsWith('ÿý')) {
-                                value = value.substring(0, value.length - 2);
-                            }
-                            const bytes: Uint8Array = _stringToBytes(value) as Uint8Array;
-                            let result: string = '';
-                            for (let i: number = 0; i < bytes.length; i += 2) {
-                                const x: number = bytes[Number.parseInt(i.toString(), 10)] << 8;
-                                const y: number = bytes[Number.parseInt((i + 1).toString(), 10)];
-                                const codeUnit: number = x | y;
-                                result += String.fromCharCode(codeUnit);
-                            }
-                            value = result;
-                        }
-                    }
+                    value = _decodeText(value, this._isColorSpace, this._isPassword);
                     this._isPassword = false;
                     dictionary.set(key, value);
                 }

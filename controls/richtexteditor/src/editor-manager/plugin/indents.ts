@@ -85,7 +85,7 @@ export class Indents {
                 indentsValue = marginLeftOrRight === '' ? this.indentValue + 'px' : parseInt(marginLeftOrRight, null) + this.indentValue + 'px';
                 isRtl ? (parentNode.style.marginRight = indentsValue) : (parentNode.style.marginLeft = indentsValue);
             } else {
-                indentsValue = (marginLeftOrRight === '' || marginLeftOrRight === '0px') ? '' : parseInt(marginLeftOrRight, null) - this.indentValue + 'px';
+                indentsValue = (marginLeftOrRight === '' || marginLeftOrRight === '0px' || marginLeftOrRight === '0in') ? '' : parseInt(marginLeftOrRight, null) - this.indentValue + 'px';
                 isRtl ? (parentNode.style.marginRight = indentsValue) : (parentNode.style.marginLeft = indentsValue);
                 /* eslint-enable */
             }

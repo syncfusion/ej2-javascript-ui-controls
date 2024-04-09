@@ -216,11 +216,17 @@ export class Lists {
     private removeList(range: Range, e: IHtmlKeyboardEvent): void{
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = (!isNOU(range.endContainer.parentElement.closest('li')) && range.endContainer.parentElement.closest('li').childElementCount > 1 && range.endContainer.nodeName === '#text') ? range.endContainer as Element :  this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
+        const parentList: Element = (range.startContainer.nodeName === '#text') ? range.startContainer.parentElement.closest('li') : (range.startContainer as HTMLElement).closest('li');
+        let fullContent: string = '';
+        if (!isNOU(parentList) && !isNOU(parentList.childNodes)) {
+            parentList.childNodes.forEach((e: ChildNode) => {
+                fullContent = fullContent + e.textContent;
+            });
+        }
         startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
         endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
         startNode = startNode.nodeName !== 'LI' && !isNOU(startNode.closest('LI')) ? startNode.closest('LI') : startNode;
         endNode = endNode.nodeName !== 'LI' && endNode.nodeName !== '#text' && !isNOU(endNode.closest('LI')) ? endNode.closest('LI') : endNode;
-        const parentList: Element = (range.startContainer.nodeName === '#text') ? range.startContainer.parentElement.closest('li') : (range.startContainer as HTMLElement).closest('li');
         if (((range.commonAncestorContainer.nodeName === 'OL' || range.commonAncestorContainer.nodeName === 'UL' || range.commonAncestorContainer.nodeName === 'LI') &&
         isNOU(endNode.nextElementSibling) && endNode.textContent.length === range.endOffset &&
         isNOU(startNode.previousElementSibling) && range.startOffset === 0) ||
@@ -234,10 +240,24 @@ export class Lists {
                 detach(range.commonAncestorContainer);
             }
             e.event.preventDefault();
-        } else if (!isNOU(parentList) && parentList.textContent === range.startContainer.textContent && parentList.closest('li').previousElementSibling === null){
+        } 
+        else if (!isNOU(parentList) && !range.collapsed && parentList.textContent === fullContent ){
             range.deleteContents();
-            this.parent.editableElement.querySelectorAll('li:empty').forEach((e: HTMLElement) => e.remove());
-            this.parent.editableElement.querySelectorAll('ol:empty').forEach((e: HTMLElement) => e.remove());
+            this.parent.editableElement.querySelectorAll('li').forEach((li: HTMLElement) => {
+                if (!li.firstChild || li.textContent.trim() === '') {
+                    li.parentNode.removeChild(li);
+                }
+            });
+            this.parent.editableElement.querySelectorAll('ol').forEach((ol: HTMLElement) => {
+                if (!ol.firstChild || ol.textContent.trim() === '') {
+                    ol.parentNode.removeChild(ol);
+                }
+            });
+            this.parent.editableElement.querySelectorAll('ul').forEach((ul: HTMLElement) => {
+                if (!ul.firstChild || ul.textContent.trim() === '') {
+                    ul.parentNode.removeChild(ul);
+                }
+            });
             e.event.preventDefault();
         }
     }
@@ -631,6 +651,10 @@ export class Lists {
             this.removeEmptyListElements();
         } else {
             this.checkLists(elements, type, item);
+            let marginLeftAttribute: string = '';
+            if (elements[0].style.marginLeft !== '') {
+                marginLeftAttribute = ' style = "margin-left: ' + elements[0].style.marginLeft + ';"';
+            }
             for (let i: number = 0; i < elements.length; i++) {
                 if (!isNOU(item) && !isNOU(item.listStyle)) {
                     if (item.listStyle === 'listImage') {
@@ -641,6 +665,9 @@ export class Lists {
                         setStyleAttribute(elements[i as number], { 'list-style-type': item.listStyle.replace( /([a-z])([A-Z])/g, '$1-$2' ).toLowerCase() });
                     }
                 }
+                let elemAtt: string;
+                elements[i as number].style.removeProperty('margin-left');
+                elemAtt = elements[i as number].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i as number]);
                 if (elements[i as number].getAttribute('contenteditable') === 'true'
                     && elements[i as number].childNodes.length === 1 && elements[i as number].childNodes[0].nodeName === 'TABLE') {
                     const listEle: Element = document.createElement(type);
@@ -649,8 +676,7 @@ export class Lists {
                 } else if ('LI' !== elements[i as number].tagName && isNOU(item) &&
                     elements[i as number].nodeName === 'BLOCKQUOTE') {
                     isReverse = false;
-                    const elemAtt: string = this.domNode.attributes(elements[i as number]);
-                    const openTag: string = '<' + type + '>';
+                    const openTag: string = '<' + type + marginLeftAttribute + '>';
                     const closeTag: string = '</' + type + '>';
                     const newTag: string = 'li' + elemAtt;
                     const replaceHTML: string = elements[i as number].innerHTML;
@@ -659,8 +685,7 @@ export class Lists {
                     elements[i as number].innerHTML = collectionString;
                 } else if ('LI' !== elements[i as number].tagName && isNOU(item)) {
                     isReverse = false;
-                    const elemAtt: string = elements[i as number].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i as number]);
-                    const openTag: string = '<' + type + '>';
+                    const openTag: string = '<' + type + marginLeftAttribute + '>';
                     const closeTag: string = '</' + type + '>';
                     const newTag: string = 'li' + elemAtt;
                     const replaceHTML: string = (elements[i as number].tagName.toLowerCase() === CONSTANT.DEFAULT_TAG ?
@@ -672,8 +697,8 @@ export class Lists {
                 else if (!isNOU(item) && 'LI' !== elements[i as number].tagName) {
                     // eslint-disable-next-line
                     isReverse = false;
-                    const elemAtt: string = elements[i as number].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i as number]);
-                    const openTag: string = '<' + type + elemAtt + '>';
+                    const currentElemAtt: string = elements[i as number].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i as number]);
+                    const openTag: string = '<' + type + currentElemAtt + '>';
                     const closeTag: string = '</' + type + '>';
                     const newTag: string = 'li';
                     const replaceHTML: string = (elements[i as number].tagName.toLowerCase() === CONSTANT.DEFAULT_TAG ?
@@ -862,7 +887,7 @@ export class Lists {
                     }
                 }
                 if (element.parentNode.insertBefore(this.closeTag(parentNode.tagName) as Element, element),
-                'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
+                    'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
                     'UL' === (parentNode.parentNode as Element).tagName) {
                     element.parentNode.insertBefore(this.closeTag('LI') as Element, element);
                 } else {
@@ -874,19 +899,19 @@ export class Lists {
                     if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
                         const wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
                             ' class="' + className + ' e-rte-wrap-inner"';
-                        const parentElement = parentNode as HTMLElement;
-                        if (elements.length === parentElement.querySelectorAll('li').length) {
-                            if (!isNOU(parentElement.style.listStyleType)) {
-                                (parentNode as HTMLElement).style.removeProperty('list-style-type');
+                        let parentElement = parentNode as HTMLElement;
+                            if (elements.length === parentElement.querySelectorAll('li').length) {
+                                if (!isNOU(parentElement.style.listStyleType)) {
+                                    (parentNode as HTMLElement).style.removeProperty("list-style-type");
+                                }
+                                if (!isNOU(parentElement.style.listStyleImage)) {
+                                    (parentNode as HTMLElement).style.removeProperty("list-style-image");
+                                }
+                                if (parentElement.style.length === 0) {
+                                    parentNode.removeAttribute("style");
+                                }
                             }
-                            if (!isNOU(parentElement.style.listStyleImage)) {
-                                (parentNode as HTMLElement).style.removeProperty('list-style-image');
-                            }
-                            if (parentElement.style.length === 0) {
-                                parentNode.removeAttribute('style');
-                            }
-                        }
-                        const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass + '></' + CONSTANT.DEFAULT_TAG + '>';
+                        const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass + this.domNode.attributes(element) + '></' + CONSTANT.DEFAULT_TAG + '>';
                         if (e.enterAction !== 'BR') {
                             this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
                         }

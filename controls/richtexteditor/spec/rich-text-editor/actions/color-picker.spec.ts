@@ -338,8 +338,9 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
         editNode = rteObj.contentModule.getEditPanel();
     });
 
-    afterAll(() => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
+        done();
     });
 
     it("Color Picker initial rendering testing - 1", (done) => {

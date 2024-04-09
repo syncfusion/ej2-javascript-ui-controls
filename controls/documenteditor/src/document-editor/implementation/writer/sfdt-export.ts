@@ -339,6 +339,9 @@ export class SfdtExport {
         this.document[sectionsProperty[this.keywordIndex]] = [];
         this.document[characterFormatProperty[this.keywordIndex]] = this.writeCharacterFormat(this.documentHelper.characterFormat, this.keywordIndex);
         this.document[paragraphFormatProperty[this.keywordIndex]] = this.writeParagraphFormat(this.documentHelper.paragraphFormat, this.keywordIndex);
+        if (!isNullOrUndefined(this.documentHelper.fontSubstitutionTable)) {
+            this.document[fontSubstitutionTableProperty[this.keywordIndex]] = this.writeFontSubsitutionTable(this.documentHelper);
+        }
         this.document[themeFontLanguagesProperty[this.keywordIndex]] = this.writeCharacterFormat(this.documentHelper.themeFontLanguage, this.keywordIndex);
         this.document[defaultTabWidthProperty[this.keywordIndex]] = this.documentHelper.defaultTabWidth;
         this.document[trackChangesProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(this.owner.enableTrackChanges, this.keywordIndex);
@@ -354,6 +357,14 @@ export class SfdtExport {
         if (this.documentHelper.hasThemes) {
             this.document[themesProperty[this.keywordIndex]] = this.writeThemes(this.documentHelper.themes);
         }
+    }
+    private writeFontSubsitutionTable(documentHelper: DocumentHelper): any {
+        let fontSubstitutionTable: any = {};
+        for (let i: number = 0; i < documentHelper.fontSubstitutionTable.length; i++) {    
+            let key: string = documentHelper.fontSubstitutionTable.keys[i];
+            fontSubstitutionTable[key] = this.documentHelper.fontSubstitutionTable.get(key);
+        }
+        return fontSubstitutionTable;
     }
     /**
      * @private

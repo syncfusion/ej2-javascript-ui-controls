@@ -1363,8 +1363,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (!isNullOrUndefined(this.target)) {
             const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
             this.targetsList = targetList;
-            for (const target of targetList) {
-                EventHandler.add(target, 'focus', this.targetHover, this);
+            if (!isNullOrUndefined(this.targetsList) && this.targetsList.length > 0) {
+                for (const target of targetList) {
+                    EventHandler.add(target, 'focus', this.targetHover, this);
+                }
+            }
+            else{
+                EventHandler.add(this.element, 'focusin', this.targetHover, this);
             }
         } else {
             EventHandler.add(this.element, 'focusin', this.targetHover, this);
@@ -1428,8 +1433,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private unwireFocusEvents(): void {
         if (!isNullOrUndefined(this.target)) {
             const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
-            for (const target of targetList) {
-                EventHandler.remove(target, 'focus', this.targetHover);
+            if (!isNullOrUndefined(this.targetsList) && this.targetsList.length > 0) {
+                for (const target of targetList) {
+                    EventHandler.remove(target, 'focus', this.targetHover);
+                }
+            }
+            else{
+                EventHandler.remove(this.element, 'focusin', this.targetHover);
             }
         } else {
             EventHandler.remove(this.element, 'focusin', this.targetHover);

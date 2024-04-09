@@ -29,7 +29,7 @@ function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
 }
 
-describe('RTE CR issues', () => {
+describe('RTE CR issues ', () => {
     describe('EJ2-20672 - Full Screen not working properly when render inside the overflow element', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLTextAreaElement;
@@ -40,11 +40,7 @@ describe('RTE CR issues', () => {
         RichTextEditor supports markdown editing when the editorMode set as **markdown** and using both *keyboard interaction* and *toolbar action*, you can apply the formatting to text.Q
         We can add our own custom formation syntax for the Markdown formation, [sample link](https://ej2.syncfusion.com/home/).
         The third-party library <b>Marked</b> is used in this sample to convert markdown into HTML content. </textarea>`
-        beforeEach((done: Function) => {
-            done();
-        });
-
-        it('Full Screen Handler when render inside the overflow element', (done) => {
+        beforeAll(() => {
             divElem = <HTMLTextAreaElement>createElement('div', { styles: 'overflow: auto; border: 1px solid;' });
             elem = <HTMLTextAreaElement>createElement('textarea', { id: 'rte_test_EJ2_20672', attrs: { name: 'formName' } });
             document.body.appendChild(divElem);
@@ -52,6 +48,9 @@ describe('RTE CR issues', () => {
             rteObj = new RichTextEditor({
             });
             rteObj.appendTo(elem);
+        });
+
+        it('Full Screen Handler when render inside the overflow element', (done: DoneFn) => {
             rteObj.focusIn();
             (rteObj as any).inputElement.innerHTML = innerData;
             rteObj.showFullScreen();
@@ -64,7 +63,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
             detach(divElem);
         });
-    });
+    }); 
 
     describe('RTE - Incident issues', () => {
         let rteObj: RichTextEditor;
@@ -103,8 +102,9 @@ describe('RTE CR issues', () => {
             expect((rteObj as any).inputElement.innerHTML === innerHTML).toBe(true);
         });
 
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -140,6 +140,7 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+
     describe('EJ2-18212 - RTE - Edited changes are not reflect using getHTML method through console window.', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
@@ -177,8 +178,9 @@ describe('RTE CR issues', () => {
                 done();
             }, 110);
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
   
@@ -214,8 +216,9 @@ describe('RTE CR issues', () => {
             expect(span.parentElement.style.textDecoration === 'inherit').toBe(true);
             done();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -266,12 +269,13 @@ describe('RTE CR issues', () => {
             }, 110);
         });
 
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
-    describe(' EJ2-21471  -  RTE data annotation validation is not worked', () => {
+    describe('EJ2-21471  -  RTE data annotation validation is not worked', () => {
         let rteObj: RichTextEditor;
         let element: HTMLElement = createElement('div', {
             id: "form-element", innerHTML:
@@ -304,7 +308,7 @@ describe('RTE CR issues', () => {
         });
     });
 
-    describe(' EJ2-21612  -  To prevent the table quick toolbar when render RTE inside the table ', () => {
+    describe('EJ2-21612  -  To prevent the table quick toolbar when render RTE inside the table ', () => {
         let rteObj: RichTextEditor;
         let element: HTMLElement = createElement('div', {
             id: "form-element", innerHTML:
@@ -422,8 +426,9 @@ describe('RTE CR issues', () => {
                 done();
             }, 50)
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -450,10 +455,12 @@ describe('RTE CR issues', () => {
                 done();
             }, 50)
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
+
     describe('BLAZ-8584 - Clicking on view source code with small value', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -477,10 +484,12 @@ describe('RTE CR issues', () => {
                 done();
             }, 50)
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
+
     describe(' EJ2-218412  -  htmlAttributes "id" is not set to the validation textarea element in RTE ', () => {
         let rteObj: RichTextEditor;
         let element: HTMLElement = createElement('div', {
@@ -680,6 +689,7 @@ describe('RTE CR issues', () => {
             });
         });
     });
+
     describe('EJ2-22972 - Editor content rendered twice in DOM when using RichTextEditorFor', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLTextAreaElement;
@@ -705,6 +715,7 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+
     describe('EJ2-22988 - e-lib class not added into control root element, when render RTE using textarea element', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLTextAreaElement;
@@ -787,8 +798,9 @@ describe('RTE CR issues', () => {
                 done();
             }, 200)
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -825,11 +837,13 @@ describe('RTE CR issues', () => {
                 done();
             }, 200);
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
             Browser.userAgent =defaultUserAgent;
+            done();
         });
     });
+
     describe(' EJ2-27026  -  Issue on pressing the Tab key with Table module', () => {
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab' };
         let rteObj: RichTextEditor;
@@ -901,8 +915,9 @@ describe('RTE CR issues', () => {
                 done();
             }, 200)
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -960,8 +975,9 @@ describe('RTE CR issues', () => {
                 }
             });
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
         it('Check change event when readonly is enabled', (done: Function) => {
           rteObj.inputElement.focus();
@@ -1062,8 +1078,9 @@ describe('RTE CR issues', () => {
                 done();
               }, 100);
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -1267,6 +1284,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
     describe('EJ2-41995 - RichTextEditor showFullscreen method call when read-only is enabled', () => {
         let rteObj: RichTextEditor;
         beforeEach((done: Function) => {
@@ -1284,8 +1302,9 @@ describe('RTE CR issues', () => {
             expect(rteObj.element.classList.contains("e-rte-full-screen")).toBe(true);
             done();
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
  
@@ -1303,6 +1322,7 @@ describe('RTE CR issues', () => {
             expect(rteObj.getText()==="").toBe(true);
         });
     });
+
     describe('EJ2-60381 - Image resize icon not shown properly when enabled iframe', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -1347,6 +1367,7 @@ describe('RTE CR issues', () => {
             expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
         });
     });
+
     describe('EJ2-60306 - EJ2-60307 - RTE render with empty p tag element', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -1364,6 +1385,7 @@ describe('RTE CR issues', () => {
             expect(rteObj.inputElement.innerHTML === '<div><p><br></p></div>').toBe(true);
         });
     });
+
     describe( 'EJ2-62151 - Strikethrough and underline are removed when we select and press shift key on lists in RTE', () =>{
         let defaultRTE: RichTextEditor;
         let innerHTML = `<ol><li><p>Provide
@@ -1404,6 +1426,7 @@ describe('RTE CR issues', () => {
             expect( style == "line-through" ).toBe( true );
         } );
     } );
+
     describe(' EJ2-62704  -  Rich Text Editor unique Id is not generated automatically when we do not set the Id property ', () => {
         let rteObj: RichTextEditor;
         const divElement: HTMLElement = createElement('div', {
@@ -1431,6 +1454,7 @@ describe('RTE CR issues', () => {
             expect(rteObj.element.hasAttribute('id')).toBe(true);
         });
     });
+
     describe('EJ2-63042 - Tooltip not shown for NumberFormat and BulletFormat List in RTE Toolbar items', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -1473,9 +1497,10 @@ describe('RTE CR issues', () => {
             document.body.appendChild(targetElm);
             rteObj.appendTo(targetElm);
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             rteObj.destroy();
             detach(targetElm);
+            done();
         })
         it('Test for PRE Node Should add code block inside the <pre> tag', (done: Function) => {
             rteObj.focusIn();
@@ -1568,8 +1593,9 @@ describe('RTE CR issues', () => {
             document.body.appendChild(targetElm);
             rteObj.appendTo(targetElm);
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done(); 
         })
         it('Should not remove the list after clicking the outdent', (done: Function) => {
             rteObj.focusIn();
@@ -1637,8 +1663,9 @@ describe('RTE CR issues', () => {
                 } ,value:'Testing'
             });
         })
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         })
         it('should add span element with font size to around the text node', (done: Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('.e-content');
@@ -1689,8 +1716,9 @@ describe('RTE CR issues', () => {
                 } ,value:'Testing'
             });
         })
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy( rteObject );
+            done();
         })
         it('should add span element with font size to around the text node', (done : Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('.e-content');
@@ -1712,7 +1740,9 @@ describe('RTE CR issues', () => {
             const tileItems: NodeList = ( row[0] as HTMLElement ).querySelectorAll('.e-tile');
             ( tileItems[9] as HTMLElement ).click();
             // Background color
-            (rteObject.element.querySelector('.e-background-color') as HTMLElement).click();
+            (document.querySelectorAll('.e-control.e-colorpicker')[1] as any).ej2_instances[0].inline = true;
+            (document.querySelectorAll('.e-control.e-colorpicker')[1] as any).ej2_instances[0].dataBind();
+            ( document.body.querySelector('.e-apply') as HTMLElement).click();
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
             ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
@@ -1738,8 +1768,9 @@ describe('RTE CR issues', () => {
                 } ,value: innerHTML
             });
         })
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy( rteObject );
+            done();
         })
         it('should add span element with font size to around the span node', (done : Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('span[style="text-decoration: underline;"],span[style="text-decoration: line-through;"]');
@@ -1766,8 +1797,9 @@ describe('RTE CR issues', () => {
                 } ,value: innerHTML
             });
         })
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy( rteObject );
+            done();
         })
         it( 'should add span element with font size to around the span node', ( done: Function ) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('a');
@@ -1794,8 +1826,9 @@ describe('RTE CR issues', () => {
                 } ,value: innerHTML
             });
         })
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy( rteObject );
+            done();
         })
         it('should add span element with font size to around the span node', (done : Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('pre');
@@ -1822,8 +1855,9 @@ describe('RTE CR issues', () => {
                 } ,value: innerHTML
             });
         })
-        afterAll( () => {
+        afterAll( (done: DoneFn) => {
             destroy( rteObject );
+            done();
         })
         it('should wrap font size span element immediate to h1 node', (done : Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('h1');
@@ -1890,8 +1924,9 @@ describe('RTE CR issues', () => {
                 } ,value: innerHTML
             });
         })
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy( rteObject );
+            done();
         })
         it('should wrap span element with font size to around the style span node', (done : Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('.e-img-inner');
@@ -1918,8 +1953,9 @@ describe('RTE CR issues', () => {
                 }, value: ''
         });
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Test for margin-left and start attribute', (done : Function) => {
             let keyBoardEvent: any = {
@@ -1964,8 +2000,9 @@ describe('RTE CR issues', () => {
                 } ,value: innerHTML
             });
         })
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy( rteObject );
+            done();
         })
         it('check the font size apply on list items', (done : Function) => {
             const nodeList : NodeList = rteObject.inputElement.querySelectorAll('p');
@@ -1983,6 +2020,7 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+
     describe(' EJ2-68542: Font size not applied properly for the Numbered lists in RichTextEditor' , () => {
         let rteObject : RichTextEditor ;
         const innerHTML: string = '<ol><li style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br><ol><li style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">r﻿ichtexteditor</span></strong></span></li><li style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">WYSIWYG&nbsp;</span></strong></span><ol><li style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">create and edit</span></strong></span></li><li style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; "><b style="box-sizing: border-box; color: rgb(33, 37, 41); font-family: system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, &quot;Noto Sans&quot;, &quot;Liberation Sans&quot;, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Noto Color Emoji&quot;; font-size: 14px; text-align: start;">Toolbar</b>﻿<br></span></strong></span></li></ol></li></ol></li><li style="text-align:center; margin-bottom: 5px; "><font face="Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></font><br></li><li style="text-align: center; margin-bottom: 2px; "><font face="Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></font></li><li style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></li><li style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></li></ol>';
@@ -1992,8 +2030,9 @@ describe('RTE CR issues', () => {
                 } ,value: innerHTML
             });
         })
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy( rteObject );
+            done();
         })
         it('check the font size apply on nested list items', (done : Function) => {
             const nodeList : NodeList = rteObject.inputElement.querySelectorAll('li');
@@ -2015,8 +2054,6 @@ describe('RTE CR issues', () => {
         let rteObj: RichTextEditor;
         let originalTimeout: number;
         beforeAll((done: Function) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Undo', 'Redo', '|',
@@ -2038,9 +2075,9 @@ describe('RTE CR issues', () => {
             done();
         });
     
-        afterAll(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     
         it('check undo tooltip content', (done: Function) => {
@@ -2048,8 +2085,8 @@ describe('RTE CR issues', () => {
             let mouseEve = new MouseEvent("mouseover", {bubbles: true,cancelable: true,view: window});
             undoEle.dispatchEvent(mouseEve);
             setTimeout(() => {
-                // expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
-                // expect((document.querySelector('.e-tooltip-wrap').childNodes[0] as HTMLElement).innerHTML === 'Undo (Ctrl+Z)').toBe(true);
+                expect(isVisible(document.querySelector('.e-tooltip-wrap') as HTMLElement)).toBe(true);
+                expect((document.querySelector('.e-tooltip-wrap').childNodes[0] as HTMLElement).innerHTML === 'Undo (Ctrl+Z)').toBe(true);
                 dispatchEvent(undoEle, 'mouseleave');
                 done();
             }, 1000);
@@ -2079,18 +2116,19 @@ describe('RTE CR issues', () => {
             let item: HTMLInputElement = rteObj.element.querySelector('.e-rte-srctextarea');
             item.value = 'rich text editor'; 
             rteObj.isBlur = true; 
-            rteObj.focusOut();            
+            rteObj.focusOut();
             setTimeout(() => {
                 expect(rteObj.value === '<p>rich text editor</p>').toBe(true);
                 expect(item.value === '<p>rich text editor</p>').toBe(true);
                 done();
-              }, 800);
-        });
+            }, 100);
+        }, 1000 );
         afterAll((done: Function) => {
             destroy(rteObj);
             done();
         });
     });
+
     describe('838394 - Updated values not sent to the server when we dynamically change the readOnly in RichTextEditor', function () {
         let rteObj: RichTextEditor;
         beforeAll(function (done) {
@@ -2120,6 +2158,7 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+
     describe('841892 - CTRL + Enter triggers the enter action in the Editor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
@@ -2136,8 +2175,9 @@ describe('RTE CR issues', () => {
             expect((rteObj as any).inputElement.innerHTML === `<p>Testing</p>`).toBe(true);
             done();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
     
@@ -2155,8 +2195,9 @@ describe('RTE CR issues', () => {
             expect((rteObj as any).inputElement.innerHTML === `<p><img src="x" class="e-rte-image e-imginline"></p>`).toBe(true);
             done();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -2185,8 +2226,9 @@ describe('RTE CR issues', () => {
                 },100)
             },100)
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -2225,8 +2267,9 @@ describe('RTE CR issues', () => {
                 done();
             }, 200);
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
 
@@ -2423,8 +2466,9 @@ describe('RTE CR issues', () => {
                 },
             });
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
         it('CASE 1 - Check the toolbar values after selecting multiple font size in singel line', (done: DoneFn) => {
             rteObj.value = `<h2 title="heading1">
@@ -2519,8 +2563,9 @@ describe('RTE CR issues', () => {
                 }
             });
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(editor);
+            done();
         });
         it('Should not remove the &nbsp and span element while pasting the content', (done: DoneFn) => { 
             editor.focusIn();
@@ -2546,8 +2591,9 @@ describe('RTE CR issues', () => {
                 }
             });
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(editor);
+            done();
         });
         it ('Should add full URL to the Source tag srcset attribute.', (done: DoneFn) => {
             editor.focusIn();
@@ -2575,8 +2621,9 @@ describe('RTE CR issues', () => {
                 }
             });
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(editor);
+            done();
         });
         it('Should have font family of Calibri set to the paragraph element', (done: DoneFn) => { 
             editor.focusIn();
@@ -2602,8 +2649,9 @@ describe('RTE CR issues', () => {
                 }, value: ''
             });
         });
-        afterEach( () => {
+        afterEach( (done: DoneFn) => {
             destroy(rteObject);
+            done();
         });
         it('Test for pasteCleanup', (done : Function) => {
             let keyBoardEvent: any = {
@@ -2714,6 +2762,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
     describe('853677 - The image alternate text is not shown properly in the Rich Text Editor.', () => {
         let rteObj: RichTextEditor;
         it('ensure insert image on Alternate text', () => {
@@ -2740,6 +2789,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
     describe('852541 -ToolbarClick event should trigger before the opening of emoji picker popup in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -2770,6 +2820,7 @@ describe('RTE CR issues', () => {
             expect(toolbarClick).toHaveBeenCalled();
         });
     });
+    
     describe('853717 - Not able to insert the SVG or Canvas elements using ExecuteCommand in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeEach((done: Function) => {
@@ -2792,6 +2843,7 @@ describe('RTE CR issues', () => {
           expect(rteObj.contentModule.getEditPanel().innerHTML === '<div>\n            <p>test</p>\n            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">\n              <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow"></circle>\n            </svg>\n          </div><p>text</p>').toBe(true);
         });
     });
+
     describe('854718 - Need to add the aria label attribute to the link in the Rich Text Editor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -2837,6 +2889,7 @@ describe('RTE CR issues', () => {
             expect((<any>rteObj).contentModule.getEditPanel().querySelector("a.e-rte-anchor").hasAttribute("aria-label")).toBe(true);
         });
     });
+
     describe('853959 - The anchor element was removed when removing the underline in the Rich Text Editor.', () => {
         let rteObj: RichTextEditor;
         beforeEach((done: Function) => {
@@ -2855,6 +2908,7 @@ describe('RTE CR issues', () => {
             expect(rteObj.contentModule.getDocument().querySelector('a').style.textDecoration === 'none').toBe(true);
         });
     });
+
     describe("849875 - Cursor position get lost when having empty span tag in RichTextEditor", () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2892,6 +2946,7 @@ describe('RTE CR issues', () => {
             expect(rteObj.toolbarSettings.enable).toBe(true);
         });
     });
+
     describe('854639 - Need to remove the max row count for the table in the Rich Text Editor.', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2905,10 +2960,11 @@ describe('RTE CR issues', () => {
             });
             rteEle = rteObj.element;
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
-        it('table creation of row more than 50 ', () => {
+        it('table creation of row more than 50 ', (done: DoneFn) => {
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
             let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
             let clickEvent: any = document.createEvent("MouseEvents");
@@ -2925,10 +2981,14 @@ describe('RTE CR issues', () => {
             (rteEle.querySelector('.e-table-row') as HTMLInputElement).blur();
             target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
             target.dispatchEvent(clickEvent);
-            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
-            expect(table.querySelectorAll('tr').length === 51).toBe(true);
-        });
+            setTimeout(() => {
+                let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                expect(table.querySelectorAll('tr').length === 51).toBe(true);
+                done();
+            }, 200);
+        }, 550);
     });
+
     describe("855947 - Table creation popup doesn't get closed when clicking Esc key in RichTextEditor", () => {
         let keyboardEventArgs = {
             preventDefault: function () { },
@@ -2966,6 +3026,7 @@ describe('RTE CR issues', () => {
             expect(document.querySelectorAll('.e-rte-table-popup').length == 0).toBe(true);
         });
     });
+
     describe("857980 - The rich text editor content is removed when the enter key is in BR mode ", () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2987,6 +3048,7 @@ describe('RTE CR issues', () => {
             expect(rteObj.inputElement.querySelector('.currentStartMark').childNodes.length === 11).toBe(true);
         });
     });
+
     describe('854667 - The table styles are not preselected in the quick toolbar in the Rich Text Editor.', function () {
         let rteObj : RichTextEditor;
         let controlId: string;
@@ -3007,8 +3069,9 @@ describe('RTE CR issues', () => {
             rteEle = rteObj.element;
             controlId = rteEle.id;
         });
-        afterEach(function () {
+        afterEach(function (done: DoneFn) {
             destroy(rteObj);
+            done();
         });
         it('Dashed borders', function (done) {
             rteObj.focusIn()
@@ -3056,6 +3119,7 @@ describe('RTE CR issues', () => {
             }, 200)
         });
     });
+
     describe('854667 - The table styles are not preselected in the quick toolbar in the Rich Text Editor. for image', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -3073,8 +3137,9 @@ describe('RTE CR issues', () => {
             QTBarModule = getQTBarModule(rteObj);
             curDocument = rteObj.contentModule.getDocument();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
 
         it('edit image', (done) => {
@@ -3132,6 +3197,7 @@ describe('RTE CR issues', () => {
             }, 40);
         });
     });
+
     describe('857054 - MaxLength property is not working properly in RichTextEditor, when pasting contents into the Editor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = {
@@ -3160,9 +3226,10 @@ describe('RTE CR issues', () => {
             document.body.appendChild(targetElm);
             rteObj.appendTo(targetElm);
         });
-        afterEach(() => {
+        afterEach((done: DoneFn) => {
             rteObj.destroy();
             detach(targetElm);
+            done();
         })
         it("The MaxLength property doesn't count the character correctly.", (done: Function) => {
             rteObj.focusIn();
@@ -3181,6 +3248,7 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+
     describe('859382 - ImageRemoving event arguments are not properly passed in the RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let propertyCheck: boolean;
@@ -3226,6 +3294,7 @@ describe('RTE CR issues', () => {
 
         });
     });
+
     describe('855622 - Font styles are not applied to the numbered and bullet format list items in RichTextEditor', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -3259,6 +3328,7 @@ describe('RTE CR issues', () => {
             expect((document.querySelectorAll('.e-content li')[2] as HTMLElement).style.fontFamily === 'Impact, Charcoal, sans-serif').toBe(true);
         });
     });
+
     describe("863459 - Applying different text styles format out of focus Leads to Issues in RichTextEditor.", () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -3294,6 +3364,7 @@ describe('RTE CR issues', () => {
             expect(rteObj.inputElement.innerHTML == '<p><strong>​<em>​</em></strong>Rich Text Editor</p>').toBe(true);
         });
     });
+
     describe("863440: Too many times applying bold to a text, sometimes the text got deleted in RichTextEditor.", () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -3321,6 +3392,7 @@ describe('RTE CR issues', () => {
             expect(rteObj.inputElement.innerHTML).toEqual('<div id="div1"><p id="paragraph1">second rtec</p></div>');
         });
     });
+
     describe('865055 - ValueChange event not triggered when we edit in Code view in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let previousValue: any;
@@ -3354,6 +3426,7 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+
     describe('866230 - Script error throws when using click event with custom toolbar template in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeEach(() => {
@@ -3384,6 +3457,7 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+
     describe('865259: Script error throws and line breaks added when clicking Bold toolbar item in the RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let rteObj2: RichTextEditor;
@@ -3418,7 +3492,8 @@ describe('RTE CR issues', () => {
             destroy(rteObj2);
             Browser.userAgent =defaultUserAgent;
         });
-    });      
+    });
+
     describe('870038 - Pasted image tag added inside the link tag in the RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -3435,6 +3510,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
   describe('870180: Copy pasted text to override an existing text pastes at wrong position in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -3458,8 +3534,9 @@ describe('RTE CR issues', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-     });  
-     describe('870485: Pressing Enter Key After Pasting an Image Removes the Image in RichTextEditor', () => {
+     });
+
+    describe('870485: Pressing Enter Key After Pasting an Image Removes the Image in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
         beforeAll(() => {
@@ -3480,6 +3557,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
     describe('870298: Numbered list not removed when we delete the entire list using backspace key in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
@@ -3497,10 +3575,12 @@ describe('RTE CR issues', () => {
             expect((rteObj as any).inputElement.querySelectorAll('ol').length).toBe(0);
             done();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
+
     describe('870298: Numbered list not removed when we delete the entire list using backspace key in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
@@ -3517,10 +3597,12 @@ describe('RTE CR issues', () => {
             expect(rteObj.inputElement.querySelectorAll('li')[1].innerText).toBe('Report Two: an internal proposal written in Short Report formatReport Three: A comparative recommendation report written for an external client in Long Report format.');
             done();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
         });
     });
+
     describe('869646: Script error throws when pasting some content into the RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = {
@@ -3560,6 +3642,91 @@ describe('RTE CR issues', () => {
           });
         afterAll(() => {
             destroy(rteObj);
+        });
+    });
+
+    describe('876537: when bold is applied to list inside table the list gets removed ', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: 'keydown',
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ''
+          };
+        const data: string = '<ol><li>RTE</li><li>RTE</li></ol>';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value:`<ol><li>RTE</li><li>RTE</li><li><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><br></li></ol>`,
+                pasteCleanupSettings: {
+                    keepFormat: true,
+                }
+            });
+        });
+
+        it('paste the list inside the table', (done) => {
+            rteObj.dataBind();
+            keyBoardEvent.clipboardData = {
+                getData: () => {
+                    return data;
+                },
+                items: []
+            };
+            setTimeout(function () {
+                let tdEle : HTMLElement= rteObj.inputElement.querySelector('td');
+                dispatchEve(tdEle, 'mousedown');
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, tdEle, tdEle, 0, 0);
+                rteObj.onPaste(keyBoardEvent);
+                expect(tdEle.querySelectorAll('ol').length === 1).toBe(true);
+                done();
+            }, 400);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('878730: Bullet format list not removed properly when we replace the content in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: 'keydown',
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ''
+        };
+        const data: string = '<html>\r\n<body>\r\n\x3C!--StartFragment--><p style="margin: 0px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">test</p>\x3C!--EndFragment-->\r\n</body>\r\n</html>';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">Qs:</p><ul level="1" style="list-style-type: disc;margin-bottom:0in;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">Fhdfhdhdhdhdhgdghdgh</p><ul level="2" style="list-style-type: circle;margin-bottom:0in;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">Sfgfsfsfshsfhfshsfhfs</p></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">Sfsfhsfsfhsfhsfhfs</p><ul level="2" style="list-style-type: circle;margin-bottom:0in;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">Sfgsfhfsshsfhsfsfh</p><ul level="3" style="list-style-type: square;margin-bottom:0in;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">Dffdhdfhdhdfhdfh</p><ul level="4" style="list-style-type: disc;margin-bottom:0in;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">Fdhfdhfdhdfhdfhdfh</p></li></ul></li></ul></li><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">Dfhfdhdhdhdh</p><ul level="3" style="list-style-type: square;margin-bottom:0in;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 8pt; line-height: 107%; font-size: 11pt; font-family: Aptos, sans-serif;"><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;">DFHFDHDHDHDHDFH</p></li></ul></li></ul></li></ul>',
+                pasteCleanupSettings: {
+                    keepFormat: true,
+                }
+            });
+        });
+        it('copy and paste text', (done) => {
+            rteObj.dataBind();
+            keyBoardEvent.clipboardData = {
+                getData: () => {
+                    return data;
+                },
+                items: []
+            };
+            setTimeout(function () {
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement, rteObj.inputElement, 0, 2);
+                rteObj.onPaste(keyBoardEvent);
+                expect(rteObj.inputElement.innerHTML === '<p style="margin: 0px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);">test</p>').toBe(true);
+                done();
+            }, 400);
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
         });
     });
 });

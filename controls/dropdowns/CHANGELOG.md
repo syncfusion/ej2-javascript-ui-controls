@@ -2,11 +2,47 @@
 
 ## [Unreleased]
 
-## 25.1.38 (2024-04-02)
+## 25.1.39 (2024-04-09)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I565976` - Issue with "The getSortedList and getDataList method datasource order is not proper while using addItems, removeItem method and change their position using drag and drop" has been resolved.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I574653` - The issue aria-label attribute is not added to the input element in the Dropdown Tree component has been resolved.
+
+- `#I572604` - An issue with "facing a console error when clicking a button inside the footer template in the Dropdown Tree component" has been resolved.
+
+## 25.1.37 (2024-03-26)
+
+### Mention
+
+#### Bug Fixes
+
+- `#FB51909` - Fixed an issue where filtering was not working properly when allow space was set to true.
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I567781` - Fixed issue with Request being sent on initial loading when binding remote data and using the allowFiltering property.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I569983` - Issue with "trim leading or trailing white-space when filtering in the Dropdown Tree" has been resolved.
 
 ### MultiSelect
 
 #### Bug Fixes
+
+- `#I567835` -  Fixed XSS issue related to the highlight search feature when setting the filter query parameter without a value.
 
 - `#I560783` - Fixed issue where clearing the searched value would automatically select another value.
 

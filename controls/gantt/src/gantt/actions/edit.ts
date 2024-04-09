@@ -65,7 +65,6 @@ export class Edit {
     public cellEditModule: CellEdit;
     public taskbarEditModule: TaskbarEdit;
     public dialogModule: DialogEdit;
-    public isResourceTaskDeleted: boolean = false;
     private editedRecord: IGanttData;
     constructor(parent?: Gantt) {
         this.parent = parent;
@@ -2398,7 +2397,6 @@ export class Edit {
                     this.parent.ids.splice(flatIndex, 1);
                     if (this.parent.viewType === 'ResourceView') {
                         this.parent.getTaskIds().splice(flatIndex, 1);
-                        this.isResourceTaskDeleted = true;
                         if (!deleteRecord.hasChildRecords) {
                             deleteRecord.ganttProperties.resourceInfo = null;
                             delete deleteRecord.ganttProperties.resourceNames;

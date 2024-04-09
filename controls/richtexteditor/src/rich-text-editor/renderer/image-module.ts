@@ -1436,7 +1436,7 @@ export class Image {
                     this.uploadObj.remove();
                 }
                 this.parent.isBlur = false;
-                if (event && (event.event as { [key: string]: string }).returnValue) {
+                if (event && !isNOU(event.event) && (event.event as { [key: string]: string }).returnValue) {
                     if (this.parent.editorMode === 'HTML') {
                         selection.restore();
                     } else {
@@ -1547,6 +1547,9 @@ export class Image {
                 removeClass([items[i as number]], 'e-img-focus');
                 removeClass([items[i as number]], 'e-resize');
             }
+        }
+        if (this.parent.inlineMode.enable && target && this.dialogObj && !closest(target, '#' + this.dialogObj.element.id)) {
+            this.dialogObj.hide();
         }
     }
 
