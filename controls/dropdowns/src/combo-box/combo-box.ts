@@ -603,7 +603,7 @@ export class ComboBox extends DropDownList {
     }
 
     protected setValue(e?: KeyboardEventArgs): boolean {
-        if (e && e.type === 'keydown' && e.action === 'enter') {
+        if ((e && e.type === 'keydown' && e.action === 'enter') || (e && e.type === 'click')) {
             this.removeFillSelection();
         }
         if (this.autofill && this.getModuleName() === 'combobox' && e && e.type === 'keydown' && e.action !== 'enter') {

@@ -179,7 +179,15 @@ export class ContextMenu {
         const pasteEle: Element = select('#' + this.getMenuId('Paste'), this.contextMenu.element);
         if (!args.cancel && !this.parent.enablePaste &&
             pasteEle && !pasteEle.classList.contains('e-disabled')) {
-            this.disabledItems.push('Paste');
+            if (this.disabledItems.indexOf('Paste') === -1) {
+                this.disabledItems.push('Paste');
+            }
+        }
+        else {
+            const pasteIndex: number = this.disabledItems.indexOf('Paste');
+            if (pasteIndex !== -1) {
+                this.disabledItems.splice(pasteIndex, 1);
+            }
         }
         if (args.cancel) {
             this.menuTarget = this.currentElement = null;
@@ -299,7 +307,9 @@ export class ContextMenu {
             this.disabledItems.push('SelectAll');
         }
         if (this.parent.selectedNodes.length === 0) {
-            this.disabledItems.push('Paste');
+            if (this.disabledItems.indexOf('Paste') === -1) {
+                this.disabledItems.push('Paste');
+            }
         }
         this.contextMenu.dataBind();
     }

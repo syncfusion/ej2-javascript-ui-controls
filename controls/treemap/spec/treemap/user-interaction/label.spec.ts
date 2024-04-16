@@ -314,7 +314,6 @@ describe('TreeMap component Spec', () => {
         });
         afterAll(() => {
             treemap.destroy();
-            treemap.destroy();
             document.getElementById(id).remove();
         });
         it(' checking a print', (done: Function) => {

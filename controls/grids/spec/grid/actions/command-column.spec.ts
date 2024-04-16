@@ -794,4 +794,52 @@ describe('Command Column ', () => {
 
         });
     });
+
+    describe('EJ2-881268 - Adding action buttons edit and delete on data table with infinite scrolling feature not working properly => ', function () {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        beforeAll(function (done: Function) {
+            gridObj = createGrid({
+                dataSource: data.slice(0, 30),
+                height: 270,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true },
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { initialBlocks: 1 },
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    {
+                        headerText: 'Manage Records', width: 160,
+                        commands: [{ type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
+                        { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
+                        { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
+                        { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                    }
+                ],
+                actionBegin: actionBegin
+            }, done);
+        });
+
+        it('Delete Row', function (done: Function) {
+            actionBegin = (args?: any): void => {
+                if (args.requestType === 'delete') {
+                    done();
+                }
+            };
+            gridObj.actionBegin = actionBegin;
+            gridObj.selectRow(2);
+            gridObj.deleteRecord();
+        });
+
+        it('check the command column buttons', function () {            
+            let rows = <HTMLTableRowElement>gridObj.getRows()[0];
+            expect(rows.querySelector('.e-unboundcelldiv').children.length).toBe(4);
+        });
+
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = actionBegin = null;
+        });
+    });
 });

@@ -513,7 +513,8 @@ export class Render {
             this.parent.isEdit = false;
             this.parent.notify(events.editReset, {});
             this.parent.notify(events.tooltipDestroy, {});
-            if (args && args.requestType !== 'infiniteScroll') {
+            if (args && !((args.requestType === 'infiniteScroll' || args.requestType === 'delete' || args.action === 'add') &&
+                gObj.enableInfiniteScrolling)) {
                 this.parent.notify(events.commandColumnDestroy, { type : 'refreshCommandColumn' } );
             }
             this.contentRenderer.prevCurrentView = this.parent.currentViewData.slice();

@@ -633,6 +633,44 @@ describe('Dialog Editing module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-880899 - issue with validation message positioning in dialog edit mode with frozen columns => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog' },
+                    allowPaging: true,
+                    toolbar: ['Add', 'Edit', 'Delete'],
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true }, width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 140 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', freeze: 'Right' }
+                    ]
+                }, done);
+        });
+        it('Add Record', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+        it('Check the validation message', () => {
+            (select('#'+ gridObj.element.id +'_dialogEdit_wrapper', document).querySelectorAll('button') as any)[1].click();
+            expect(gridObj.editModule.formObj.element.querySelectorAll('.e-griderror').length).toBeGreaterThan(0);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
     describe('Coverage Imrovement => ', () => {
         let gridObj: Grid;
         let actionComplete: () => void;

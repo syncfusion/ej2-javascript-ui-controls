@@ -53,6 +53,8 @@ export class _PdfCatalog {
         this._crossReference._cacheMap.set(ref, form);
         this._catalogDictionary.set('AcroForm', ref);
         this._catalogDictionary._updated = true;
+        this._crossReference._allowCatalog = true;
+        form._updated = true;
         return form;
     }
     getPageDictionary(pageIndex: number): {dictionary: _PdfDictionary, reference: _PdfReference} {

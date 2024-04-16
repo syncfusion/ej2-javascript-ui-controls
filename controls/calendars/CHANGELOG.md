@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.40 (2024-04-16)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I572913` -  Resolved the console error that occurred when dynamically showing the popup on focus out.
+
 ## 25.1.37 (2024-03-26)
 
 ### DateTimePicker

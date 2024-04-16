@@ -1482,18 +1482,20 @@ export class PdfDocument {
         this._doPostProcessOnAnnotations(isFlatten);
     }
     _doPostProcessOnFormFields(isFlatten: boolean = false) : void {
-        this.form._doPostProcess(isFlatten);
-        if (isFlatten) {
-            const formObject: _PdfReference | _PdfDictionary = this._catalog._catalogDictionary.getRaw('AcroForm');
-            const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-            dictionary._updated = true;
-            if (formObject instanceof _PdfReference) {
-                this._crossReference._cacheMap.set(formObject, dictionary);
-            } else {
-                this.form._dictionary = dictionary;
-                this._crossReference._allowCatalog = true;
+        if (this._catalog._catalogDictionary.has('AcroForm')) {
+            this.form._doPostProcess(isFlatten);
+            if (isFlatten) {
+                const formObject: _PdfReference | _PdfDictionary = this._catalog._catalogDictionary.getRaw('AcroForm');
+                const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+                dictionary._updated = true;
+                if (formObject instanceof _PdfReference) {
+                    this._crossReference._cacheMap.set(formObject, dictionary);
+                } else {
+                    this.form._dictionary = dictionary;
+                    this._crossReference._allowCatalog = true;
+                }
+                this.form._clear();
             }
-            this.form._clear();
         }
     }
     _doPostProcessOnAnnotations(isFlatten: boolean = false): void {

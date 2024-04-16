@@ -973,8 +973,8 @@ describe('FileManager control LargeIcons view', () => {
                 expect(treeLi.length).toEqual(9);
                 expect(largeLi.length).toEqual(3);
                 expect(addressLi.length).toEqual(2);
-                expect(feObj.path).toBe('1/6174/');
-                expect(addressLi[1].getAttribute('data-utext')).toBe('1/6174/');
+                expect(feObj.path).toBe('/6174/');
+                expect(addressLi[1].getAttribute('data-utext')).toBe('/6174/');
                 expect(addressLi[1].innerText).toBe('Pictures');
                 expect((document.getElementById('file_search') as any).placeholder).toBe('Search Pictures');
                 feObj.path = '1/6171';
@@ -998,8 +998,8 @@ describe('FileManager control LargeIcons view', () => {
                     expect(treeLi.length).toEqual(6);
                     expect(largeLi.length).toEqual(3);
                     expect(addressLi.length).toEqual(2);
-                    expect(feObj.path).toBe('1/6171/');
-                    expect(addressLi[1].getAttribute('data-utext')).toBe('1/6171/');
+                    expect(feObj.path).toBe('/6171/');
+                    expect(addressLi[1].getAttribute('data-utext')).toBe('/6171/');
                     expect(addressLi[1].innerText).toBe('Documents');
                     expect((document.getElementById('file_search') as any).placeholder).toBe('Search Documents');
                     done();

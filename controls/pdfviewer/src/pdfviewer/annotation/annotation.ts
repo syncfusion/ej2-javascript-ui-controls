@@ -4838,7 +4838,10 @@ export class Annotation {
         let annotationType: string;
         let pageNumber: number;
         let isTextMarkupUpdate: boolean = false;
-        let textMarkupAnnotation: any = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+        let textMarkupAnnotation: any;
+        if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) && !isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation)) {
+            textMarkupAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+        }
         if ((textMarkupAnnotation && (!annotation.annotationId || !annotation.uniqueKey) && (annotation.annotationId == textMarkupAnnotation.annotName))) {
             currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
             annotationId = currentAnnotation.annotName;

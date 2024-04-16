@@ -34,6 +34,7 @@ export class Print {
         const argsData: IPrintEventArgs = {
             cancel: false, htmlContent: this.getHTMLContent(maps, elements), name: beforePrint
         };
+        //eslint-disable-next-line @typescript-eslint/no-unused-vars
         maps.trigger('beforePrint', argsData, (beforePrintArgs: IPrintEventArgs) => {
             if (!argsData.cancel) {
                 printFunction(argsData.htmlContent, printWindow);
@@ -52,6 +53,7 @@ export class Print {
     private getHTMLContent(maps: Maps, elements?: string[] | string | Element): Element {
         const div: Element = createElement('div');
         const divElement: Element = maps.element.cloneNode(true) as Element;
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
         let backgroundElement: HTMLElement = (!maps.isTileMap ? divElement.getElementsByTagName('svg')[0] as any : divElement.getElementsByTagName('svg')[1] as any) as HTMLElement;
         if (!isNullOrUndefined(backgroundElement)) {
             backgroundElement = backgroundElement.childNodes[0] as HTMLElement;

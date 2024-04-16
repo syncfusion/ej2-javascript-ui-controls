@@ -64,6 +64,7 @@ export class Print {
             }
         } else {
             const exportElement: HTMLElement = treeMap.element.cloneNode(true)  as HTMLElement;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let backgroundElement: HTMLElement = (exportElement.getElementsByTagName('svg')[0] as any) as HTMLElement;
             if (!isNullOrUndefined(backgroundElement)) {
                 backgroundElement = backgroundElement.childNodes[0] as HTMLElement;

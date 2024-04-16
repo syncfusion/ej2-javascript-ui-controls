@@ -822,6 +822,7 @@ export interface IMapZoomEventArgs extends IMinMaxLatitudeLongitude, IMapsEventA
 
 /**
  * Specifies the theme style for maps.
+ *
  * @private
  */
 export interface IThemeStyle {

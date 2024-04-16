@@ -603,6 +603,13 @@ export interface PdfAnnotationBaseModel {
      */
     isAddAnnotationProgrammatically?: boolean;
 
+    /**
+     * Represents the annotation is transparent.
+     * @private
+     *
+     */
+    isTransparentSet?: boolean;
+
 }
 
 /**

@@ -804,12 +804,14 @@ export class ListBox extends DropDownBase {
             } else {
                 scrollParent = wrapper;
             }
-            boundRect = scrollParent.getBoundingClientRect() as DOMRect;
-            if ((boundRect.y + scrollParent.offsetHeight) - (event.clientY + scrollMoved) < 1) {
-                this.timer = window.setInterval(() => { this.setScrollDown(scrollParent, scrollHeight, true); }, 70);
-            }
-            else if ((event.clientY - scrollMoved) - boundRect.y < 1) {
-                this.timer = window.setInterval(() => { this.setScrollDown(scrollParent, scrollHeight, false); }, 70);
+            if (scrollParent) {
+                boundRect = scrollParent.getBoundingClientRect() as DOMRect;
+                if ((boundRect.y + scrollParent.offsetHeight) - (event.clientY + scrollMoved) < 1) {
+                    this.timer = window.setInterval(() => { this.setScrollDown(scrollParent, scrollHeight, true); }, 70);
+                }
+                else if ((event.clientY - scrollMoved) - boundRect.y < 1) {
+                    this.timer = window.setInterval(() => { this.setScrollDown(scrollParent, scrollHeight, false); }, 70);
+                }
             }
         }
         if (args.target === null) {
@@ -1907,6 +1909,7 @@ export class ListBox extends DropDownBase {
         const jsonData: {[key: string]: object}[] = [].slice.call(tListBox.jsonData);
         const isRefresh: boolean | string | Function = tListBox.sortOrder !== 'None' || (tListBox.selectionSettings.showCheckbox !==
             fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy || tListBox.itemTemplate || fListBox.itemTemplate;
+        const tempLiColl: HTMLElement[] = []; const tempData: { [key: string]: Object }[] = []; let flistboxarray: number[] = []
         this.removeSelected(fListBox, fListBox.getSelectedItems());
         const tempItems: Object[] = [].slice.call(fListBox.listData);
         const localDataArgs: { [key: string]: Object } = { cancel: false, items: tempItems, eventName: this.toolbarAction };
@@ -1926,22 +1929,37 @@ export class ListBox extends DropDownBase {
                 fListBox.ulElement.removeChild(noRecElem);
             }
         }
-        moveTo(
-            fListBox.ulElement, tListBox.ulElement,
+        if (fListBox.listData.length > 0) {
             // eslint-disable-next-line prefer-spread
-            Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
+            flistboxarray = Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number);
+        }
+        for (let i: number = 0; i < fListBox.ulElement.childElementCount; i++) {
+            if ((fListBox.ulElement.childNodes[i as number] as Element).classList.contains('e-disabled')) {
+                flistboxarray = flistboxarray.filter(function(item: number) { return item !== i; });
+                tempLiColl.push(fListBox.ulElement.childNodes[i as number] as HTMLElement);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                tempData.push(fListBox.listData[i as number] as any);
+            }
+        }
+        moveTo(fListBox.ulElement, tListBox.ulElement, flistboxarray, index);
         this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         if (isKey) { this.list.focus(); }
         index = (index) ? index : listData.length;
-        for (let i: number = 0; i < fListBox.listData.length; i++) {
-            listData.splice(index + i, 0, fListBox.listData[i as number]);
+        for (let i: number = 0; i < flistboxarray.length; i++) {
+            listData.splice(index + i, 0, fListBox.listData[flistboxarray[i as number]]);
         }
-        for (let i: number = 0; i < fListBox.jsonData.length; i++) {
-            jsonData.splice(index + i, 0, fListBox.jsonData[i as number] as {[key: string]: object});
+        for (let i: number = 0; i < flistboxarray.length; i++) {
+            jsonData.splice(index + i, 0, fListBox.jsonData[flistboxarray[i as number]] as {[key: string]: object});
         }
-        const fliCollections: HTMLElement[] = [].slice.call(fListBox.liCollections);
+        let fliCollections: HTMLElement[] = [];
+        if (tempLiColl.length > 0) {
+            fListBox.liCollections = tempLiColl;
+            fliCollections = [].slice.call(fListBox.liCollections);
+        } else {
+            fliCollections = [].slice.call(fListBox.liCollections);
+            fListBox.liCollections = [];
+        }
         const tliCollections: HTMLElement[] = [].slice.call(tListBox.liCollections);
-        fListBox.liCollections = [];
         if (index) {
             const toColl: HTMLElement[] = tliCollections.splice(0, index);
             tListBox.liCollections = toColl.concat(fliCollections).concat(tliCollections);
@@ -1960,7 +1978,7 @@ export class ListBox extends DropDownBase {
         }
         (tListBox.listData as dataType[]) = listData;
         if (fListBox.listData.length === fListBox.jsonData.length) {
-            fListBox.listData = fListBox.sortedData = fListBox.jsonData = [];
+            fListBox.listData = fListBox.sortedData = fListBox.jsonData = tempData;
         } else if (fListBox.allowFiltering) {
             for (let i: number = 0; i < fListBox.listData.length; i++) {
                 for (let j: number = 0; j < fListBox.jsonData.length; j++) {
@@ -1979,6 +1997,11 @@ export class ListBox extends DropDownBase {
             (tListBox.sortedData as dataType[]) = listData;
         }
         fListBox.updateSelectedOptions();
+        if (tempLiColl.length > 0) {
+            const wrap: Element = this.list.parentElement.getElementsByClassName('e-listbox-tool')[0];
+            const btn: HTMLButtonElement = wrap.querySelector('[data-value="' + this.toolbarAction + '"]');
+            btn.disabled = true;
+        }
         if (fListBox.listData.length === 0) {
             fListBox.l10nUpdate();
         }
@@ -2196,6 +2219,7 @@ export class ListBox extends DropDownBase {
                         if (!args.cancel && !this.isCustomFiltering && !args.preventDefaultAction) {
                             this.inputString = this.filterInput.value;
                             this.filteringAction(this.jsonData, new Query(), this.fields);
+                            if (this.toolbarSettings.items.length > 0) { this.updateToolBarState(); }
                         }
                         if (!this.isFiltered && !this.isCustomFiltering && !args.preventDefaultAction) {
                             this.dataUpdater(this.jsonData, new Query(), this.fields);

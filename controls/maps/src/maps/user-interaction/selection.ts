@@ -106,10 +106,16 @@ export class Selection {
     }
 
     /**
+     * Selects the element in the map
+     *
+     * @param {Element} targetElement - Specifies the target element.
+     * @param {number} layerIndex - Specifies the index of the layer.
+     * @param {object} data - Specifies the data for the map.
+     * @param {object} shapeData - Specifies the data for the map to render.
+     * @returns {void}
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public selectElement(targetElement: Element, layerIndex: number, data: any, shapeData: any): void {
+    public selectElement(targetElement: Element, layerIndex: number, data: object, shapeData: object): void {
         this.maps.mapSelect = targetElement ? true : false;
         if (this.maps.legendModule && this.maps.legendSettings.visible && targetElement.id.indexOf('_MarkerIndex_') === -1) {
             this.maps.legendModule.shapeHighLightAndSelection(
@@ -122,9 +128,13 @@ export class Selection {
         }
     }
 
-    // eslint-disable-next-line valid-jsdoc
     /**
      * Public method for selection
+     *
+     * @param {number} layerIndex - Specifies the index of the layer.
+     * @param {string} name - Specifies the name.
+     * @param {boolean} enable - Specifies the enabling of selection in map.
+     * @returns {void}
      * @private
      */
     public addSelection(layerIndex: number, name: string, enable: boolean): void {
@@ -145,12 +155,7 @@ export class Selection {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private selectMap(targetElement: Element, shapeData: any, data: any): void {
-        const layerIndex: number = parseInt(targetElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-        let parentElement: Element;
-        let children: HTMLCollection;
-        let selectionClass: Element;
         const isLineStringShape: boolean = targetElement.parentElement.id.indexOf('LineString') > -1;
-        const selectionsettings: SelectionSettingsModel = this.selectionsettings;
         const border: BorderModel = {
             color: isLineStringShape ? (this.selectionsettings.fill || this.selectionsettings.border.color) :
                 this.selectionsettings.border.color,
@@ -169,6 +174,7 @@ export class Selection {
             data: data,
             maps: this.maps
         };
+        //eslint-disable-next-line @typescript-eslint/no-unused-vars
         this.maps.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
             eventArgs.border.opacity = isNullOrUndefined(this.selectionsettings.border.opacity) ?
                 this.selectionsettings.opacity : this.selectionsettings.border.opacity;

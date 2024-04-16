@@ -8,6 +8,8 @@
 
 #### Bug fixes
 
+- `#I496624` - Value sorting will now work properly in an OLAP pivot table with a single measure.
+- `#I547664` - Excel exporting will now work properly in the pivot table using the server-side engine.
 - `#I572220` - The issue with persistence not working properly in the Pivot Table with remote data has been fixed.
 
 ## 25.1.38 (2024-04-02)

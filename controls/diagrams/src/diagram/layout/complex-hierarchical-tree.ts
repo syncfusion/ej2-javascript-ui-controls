@@ -382,6 +382,7 @@ class HierarchicalLayoutUtil {
             if ((lineDistribution && layoutProp.connectionPointOrigin === 'DifferentPoint') || checkLinear) {
                 matrixModel = this.matrixModel({ model: model, matrix: [], rowOffset: [] });
                 lineDistribution.arrangeElements(matrixModel, layoutProp);
+                (layoutProp as any).ranks = matrixModel.model.ranks;
             } else {
                 if (layoutProp.arrangement === 'Nonlinear') {
                     this.crossingStage(model);

@@ -4981,8 +4981,37 @@ client side. Customer easy to edit the contents and get the HTML content for
             const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
             editor.onPaste(pasteEvent);
             setTimeout(() => {
-                expect(document.querySelector('.e-rte-quick-toolbar')).not.toBe(null);
-                expect(document.querySelector('.e-img-resize')).not.toBe(null);
+                expect(document.querySelector('.e-rte-quick-toolbar')).toBe(null);
+                expect(document.querySelector('.e-img-resize')).toBe(null);
+                done();
+            }, 800);
+        });
+    });
+
+    describe('878796 - The cursor is not set properly when pasting paragraphs with images in the Rich Text Editor.', () => {
+        let editor: RichTextEditor;
+        beforeAll((done) => {
+            editor = renderRTE({});
+            done();
+        });
+        afterAll((done) => {
+            destroy(editor);
+            done();
+        });
+        it('The cursor is set next to the image when you paste it into the editor.', (done: DoneFn) => {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new Event('mousedown'));
+            const clipBoardData: string = `<html>
+            <body>
+            <!--StartFragment--><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" alt="Logo"/><!--EndFragment-->
+            </body>
+            </html>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(window.getSelection().getRangeAt(0).startContainer.previousSibling.nodeName === 'IMG').toBe(true);
                 done();
             }, 600);
         });

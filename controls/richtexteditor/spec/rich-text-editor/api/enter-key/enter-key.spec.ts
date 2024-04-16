@@ -2416,3 +2416,57 @@ describe('868816 - The enter key is not working properly in the Rich Text Editor
         destroy(rteObj);
     });
 });
+
+describe('878787 - The enter action is not working properly working with the table in the Rich Text Editor.', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            enterKey: 'P',
+            saveInterval: 10,
+            value: `<table class="e-rte-table focusNode" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table>`
+        });
+        done();
+    });
+    it('Enter action when the cursor is before the table.', function (done): void {
+        rteObj.focusIn();
+        const startNode = rteObj.inputElement.querySelector('.focusNode');
+        const sel = new NodeSelection().setSelectionText(document, startNode.parentElement, startNode.parentElement, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(((rteObj.inputElement.firstChild as HTMLElement).innerHTML === '<br>' && rteObj.inputElement.firstChild.nodeName === 'P')).toBe(true);
+        done();
+    });
+    it('Enter action when the cursor is after the table.', function (done) {
+        rteObj.focusIn();
+        var startNode = rteObj.inputElement.querySelector('.focusNode');
+        var sel = new NodeSelection().setSelectionText(document, startNode.parentElement, startNode.parentElement, 2, 2);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === '<p><br></p><table class="e-rte-table focusNode" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>').toBe(true);
+        expect(((rteObj.inputElement.lastChild as HTMLElement).innerHTML === '<br>' && rteObj.inputElement.lastChild.nodeName === 'P')).toBe(true);
+        done();
+    });
+    it('Enter action when the cursor is after the table with the text.', function (done) {
+        rteObj.focusIn();
+        rteObj.value = `<table class="e-rte-table focusNode" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p>awefqwefqwefqwefeqwfew</p>`;
+        rteObj.dataBind();
+        var startNode = rteObj.inputElement.querySelector('.focusNode');
+        var sel = new NodeSelection().setSelectionText(document, startNode.parentElement, startNode.parentElement, 1, 1);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === '<table class="e-rte-table focusNode" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p><p>awefqwefqwefqwefeqwfew</p>').toBe(true);
+        done();
+    });
+    it('Enter action between the two table', function (done) {
+        rteObj.focusIn();
+        rteObj.value = `<table class="e-rte-table focusNode" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>`;
+        rteObj.dataBind();
+        var startNode = rteObj.inputElement.querySelector('.focusNode');
+        var sel = new NodeSelection().setSelectionText(document, startNode.parentElement, startNode.parentElement, 1, 1);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === '<table class="e-rte-table focusNode" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table><p><br></p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>').toBe(true);
+        done();
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+});

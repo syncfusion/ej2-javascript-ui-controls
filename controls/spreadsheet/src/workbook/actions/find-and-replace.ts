@@ -48,6 +48,7 @@ export class WorkbookFindAndReplace {
         }
     }
     private find(args: FindOptions): void {
+        args.sheetIndex = isUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
         const sheet: SheetModel = this.parent.sheets[args.sheetIndex];
         const activeCell: number[] = getRangeIndexes(sheet.activeCell);
         const findArgs: FindArgs = { startRow: activeCell[0], startCol: activeCell[1],
@@ -541,7 +542,7 @@ export class WorkbookFindAndReplace {
                                         }
                                     } else if (!findAllArguments.isCSen && findAllArguments.isEMatch) {
                                         const val: string = cellvalue.toString().toLowerCase();
-                                        if (val === findAllArguments.value) {
+                                        if (val === findAllArguments.value.toLowerCase()) {
                                             address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
                                             findAllArguments.findCollection.push(address);
                                             count++;

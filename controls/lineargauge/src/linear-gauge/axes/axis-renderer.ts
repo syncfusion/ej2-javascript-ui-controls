@@ -339,13 +339,13 @@ export class AxisRenderer extends Animations {
         if (pointer.markerType === 'Text') {
             textOptions = new TextOption(pointerID, x, y, 'start', pointer.text, null, 'auto');
             textOptions = calculateTextPosition(pointer.bounds, shapeBasedOnPosition,
-                textOptions, this.gauge.orientation, axis, pointer);
-                style = {
-                    size: pointer.textStyle.size,
-                    fontFamily: pointer.textStyle.fontFamily || this.gauge.themeStyle.labelFontFamily,
-                    fontWeight: pointer.textStyle.fontWeight,
-                    fontStyle: pointer.textStyle.fontStyle
-                };
+                                                textOptions, this.gauge.orientation, axis, pointer);
+            style = {
+                size: pointer.textStyle.size,
+                fontFamily: pointer.textStyle.fontFamily || this.gauge.themeStyle.labelFontFamily,
+                fontWeight: pointer.textStyle.fontWeight,
+                fontStyle: pointer.textStyle.fontStyle
+            };
         }
         // eslint-disable-next-line prefer-const
         pointerElement = ((pointer.markerType === 'Circle' ? this.gauge.renderer.drawCircle(options) as SVGAElement
@@ -439,6 +439,9 @@ export class AxisRenderer extends Animations {
         }
     }
     /**
+     * @param {Axis} axis - Specifies the axis
+     * @param {number} axisIndex - Specifies the axis index
+     * @returns {void}
      * @private
      */
     public pointerAnimation(axis: Axis, axisIndex: number): void {
@@ -449,18 +452,17 @@ export class AxisRenderer extends Animations {
                 if (pointer.type === 'Bar') {
                     const barPointerGroup: Element | null = getElement(this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i);
                     if (barPointerGroup) {
-                    this.performBarAnimation(barPointerGroup, axis, pointer);
+                        this.performBarAnimation(barPointerGroup, axis, pointer);
                     }
                 } else {
                     const markerPointerGroup: Element | null = getElement(this.gauge.element.id + '_AxisIndex_' + axisIndex + '_' + pointer.type + 'Pointer_' + i);
                     if (markerPointerGroup) {
-                    this.performMarkerAnimation(markerPointerGroup, axis, pointer);
+                        this.performMarkerAnimation(markerPointerGroup, axis, pointer);
                     }
-                }                
+                }
             }
         }
     }
-    
     public drawRanges(axis: Axis, axisObject: Element, axisIndex: number): void {
         let range: Range;
         let options: PathOption;
@@ -484,8 +486,8 @@ export class AxisRenderer extends Animations {
         let x: number; let y: number;
         let textOptions: TextOption = new TextOption(pointerId, x, y, 'start', pointer.text, null, 'auto');
         textOptions = calculateTextPosition(pointer.bounds, 'Text',
-            textOptions, this.gauge.orientation, axis, pointer);
-        let textElement: HTMLElement = document.getElementById(pointerId);
+                                            textOptions, this.gauge.orientation, axis, pointer);
+        const textElement: HTMLElement = document.getElementById(pointerId);
         textElement.setAttribute('x', textOptions.x.toString());
         textElement.setAttribute('y', textOptions.y.toString());
         textElement.textContent = pointer.text;

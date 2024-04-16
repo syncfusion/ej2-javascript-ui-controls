@@ -2,11 +2,11 @@
 import { isNullOrUndefined, extend, createElement, Fetch, animationMode } from '@syncfusion/ej2-base';
 import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
-import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, PolylineOption, removeElement } from '../utils/helper';
+import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, removeElement } from '../utils/helper';
 import { getElementByID, maintainSelection, getValueFromObject } from '../utils/helper';
 import { MapLocation, RectOption, getTranslate, convertTileLatLongToPoint, checkShapeDataFields, CircleOption } from '../utils/helper';
 import { getZoomTranslate, fixInitialScaleForTile } from '../utils/helper';
-import { LayerSettings, ShapeSettings, Tile, BubbleSettings } from '../model/base';
+import { LayerSettings, ShapeSettings, Tile} from '../model/base';
 import { BorderModel, LayerSettingsModel, ShapeSettingsModel, ToggleLegendSettingsModel } from '../model/base-model';
 import { BingMap } from './bing-map';
 import { ColorMapping } from './color-mapping';
@@ -239,7 +239,7 @@ export class LayerPanel {
         if (panel.mapObject.markerModule) {
             panel.mapObject.markerModule.markerRender(this.mapObject, panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel, null);
         }
-        panel.translateLayerElements(panel.layerObject, layerIndex);
+        panel.translateLayerElements(panel.layerObject);
         panel.layerGroup.appendChild(panel.layerObject);
     }
 
@@ -267,6 +267,7 @@ export class LayerPanel {
             cancel: false, name: layerRendering, index: layerIndex,
             layer: layer, maps: this.mapObject, visible: layer.visible
         };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         this.mapObject.trigger('layerRendering', eventArgs, (observedArgs: ILayerRenderingEventArgs) => {
             if (!eventArgs.cancel && eventArgs.visible) {
                 if (layer.layerType === 'OSM') {
@@ -391,9 +392,8 @@ export class LayerPanel {
         }
         this.rectBounds = null;
         const shapeSettings: ShapeSettings = <ShapeSettings>this.currentLayer.shapeSettings;
-        const bubbleSettings: BubbleSettings[] = <BubbleSettings[]>this.currentLayer.bubbleSettings;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Array.prototype.forEach.call(renderData, (geometryData: any, index: number) => {
+        Array.prototype.forEach.call(renderData, (geometryData: any) => {
             if (!isNullOrUndefined(geometryData['geometry']) || !isNullOrUndefined(geometryData['coordinates'])) {
                 const type: string = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['type'] : geometryData['type'];
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -430,9 +430,9 @@ export class LayerPanel {
                 };
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const currentShapeData: any[] = <any[]>this.currentLayer.layerData[i as number];
-                let pathOptions: PathOption; let polyLineOptions: PolylineOption;
-                let circleOptions: CircleOption; let groupElement: Element; let drawObject: Element;
-                let path: string = ''; const points: string = '';
+                let pathOptions: PathOption;
+                let circleOptions: CircleOption; let groupElement: Element;
+                let path: string = '';
                 let fill: string = (shapeSettings.autofill) ? colors[i % colors.length] :
                     (shapeSettings.fill || this.mapObject.themeStyle.shapeFill);
                 if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
@@ -606,7 +606,7 @@ export class LayerPanel {
                                 (shapeID + '_multiLine_' + index), eventArgs.fill, eventArgs.border, opacity,
                                 pointData['x'], pointData['y'], circleRadius, shapeSettings.dashArray);
                             pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
-                            this.pathAttributeCalculate(groupElement, pathEle, drawingType, currentShapeData, i);
+                            this.pathAttributeCalculate(groupElement, pathEle, drawingType, currentShapeData);
                         });
                         break;
                     case 'Path':
@@ -618,7 +618,7 @@ export class LayerPanel {
                         break;
                     }
                     if (!isNullOrUndefined(pathEle) && drawingType !== 'MultiPoint') {
-                        this.pathAttributeCalculate(groupElement, pathEle, drawingType, currentShapeData, i);
+                        this.pathAttributeCalculate(groupElement, pathEle, drawingType, currentShapeData);
                     }
                     if (i === this.currentLayer.layerData.length - 1) {
                         this.layerFeatures(layerIndex, colors, renderData, labelTemplateEle);
@@ -638,12 +638,11 @@ export class LayerPanel {
      * @param {Element} pathEle - Specifies the svg element.
      * @param {string} drawingType - Specifies the data type.
      * @param {any} currentShapeData - Specifies the layer of shapedata.
-     * @param {number} index - Specifies the tab index.
      * @returns {void}
      */
     private pathAttributeCalculate(groupElement: Element, pathEle: Element, drawingType: string,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                   currentShapeData: any, index: number): void {
+                                   currentShapeData: any): void {
         const property: string[] = (Object.prototype.toString.call(this.currentLayer.shapePropertyPath) === '[object Array]' ?
             this.currentLayer.shapePropertyPath : [this.currentLayer.shapePropertyPath]) as string[];
         let properties: string;
@@ -662,7 +661,7 @@ export class LayerPanel {
         }
         else {
             pathEle.setAttribute('role', 'region');
-        }        
+        }
         if (drawingType === 'LineString' || drawingType === 'MultiLineString') {
             (pathEle as HTMLElement).style.cssText = 'outline:none';
         }
@@ -689,7 +688,7 @@ export class LayerPanel {
      *
      * @param {number} layerIndex - Specifies the layer index
      * @param {string[]} colors - Specifies the colors
-     * @param {Object[]} renderData - Specifies the render data
+     * @param {any[]} renderData - Specifies the render data
      * @param {HTMLElement} labelTemplateEle - Specifies the label template element
      * @returns {void}
      */
@@ -702,7 +701,8 @@ export class LayerPanel {
         if (this.mapObject.polygonModule) {
             this.groupElements.push(
                 this.mapObject.polygonModule.polygonRender(this.mapObject, layerIndex,
-                    (this.mapObject.isTileMap ? Math.floor(this.currentFactor) : this.currentFactor)));
+                                                           (this.mapObject.isTileMap ? Math.floor(this.currentFactor)
+                                                               : this.currentFactor)));
         }
         if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
             const length: number = this.currentLayer.bubbleSettings.length;
@@ -719,9 +719,8 @@ export class LayerPanel {
                 this.bubbleCalculation(bubble, range);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const bubbleDataSource: any[] = bubble.dataSource as any[];
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 this.mapObject.bubbleModule.bubbleCollection = [];
-                bubbleDataSource.map((bubbleData: any, i: number) => {
+                bubbleDataSource.map((bubbleData: object, i: number) => {
                     this.renderBubble(
                         this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);
                 });
@@ -757,7 +756,7 @@ export class LayerPanel {
                                                      (this.mapObject.isTileMap ? Math.floor(this.currentFactor) :
                                                          this.currentFactor), null);
         }
-        this.translateLayerElements(this.layerObject, layerIndex);
+        this.translateLayerElements(this.layerObject);
         this.layerGroup.appendChild(this.layerObject);
     }
 
@@ -811,6 +810,8 @@ export class LayerPanel {
      * @param {object} bubbleData - Specifies the bubble data
      * @param {string} color - Specifies the color
      * @param {number} range - Specifies the range
+     * @param {number} range.min - Specifies the minimum range
+     * @param {number} range.max - Specifies the maximum range
      * @param {number} bubbleIndex - Specifies the bubble index
      * @param {number} dataIndex - Specifies the data index
      * @param {number} group - Specifies the group
@@ -836,9 +837,9 @@ export class LayerPanel {
      * To get the shape color from color mapping module
      *
      * @param {LayerSettingsModel} layer - Specifies the layer
-     * @param {object} shape - Specifies the shape
+     * @param {any} shape - Specifies the shape
      * @param {string} color - Specifies the color
-     * @returns {Object} - Returns the object
+     * @returns {any} - Returns the object
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getShapeColorMapping(layer: LayerSettingsModel, shape: any, color: string): any {
@@ -855,14 +856,14 @@ export class LayerPanel {
         return colorMapping.getShapeColorMapping(layer.shapeSettings, layer.dataSource[index as number], color);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public generatePoints(type: string, coordinates: any[], data: any, properties: any): void {
+    public generatePoints(type: string, coordinates: any[], data: object, properties: object): void {
         let latitude: number; let longitude: number;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let newData: any[] = [];
         switch (type.toLowerCase()) {
         case 'polygon':
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            newData = <any[]>this.calculatePolygonBox(<any[]>coordinates[0], data, properties);
+            newData = <any[]>this.calculatePolygonBox(<any[]>coordinates[0]);
             if (newData.length > 0) {
                 newData['property'] = properties;
                 newData['type'] = type;
@@ -876,7 +877,7 @@ export class LayerPanel {
             for (let i: number = 0; i < coordinates.length; i++) {
                 for (let j: number = 0; j < coordinates[i as number].length; j++) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    newData = <any[]>this.calculatePolygonBox(<any[]>coordinates[i as number][j as number], data, properties);
+                    newData = <any[]>this.calculatePolygonBox(<any[]>coordinates[i as number][j as number]);
                     if (newData.length > 0) {
                         multiPolygonDatas.push(newData);
                     }
@@ -1021,7 +1022,7 @@ export class LayerPanel {
         return (Math.min(verFactor, horFactor));
     }
 
-    public translateLayerElements(layerElement: Element, index: number): void {
+    public translateLayerElements(layerElement: Element): void {
         let childNode: HTMLElement;
         this.mapObject.translateType = 'layer';
         if (!isNullOrUndefined(this.mapObject.baseMapRectBounds)) {
@@ -1080,7 +1081,7 @@ export class LayerPanel {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public calculateRectBounds(layerData: any[]): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Array.prototype.forEach.call(layerData, (obj: any, index: number) => {
+        Array.prototype.forEach.call(layerData, (obj: any) => {
             if (!isNullOrUndefined(obj['geometry']) || !isNullOrUndefined(obj['coordinates'])) {
                 const type: string = !isNullOrUndefined(obj['geometry']) ? obj['geometry']['type'] : obj['type'];
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1092,13 +1093,13 @@ export class LayerPanel {
                     break;
                 case 'multipolygon':
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    coordinates.map((point: any, index: number) => {
+                    coordinates.map((point: any) => {
                         this.calculateRectBox(point[0]);
                     });
                     break;
                 case 'multilinestring':
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    coordinates.map((multiPoint: any, index: number) => {
+                    coordinates.map((multiPoint: any) => {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         multiPoint.map((point: any, index: number) => {
                             this.calculateRectBox(point, 'multilinestring', index === 0 ? true : false);
@@ -1126,7 +1127,7 @@ export class LayerPanel {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public calculatePolygonBox(coordinates: any[], data: any, properties: any): any {
+    public calculatePolygonBox(coordinates: any[]): any {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newData: any[] = [];
         const bounds: GeoLocation = this.mapObject.baseMapBounds;
@@ -1275,114 +1276,120 @@ export class LayerPanel {
     }
 
     public arrangeTiles(type: string, x: number, y: number): void {
-        const element: HTMLElement = document.getElementById(this.mapObject.element.id + '_tile_parent');
-        const element1: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
         let timeOut: number;
         if (!isNullOrUndefined(type) && type !== 'Pan') {
             this.tileAnimation(type, x, y);
             timeOut = animationMode === 'Disable' ? 0 : (this.mapObject.layersCollection[0].animationDuration === 0 &&
                 animationMode === 'Enable') ? 1000 : this.mapObject.layersCollection[0].animationDuration;
-        } else {
-            timeOut = 0;
         }
         if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
             this.renderGoogleMap(this.mapObject.layers[0].key, this.mapObject.staticMapZoom);
         } else {
-            setTimeout(() => {
-                if (element) {
-                    element.style.zIndex = '1';
+            if (type === 'Pan') {
+                this.arrangeTilesLayer(type);
+            } else {
+                setTimeout(() => {
+                    this.arrangeTilesLayer(type);
+                }, timeOut);
+            }
+        }
+    }
+
+    private arrangeTilesLayer(type: string): void {
+        const element: HTMLElement = document.getElementById(this.mapObject.element.id + '_tile_parent');
+        const element1: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
+        if (element) {
+            element.style.zIndex = '1';
+        }
+        if (element1) {
+            element1.style.zIndex = '0';
+        }
+        let animateElement: HTMLElement;
+        if (!document.getElementById(this.mapObject.element.id + '_animated_tiles') && element) {
+            animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
+            element.appendChild(animateElement);
+        } else {
+            if (type !== 'Pan' && element1 && element) {
+                element1.appendChild(element.children[0]);
+                if (!this.mapObject.isAddLayer && !isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
+                    document.getElementById(this.mapObject.element.id + '_animated_tiles').id =
+                        this.mapObject.element.id + '_animated_tiles_old';
                 }
-                if (element1) {
-                    element1.style.zIndex = '0';
-                }
-                let animateElement: HTMLElement;
-                if (!document.getElementById(this.mapObject.element.id + '_animated_tiles') && element) {
-                    animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
-                    element.appendChild(animateElement);
+                animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
+                element.appendChild(animateElement);
+            } else {
+                animateElement = element ? element.children[0] as HTMLElement : null;
+            }
+        }
+        for (let id: number = 0; id < this.tiles.length; id++) {
+            const tile: Tile = this.tiles[id as number];
+            let imgElement: HTMLImageElement = null;
+            const mapId: string = this.mapObject.element.id;
+            if (type === 'Pan') {
+                let child: HTMLElement = document.getElementById(mapId + '_tile_' + id);
+                let isNewTile: boolean = false;
+                if (isNullOrUndefined(child)) {
+                    isNewTile = true;
+                    child = createElement('div', { id: mapId + '_tile_' + id });
+                    imgElement = createElement('img') as HTMLImageElement;
                 } else {
-                    if (type !== 'Pan' && element1 && element) {
-                        element1.appendChild(element.children[0]);
-                        if (!this.mapObject.isAddLayer && !isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
-                            document.getElementById(this.mapObject.element.id + '_animated_tiles').id =
-                                this.mapObject.element.id + '_animated_tiles_old';
-                        }
-                        animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
-                        element.appendChild(animateElement);
-                    } else {
-                        animateElement = element ? element.children[0] as HTMLElement : null;
+                    child.style.removeProperty('display');
+                    imgElement = <HTMLImageElement>child.children[0];
+                }
+                if (!isNewTile && imgElement && imgElement.src !== tile.src) {
+                    imgElement.src = tile.src;
+                }
+                child.style.position = 'absolute';
+                child.style.left = tile.left + 'px';
+                child.style.top = tile.top + 'px';
+                child.style.height = tile.height + 'px';
+                child.style.width = tile.width + 'px';
+                if (isNewTile) {
+                    imgElement.setAttribute('height', '256px');
+                    imgElement.setAttribute('width', '256px');
+                    imgElement.setAttribute('src', tile.src);
+                    imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
+                    imgElement.style.setProperty('user-select', 'none');
+                    child.appendChild(imgElement);
+                    animateElement.appendChild(child);
+                }
+            } else {
+                imgElement = createElement('img') as HTMLImageElement;
+                imgElement.setAttribute('height', '256px');
+                imgElement.setAttribute('width', '256px');
+                imgElement.setAttribute('src', tile.src);
+                imgElement.style.setProperty('user-select', 'none');
+                imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
+                const child: HTMLElement = createElement('div', { id: mapId + '_tile_' + id });
+                child.style.position = 'absolute';
+                child.style.left = tile.left + 'px';
+                child.style.top = tile.top + 'px';
+                child.style.height = tile.height + 'px';
+                child.style.width = tile.width + 'px';
+                child.appendChild(imgElement);
+                if (animateElement) {
+                    animateElement.appendChild(child);
+                }
+            }
+            if (id === (this.tiles.length - 1) && document.getElementById(this.mapObject.element.id + '_animated_tiles_old')) {
+                removeElement(this.mapObject.element.id + '_animated_tiles_old');
+            }
+        }
+        if (!isNullOrUndefined(this.mapObject.currentTiles)) {
+            for (let l: number = this.tiles.length; l < animateElement.childElementCount; l++) {
+                let isExistingElement: boolean = false;
+                for (let a: number = 0; a < this.mapObject.currentTiles.childElementCount; a++) {
+                    if (!isExistingElement &&
+                        this.mapObject.currentTiles.children[a as number].id === animateElement.children[l as number].id) {
+                        isExistingElement = true;
                     }
                 }
-                for (let id: number = 0; id < this.tiles.length; id++) {
-                    const tile: Tile = this.tiles[id as number];
-                    let imgElement: HTMLImageElement = null;
-                    const mapId: string = this.mapObject.element.id;
-                    if (type === 'Pan') {
-                        let child: HTMLElement = document.getElementById(mapId + '_tile_' + id);
-                        let isNewTile: boolean = false;
-                        if (isNullOrUndefined(child)) {
-                            isNewTile = true;
-                            child = createElement('div', { id: mapId + '_tile_' + id });
-                            imgElement = createElement('img') as HTMLImageElement;
-                        } else {
-                            child.style.removeProperty('display');
-                            imgElement = <HTMLImageElement>child.children[0];
-                        }
-                        if (!isNewTile && imgElement && imgElement.src !== tile.src) {
-                            imgElement.src = tile.src;
-                        }
-                        child.style.position = 'absolute';
-                        child.style.left = tile.left + 'px';
-                        child.style.top = tile.top + 'px';
-                        child.style.height = tile.height + 'px';
-                        child.style.width = tile.width + 'px';
-                        if (isNewTile) {
-                            imgElement.setAttribute('height', '256px');
-                            imgElement.setAttribute('width', '256px');
-                            imgElement.setAttribute('src', tile.src);
-                            imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
-                            imgElement.style.setProperty('user-select', 'none');
-                            child.appendChild(imgElement);
-                            animateElement.appendChild(child);
-                        }
-                    } else {
-                        imgElement = createElement('img') as HTMLImageElement;
-                        imgElement.setAttribute('height', '256px');
-                        imgElement.setAttribute('width', '256px');
-                        imgElement.setAttribute('src', tile.src);
-                        imgElement.style.setProperty('user-select', 'none');
-                        imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
-                        const child: HTMLElement = createElement('div', { id: mapId + '_tile_' + id });
-                        child.style.position = 'absolute';
-                        child.style.left = tile.left + 'px';
-                        child.style.top = tile.top + 'px';
-                        child.style.height = tile.height + 'px';
-                        child.style.width = tile.width + 'px';
-                        child.appendChild(imgElement);
-                        if (animateElement) {
-                            animateElement.appendChild(child);
-                        }
-                    }
-                    if (id === (this.tiles.length - 1) && document.getElementById(this.mapObject.element.id + '_animated_tiles_old')) {
-                        removeElement(this.mapObject.element.id + '_animated_tiles_old');
-                    }
+                if (isExistingElement) {
+                    (animateElement.children[l as number] as HTMLElement).style.display = 'none';
+                } else {
+                    animateElement.removeChild(animateElement.children[l as number]);
                 }
-                if (!isNullOrUndefined(this.mapObject.currentTiles)) {
-                    for (let l: number = this.tiles.length; l < animateElement.childElementCount; l++) {
-                        let isExistingElement: boolean = false;
-                        for (let a: number = 0; a < this.mapObject.currentTiles.childElementCount; a++) {
-                            if (!isExistingElement &&
-                                this.mapObject.currentTiles.children[a as number].id === animateElement.children[l as number].id) {
-                                isExistingElement = true;
-                            }
-                        }
-                        if (isExistingElement) {
-                            (animateElement.children[l as number] as HTMLElement).style.display = 'none';
-                        } else {
-                            animateElement.removeChild(animateElement.children[l as number]);
-                        }
-                    }
-                }
-            }, timeOut);
+            }
         }
     }
 

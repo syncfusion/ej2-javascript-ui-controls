@@ -694,6 +694,14 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     @Property(false)
     public isAddAnnotationProgrammatically: boolean;
 
+    /**
+     * Represents the annotation is transparent.
+     * @private
+     *
+     */
+    @Property(false)
+    public isTransparentSet: boolean;
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);

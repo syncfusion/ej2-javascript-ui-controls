@@ -910,6 +910,8 @@ export class OlapEngine {
                 }
                 if (members.length === allCount + (measure ? 1 : 0) && measure && !isGrandTotalTop) {
                     const levelName: string = 'Grand Total' + this.valueSortSettings.headerDelimiter +
+                        this.dataFields[this.getUniqueName(members[measurePos as number].querySelector('UName').textContent)].caption ?
+                        this.dataFields[this.getUniqueName(members[measurePos as number].querySelector('UName').textContent)].caption :
                         members[measurePos as number].querySelector('Caption').textContent;
                     const formattedText: string = (typeColl[measurePos as number] === '3' &&
                         this.dataFields[this.getUniqueName(members[measurePos as number].querySelector('UName').textContent)] &&
@@ -924,8 +926,7 @@ export class OlapEngine {
                         members[measurePos as number].getAttribute('Hierarchy'), {
                             levelName: levelName, axis: members[measurePos as number].getAttribute('Hierarchy')
                         });
-                    gTotals[gTotals.length - 1].valueSort['Grand Total' + this.valueSortSettings.headerDelimiter +
-                        members[measurePos as number].querySelector('Caption').textContent] = 1;
+                    gTotals[gTotals.length - 1].valueSort[levelName as string] = 1;
                 } else if (!(allStartPos === 0 || (measurePos === 0 && allStartPos === 1)) && drillAllow && withoutAllAllow) {
                     if (this.dataSourceSettings.grandTotalsPosition === 'Top' && isGrandTotalAdd && this.dataSourceSettings.showGrandTotals &&
                         (this.olapValueAxis === 'row' ? this.dataSourceSettings.rows.length > 1 : true)) {
@@ -2913,7 +2914,7 @@ export class OlapEngine {
         for (const field of this.values) {
             values[values.length] = (field.isCalculatedField ? this.fieldList[field.name].tag : field.name);
         }
-        if (values.length > 1) {
+        if (values.length > 0) {
             if (this.isMeasureAvail) {
                 let isAvail: boolean = false;
                 let fieldCount: number = 0;

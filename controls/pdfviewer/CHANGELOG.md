@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 25.1.40 (2024-04-16)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I571265` - Now, the author name is not changed for shape and free text annotations upon saving the document.
+- `#I572045` - Now, the transparent background color is not changed to black upon importing exported annotation and saving the document.
+- `#I572061` - Now, the standalone saved PDF document with a `Not Approved` dynamic stamp does not throw an error when opened in Adobe.
+- `#I569884` - Now, the script error is not occurred when setting the text markup annotation module to false.
+- `#F187662` - Now, the exception is not occurred when right clicking the form fields in the provided document.
+- `#I572289` - Now, the exception does not occur when dynamically loading PDF documents in standalone mode.
+
 ## 25.1.39 (2024-04-09)
 
 ### PDF Viewer

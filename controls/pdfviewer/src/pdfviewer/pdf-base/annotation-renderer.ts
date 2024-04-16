@@ -44,7 +44,7 @@ export class AnnotationRenderer {
         const shapeAnnotation: any = details;
         const isLock: boolean = this.checkAnnotationLock(shapeAnnotation);
         if (!isNullOrUndefined(shapeAnnotation.author)) {
-            shapeAnnotation.author = 'Guest';
+            shapeAnnotation.author = shapeAnnotation.author;
         }
         if (!isNullOrUndefined(shapeAnnotation.shapeAnnotationType) && shapeAnnotation.shapeAnnotationType === 'Line') {
             const points: any = JSON.parse(shapeAnnotation.vertexPoints);
@@ -1125,9 +1125,8 @@ export class AnnotationRenderer {
             const reviewDetails: any = stampAnnotation.review;
             rubberStampAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, rubberStampAnnotation.bounds));
             if (!isNullOrUndefined(stampAnnotation.author)) {
-                stampAnnotation.author = 'Guest';
+                stampAnnotation.author = stampAnnotation.author;
             }
-            rubberStampAnnotation.author = !isNullOrUndefined(stampAnnotation.author) && stampAnnotation.author.toString() !=="" ? stampAnnotation.author.toString() : 'Guest';
             if (!isNullOrUndefined(stampAnnotation.subject) && stampAnnotation.subject) {
                 rubberStampAnnotation.subject = stampAnnotation.subject.toString();
             }
@@ -1261,7 +1260,7 @@ export class AnnotationRenderer {
                     appearance.graphics.setTransparency(opacity);
                     this.renderDynamicStamp(rubberStampAnnotation, icon, text, textBrush, rectangle, pens, page);
                     appearance.graphics.restore(state);
-                    rubberStampAnnotation._dictionary.set('Name', _PdfName.get('#23D' + icon.toString()));
+                    rubberStampAnnotation._dictionary.set('Name', _PdfName.get('#23D' + icon.split(" ").join("")));
                 }
                 else {
                     this.retriveDefaultWidth(icon.trim());
@@ -1284,7 +1283,7 @@ export class AnnotationRenderer {
     public addMeasure(details: any, page: PdfPage): void {
         const measureShapeAnnotation: any = details;
         if (!isNullOrUndefined(measureShapeAnnotation.author)) {
-            measureShapeAnnotation.author = 'Guest';
+            measureShapeAnnotation.author = measureShapeAnnotation.author;
         }
         if (!isNullOrUndefined(measureShapeAnnotation.shapeAnnotationType) && measureShapeAnnotation.shapeAnnotationType === 'Line') {
             const points: any = JSON.parse(measureShapeAnnotation.vertexPoints);
@@ -1790,7 +1789,12 @@ export class AnnotationRenderer {
             const fillColor: any = JSON.parse(freeTextAnnotation.fillColor);
             if (!this.isTransparentColor(fillColor)){
                 const color: number[] = [fillColor.r, fillColor.g, fillColor.b];
-                annotation.color = color;
+                if (freeTextAnnotation.isTransparentSet) {
+                    annotation.color = undefined;
+                }
+                else {
+                    annotation.color = color;
+                }
             }
             if (fillColor.a < 1 && fillColor.a > 0) {
                 annotation._dictionary.update('FillOpacity', fillColor.a);
@@ -3776,6 +3780,9 @@ export class AnnotationRenderer {
         let points: AnnotPoint[] = [{X: 100, Y: 400}, {X: 200, Y: 400}];
         freeTextAnnotation.CalloutLines = points;
         let backgroundColor: any = freeTextAnnot.color ? freeTextAnnot.color : [0, 0, 0];
+        if (isNullOrUndefined(freeTextAnnot.color)) {
+            freeTextAnnotation.IsTransparentSet = true;
+        }
         freeTextAnnotation.Color = new AnnotColor(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
         freeTextAnnotation.Flatten = freeTextAnnot.flatten;
         freeTextAnnotation.FlattenPopups = !isNullOrUndefined(freeTextAnnot.flattenPopups) ? freeTextAnnot.flattenPopups : false; // returns undefined
@@ -3788,7 +3795,7 @@ export class AnnotationRenderer {
         if (freeTextAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(freeTextAnnot._dictionary.get('FillOpacity'))) {
             fillOpacity = parseInt(freeTextAnnot._dictionary.get('FillOpacity').toString(), 10);
         }
-        fillOpacity = freeTextAnnot.color ? (!isNullOrUndefined(fillOpacity) ? fillOpacity : 0) : 0;
+        fillOpacity = freeTextAnnot.color ? (!isNullOrUndefined(fillOpacity) ? fillOpacity : 1) : 0;
         freeTextAnnotation.FillColor = 'rgba(' + backgroundColor[0] + ',' + backgroundColor[1] + ',' + backgroundColor[2] + ',' + fillOpacity + ')';
         freeTextAnnotation.Layer = freeTextAnnot._dictionary.has('Layer') ? freeTextAnnot._dictionary.get('Layer') : null;
         // freeTextAnnotation.Location = freeTextAnnot._dictionary.has('Location') ? freeTextAnnot._dictionary.get('Location') : JSON.stringify({X: freeTextAnnot.bounds.x ,Y: freeTextAnnot.bounds.y});
@@ -4298,6 +4305,7 @@ export class FreeTextAnnotationBase {
     public ExistingCustomData: string = null;
     public Bounds: AnnotBounds =  null;
     public PageRotation: number = 0;
+    public IsTransparentSet: boolean = false;
 }
 /**
  *

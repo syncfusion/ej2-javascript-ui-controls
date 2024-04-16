@@ -31,10 +31,14 @@ export class Annotations {
         (this.map as any).renderReactTemplates();
     }
 
-    // eslint-disable-next-line valid-jsdoc
     /**
      * To create annotation elements
-     * 
+     *
+     * @param {HTMLElement} parentElement - Specifies the parent element in the map.
+     * @param {Annotation} annotation -  Specifies the options for customizing the annotation element in maps.
+     * @param {number} annotationIndex - Specifies the index of the annotation.
+     * @returns {void}
+     *
      * @private
      */
     public createAnnotationTemplate(parentElement: HTMLElement, annotation: Annotation, annotationIndex: number): void {
@@ -42,7 +46,6 @@ export class Annotations {
         let left: number; let top: number; let templateFn: any;
         const map: Maps = this.map; let templateElement: HTMLCollection;
         const availSize: Size = map.availableSize;
-        const id: string = map.element.id + '_Annotation_' + annotationIndex;
         const childElement: HTMLElement = createElement('div', {
             id: map.element.id + '_Annotation_' + annotationIndex
         });
@@ -51,6 +54,7 @@ export class Annotations {
             cancel: false, name: annotationRendering, content: annotation.content,
             annotation: annotation
         };
+        //eslint-disable-next-line @typescript-eslint/no-unused-vars
         this.map.trigger(annotationRendering, argsData, (annotationArgs: IAnnotationRenderingEventArgs) => {
             if (argsData.cancel) {
                 return;

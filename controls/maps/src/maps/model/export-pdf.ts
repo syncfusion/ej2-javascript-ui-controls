@@ -15,7 +15,7 @@ export class PdfExport {
      * Constructor for Maps
      *
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     constructor() { }
 
     /**
@@ -32,7 +32,7 @@ export class PdfExport {
     public export(maps: Maps, type: ExportType, fileName: string, allowDownload?: boolean,
                   orientation?: PdfPageOrientation): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const promise: Promise<string> = new Promise((resolve: any, reject: any) => {
+        const promise: Promise<string> = new Promise((resolve: any) => {
             if (maps.isTileMap) {
                 maps.isExportInitialTileMap = true;
             }
@@ -94,7 +94,7 @@ export class PdfExport {
                     const tile: HTMLElement = document.getElementById(maps.element.id + '_tile_' + (i - 1));
                     const tileImg: HTMLImageElement = new Image();
                     tileImg.crossOrigin = 'Anonymous';
-                    let background: string = maps.background ? maps.background : ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) ? '#ffffff' :
+                    const background: string = maps.background ? maps.background : ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) ? '#ffffff' :
                         (maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5Dark' || maps.theme === 'FluentDark' || maps.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent') ? '#000000' : '#ffffff';
                     ctx.fillStyle = background;
                     ctx.fillRect(0, 0, maps.availableSize.width, maps.availableSize.height);
@@ -174,6 +174,6 @@ export class PdfExport {
      * @returns {void}
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void { }
 }

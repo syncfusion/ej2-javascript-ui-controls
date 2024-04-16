@@ -897,7 +897,12 @@ export class DialogEdit {
             storeValidTab.forEach((element: any) => {
                 const targetArray = element.type === "General" ? this.taskFieldColumn : this.customFieldColumn;
                 element.fields.forEach((field: any) => {
-                    targetArray.push(this.parent.getColumnByField(field, storeColumn));
+                    const columnValue = this.parent.getColumnByField(field, storeColumn);
+                    if (columnValue !== null) {
+                        targetArray.push(columnValue);
+                    } else {
+                        targetArray.push(this.parent.columnByField[field as string])
+                    }
                 });
             });
         } else {
@@ -1464,7 +1469,7 @@ export class DialogEdit {
         if (taskSettings.endDate === columnName) {
             if (value !== '') {
                 let endDate: Date = this.parent.dateValidationModule.getDateFromFormat(value);
-                if (isNullOrUndefined(ganttProp.startDate) && isNullOrUndefined(endDate) && ganttProp.startDate.getTime() > endDate.getTime()) {
+                if (!isNullOrUndefined(ganttProp.startDate) && !isNullOrUndefined(ganttProp.endDate) && !isNullOrUndefined(endDate) && ganttProp.startDate.getTime() > endDate.getTime()) {
                     endDate = ganttProp.endDate;
                 }
                 if (endDate.getHours() === 0 && ganttObj.defaultEndTime !== 86400) {
@@ -1895,7 +1900,10 @@ export class DialogEdit {
                     let arg: Record<string, unknown> = {};
                     let sDate: Date = getValue(this.parent.taskFields.startDate, selectedItem);
                     let eDate: Date = getValue(this.parent.taskFields.endDate, selectedItem);
-                    let duration: number = getValue(this.parent.taskFields.duration, selectedItem);
+                    let duration: number;
+                    if (!isNullOrUndefined(this.parent.taskFields.duration)) {
+                        duration = getValue(this.parent.taskFields.duration, selectedItem);
+                    }
                     const startDate: Date = !isNullOrUndefined(gridData) && gridData.length > 0 ?
                         (!isNullOrUndefined(taskFields.endDate) && !isNullOrUndefined(gridData[0][taskFields.endDate] as Date)) ? new Date((getValue(taskFields.endDate, gridData[0]) as Date).getTime()) :
                             new Date((getValue(taskFields.startDate, gridData[0]) as Date).getTime()) :
@@ -1910,17 +1918,25 @@ export class DialogEdit {
                     if (eDate.getHours() === 0 && this.parent.defaultEndTime !== 86400) {
                         this.parent.dateValidationModule.setTime(this.parent.defaultEndTime, eDate);
                     }
-                    eDate = !isNullOrUndefined(taskFields.endDate) && !isNullOrUndefined(gridData) && gridData.length <= 0 ?
-                        (this.beforeOpenArgs.rowData as IGanttData).ganttProperties.endDate : eDate;
-
-                    duration = !isNullOrUndefined(taskFields.duration) && !isNullOrUndefined(gridData) && gridData.length <= 0 ?
-                        (this.beforeOpenArgs.rowData as IGanttData).ganttProperties.duration : 1;
-                    arg = {
-                        [taskFields['startDate']]: sDate,
-                        [taskFields['endDate']]: eDate,
-                        [taskFields['duration']]: duration
-                    };
-                    
+                    if (!isNullOrUndefined(taskFields.endDate)) {
+                        eDate.setDate(sDate.getDate() + 1);
+                    }
+                    if (!isNullOrUndefined(taskFields['duration'])) {
+                        duration = 1;
+                    }
+                    if (!isNullOrUndefined(taskFields['duration'])) {
+                        arg = {
+                            [taskFields['startDate']]: sDate,
+                            [taskFields['endDate']]: eDate,
+                            [taskFields['duration']]: duration
+                        };
+                    }
+                    else {
+                        arg = {
+                            [taskFields['startDate']]: sDate,
+                            [taskFields['endDate']]: eDate,
+                        };
+                    }
                     args.rowData = arg;
                 }
             }
@@ -2898,7 +2914,9 @@ export class DialogEdit {
                 } else if (id.indexOf('Custom') !== -1) {
                     this.updateCustomTab(element);
                 } else if (id === 'Segments') {
-                    this.updateSegmentsData(element, this.beforeOpenArgs.rowData);
+                    if (this.beforeOpenArgs['Segments']['dataSource'].length > 0) {
+                        this.updateSegmentsData(element, this.beforeOpenArgs.rowData);
+                    }
                 }
             }
         }

@@ -2227,7 +2227,6 @@ export class Gantt extends Component<HTMLElement>
         if (this.enableValidation) {
             this.dataOperation.calculateProjectDates();
             this.timelineModule.validateTimelineProp();
-            this.dataOperation.updateGanttData();
         }
         if (this.allowParentDependency) {
             this.predecessorModule.updateParentPredecessor();
@@ -2240,6 +2239,9 @@ export class Gantt extends Component<HTMLElement>
             if (this.isInPredecessorValidation && this.enableValidation && this.autoCalculateDateScheduling) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
             }
+        }
+        if (this.enableValidation) {
+            this.dataOperation.updateGanttData();
         }
         if (isChange) {
             if (this.dataSource instanceof Object && isCountRequired(this)) {

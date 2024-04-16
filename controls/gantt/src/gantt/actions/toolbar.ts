@@ -462,7 +462,7 @@ export class Toolbar {
                     disableItems.push(gID + '_outdent');
                 } else {
                     previousGanttRecord = gObj.updatedRecords[ind - 1];
-                    if ((gObj.updatedRecords[ind as number].level - previousGanttRecord.level === 1) && ind !== -1) {
+                    if (!isNullOrUndefined(gObj.updatedRecords[ind as number]) && (gObj.updatedRecords[ind as number].level - previousGanttRecord.level === 1) && ind !== -1) {
                         disableItems.push(gID + '_indent');
                         enableItems.push(gID + '_outdent');
                     } else if (ind !== -1) {

@@ -54,10 +54,10 @@ export function stringToNumber(value: string, containerSize: number): number {
  * @returns {void}
  * @private
  */
-export function calculateSize(maps: Maps): Size {    
+export function calculateSize(maps: Maps): Size {
     maps.element.style.height = !isNullOrUndefined(maps.height) ? maps.height : 'auto';
     maps.element.style.width = !isNullOrUndefined(maps.width) ? maps.width : 'auto';
-    maps.element.style.setProperty("display", "block");
+    maps.element.style.setProperty('display', 'block');
     const containerWidth: number = maps.element.clientWidth;
     const containerHeight: number = maps.element.clientHeight;
     const containerElementWidth: number = stringToNumber(maps.element.style.width, containerWidth);
@@ -218,14 +218,19 @@ export function convertGeoToPoint(latitude: number, longitude: number, factor: n
 }
 
 /**
+ * @param {Maps} maps - Specifies the map control.
+ * @param {number} factor - Specifies the factor.
+ * @param {LayerSettings} currentLayer - Specifies the current layer.
+ * @param {Coordinate} markerData - Specifies the marker data.
+ * @returns {string} - Returns the path.
  * @private
  */
 export function calculatePolygonPath(maps: Maps, factor: number, currentLayer: LayerSettings, markerData: Coordinate[] ): string {
     let path: string = '';
     Array.prototype.forEach.call(markerData, (data: Coordinate, dataIndex: number) => {
-        let lat: number = data.latitude;
-        let lng: number = data.longitude;
-        let location: Point = (maps.isTileMap) ? convertTileLatLongToPoint(
+        const lat: number = data.latitude;
+        const lng: number = data.longitude;
+        const location: Point = (maps.isTileMap) ? convertTileLatLongToPoint(
             new MapLocation(lng, lat), factor, maps.tileTranslatePoint, true
         ) : convertGeoToPoint(lat, lng, factor, currentLayer, maps);
         if (dataIndex === 0) {
@@ -235,7 +240,7 @@ export function calculatePolygonPath(maps: Maps, factor: number, currentLayer: L
         }
     });
     path += ' z ';
-    return path
+    return path;
 }
 /**
  * Converting tile latitude and longitude to point
@@ -459,18 +464,23 @@ export function measureText(text: string, font: FontModel): Size {
         document.body.appendChild(measureObject);
     }
     measureObject.innerText = text;
-    measureObject.style.cssText = 'position: absolute; font-size: ' + (typeof (font.size) === 'number' ? (font.size + 'px') :font.size) +
+    measureObject.style.cssText = 'position: absolute; font-size: ' + (typeof (font.size) === 'number' ? (font.size + 'px') : font.size) +
     '; font-weight: ' + font.fontWeight + '; font-style: ' + font.fontStyle + '; font-family: ' + font.fontFamily +
     '; visibility: hidden; top: -100; left: 0; whiteSpace: nowrap; lineHeight: normal';
     return new Size(measureObject.clientWidth, measureObject.clientHeight);
 }
 
-/** @private */
+/**
+ * @param {string} text - Specifies the text.
+ * @param {FontModel} font - Specifies the font.
+ * @returns {Size} - Returns the size of text.
+ * @private */
 export function measureTextElement(text: string, font: FontModel): Size {
     const canvas: HTMLCanvasElement = document.createElement('canvas');
+    // eslint-disable-next-line @typescript-eslint/tslint/config
     const context = canvas.getContext('2d');
     context.font = `${font.fontStyle} ${font.fontWeight} ${typeof font.size === 'number' ? font.size + 'px' : font.size} ${font.fontFamily}`;
-    const metrics = context.measureText(text);
+    const metrics: TextMetrics = context.measureText(text);
     const width: number = metrics.width;
     const height: number = parseFloat(font.size) || 16;
     return new Size(width, height);
@@ -696,6 +706,7 @@ export class Rect {
 }
 /**
  * Defines the pattern unit types for drawing the patterns in maps.
+ *
  * @private
  */
 export type patternUnits =
@@ -796,16 +807,16 @@ export function renderTextElement(
 }
 
 /**
- * @param {HTMLCollection} element Specifies the html collection
- * @param {string} markerId Specifies the marker id
- * @param {any} data Specifies the data
- * @param {number} index Specifies the index
- * @param {Maps} mapObj Specifies the map object
- * @returns {HTMLCollection} Returns the html collection
+ * @param {HTMLCollection} element - Specifies the html collection
+ * @param {string} markerId - Specifies the marker id
+ * @param {object} data - Specifies the data
+ * @param {number} index - Specifies the index
+ * @param {Maps} mapObj - Specifies the map object
+ * @param {string} templateType - Specifies the template type
+ * @returns {HTMLElement} - Returns the html element
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function convertElement(element: HTMLCollection, markerId: string, data: any, index: number, mapObj: Maps, templateType: string): HTMLElement {
+export function convertElement(element: HTMLCollection, markerId: string, data: object, index: number, mapObj: Maps, templateType: string): HTMLElement {
     const childElement: HTMLElement = createElement('div', {
         id: markerId, className: mapObj.element.id + '_marker_template_element'
     });
@@ -815,6 +826,7 @@ export function convertElement(element: HTMLCollection, markerId: string, data: 
         childElement.appendChild(element[0]);
         elementLength--;
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!(mapObj as any).isReact || templateType !== 'function') {
         let templateHtml: string = childElement.innerHTML;
         const properties: string[] = Object.keys(data);
@@ -856,13 +868,12 @@ export function formatValue(value: string, maps: Maps): string {
  *
  * @param {string} stringTemplate - Specifies the template
  * @param {string} format - Specifies the format
- * @param {any} data - Specifies the data
+ * @param {object} data - Specifies the data
  * @param {Maps} maps - Specifies the instance of the maps
  * @returns {string} - Returns the string value
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function convertStringToValue(stringTemplate: string, format: string, data: any, maps: Maps): string {
+export function convertStringToValue(stringTemplate: string, format: string, data: object, maps: Maps): string {
     let templateHtml: string = (stringTemplate === '') ? format : stringTemplate;
     const templateValue: string[] = (stringTemplate === '') ? templateHtml.split('${') : templateHtml.split('{{:');
     const regExp: RegExpConstructor = RegExp;
@@ -888,14 +899,11 @@ export function convertStringToValue(stringTemplate: string, format: string, dat
  *
  * @param {Element} element - Specifies the element
  * @param {string} labelId - Specifies the label id
- * @param {any} data - Specifies the data
- * @param {number} index - Specifies the index
- * @param {Maps} mapObj - Specifies the map object
+ * @param {object} data - Specifies the data
  * @returns {HTMLElement} - Returns the html element
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function convertElementFromLabel(element: Element, labelId: string, data: any, index: number, mapObj: Maps): HTMLElement {
+export function convertElementFromLabel(element: Element, labelId: string, data: object): HTMLElement {
     const labelEle: Element = isNullOrUndefined(element.childElementCount) ? element[0] : element;
     let templateHtml: string = labelEle.outerHTML;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -925,7 +933,7 @@ export function convertElementFromLabel(element: Element, labelId: string, data:
  * @returns {Element} - Returns the element
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point, markerID: string, shapeCustom: any,
                             markerCollection: Element, maps: Maps): Element {
     let markerEle: Element; let x: number; let y: number;
@@ -937,7 +945,7 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
     const dashArray: string = shapeCustom['dashArray'];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const border: any = { color: borderColor, width: borderWidth, opacity: borderOpacity };
-    const opacity: number = shapeCustom['opacity']; const padding: number = 5;
+    const opacity: number = shapeCustom['opacity'];
     let rectOptions: RectOption;
     const pathOptions: PathOption = new PathOption(markerID, fill, borderWidth, borderColor, opacity, borderOpacity, dashArray, '');
     size.width = typeof(size.width) === 'string' ? parseInt(size.width, 10) : size.width;
@@ -967,13 +975,13 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
 
 /**
  *
- * @param {any} data - Specifies the data
+ * @param {object} data - Specifies the data
  * @param {string} value - Specifies the value
  * @returns {any} - Returns the data
  * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getValueFromObject(data: any, value: string): any {
+export function getValueFromObject(data: object, value: string): any {
     if (!isNullOrUndefined(data) && !isNullOrUndefined(value)) {
         const splits: string[] = value.replace(/\[/g, '.').replace(/\]/g, '').split('.');
         if (splits.length === 1) {
@@ -991,12 +999,11 @@ export function getValueFromObject(data: any, value: string): any {
 /**
  *
  * @param {IMarkerRenderingEventArgs} eventArgs - Specifies the event arguments
- * @param {any} data - Specifies the data
+ * @param {object} data - Specifies the data
  * @returns {IMarkerRenderingEventArgs} - Returns the arguments
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function markerColorChoose(eventArgs: IMarkerRenderingEventArgs, data: any): IMarkerRenderingEventArgs {
+export function markerColorChoose(eventArgs: IMarkerRenderingEventArgs, data: object): IMarkerRenderingEventArgs {
     const color: string = (!isNullOrUndefined(eventArgs.colorValuePath)) ? ((eventArgs.colorValuePath.indexOf('.') > -1) ? (getValueFromObject(data, eventArgs.colorValuePath)).toString() :
         data[eventArgs.colorValuePath]) : data[eventArgs.colorValuePath];
     eventArgs.fill = (!isNullOrUndefined(eventArgs.colorValuePath) &&
@@ -1009,12 +1016,11 @@ export function markerColorChoose(eventArgs: IMarkerRenderingEventArgs, data: an
 /**
  *
  * @param {IMarkerRenderingEventArgs} eventArgs - Specifies the event arguments
- * @param {any} data - Specifies the data
+ * @param {object} data - Specifies the data
  * @returns {IMarkerRenderingEventArgs} - Returns the arguments
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: any): IMarkerRenderingEventArgs {
+export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: object): IMarkerRenderingEventArgs {
     if (!isNullOrUndefined(eventArgs.shapeValuePath) && !isNullOrUndefined(data[eventArgs.shapeValuePath])) {
         const shape: MarkerType = ((eventArgs.shapeValuePath.indexOf('.') > -1) ?
             (getValueFromObject(data, eventArgs.shapeValuePath).toString()) as MarkerType :
@@ -1047,7 +1053,7 @@ export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: an
  * @param {Element} layerElement - Specifies the layer element
  * @param {boolean} check - Specifies the boolean value
  * @param {boolean} zoomCheck - Specifies the boolean value
- * @returns {void}
+ * @returns {boolean} -Returns boolean for cluster completion
  * @private
  */
 export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTMLElement | Element, maps: Maps,
@@ -1079,14 +1085,15 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
         data: data, maps: maps, cluster: clusters, border: clusters.border
     };
     const containerRect: ClientRect = maps.element.getBoundingClientRect();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const translatePoint: any = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
     let factor: number;
     if (!maps.isTileMap) {
         factor = maps.mapLayerPanel.calculateFactor(currentLayer);
     }
     let isClusteringCompleted: boolean = false;
     const currentZoomFactor: number = !maps.isTileMap ? maps.mapScaleValue : maps.tileZoomLevel;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     maps.trigger('markerClusterRendering', eventArg, (clusterargs: IMarkerClusterRenderingEventArgs) => {
         Array.prototype.forEach.call(markerTemplate.childNodes, (markerElement: Element, o: number) => {
             indexCollection = [];
@@ -1097,11 +1104,11 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                 if (!isNullOrUndefined(bounds1)) {
                     const list: number[] = (maps.markerModule.zoomedMarkerCluster.length > 0 && maps.markerModule.zoomedMarkerCluster[layerIndex as number] && maps.markerModule.zoomedMarkerCluster[layerIndex as number][o as number] && maps.markerModule.zoomedMarkerCluster[layerIndex as number][o as number].length > 0)
                     || (maps.markerModule.initialMarkerCluster.length > 0 && maps.markerModule.initialMarkerCluster[layerIndex as number] && maps.markerModule.initialMarkerCluster[layerIndex as number][o as number] && maps.markerModule.initialMarkerCluster[layerIndex as number][o as number].length > 0) ?
-                    (maps.previousScale < currentZoomFactor ? maps.markerModule.zoomedMarkerCluster[layerIndex as number][o as number] : maps.markerModule.initialMarkerCluster[layerIndex as number][o as number]) : null;
+                        (maps.previousScale < currentZoomFactor ? maps.markerModule.zoomedMarkerCluster[layerIndex as number][o as number] : maps.markerModule.initialMarkerCluster[layerIndex as number][o as number]) : null;
                     if (!isNullOrUndefined(list) && list.length !== 0) {
-                        Array.prototype.forEach.call(list, (currentIndex: number, p: number) => {
+                        Array.prototype.forEach.call(list, (currentIndex: number) => {
                             if (o !== currentIndex) {
-                                let otherMarkerElement: Element = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
+                                const otherMarkerElement: Element = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
                                     + 0 + '_dataIndex_' + currentIndex);
                                 if (otherMarkerElement['style']['visibility'] !== 'hidden') {
                                     markerBoundsComparer(otherMarkerElement, bounds1, colloideBounds, indexCollection, currentIndex);
@@ -1242,18 +1249,18 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             markerCollection.insertBefore(clusterGroup.childNodes[0], markerCollection.firstChild);
         }
         if (!check) {
-            getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection); 
+            getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection);
         }
         const element: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_Polygon_Group');
         const polygonElement: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_Polygons_Group');
         if (isNullOrUndefined(element) && !maps.isTileMap) {
-            layerElement.insertBefore(markerCollection, layerElement.firstChild)            
+            layerElement.insertBefore(markerCollection, layerElement.firstChild);
         } else if (!maps.isTileMap) {
             layerElement.appendChild(markerCollection);
         }
         else {
             if (!isNullOrUndefined(polygonElement)) {
-                polygonElement.insertAdjacentElement('afterend', markerCollection)
+                polygonElement.insertAdjacentElement('afterend', markerCollection);
             } else if (!isNullOrUndefined(element)) {
                 element.insertAdjacentElement('afterend', markerCollection);
             } else {
@@ -1266,7 +1273,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
         }
         if (zoomCheck) {
             const layerGroupElement: HTMLElement = document.getElementById(maps.element.id + '_Layer_Collections');
-            const element: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + (layerIndex + 1))
+            const element: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + (layerIndex + 1));
             if (!isNullOrUndefined(layerGroupElement) && !isNullOrUndefined(element)) {
                 layerGroupElement.insertBefore(layerElement, element);
             } else if (!isNullOrUndefined(layerGroupElement)) {
@@ -1277,9 +1284,16 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
     return isClusteringCompleted;
 }
 
-/** @private */
+/**
+ * @param {Maps} maps - Specifies the map control.
+ * @param {number} currentZoomFactor - Specifies the current zoom factor.
+ * @param {number} layerIndex - Specifies the layer index.
+ * @param {number} index - Specifies the index.
+ * @param {number} indexCollection - Specifies the index Collection.
+ * @returns {void}
+ * @private */
 export function markerClusterListHandler(maps: Maps, currentZoomFactor: number, layerIndex: number, index: number, indexCollection: number[]): void {
-    if (currentZoomFactor == 1) {
+    if (currentZoomFactor === 1) {
         const initialMarkerClusterList: number[] = isNullOrUndefined(maps.markerModule.initialMarkerCluster[layerIndex as number][index as number]) ? [] : indexCollection.length > 1 ? indexCollection : [];
         maps.markerModule.initialMarkerCluster[layerIndex as number][index as number] = initialMarkerClusterList;
         const zoomedMarkerClusterList: number[] = isNullOrUndefined(maps.markerModule.zoomedMarkerCluster[layerIndex as number][index as number]) ? [] : indexCollection.length > 1 ? indexCollection : [];
@@ -1289,9 +1303,17 @@ export function markerClusterListHandler(maps: Maps, currentZoomFactor: number, 
     }
 }
 
-/** @private */
+/**
+ * @param {Element} tempElement - Specifies the temp element.
+ * @param {ClientRect} markerBounds - Specifies the marker bounds.
+ * @param {ClientRect} colloideBounds - Specifies the colloide Bounds.
+ * @param {number[]} indexCollection - Specifies the index collection.
+ * @param {number} p - Specifies the p.
+ * @returns {void}
+ * @private */
 export function markerBoundsComparer(tempElement: Element, markerBounds: ClientRect, colloideBounds: ClientRect[], indexCollection: number[], p: number): void {
-    let currentMarkerBound = tempElement.getBoundingClientRect() as DOMRect;
+    // eslint-disable-next-line @typescript-eslint/tslint/config
+    const currentMarkerBound = tempElement.getBoundingClientRect() as DOMRect;
     if (!isNullOrUndefined(currentMarkerBound)) {
         if (!(markerBounds.left > currentMarkerBound.right || markerBounds.right < currentMarkerBound.left
             || markerBounds.top > currentMarkerBound.bottom || markerBounds.bottom < currentMarkerBound.top)) {
@@ -1306,11 +1328,10 @@ export function markerBoundsComparer(tempElement: Element, markerBounds: ClientR
  *
  * @param {MarkerClusterData[]} sameMarkerData - Specifies the marker data
  * @param {Maps} maps - Specifies the instance of the maps
- * @param {Element | HTMLElement} markerElement - Specifies the marker element
  * @returns {void}
  * @private
  */
-export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: Maps, markerElement: Element | HTMLElement): void {
+export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: Maps): void {
     const layerIndex: number = sameMarkerData[0].layerIndex;
     const clusterIndex: number = sameMarkerData[0].targetClusterIndex;
     const markerIndex: number = sameMarkerData[0].markerIndex;
@@ -1480,7 +1501,7 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
  * @returns {HTMLElement} - Returns the html element
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: any, markerID: string, data: any,
                                markerIndex: number, markerTemplate: HTMLElement, location: Point, transPoint: Point, scale: number, offset: Point, maps: Maps): HTMLElement {
     templateFn = getTemplateFunction(eventArgs.template, maps);
@@ -1905,8 +1926,9 @@ export function getFieldData(dataSource: any[], fields: string[]): any[] {
  * @returns {number} - Returns the number
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 export function checkShapeDataFields(dataSource: any[], properties: any, dataPath: string, propertyPath: string | string[],
+                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                      layer: LayerSettingsModel): number {
     if (!(isNullOrUndefined(properties))) {
         for (let i: number = 0; i < dataSource.length; i++) {
@@ -1928,11 +1950,10 @@ export function checkShapeDataFields(dataSource: any[], properties: any, dataPat
  *
  * @param {string} shapeData - Specifies the shape data
  * @param {string | string[]} shapePropertyPath -  Specifies the shape property path
- * @param {any} shape -  Specifies the shape
+ * @param {object} shape -  Specifies the shape
  * @returns {string} - Returns the string value
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function checkPropertyPath(shapeData: string, shapePropertyPath: string | string[], shape: any): string {
+export function checkPropertyPath(shapeData: string, shapePropertyPath: string | string[], shape: object): string {
     if (!isNullOrUndefined(shapeData) && !isNullOrUndefined(shape)) {
         if (!isNullOrUndefined(shapePropertyPath)) {
             const properties: string[] = (Object.prototype.toString.call(shapePropertyPath) === '[object Array]' ?
@@ -2028,7 +2049,8 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string, geome
         ySum = ySum + Math.abs(((startY + startY1) * (((startX * startY1) - (startX1 * startY)))));
     }
     sum = 0.5 * sum;
-    const pointValue: number = points.some(point => point.x < 5 && point.y < 5) && geometryType === 'Normal' ? 6 : 4; 
+    // eslint-disable-next-line @typescript-eslint/tslint/config
+    const pointValue: number = points.some(point => point.x < 5 && point.y < 5) && geometryType === 'Normal' ? 6 : 4;
     xSum = (1 / (pointValue * sum)) * xSum;
     ySum = (1 / (pointValue * sum)) * ySum;
 
@@ -2091,7 +2113,7 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string, geome
 export function isCustomPath(layerData: any[]): boolean {
     let customPath: boolean = false;
     if (Object.prototype.toString.call(layerData) === '[object Array]') {
-        Array.prototype.forEach.call(layerData, (layer: LayerSettings, index: number) => {
+        Array.prototype.forEach.call(layerData, (layer: LayerSettings) => {
             if (!isNullOrUndefined(layer['geometry']) && layer['geometry']['type'] === 'Path') {
                 customPath = true;
             }
@@ -2106,6 +2128,9 @@ export function isCustomPath(layerData: any[]): boolean {
  * @param {number} maxWidth - Specifies the maximum width
  * @param {string} text - Specifies the text
  * @param {FontModel} font - Specifies the font
+ * @param {number} width - Specifies the width of text
+ * @param {boolean} isCanvasMeasure - checks the canvas measure
+ * @param {number[]} widthList - Specifies the width list
  * @returns {string} - Returns the string
  * @private
  */
@@ -2222,6 +2247,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     }
     if (mapObject.zoomSettings.shouldZoomInitially && mapObject.zoomSettings.enable) {
         mapObject.mapScaleValue = scaleFactor = zoomFactorValue = ((mapObject.zoomSettings.shouldZoomInitially || mapObject.enablePersistence) && mapObject.scale === 1)
+        // eslint-disable-next-line radix
             ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? 1 : (mapObject.markerZoomedState ? mapObject.markerZoomFactor : parseInt(mapObject.scale.toString()));
         if (mapObject.markerZoomedState && mapObject.mapScaleValue !== mapObject.markerZoomFactor && !mapObject.enablePersistence) {
             mapObject.mapScaleValue = zoomFactorValue = mapObject.markerZoomFactor;
@@ -2393,7 +2419,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
         if (mapObject.isReset && mapObject.mapScaleValue === 1) {
             // eslint-disable-next-line no-self-assign
             mapObject.mapScaleValue = mapObject.mapScaleValue;
-        } else if(!isNullOrUndefined(mapObject.mapScaleValue) && mapObject.mapScaleValue <= mapObject.scale) {
+        } else if (!isNullOrUndefined(mapObject.mapScaleValue) && mapObject.mapScaleValue <= mapObject.scale) {
             mapObject.mapScaleValue = mapObject.scale;
         } else {
             mapObject.mapScaleValue = zoomFactorValue;
@@ -2561,9 +2587,9 @@ export function Internalize(maps: Maps, value: number): string {
 /**
  * Function to compile the template function for maps.
  *
- * @param {string} template - Specifies the template
+ * @param {string | Function} template - Specifies the template
  * @param {Maps} maps - Specifies the Maps instance.
- * @returns {Function} - Returns the function
+ * @returns {any} - Returns the template function
  * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2600,7 +2626,7 @@ export function getElement(id: string): Element {
  *
  * @param {string} targetId - Specifies the target id
  * @param {Maps} map - Specifies the instance of the maps
- * @returns {any} - Returns the object
+ * @returns {object} - Returns the object
  * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2731,7 +2757,7 @@ export function getTargetElement(layerIndex: number, name: string, enable: boole
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createStyle(id: string, className: string, eventArgs: IShapeSelectedEventArgs | any): Element {
-    let styleEle: HTMLElement = createElement('style', {
+    const styleEle: HTMLElement = createElement('style', {
         id: id
     });
     styleEle.innerText = '.' + className + '{fill:'
@@ -2768,14 +2794,13 @@ export function customizeStyle(id: string, className: string, eventArgs: IShapeS
  * @param {SelectionSettingsModel} selectionSettings - Specifies the selection settings
  * @param {Maps} map - Specifies the instance of the maps
  * @param {Element} targetElement - Specifies the target element
- * @param {any} shapeData - Specifies the shape data
- * @param {any} data - Specifies the data
+ * @param {object} shapeData - Specifies the shape data
+ * @param {object} data - Specifies the data
  * @returns {void}
  * @private
  */
 export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsModel, map: Maps, targetElement: Element,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                          shapeData: any, data: any): void {
+                                          shapeData: object, data: object): void {
     const border: BorderModel = {
         color: selectionSettings.border.color,
         width: selectionSettings.border.width / map.scale,
@@ -2792,6 +2817,7 @@ export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsMo
         data: data,
         maps: map
     };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     map.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
         eventArgs.border.opacity = isNullOrUndefined(selectionSettings.border.opacity) ? selectionSettings.opacity :
             selectionSettings.border.opacity;
@@ -2837,7 +2863,7 @@ export function elementAnimate(
     let height: number = 0;
     const transform: string = element.getAttribute('transform') || '';
     new Animation({}).animate(<HTMLElement>element, {
-        duration: (duration === 0 && animationMode === 'Enable') ? 1000: duration,
+        duration: (duration === 0 && animationMode === 'Enable') ? 1000 : duration,
         delay: delay,
         progress: (args: AnimationOptions): void => {
             if (args.timeStamp > args.delay) {
@@ -2852,6 +2878,7 @@ export function elementAnimate(
                     ' ) scale(' + height + ')');
             }
         },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         end: (model: AnimationOptions) => {
 
             element.setAttribute('transform', transform);
@@ -3000,15 +3027,17 @@ export function wordWrap(
 /**
  * @param {string} id - Specifies the id
  * @param {string} text - Specifies the text
- * @param {string} top - Specifies the top
- * @param {string} left - Specifies the left
+ * @param {number} top - Specifies the top
+ * @param {number} left - Specifies the left
  * @param {ZoomToolbarTooltipSettingsModel} settings - Specifies the tooltip settings.
  * @returns {void}
  * @private
  */
 export function createTooltip(id: string, text: string, top: number, left: number, settings: ZoomToolbarTooltipSettingsModel): void {
     let tooltip: HTMLElement = getElement(id) as HTMLElement;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const borderColor: any = getHexColor(settings.borderColor);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const fontColor: any = getHexColor(settings.fontColor);
     const style: string = 'top:' + top.toString() + 'px;' +
         'left:' + left.toString() + 'px;' +
@@ -3035,14 +3064,18 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
 }
 
 /**
+ * @param {string} color - Specifies the color
+ * @returns {any} - Returns the color in rgb
  * @private
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getHexColor(color: string): any {
     if (color.indexOf('#') !== -1 && color.toLowerCase().indexOf('rgb') === -1) {
-        let colorArray: any = (/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i).exec(color);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const colorArray: any = (/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i).exec(color);
         return colorArray ? { r: parseInt(colorArray[1], 16), g: parseInt(colorArray[2], 16), b: parseInt(colorArray[3], 16) } : null;
     } else if (color.toLowerCase().indexOf('rgb') !== -1) {
-        const colorArray: number[] = color.match(/\d+/g).map((a) => { return parseInt(a, 10); });
+        const colorArray: number[] = color.match(/\d+/g).map((a: string) => { return parseInt(a, 10); });
         return colorArray ? { r: colorArray[0], g: colorArray[1], b: colorArray[2] } : null;
     } else {
         const divElment: HTMLElement = document.createElement('div');
@@ -3226,7 +3259,7 @@ export function changeBorderWidth(element: Element, index: number, scale: number
         if (childNode.id.indexOf('_NavigationGroup') > -1) {
             changeNavaigationLineWidth(childNode, index, scale, maps);
         } else if (childNode.id.indexOf('_Polygons_Group') > -1) {
-            for (var i = 0; i < childNode.childElementCount; i++) {
+            for (let i: number = 0; i < childNode.childElementCount; i++) {
                 // eslint-disable-next-line
                 const width: number = maps.layersCollection[index].polygonSettings.polygons[parseInt(childNode.children[i as number].id.split('_PolygonIndex_')[1])].borderWidth;
                 childNode.children[i as number].setAttribute('stroke-width', (width / scale).toString());
@@ -3234,7 +3267,6 @@ export function changeBorderWidth(element: Element, index: number, scale: number
         } else {
             let currentStroke: number;
             let value: number = 0;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const borderWidthValue: string = maps.layersCollection[index as number].shapeSettings.borderWidthValuePath;
             const borderWidth: number = (<LayerSettingsModel>maps.layersCollection[index as number]).shapeSettings.border.width;
             const circleRadius: number = (<LayerSettingsModel>maps.layersCollection[index as number]).shapeSettings.circleRadius;
@@ -3449,13 +3481,12 @@ export function zoomAnimate(
  * @returns {void}
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function animate(element: Element, delay: number, duration: number, process: any, end: any): void {
+export function animate(element: Element, delay: number, duration: number, process: Function, end: Function): void {
     let start: number = null;
     // eslint-disable-next-line prefer-const
     let clearAnimation: number;
     const markerStyle: string = 'visibility:visible';
-    duration = animationMode === "Disable" ? 0 : duration;
+    duration = animationMode === 'Disable' ? 0 : duration;
     const startAnimation: FrameRequestCallback = (timestamp: number) => {
         if (!start) { start = timestamp; }
         const progress: number = timestamp - start;
@@ -3575,6 +3606,7 @@ export function compareZoomFactor(scaleFactor: number, maps: Maps): void {
  * @param {number} mapWidth - Specifies the width of the maps
  * @param {number} mapHeight - Specifies the height of the maps
  * @param {Maps} maps - Specifies the instance of the maps
+ * @param {boolean} isZoomToCoordinates - Checks for the zoom to coordinates
  * @returns {number} - Returns the scale factor
  * @private
  */
@@ -3620,7 +3652,7 @@ export function calculateZoomLevel(minLat: number, maxLat: number, minLong: numb
  * @returns {any} - Returns the data value
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 export function processResult(e: any): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let dataValue: any;

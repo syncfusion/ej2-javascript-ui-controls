@@ -258,7 +258,7 @@ export class InsertHtml {
                     range.deleteContents();
                     range.setStart(startContainerParent, startIndex);
                     range.setEnd(startContainerParent, startIndex);
-                    if (!isNOU(lasNode)) {
+                    if (!isNOU(lasNode) && lasNode !== editNode) {
                         detach(lasNode);
                     }
                     // eslint-disable-next-line

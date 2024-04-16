@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 25.1.40 (2024-04-16)
+
+### Grid
+
+#### Bug fixes
+
+- `#I577961` - The issue where checkbox selection was not working properly upon touching the header checkbox has been fixed.
+- `#FB52524` - Script error thrown when refreshing `aggregateModule` with grouping has been fixed.
+- `#I576058` - The issue with validation message positioning in dialog edit mode with frozen columns has been resolved.
+- `#I576570` - The issue where command column buttons were removed upon deleting a record in the infinite scrolling grid has been fixed.
+
 ## 25.1.39 (2024-04-09)
 
 ### Grid

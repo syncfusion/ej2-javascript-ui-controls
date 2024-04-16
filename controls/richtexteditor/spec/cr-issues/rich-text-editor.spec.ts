@@ -3729,4 +3729,136 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
+    describe('879007 - Pressing enter key after inserting table, freezes the RichTextEditor.', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 65, which: 65, shiftKey: false
+        };
+        beforeAll((done) => {
+            rteObj = renderRTE({
+                value: '<table class="e-rte-table table-element" style="width: 41.3737%; min-width: 0px; height: 67px;"><tbody><tr style="height: 32.8358%;"><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr style="height: 32.8358%;"><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr style="height: 32.8358%;"><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table>',
+            });
+            done();
+        });
+        it('Keydown in after the table element', function (done) {
+            let focusElement = rteObj.inputElement.querySelector(".e-rte-table.table-element");
+            focusElement.parentElement.append(document.createTextNode("RichTextEditor"));
+            let range = document.createRange();
+            let selection = window.getSelection();
+            range.setStart(focusElement.nextSibling, 5);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            (rteObj as any).formatter.editorManager.formatObj.onKeyUp({ event: keyboardEventArgs, enterAction : rteObj.enterKey });
+            expect(focusElement.nextSibling.nodeName.toLocaleLowerCase() === 'p').toBe(true);
+            done();
+        });
+        it('Keydown with a text node', function (done) {
+            let focusElement = rteObj.inputElement;
+            focusElement.innerHTML = "RichTextEditor";
+            let range = document.createRange();
+            let selection = window.getSelection();
+            range.setStart(focusElement.childNodes[0], 5);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            (rteObj as any).formatter.editorManager.formatObj.onKeyUp({ event: keyboardEventArgs, enterAction : rteObj.enterKey });
+            expect(focusElement.childNodes[0].nodeName.toLocaleLowerCase() === 'p').toBe(true);
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('878765 - Title attribute not added properly for the Audio element in RichTextEditor', function () {
+        let rteObj: RichTextEditor;
+        beforeEach(function (done) {
+            rteObj = renderRTE({
+                value: "<div><div id='videoElement'>Video Element</div><div id='audioElement'>Audio Element</div></div>"
+            });
+            done();
+        });
+        afterEach(function (done) {
+            destroy(rteObj);
+            done();
+        });
+        it('Use the executeCommand method to insert the video title attributes.', function (done) {
+            (<any>rteObj).focusIn();
+            setTimeout(function () {
+                (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('#videoElement'), 0);
+                (<any>rteObj).executeCommand('insertVideo', {
+                    url: 'https://www.w3schools.com/tags/movie.mp4',
+                    cssClass: 'e-rte-video',
+                    title: 'newVideo',
+                });
+                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap').getAttribute("title") === "newVideo").toBe(true);
+                done();
+            }, 100);
+        });
+        it('Use the executeCommand method to insert the audio title attributes.', function (done) {
+            (<any>rteObj).focusIn();
+            setTimeout(function () {
+                (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('#audioElement'), 0);
+                (<any>rteObj).executeCommand('insertAudio', {
+                    url: 'https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3',
+                    cssClass: 'e-rte-audio',
+                    title: 'newAudio',
+                });
+                expect((<any>rteObj).inputElement.querySelector('.e-audio-wrap').getAttribute("title") === "newAudio").toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('878525: Content Editable div gets deleted when we copy and paste a text into the RichTextEditor when using Enterkey as', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: 'keydown',
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ''
+        };
+        const data: string = 'test<br/>test2';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value:     '* Programme de soins infirmiers à domicile (palliatifs, oncologie et SLA) <br/>' +
+                '* Groupe de soutien pour adultes endeuillés. <br/>' +
+                ' * Programme de soutien pour les enfants et les jeunes endeuillés. <br/>' +
+                "* Programme d'activités pour aînés vivant avec des troubles neurocognitifs en trois volets: à domicile, virtuel et centre en présentiel; répit pour les proches aidants <br/>" +
+                ' * Soutien à domicile: soins personnels et accompagnement <br/>' +
+                ' * Soins infirmiers à domicile <br/>' +
+                ' * Visites à domicile par des bénévoles <br/>' +
+                '<br/><br/><br/>',
+                pasteCleanupSettings: {
+                    keepFormat: true,
+                },
+                enterKey: 'BR',
+            });
+        });
+        it('copy and paste text', (done) => {
+            rteObj.dataBind();
+            keyBoardEvent.clipboardData = {
+                getData: () => {
+                    return data;
+                },
+                items: []
+            };
+            setTimeout(function () {
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.firstChild, rteObj.inputElement, 0, 17)
+                rteObj.onPaste(keyBoardEvent);
+                expect(rteObj.inputElement !== null).toBe(true);
+                expect(rteObj.inputElement.innerHTML === 'test<br>test2').toBe(true);
+                done();
+            }, 400);
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
 });

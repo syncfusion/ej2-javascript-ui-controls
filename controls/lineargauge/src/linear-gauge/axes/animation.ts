@@ -43,7 +43,7 @@ export class Animations {
         if (pointer.markerType === 'Text') {
             textOptions = new TextOption(markerElement.id, 0, 0, 'middle', pointer.text, null, 'auto');
             textOptions = calculateTextPosition(pointer.bounds, pointer.markerType,
-                                textOptions, this.gauge.orientation, axis, pointer);
+                                                textOptions, this.gauge.orientation, axis, pointer);
         }
         let currentValue: number;
         let start: number = typeof(pointer.startValue) === 'string' ? parseInt(pointer.startValue, 10) : pointer.startValue;
@@ -56,6 +56,7 @@ export class Animations {
         const x: number = pointer.markerType === 'Text' ? textOptions['x'] : options['x'];
         const y: number = pointer.markerType === 'Text' ? textOptions['y'] : options['y'];
         new Animation({}).animate(markerElement, {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             name: 'Linear' as any,
             duration: (animationMode === 'Enable' && ((pointer.animationDuration === 0 && !this.gauge.allowLoadingAnimation) ||
                 this.gauge.animationDuration === 0)) ? 1000 : (this.gauge.allowLoadingAnimation && pointer.animationDuration === 0 ?
@@ -72,7 +73,7 @@ export class Animations {
                             pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
                         if (pointer.markerType === 'Text') {
                             textOptions = calculateTextPosition(pointer.bounds, pointer.markerType,
-                                textOptions, this.gauge.orientation, axis, pointer);
+                                                                textOptions, this.gauge.orientation, axis, pointer);
                         }
                         if (!isNullOrUndefined(options['r'])) {
                             markerElement.setAttribute('cy', options['cy'].toString());
@@ -92,7 +93,7 @@ export class Animations {
                             pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
                         if (pointer.markerType === 'Text') {
                             textOptions = calculateTextPosition(pointer.bounds, pointer.markerType,
-                                textOptions, this.gauge.orientation, axis, pointer);
+                                                                textOptions, this.gauge.orientation, axis, pointer);
                         }
                         if (!isNullOrUndefined(options['r'])) {
                             markerElement.setAttribute('cx', options['cx'].toString());
@@ -190,10 +191,11 @@ export class Animations {
         let animatedPointerWidth: number = pointer.bounds.width;
         let animatedPointerHeight: number = pointer.bounds.height;
         new Animation({}).animate(pointerElement, {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             name: 'Linear' as any,
             duration: (animationMode === 'Enable' && ((pointer.animationDuration === 0 && !this.gauge.allowLoadingAnimation) ||
             this.gauge.animationDuration === 0)) ? 1000 : (this.gauge.allowLoadingAnimation && pointer.animationDuration === 0 ?
-                (this.gauge.animationDuration / this.gauge.splitUpCount) : pointer.animationDuration),
+                    (this.gauge.animationDuration / this.gauge.splitUpCount) : pointer.animationDuration),
             progress: (animate: AnimationOptions): void => {
                 if (animate.timeStamp >= animate.delay) {
                     timeStamp = ((animate.timeStamp - animate.delay) / animate.duration);
@@ -216,7 +218,8 @@ export class Animations {
                                 clipElement.setAttribute('width', (timeStamp * parseInt(clipWidth, radix)).toString());
                         }
                         currentPath = pointer.value === axis.minimum && this.gauge.container.type === 'RoundedRectangle' ? '' : getBox(
-                            new Rect(pointer.bounds.x, pointer.bounds.y, animatedPointerWidth, animatedPointerHeight), this.gauge.container.type,
+                            new Rect(pointer.bounds.x, pointer.bounds.y, animatedPointerWidth, animatedPointerHeight),
+                            this.gauge.container.type,
                             this.gauge.orientation, new Size(animatedPointerWidth, animatedPointerHeight), 'bar',
                             this.gauge.container.width, axis, pointer.roundedCornerRadius);
                         pointerElement.setAttribute('d', currentPath);

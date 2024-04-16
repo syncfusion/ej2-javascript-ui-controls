@@ -4,7 +4,6 @@ import { LinearGauge } from '../../linear-gauge';
 import { Axis, Label, Tick, Pointer, Range } from './axis';
 import { Orientation, Position } from '../utils/enum';
 import { axisLabelRender } from '../model/constant';
-import { AxisRenderer } from './axis-renderer';
 import { IAxisLabelRenderEventArgs } from '../model/interface';
 import { VisibleLabels, Size, Align, measureText, Rect, textFormatter, formatValue, stringToNumber} from '../utils/helper';
 import { valueToCoefficient, getRangePalette, VisibleRange, withInRange, calculateNiceInterval } from '../utils/helper';
@@ -16,10 +15,8 @@ import { valueToCoefficient, getRangePalette, VisibleRange, withInRange, calcula
  */
 export class AxisLayoutPanel {
     private gauge: LinearGauge;
-    private axisRenderer: AxisRenderer;
     constructor(gauge: LinearGauge) {
         this.gauge = gauge;
-        this.axisRenderer = new AxisRenderer(gauge);
     }
 
     /**
@@ -309,7 +306,7 @@ export class AxisLayoutPanel {
                     ((pointer.position === 'Inside' && !axis.opposedPosition) ||
                         (pointer.position === 'Outside' && axis.opposedPosition)) ?
                         (line.x - line.width / 2 - (pointer.markerType !== 'InvertedTriangle' && pointer.markerType !== 'Triangle' ?
-                        (pointer.markerType === 'Text' ? textSize.width : pointer.width) : 0)) - offset : ((line.x + line.width / 2) + offset));
+                            (pointer.markerType === 'Text' ? textSize.width : pointer.width) : 0)) - offset : ((line.x + line.width / 2) + offset));
             }
             y = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.height) + line.y);
         } else {
@@ -323,7 +320,7 @@ export class AxisLayoutPanel {
                     ((pointer.position === 'Inside' && !axis.opposedPosition) ||
                         (pointer.position === 'Outside' && axis.opposedPosition)) ?
                         (line.y - line.height / 2 - (pointer.markerType !== 'InvertedTriangle' && pointer.markerType !== 'Triangle' ?
-                        (pointer.markerType === 'Text' ? textSize.height : pointer.height) : 0)) - offset : ((line.y + line.height / 2) + offset));
+                            (pointer.markerType === 'Text' ? textSize.height : pointer.height) : 0)) - offset : ((line.y + line.height / 2) + offset));
             }
             x = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.width) + line.x);
         }
@@ -590,6 +587,5 @@ export class AxisLayoutPanel {
      */
     public destroy(): void {
         this.gauge = null;
-        this.axisRenderer = null;
     }
 }

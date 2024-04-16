@@ -166,6 +166,7 @@ export class PivotEngine {
 
     /**
      * It is used to clear properties.
+     * @param {isExport} fn - It indicates whether exporting or not.
      *
      * @returns {void}
      * @hidden
@@ -2108,7 +2109,9 @@ export class PivotEngine {
         this.generateGridData(dataSource);
         this.isEditing = false;
     }
-    public generateGridData(dataSource: IDataOptions, requireDatasourceUpdate: boolean = false, isExport?: boolean, headerCollection?: HeaderCollection): void {
+    public generateGridData(
+        dataSource: IDataOptions, requireDatasourceUpdate: boolean = false, isExport?: boolean, headerCollection?: HeaderCollection
+    ): void {
         this.updateDataSourceSettings(dataSource, requireDatasourceUpdate);
         const columns: IFieldOptions[] = dataSource.columns ? dataSource.columns : [];
         const data: IDataSet[] = this.data as IDataSet[];

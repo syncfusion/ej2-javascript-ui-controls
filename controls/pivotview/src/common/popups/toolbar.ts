@@ -1380,9 +1380,15 @@ export class Toolbar {
                     workbook: undefined
                 };
                 this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    this.parent.excelExport(
-                        observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
-                    );
+                    if (this.parent.dataSourceSettings.mode === 'Server') {
+                        this.parent.getEngine(
+                            'onExcelExport', null, null, null, null, null, null, null, null, observedArgs.excelExportProperties
+                        );
+                    } else {
+                        this.parent.excelExport(
+                            observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
+                        );
+                    }
                 });
                 break;
             case (this.parent.element.id + 'csv'):

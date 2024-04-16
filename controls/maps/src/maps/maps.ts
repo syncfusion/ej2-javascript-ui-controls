@@ -22,7 +22,7 @@ import { Highlight } from './user-interaction/highlight';
 import { Selection } from './user-interaction/selection';
 import { MapsTooltip } from './user-interaction/tooltip';
 import { Zoom } from './user-interaction/zoom';
-import { load, click, onclick, rightClick, loaded, doubleClick, resize, shapeSelected, zoomIn } from './model/constants';
+import { load, click, onclick, rightClick, doubleClick, resize, shapeSelected, zoomIn } from './model/constants';
 import { ProjectionType, MapsTheme, PanDirection, TooltipGesture } from './utils/enum';
 import { MapsModel } from './maps-model';
 import { getThemeStyle, Theme } from './model/theme';
@@ -552,18 +552,18 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public pan: EmitType<IMapPanEventArgs>;
 
     /**
-    * This event is triggered after performing the panning action.
-    *
-    * @event panComplete
-    */
+     * This event is triggered after performing the panning action.
+     *
+     * @event panComplete
+     */
     @Event()
     public panComplete: EmitType<IMapPanEventArgs>;
 
     /**
-    * This event is triggered after the zooming operation is completed.
-    *
-    * @event zoomComplete
-    */
+     * This event is triggered after the zooming operation is completed.
+     *
+     * @event zoomComplete
+     */
     @Event()
     public zoomComplete: EmitType<IMapPanEventArgs>;
 
@@ -1035,15 +1035,18 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         });
     }
-    /* eslint-disable @typescript-eslint/no-explicit-any */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private processAjaxRequest(layer: LayerSettings, localAjax: MapAjax | any, type: string): void {
         this.serverProcess['request']++;
         const fetchApiModule: Fetch = new Fetch(localAjax.dataOptions, localAjax.type, localAjax.contentType);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fetchApiModule.onSuccess = (args: any) => {
             if (!isNullOrUndefined(args.type) && args.type === 'application/octet-stream') {
                 const reader: FileReader = new FileReader();
+                //eslint-disable-next-line @typescript-eslint/no-this-alias
                 const map: Maps = this;
-                reader.onload = function (data) {
+                // eslint-disable-next-line @typescript-eslint/tslint/config
+                reader.onload = function () {
                     args = JSON.parse(reader.result.toString());
                     map.processResponseJsonData('Fetch', args, layer, type);
                 };
@@ -1064,12 +1067,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      * @private
      */
-    public processResponseJsonData(processType: string, data?: any | string, layer?: LayerSettings, dataType?: string): void {
+    public processResponseJsonData(processType: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                   data?: any | string, layer?: LayerSettings, dataType?: string): void {
         this.serverProcess['response']++;
         if (processType) {
             if (dataType === 'ShapeData') {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 layer.shapeData = (processType === 'DataManager') ? processResult((data as any)) : data;
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 layer.dataSource = (processType === 'DataManager') ? processResult((data as any)) : data;
             }
         }
@@ -1208,15 +1215,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.isResize = false;
     }
-    private triggerZoomEvent(): void { 
+    private triggerZoomEvent(): void {
         let loadedArgs: ILoadedEventArgs;
         const minMaxLatitudeLongitude: IMinMaxLatitudeLongitude = this.getMinMaxLatitudeLongitude();
+        // eslint-disable-next-line prefer-const
         loadedArgs = {
             maps: this, isResized: this.isResize, minLatitude: minMaxLatitudeLongitude.minLatitude,
             maxLatitude: minMaxLatitudeLongitude.maxLatitude, minLongitude: minMaxLatitudeLongitude.minLongitude,
             maxLongitude: minMaxLatitudeLongitude.maxLongitude, cancel: false, name: 'Loaded'
-        }
+        };
         this.trigger('loaded', loadedArgs);
+        //eslint-enable @typescript-eslint/prefer-const
     }
 
     /**
@@ -1225,20 +1234,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {SelectionSettingsModel} selectionSettings - Specifies the selection settings
      * @param {Maps} map - Specifies the instance of the maps
      * @param {Element} targetElement - Specifies the target element
-     * @param {any} data - Specifies the data
+     * @param {object} data - Specifies the data
      * @returns {void}
      * @private
      */
     public markerSelection(
         selectionSettings: SelectionSettingsModel, map: Maps, targetElement: Element,
-        data: any
+        data: object
     ): void {
         const border: BorderModel = {
             color: selectionSettings.border.color,
             width: selectionSettings.border.width / map.scale,
             opacity: selectionSettings.border.opacity
         };
-        const markerSelectionProperties: any = {
+        const markerSelectionProperties: object = {
             opacity: selectionSettings.opacity,
             fill: selectionSettings.fill,
             border: border,
@@ -1281,6 +1290,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const selectionSettings: SelectionSettingsModel = markerSettings.selectionSettings;
         if (selectionSettings.enable) {
             for (let i: number = 0; i < markerSettings.dataSource['length']; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const data: any = markerSettings.dataSource[i as number];
                 if (data['latitude'] === latitude && data['longitude'] === longitude) {
                     const targetId: string = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex +
@@ -1323,11 +1333,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private setSecondaryElementPosition(): void {
-        let element: HTMLDivElement = getElementByID(this.element.id + '_Secondary_Element') as HTMLDivElement;
-        let rect: ClientRect = this.element.getBoundingClientRect();
-        let svgElement: Element = getElementByID(this.element.id + '_svg');
+        const element: HTMLDivElement = getElementByID(this.element.id + '_Secondary_Element') as HTMLDivElement;
+        const rect: ClientRect = this.element.getBoundingClientRect();
+        const svgElement: Element = getElementByID(this.element.id + '_svg');
         if (!isNullOrUndefined(svgElement)) {
-            let svgRect: ClientRect = svgElement.getBoundingClientRect();
+            const svgRect: ClientRect = svgElement.getBoundingClientRect();
             element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
             element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
         }
@@ -1409,10 +1419,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const mapsElement: HTMLElement = document.getElementById(this.element.id);
         if (!isNullOrUndefined(mapsElement)) {
             const element: ClientRect = mapsElement.getBoundingClientRect();
-            let minPosition: GeoPosition = this.isTileMap ? this.pointToLatLong((this.mapAreaRect.x - this.margin.left),
-                - this.mapAreaRect.y) : this.getGeoLocation(0, (this.mapAreaRect.x + element.left), this.mapAreaRect.y);
-            let maxPosition: GeoPosition = this.isTileMap ? this.pointToLatLong(this.mapAreaRect.width, (this.mapAreaRect.height - this.mapAreaRect.y)) :
-                this.getGeoLocation(0, (this.mapAreaRect.x + element.left + this.mapAreaRect.width), (this.mapAreaRect.y + this.mapAreaRect.height));
+            const minPosition: GeoPosition = this.isTileMap ?
+                this.pointToLatLong((this.mapAreaRect.x - this.margin.left), - this.mapAreaRect.y) :
+                this.getGeoLocation(0, (this.mapAreaRect.x + element.left), this.mapAreaRect.y);
+            const maxPosition: GeoPosition = this.isTileMap ? this.pointToLatLong(this.mapAreaRect.width,
+                                                                                  (this.mapAreaRect.height - this.mapAreaRect.y)) :
+                this.getGeoLocation(0, (this.mapAreaRect.x + element.left + this.mapAreaRect.width),
+                                    (this.mapAreaRect.y + this.mapAreaRect.height));
             const MinMaxLatitudeLongitude: IMinMaxLatitudeLongitude = {
                 minLatitude: minPosition.latitude, maxLatitude: maxPosition.latitude, minLongitude: minPosition.longitude,
                 maxLongitude: maxPosition.longitude
@@ -1434,7 +1447,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const templateElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.element.id + '_template');
         if (!isNullOrUndefined(templateElements) && templateElements.length > 0 &&
             getElementByID(this.element.id + '_Layer_Collections') && !this.isTileMap) {
-            Array.prototype.forEach.call(templateElements, (templateGroupEle: Element, i: number) => {
+            Array.prototype.forEach.call(templateElements, (templateGroupEle: Element) => {
                 let offSetLetValue: number = 0;
                 let offSetTopValue: number = 0;
                 if (!isNullOrUndefined(templateGroupEle) && templateGroupEle.childElementCount > 0) {
@@ -1446,9 +1459,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                         offSetTopValue = this.isTileMap ? 0 : (layerOffset.top < elementOffset.top) ?
                             - (Math.abs(elementOffset.top - layerOffset.top)) : Math.abs(elementOffset.top - layerOffset.top);
                     }
-                    Array.prototype.forEach.call(templateGroupEle.childNodes, (currentTemplate: HTMLElement, j: number) => {
+                    Array.prototype.forEach.call(templateGroupEle.childNodes, (currentTemplate: HTMLElement) => {
                         if (currentTemplate.id.indexOf('Marker') !== -1) {
-                            if (currentTemplate.style.visibility != "hidden") {
+                            if (currentTemplate.style.visibility !== 'hidden') {
                                 const elementOffset: ClientRect = getElementByID(currentTemplate.id).getBoundingClientRect();
                                 currentTemplate.style.left = parseFloat(currentTemplate.style.left) - (this.isTileMap ? 0 : elementOffset.width / 2) + 'px';
                                 currentTemplate.style.top = parseFloat(currentTemplate.style.top) - (this.isTileMap ? 0 : elementOffset.height / 2) + 'px';
@@ -1509,6 +1522,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private findBaseAndSubLayers(): void {
         const baseIndex: number = this.baseLayerIndex;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mainLayers: any[] = []; const subLayers: any[] = [];
         this.layersCollection = [];
         Array.prototype.forEach.call(this.layers, (layer: LayerSettingsModel) => {
@@ -1697,6 +1711,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      * @private
      */
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     public mouseLeaveOnMap(e: PointerEvent): void {
         if (document.getElementsByClassName('highlightMapStyle').length > 0 && this.legendModule) {
             this.legendModule.removeShapeHighlightCollection();
@@ -1722,7 +1737,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private keyboardHighlightSelection(id: string, key: string): void {
         const layerIndex: number = parseInt(id.split('_LayerIndex_')[1].split('_')[0], 10);
         const shapeIndex: number = parseInt(id.split('_shapeIndex_')[1].split('_')[0], 10);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
         const shapeData: any = this.layers[layerIndex as number].shapeData['features']['length'] > shapeIndex ?
             this.layers[layerIndex as number].shapeData['features'][shapeIndex as number]['properties'] : null;
         const dataIndex: number = parseInt(id.split('_dataIndex_')[1].split('_')[0], 10);
@@ -1848,17 +1863,19 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             };
             if (this.onclick) {
                 eventArgs.name = onclick;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 this.trigger('onclick', eventArgs, (mouseArgs: IMouseEventArgs) => {
                     this.clickHandler(e, eventArgs, targetEle);
                 });
             } else {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
                     this.clickHandler(e, eventArgs, targetEle);
                 });
             }
         }
         if (this.zoomModule) {
-            this.zoomModule.removeToolbarOpacity(this.isTileMap ? Math.round(this.tileZoomLevel) : this.mapScaleValue, targetId)
+            this.zoomModule.removeToolbarOpacity(this.isTileMap ? Math.round(this.tileZoomLevel) : this.mapScaleValue, targetId);
             if (this.isDevice) {
                 this.zoomModule.removeToolbarClass('', '', '', '', '');
             }
@@ -1900,7 +1917,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getMarkerClickLocation(pageX: number, pageY: number, x: number, y: number, marker: any, isDragEnd: boolean): GeoPosition {
-        document.getElementById(this.element.id + "_svg").style.cursor = 'grabbing';
+        document.getElementById(this.element.id + '_svg').style.cursor = 'grabbing';
         const targetElement: Element = getElement(marker.targetId);
         let latLongValue: GeoPosition = this.getClickLocation(marker.targetId, pageX, pageY, (targetElement as HTMLElement), x, y);
         const location: Point = (this.isTileMap) ? convertTileLatLongToPoint(
@@ -1918,14 +1935,30 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (isDragEnd) {
             const markerSettings: MarkerSettingsModel = this.layers[marker.layerIndex].markerSettings[marker.markerIndex];
             latLongValue = this.getClickLocation(marker.targetId, (pageX - markerSettings.offset.x), (pageY - markerSettings.offset.y),
-                (targetElement as HTMLElement), (x - markerSettings.offset.x), (y - markerSettings.offset.y));
+                                                 (targetElement as HTMLElement), (x - markerSettings.offset.x),
+                                                 (y - markerSettings.offset.y));
         }
         return latLongValue;
     }
-    /** @private */
+    /**
+     * Gets the location of the mouse click
+     *
+     * @param {string} targetId - Specifies the ID for the target.
+     * @param {number} pageX - Defines the page X position.
+     * @param {number} pageY - Defines the page Y position.
+     * @param {HTMLElement} targetElement - Specifies the target element on the event.
+     * @param  {number} x - Defines the x position in pixel.
+     * @param {number} y - Defines the y position in pixel.
+     * @param {string} type -  Specifies the type.
+     * @returns {GeoPosition} -  Returns the position of the event
+     *
+     * @private
+     *
+     */
     public getClickLocation(targetId: string, pageX: number, pageY: number, targetElement: HTMLElement,
-                             x: number, y: number, type?: string): GeoPosition {
+                            x: number, y: number, type?: string): GeoPosition {
         let layerIndex: number = 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let latLongValue: any;
         if (targetId.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (!isNullOrUndefined(type) ||
             ((parseInt(this.mouseDownEvent['x'], 10) === parseInt(this.mouseClickEvent['x'], 10)) &&
@@ -1933,6 +1966,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             layerIndex = parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
             if (this.layers[layerIndex as number].geometryType === 'Normal') {
                 if (targetId.indexOf('_shapeIndex_') > -1) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const immediateParent: Element = (targetElement as any).parentElement;
                     const parentElement: Element = immediateParent.id.indexOf('_Point_Group') > -1 || immediateParent.id.indexOf('_LineString_Group') > -1
                         || immediateParent.id.indexOf('_MultiLineString_Group') > -1 || immediateParent.id.indexOf('_Polygon_Group') > -1 ?
@@ -1946,15 +1980,18 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                         longitude: Math.abs((location.x / zoomScaleValue) + this.baseMapBounds.longitude.min)
                     };
                     if (this.baseMapBounds.longitude.min < 0 && minLongitude > location.x) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (latLongValue as any).longitude = -(latLongValue as any).longitude;
                     }
                     if (this.baseMapBounds.latitude.min < 0 && minLatitude > location.y) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (latLongValue as any).latitude = - (latLongValue as any).latitude;
                     }
                 } else if (targetId.indexOf('_MarkerIndex_') > -1 && this.markerModule && !this.markerDragArgument) {
                     const markerIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
                     const dataIndex: number = parseInt(targetId.split('_dataIndex_')[1].split('_')[0], 10);
                     if (!isNaN(markerIndex) && !isNaN(dataIndex)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const dataObject: any =
                             this.layers[layerIndex as number].markerSettings[markerIndex as number].dataSource[dataIndex as number];
                         latLongValue = { latitude: dataObject['latitude'], longitude: dataObject.longitude };
@@ -1965,17 +2002,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     const element: HTMLElement = document.getElementById(this.element.id + '_LayerIndex_' + this.markerDragArgument.layerIndex);
                     const elementRect: ClientRect = element.getBoundingClientRect();
                     const location: MapLocation = new MapLocation(pageX > elementRect.left ? Math.abs(elementRect.left - pageX) : 0,
-                        pageY > elementRect.top ? Math.abs(elementRect.top - pageY) : 0);
+                                                                  pageY > elementRect.top ? Math.abs(elementRect.top - pageY) : 0);
                     const minLongitude: number = Math.abs((-this.baseMapBounds.longitude.min) * this.mapLayerPanel.currentFactor);
                     const minLatitude: number = Math.abs(this.baseMapBounds.latitude.max * this.mapLayerPanel.currentFactor);
                     latLongValue = {
-                        latitude: Math.abs(this.baseMapBounds.latitude.max - (location.y / (this.mapLayerPanel.currentFactor * this.scale))),
-                        longitude: Math.abs((location.x / (this.mapLayerPanel.currentFactor * this.scale)) + this.baseMapBounds.longitude.min)
+                        latitude: Math.abs(this.baseMapBounds.latitude.max
+                            - (location.y / (this.mapLayerPanel.currentFactor * this.scale))),
+                        longitude: Math.abs((location.x / (this.mapLayerPanel.currentFactor * this.scale))
+                        + this.baseMapBounds.longitude.min)
                     };
                     if (this.baseMapBounds.longitude.min < 0 && minLongitude > location.x) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (latLongValue as any).longitude = -(latLongValue as any).longitude;
                     }
                     if (this.baseMapBounds.latitude.min < 0 && minLatitude > location.y) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (latLongValue as any).latitude = - (latLongValue as any).latitude;
                     }
                 } else { latLongValue = { latitude: null, longitude: null }; }
@@ -2008,25 +2049,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public mouseEndOnMap(e: PointerEvent): boolean {
-        const targetEle: Element = <Element>e.target;
-        const targetId: string = targetEle.id;
         let pageX: number;
-        let latitude: number = null;
-        let longitude: number = null;
         let pageY: number;
-        let target: Element;
         let touchArg: TouchEvent;
         let layerX: number = 0;
         let layerY: number = 0;
-        const rect: ClientRect = this.element.getBoundingClientRect();
-        const element: Element = <Element>e.target;
         if (e.type.indexOf('touch') !== - 1) {
             this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
             layerX = pageX = touchArg.changedTouches[0].pageX;
             pageY = touchArg.changedTouches[0].pageY;
             layerY = pageY - (this.isTileMap ? 10 : 0);
-            target = <Element>touchArg.target;
             this.mouseClickEvent = { x: pageX, y: pageY };
         } else {
             this.isTouch = e.pointerType === 'touch';
@@ -2034,19 +2067,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             pageY = e.pageY;
             layerX = e['layerX'];
             layerY = e['layerY'] - (this.isTileMap ? 10 : 0);
-            target = <Element>e.target;
         }
         if (this.isTileMap) {
             this.removeTileMap();
         }
         if (this.isTouch) {
-            if (targetEle.id.indexOf('_ToolBar') === -1) {
-                const latLongValue: GeoPosition = this.getClickLocation(targetId, pageX, pageY, (targetEle as HTMLElement), pageX, pageY);
-                if (!isNullOrUndefined(latLongValue)) {
-                    latitude = latLongValue.latitude;
-                    longitude = latLongValue.longitude;
-                }
-            }
             this.titleTooltip(e, pageX, pageY, true);
             if (!isNullOrUndefined(this.legendModule)) {
                 this.legendTooltip(e, e.pageX, e.pageY, true);
@@ -2057,12 +2082,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             e.preventDefault();
         }
         if (!isNullOrUndefined(this.markerDragArgument)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const marker: any = this.markerDragArgument;
             this.mouseClickEvent['x'] = this.mouseDownEvent['x'];
             this.mouseClickEvent['y'] = this.mouseDownEvent['y'];
             const latLongValue: GeoPosition = this.getMarkerClickLocation(pageX, pageY, layerX, layerY, this.markerDragArgument, true);
             const markerObject: MarkerSettingsModel = this.layers[marker.layerIndex].markerSettings[marker.markerIndex];
-            document.getElementById(this.element.id + "_svg").style.cursor = markerObject.enableDrag ? 'pointer' : 'grabbing';
+            document.getElementById(this.element.id + '_svg').style.cursor = markerObject.enableDrag ? 'pointer' : 'grabbing';
             const dragEventArgs: IMarkerDragEventArgs = {
                 name: 'markerDragEnd', x: pageX, y: pageY,
                 latitude: latLongValue.latitude, longitude: latLongValue.longitude,
@@ -2086,7 +2112,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.markerDragArgument = null;
             this.trigger('markerDragEnd', dragEventArgs);
         } else {
-            document.getElementById(this.element.id + "_svg").style.cursor = 'auto';
+            document.getElementById(this.element.id + '_svg').style.cursor = 'auto';
         }
         if (this.zoomModule && this.isDevice) {
             this.zoomModule.removeToolbarOpacity(this.isTileMap ? Math.round(this.tileZoomLevel) : this.scale, this.element.id + '_Zooming_');
@@ -2102,18 +2128,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public mouseDownOnMap(e: PointerEvent): void {
-        let pageX: number;
-        let pageY: number;
-        let target: Element;
-        let touchArg: TouchEvent;
         this.mouseDownEvent = { x: e.x, y: e.y };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (e.type.indexOf('touch') !== - 1 && (e as any).changedTouches) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.mouseDownEvent = { x: (e as any).changedTouches[0].pageX, y: (e as any).changedTouches[0].pageY };
         }
         if (this.isDevice && !isNullOrUndefined(this.mapsTooltipModule)) {
             this.mapsTooltipModule.renderTooltip(e);
         }
-        const rect: ClientRect = this.element.getBoundingClientRect();
         const element: Element = <Element>e.target;
         this.markerDragId = element.id;
         const animatedTiles: HTMLElement = document.getElementById(this.element.id + '_animated_tiles');
@@ -2145,7 +2168,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public mergeCluster(): void {
         if (this.markerModule && (this.markerModule.sameMarkerData.length > 0) &&
             (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
-            mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
+            mergeSeparateCluster(this.markerModule.sameMarkerData, this);
             this.markerModule.sameMarkerData = [];
         }
     }
@@ -2188,6 +2211,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const targetElement: Element = <Element>e.target;
         const targetId: string = targetElement.id;
         let layerIndex: number = 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let latLongValue: any;
         let latitude: number = null; let longitude: number = null;
         if (targetElement.id.indexOf('_ToolBar') === -1) {
@@ -2217,11 +2241,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public mouseMoveOnMap(e: PointerEvent): void {
-        let pageX: number;
-        let pageY: number;
-        let touchArg: TouchEvent;
         let target: Element;
-        const touches: TouchList = null;
         target = (e.type === 'touchmove') ? <Element>(<TouchEvent & PointerEvent>e).target :
             target = <Element>e.target;
         // if (target.id.indexOf('shapeIndex') !== -1 && !this.highlightSettings.enable) {
@@ -2234,8 +2254,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.bubbleModule) {
             this.bubbleModule.bubbleMove(e);
         }
-        if (target.id.indexOf('MarkerIndex') == -1) {
-            document.getElementById(this.element.id + "_svg").style.cursor = 'auto';
+        if (target.id.indexOf('MarkerIndex') === -1) {
+            document.getElementById(this.element.id + '_svg').style.cursor = 'auto';
         }
         this.onMouseMove(e);
         this.notify(Browser.touchMoveEvent, e);
@@ -2252,12 +2272,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.mouseMoveId = element['id'];
         let pageX: number;
         let pageY: number;
-        let target: Element;
-        let touchArg: TouchEvent;
         let touches: TouchList = null;
         let layerX: number = 0;
         let layerY: number = 0;
-        if (e.type.indexOf('touch') == -1) {
+        if (e.type.indexOf('touch') === -1) {
             pageX = (<PointerEvent>e).pageX;
             pageY = (<PointerEvent>e).pageY;
             layerX = e['layerX'];
@@ -2272,13 +2290,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             layerY = pageY = touches[0].clientY - (this.isTileMap ? 10 : 0);
         }
         if (!isNullOrUndefined(this.markerDragArgument)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const marker: any = this.markerDragArgument;
             this.mouseClickEvent['x'] = this.mouseDownEvent['x'];
             this.mouseClickEvent['y'] = this.mouseDownEvent['y'];
             this.getMarkerClickLocation(pageX, pageY, layerX, layerY, marker, false);
         }
         if (this.zoomModule) {
-            this.zoomModule.removeToolbarOpacity(this.isTileMap ? Math.round(this.tileZoomLevel) : this.scale, (<HTMLElement>e.target).id)
+            this.zoomModule.removeToolbarOpacity(this.isTileMap ? Math.round(this.tileZoomLevel) : this.scale, (<HTMLElement>e.target).id);
         }
         return false;
     }
@@ -2287,6 +2306,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let targetId: string = (<HTMLElement>event.target).id;
         let legendText: string; let page: number = this.legendModule.currentPage;
         let legendIndex: string = (<HTMLElement>event.target).id.split('_Index_')[1];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let collection: any;
         page = this.legendModule.totalPages.length <= this.legendModule.currentPage
             ? this.legendModule.totalPages.length - 1 : this.legendModule.currentPage < 0 ?
@@ -2339,6 +2359,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param e - Specifies the arguments of window resize event.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public mapsOnResize(e: Event): boolean {
         if (!this.isDestroyed && !this.isExportInitialTileMap) {
             this.isResize = this.isReset = true;
@@ -2375,6 +2396,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * This method is used to zoom the map by specifying the center position.
      *
      * @param {number} centerPosition - Specifies the location of the maps to be zoomed as geographical coordinates.
+     * @param {number} centerPosition.longitude - Specifies the longitude of the location to be zoomed.
+     * @param {number} centerPosition.latitude - Specifies the latitude of the location to be zoomed.
      * @param {number} zoomFactor - Specifies the zoom factor for the maps.
      * @returns {void}
      */
@@ -2522,9 +2545,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 let dataIndex: number;
                 let shapeIndex: number;
                 let indexValue: number;
+                /* eslint-disable @typescript-eslint/no-explicit-any */
                 let shapeDataValue: any;
                 let data: any;
                 const shapeData: any[] = <any[]>this.layers[layerIndex as number].shapeData['features'];
+                /* eslint-enable @typescript-eslint/no-explicit-any */
                 for (let i: number = 0; i < shapeData.length; i++) {
                     for (let j: number = 0; j < (<string[]>popertyNameArray).length; j++) {
                         const propertyName: string = !isNullOrUndefined(shapeData[i as number]['properties'][popertyNameArray[j as number]])
@@ -2535,6 +2560,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                         if (propertyName === shapeName) {
                             if (!isNullOrUndefined(this.layers[layerIndex as number].shapeSettings.colorValuePath)) {
                                 k = checkShapeDataFields(
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     <any[]>this.layers[layerIndex as number].dataSource, shapeData[i as number]['properties'],
                                     this.layers[layerIndex as number].shapeDataPath, this.layers[layerIndex as number].shapePropertyPath,
                                     this.layers[layerIndex as number]);
@@ -2648,14 +2674,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.maxLongOfGivenLocation = maxLongitude;
             this.zoomNotApplied = true;
             this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
-                                                           this.mapAreaRect.width, this.mapAreaRect.height, this, true);            
+                                                           this.mapAreaRect.width, this.mapAreaRect.height, this, true);
             const minMaxLatitudeLongitude: IMinMaxLatitudeLongitude = this.getMinMaxLatitudeLongitude();
             const zoomArgs: IMapZoomEventArgs = {
                 cancel: false, name: 'zoom', type: zoomIn, maps: this,
                 tileTranslatePoint: {}, translatePoint: {},
                 tileZoomLevel: this.isTileMap ? { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation } : {},
                 scale: !this.isTileMap ? { previous: this.scale, current: this.scaleOfGivenLocation } :
-                    { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation },                
+                    { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation },
                 minLatitude: minMaxLatitudeLongitude.minLatitude, maxLatitude: minMaxLatitudeLongitude.maxLatitude,
                 minLongitude: minMaxLatitudeLongitude.minLongitude, maxLongitude: minMaxLatitudeLongitude.maxLongitude
             };
@@ -2823,11 +2849,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (!this.isDestroyed) {
             let render: boolean = false; let isMarker: boolean = false; let isLayer: boolean = false;
             let isStaticMapType: boolean = false;
-            let layerEle: Element;
-            if (newProp['layers']) {
-                const newLayerLength: number = Object.keys(newProp['layers']).length;
-                layerEle = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
-            }
             for (const prop of Object.keys(newProp)) {
                 switch (prop) {
                 case 'background':
@@ -3100,6 +3121,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To find marker visibility
+     *
+     * @returns {boolean} - Returns whether the bubble is visible or not.
      */
 
     private isBubbleVisible(): boolean {
@@ -3155,11 +3178,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 allowDownload = true;
             }
             if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
-                return new Promise((resolve: any, reject: any) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                return new Promise((resolve: any) => {
                     resolve(this.imageExportModule.export(this, type, fileName, allowDownload));
                 });
             } else if ((this.allowPdfExport) && (this.pdfExportModule)) {
-                return new Promise((resolve: any, reject: any) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                return new Promise((resolve: any) => {
                     resolve(this.pdfExportModule.export(this, type, fileName, allowDownload, orientation));
                 });
             }
@@ -3176,10 +3201,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public getBingUrlTemplate(url: string): Promise<string> {
         let promise: Promise<string>;
         if (!this.isDestroyed) {
-            promise = new Promise((resolve: any, reject: any) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            promise = new Promise((resolve: any) => {
                 const fetchApi : Fetch = new Fetch({
                     url: url
-                });
+                }); // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 fetchApi.onSuccess = (json: any) => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const resource: any = json['resourceSets'][0]['resources'][0];
@@ -3200,7 +3226,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param {boolean} istooltipVisible - Specifies whether the tooltip is visible or not.
      * @param {boolean} isSelection - Specifies whether the shape is selectd or not.
      * @param {boolean} isHighlight - Specfies whether the shape is highlighted or not.
-     * @returns {boolean} - Returns the boolean value
+     * @returns {object} - Returns the boolean values in object.
      */
     private findVisibleLayers(
         layers: LayerSettingsModel[], isLayerVisible: boolean = false,
@@ -3216,11 +3242,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 bubbles = layer.bubbleSettings;
                 markers = layer.markerSettings;
                 polygonSetting = layer.polygonSettings;
-                let navigationLine: NavigationLineSettingsModel[] = layer.navigationLineSettings;
+                const navigationLine: NavigationLineSettingsModel[] = layer.navigationLineSettings;
                 for (const navigation of navigationLine) {
                     if (navigation.visible) {
-                        isSelection = (!isNullOrUndefined(navigation.highlightSettings) && navigation.highlightSettings.enable) || isSelection;
-                        isHighlight = (!isNullOrUndefined(navigation.selectionSettings) && navigation.selectionSettings.enable) || isHighlight;
+                        isSelection = (!isNullOrUndefined(navigation.highlightSettings) &&
+                                       navigation.highlightSettings.enable) || isSelection;
+                        isHighlight = (!isNullOrUndefined(navigation.selectionSettings) &&
+                                       navigation.selectionSettings.enable) || isHighlight;
                     }
                 }
                 for (const polygon of polygonSetting.polygons) {
@@ -3273,6 +3301,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             const pageX: number = x - (isNullOrUndefined(this.markerDragArgument) ? container.offsetLeft : 0);
             const pageY: number = y - (isNullOrUndefined(this.markerDragArgument) ? container.offsetTop : 0);
             const currentLayer: LayerSettings = <LayerSettings>this.layersCollection[layerIndex as number];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const translate: any = getTranslate(this, currentLayer, false);
             const translatePoint: Point = translate['location'] as Point;
             const translatePointX: number = translatePoint.x * this.scale;
@@ -3304,6 +3333,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (!this.isDestroyed) {
             const container: HTMLElement = document.getElementById(this.element.id);
             const ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const latLong: any = this.pointToLatLong(
                 x + this.mapAreaRect.x - (ele.offsetLeft - (isNullOrUndefined(this.markerDragArgument) ? container.offsetLeft : 0)),
                 y + this.mapAreaRect.y - (ele.offsetTop - (isNullOrUndefined(this.markerDragArgument) ? container.offsetTop : 0)));

@@ -40,6 +40,7 @@ export class PageOrganizer {
     private isSkipRevert: boolean = false;
     private isAllImagesReceived: boolean = false;
     private selectAllCheckBox: CheckBox;
+    private totalCheckedCount: number;
 
     /**
      * @param pdfViewer
@@ -661,6 +662,7 @@ export class PageOrganizer {
      * @private
      */
      public thumbnailMouseOver = (event: MouseEvent): void => {
+        const proxy: PageOrganizer = this;
         if (event.currentTarget instanceof HTMLElement) {
             // Convert HTMLCollection to an array
             const childrenArray = Array.from(event.currentTarget.children);
@@ -678,7 +680,16 @@ export class PageOrganizer {
                     else if (child.classList.contains('e-pv-organize-buttondiv') && child.childElementCount > 0) {
                         const childelementArray = Array.from(child.children);
                         for (const childelement of childelementArray) {
-                            (childelement as HTMLElement).style.display = 'flex';
+                            if (proxy.totalCheckedCount > 1) {
+                                if(childelement.id.split("_")[1] == "insert") {
+                                    (childelement as HTMLElement).style.display = 'flex';
+                                }
+                                else {
+                                    (childelement as HTMLElement).style.display = 'none';
+                                }
+                            }else {
+                                (childelement as HTMLElement).style.display = 'flex';
+                            }
                         }
                     }
                 }
@@ -727,7 +738,6 @@ export class PageOrganizer {
             // Type assertion to HTMLElement
             if (childNode instanceof HTMLElement) {
                 this.setSelectionRingStyle(this.selectAllCheckBox.element, childNode);
-               // this.setButtonStyle(checkbox,childNode);
                 const checkboxWrapper = childNode.querySelector('.e-checkbox-wrapper') as HTMLInputElement;
                 if (checkboxWrapper) {
                     // Set the display style property to "none" for other children
@@ -735,7 +745,13 @@ export class PageOrganizer {
                 }
             }
         }
-        this.enableDisableToolbarItems();    
+        this.enableDisableToolbarItems();
+        if(!this.selectAllCheckBox.checked) {
+            this.totalCheckedCount = 0;
+        }
+        else {
+            this.totalCheckedCount = this.tileAreaDiv.querySelectorAll('.e-pv-organize-node-selection-ring').length;
+        }
     }
 
     private enableDisableToolbarItems(): void {
@@ -789,17 +805,28 @@ export class PageOrganizer {
         }
         this.updateSelectAllCheckbox();
         this.enableDisableToolbarItems();
+        if (this.totalCheckedCount > 1) {
+            for (let i: number = 0; i < pageElement.querySelector(".e-pv-organize-buttondiv").childElementCount; i++) {
+                let id: string = pageElement.querySelector(".e-pv-organize-buttondiv").children[i].id;
+                if (id.split("_")[1] == "insert") {
+                    (pageElement.querySelector(".e-pv-organize-buttondiv").children[i] as HTMLElement).style.display = 'flex';
+                }
+                else {
+                    (pageElement.querySelector(".e-pv-organize-buttondiv").children[i] as HTMLElement).style.display = 'none';
+                }
+            }
+        }
     }
 
     private updateSelectAllCheckbox(): void {
         const totalCheckboxCount = this.tileAreaDiv.childElementCount;
-        const totalCheckedCount = this.tileAreaDiv.querySelectorAll('.e-pv-organize-node-selection-ring').length;
+        this.totalCheckedCount = this.tileAreaDiv.querySelectorAll('.e-pv-organize-node-selection-ring').length;
         if (this.selectAllCheckBox) {
-            if (totalCheckedCount === 0) {
+            if (this.totalCheckedCount === 0) {
                 this.selectAllCheckBox.indeterminate = false;
                 this.selectAllCheckBox.checked = false;
             }
-            else if (totalCheckboxCount === totalCheckedCount) {
+            else if (totalCheckboxCount === this.totalCheckedCount) {
                 this.selectAllCheckBox.indeterminate = false;
                 this.selectAllCheckBox.checked = true;
             }
@@ -970,6 +997,7 @@ export class PageOrganizer {
                 proxy.deletePageElement(mainTileElement);
             });
         }
+        this.enableDisableToolbarItems();
     };
 
     private updateTempRotationDetail(currentPageIndex: number, currentRotation: number): void {
@@ -1188,6 +1216,8 @@ export class PageOrganizer {
             this.updateTotalPageCount();
             this.updatePageNumber();
             this.disableTileDeleteButton();
+            this.updateSelectAllCheckbox();
+            this.enableDisableToolbarItems();
         }
     }
 
@@ -1210,6 +1240,8 @@ export class PageOrganizer {
             this.updateTotalPageCount();
             this.updatePageNumber();
             this.disableTileDeleteButton();
+            this.updateSelectAllCheckbox();
+            this.enableDisableToolbarItems();
         }
     }
 
@@ -1219,6 +1251,8 @@ export class PageOrganizer {
             let mainTileElement = deleteButton.closest('.e-pv-organize-anchor-node') as HTMLElement;
             this.deletePageElement(mainTileElement);
         }
+        this.updateSelectAllCheckbox();
+        this.enableDisableToolbarItems();
     }
 
     private deletePageElement(mainTileElement: HTMLElement): void {

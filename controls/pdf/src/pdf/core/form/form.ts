@@ -234,7 +234,6 @@ export class PdfForm {
         this._dictionary.update('Fields', this._fields);
         this._parsedFields.set(this._fields.length - 1, field);
         field._form = this;
-        this._crossReference._allowCatalog = true;
         this._crossReference._root._updated = true;
         if (field._kidsCount > 0) {
             for (let i: number = 0; i < field._kidsCount; i++) {

@@ -74,7 +74,7 @@ export class AudioCommand {
             this.setStyle(audioEle, e);
             isReplaced = true;
         } else {
-            wrapElement = createElement('span', { className: classes.CLASS_AUDIO_WRAP, attrs: { contentEditable: 'false', title: e.item.fileName }});
+            wrapElement = createElement('span', { className: classes.CLASS_AUDIO_WRAP, attrs: { contentEditable: 'false', title: ((!isNOU(e.item.title)) ? e.item.title : (!isNOU(e.item.fileName) ? e.item.fileName : '')) } });
             const audElement: HTMLElement = createElement('audio', { className: classes.CLASS_AUDIO + ' ' + classes.CLASS_AUDIO_INLINE, attrs: { controls: '' }});
             const sourceElement: HTMLElement = createElement('source');
             const clickElement: HTMLElement = createElement('span', { className: classes.CLASS_CLICK_ELEM});

@@ -1074,7 +1074,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         case 'rightarrow':
         case 'tab':
         case 'shiftTab':
-            this.handleNavigation(this.enableRtl && this.element.classList.contains(HORIZSTEP) ? (e.action === 'leftarrow' || e.action === 'shiftTab' || e.action === 'uparrow') : (e.action === 'rightarrow' || e.action === 'tab' || e.action === 'downarrow'), e);
+            this.handleNavigation(this.enableRtl && this.element.classList.contains(HORIZSTEP) ? (e.action === 'leftarrow' || e.action === 'tab' || e.action === 'uparrow') : (e.action === 'rightarrow' || e.action === 'tab' || e.action === 'downarrow'), e);
             break;
         case 'space':
         case 'enter':

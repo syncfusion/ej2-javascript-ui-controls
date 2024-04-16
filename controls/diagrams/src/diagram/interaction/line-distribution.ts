@@ -1107,15 +1107,97 @@ export class LineDistribution {
     /** @private */
     public resetRoutingSegments(connector: Connector, diagram: Diagram, points: PointModel[]): void {
         if (connector['levelSkip']) {
-            const absolutePoints: string = 'absolutePoints';
-            //let temppoints: PointModel[];
-            this.getConnectorPoints(connector, diagram);
-            const temppoints: PointModel[] = (connector as Connector)[`${absolutePoints}`];
-            this.updateConnectorSegmentPoints(temppoints, diagram);
-            this.adjustSegmentPoints(temppoints, points, diagram);
-            this.updateConnectorSegmentPoint(connector, diagram);
+            let sourceLevel;
+            let targetLevel;
+            let collection = (diagram.layout as any).ranks.reverse();
+            for(let i=0;i<collection.length;i++){
+                for(let j=0;j<collection[parseInt(i.toString(), 10)].length;j++){
+                    if(connector.sourceID === collection[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].id){
+                        sourceLevel = i;
+                    }
+                    if(connector.targetID === collection[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].id){
+                        targetLevel = i;
+                    }
+                }
+            };
+            let overlappCollection = [];
+            if(sourceLevel < targetLevel){
+                for(let i=0;i<collection.length;i++){
+                    if(i > sourceLevel && i < targetLevel){
+                        overlappCollection.push(collection[parseInt(i.toString(), 10)]);
+                    } 
+                }
+            }else{
+                for(let i=0;i<collection.length;i++){
+                    if(i < sourceLevel && i > targetLevel){
+                        overlappCollection.push(collection[parseInt(i.toString(), 10)]);
+                    } 
+                }
+            };
+            let overLapNodesCollection = [];
+            for(let i = 0; i< overlappCollection.length;i++){
+                for(let j=0;j<overlappCollection[parseInt(i.toString(), 10)].length;j++){
+                    if(overlappCollection[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].edges === undefined){
+                        let node = diagram.nameTable[overlappCollection[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].id];
+                        overLapNodesCollection.push(node);
+                    }
+                }
+            }
+            let isInsideBounds = false;
+            if(!(diagram as any).routingConnectors){
+                (diagram as any).routingConnectors = [];
+            }
+            overlapping:
+            for(let count = 0; count < overLapNodesCollection.length;count++){
+                let bounds = overLapNodesCollection[parseInt(count.toString(), 10)].wrapper.bounds;
+                for (let i = 0; i < connector.segments.length; i++) {
+                    let points = (connector.segments[parseInt(i.toString(), 10)] as any).points;
+                    for (let j = 0; j < points.length; j++) {
+                        let lineStart = points[parseInt(j.toString(), 10)];
+                        let lineEnd = points[j + 1];
+                        if (lineEnd) {
+                            let connectorPoints = this.pointsAlongLine(lineStart, lineEnd);
+                            isInsideBounds = this.pointInsideBounds(connectorPoints, bounds);
+                            if (isInsideBounds) {
+                            (diagram as any).routingConnectors.push(connector);
+                            break overlapping;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
+    private pointsAlongLine(start:PointModel, end:PointModel){
+        const granularity = 1;
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const stepX = (dx / length) * granularity;
+        const stepY = (dy / length) * granularity;
+
+        const points = [];
+        for (let i = 0; i <= length; i += granularity) {
+          points.push({ x: start.x + stepX * i, y: start.y + stepY * i });
+        }
+
+        return points;
+    };
+
+    private pointInsideBounds(points:PointModel[], bounds:Rect){
+        let padding = 10;
+            for (const point of points) {
+              if (
+                bounds.right > point.x &&
+                bounds.left < point.x &&
+                bounds.top < point.y &&
+                bounds.bottom > point.y
+              ) {
+                return true;
+              }
+            }
+            return false;
+    };
     /* tslint:enable */
 
     /** @private */

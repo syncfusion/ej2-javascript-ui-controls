@@ -378,6 +378,7 @@ export class Clipboard {
                         cell = isExternal ? (rows[i as number] && rows[i as number].cells[j as number]) || {} :
                             extend({}, (isInRange && cRows[i as number] && cRows[i as number].cells[j as number]) ?
                             cRows[i as number].cells[j as number] : getCell(i, j, prevSheet), null, true);
+                        column = getColumn(curSheet, j);
                         if(!cell.validation && column.validation){
                             cell.validation = column.validation
                         }
@@ -1385,7 +1386,8 @@ export class Clipboard {
             }
             if (cellStyle.fontSize) {
                 cellStyle.fontSize = Math.round(parseFloat(
-                    (cellStyle.fontSize.indexOf('px') > -1) ? (parseFloat(cellStyle.fontSize) * 0.75).toString() : cellStyle.fontSize)) + 'pt';
+                    (cellStyle.fontSize.indexOf('px') > -1) ? (parseFloat(cellStyle.fontSize) * 0.75).toString() :
+                        ((cellStyle.fontSize.indexOf('em') > -1) ? (parseFloat(cellStyle.fontSize) * 16/1.3333).toString() : cellStyle.fontSize))) + 'pt';
             }
             if (cellStyle.fontWeight && ['bold', 'normal'].indexOf(cellStyle.fontWeight) === -1) {
                 cellStyle.fontWeight = cellStyle.fontWeight > '599' ? 'bold' : 'normal';

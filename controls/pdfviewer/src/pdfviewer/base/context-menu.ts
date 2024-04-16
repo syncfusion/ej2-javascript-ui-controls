@@ -262,7 +262,7 @@ export class ContextMenu implements IContextMenu {
                         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
                         // eslint-disable-next-line max-len
                         this.contextMenuObj.showItems([this.defaultDeleteId, this.defaultCommentId], true);
-                    } else if (args.items && args.items.length > 0 && this.pdfViewer.textSelectionModule.isTextSelection && isClickWithinSelectionBounds) {
+                    } else if (args.items && args.items.length > 0 && this.pdfViewer.textSelectionModule && this.pdfViewer.textSelectionModule.isTextSelection && isClickWithinSelectionBounds) {
                         // eslint-disable-next-line max-len
                         this.contextMenuObj.hideItems([this.defaultCutId, this.defaultPasteId, this.defaultDeleteId, this.defaultScaleratioId, this.defaultCommentId, this.defaultPropertiesId], true);
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');

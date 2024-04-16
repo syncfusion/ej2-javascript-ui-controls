@@ -574,7 +574,7 @@ export interface MarkerClusterSettingsModel {
      * Enables or disables intense marker clustering for improved accuracy.
      * The default value is true, and clustering logic will be executed twice for improved accuracy.
      * If set to false, the clustering logic will only be executed once, increasing performance while maintaining decent accuracy.
-     * 
+     *
      * @default true
      */
     allowDeepClustering?: boolean;
@@ -930,7 +930,7 @@ export interface PolygonSettingsModel {
     highlightSettings?: HighlightSettingsModel;
 
     /**
-     * Specifies the properties such as visibility, fill, border and text style to customize the tooltip. 
+     * Specifies the properties such as visibility, fill, border and text style to customize the tooltip.
      */
     tooltipSettings?: PolygonTooltipSettingsModel;
 
@@ -1270,6 +1270,7 @@ export interface ZoomSettingsModel {
 
     /**
      * Gets or sets the items that are to be shown in the zooming toolbar of the maps. Zoom-in, zoom-out and reset buttons are displayed by default.
+     *
      * @deprecated
      */
     toolbars?: string[];

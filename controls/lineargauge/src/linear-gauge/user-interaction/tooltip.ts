@@ -159,8 +159,8 @@ export class GaugeTooltip {
         (this.tooltip.template && tooltipPos === 'Right')) ? 20 : 0;
         this.gauge.trigger(tooltipRender, args, () => {
             let template: string | Function = (target.id.indexOf('Range') > -1) ? args.tooltip.rangeSettings.template : args.tooltip.template;
-            if (template !== null && Object.keys(template).length === 1 && typeof template !== 'function') {
-                template = template[Object.keys(template)[0]];
+            if (template !== null && Object.keys(template as any).length === 1 && typeof template !== 'function') {
+                template = template[Object.keys(template as any)[0]];
             }
             if (!args.cancel) {
                 const fillColor: string = (target.id.indexOf('Range') > -1) ? this.tooltip.rangeSettings.fill : this.tooltip.fill;
@@ -210,8 +210,8 @@ export class GaugeTooltip {
             fill: fill || gauge.themeStyle.tooltipFillColor,
             availableSize: gauge.availableSize,
             areaBounds: new Rect(
-                (this.gauge.orientation === 'Vertical') ? areaRect.left : location.x,
-                (this.gauge.orientation === 'Vertical') ? location.y : (tooltipPos === 'Bottom') ? location.y : areaRect.top,
+                (this.gauge.orientation === 'Vertical') ? location.x : areaRect.left,
+                (this.gauge.orientation === 'Vertical') ? areaRect.top : (tooltipPos === 'Bottom') ? areaRect.top : location.y,
                 tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width,
                 areaRect.height
             ),

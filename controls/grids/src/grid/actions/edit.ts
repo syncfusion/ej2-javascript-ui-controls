@@ -1214,7 +1214,7 @@ export class Edit implements IAction {
             if (customForm) {
                 this.virtualFormObj.element.appendChild(div);
             } else {
-                if (this.parent.isFrozenGrid()) {
+                if (this.parent.editSettings.mode !== 'Dialog' && this.parent.isFrozenGrid()) {
                     if (td.classList.contains('e-unfreeze')) {
                         addClass([div], 'e-unfreeze');
                         this.formObj.element.appendChild(div);

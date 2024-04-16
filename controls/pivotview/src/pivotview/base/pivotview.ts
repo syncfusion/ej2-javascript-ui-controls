@@ -3438,7 +3438,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (this.dataSourceSettings && this.dataSourceSettings.dataSource && this.dataSourceSettings.dataSource instanceof DataManager
                 && dataObj.dataSourceSettings && dataObj.dataSourceSettings.dataSource &&
                 (dataObj.dataSourceSettings.dataSource as DataManager).dataSource && this.dataSourceSettings.dataSource.dataSource &&
-                (dataObj.dataSourceSettings.dataSource as DataManager).dataSource.url === this.dataSourceSettings.dataSource.dataSource.url) {
+                (dataObj.dataSourceSettings.dataSource as DataManager).dataSource.url === this.dataSourceSettings.dataSource.dataSource.url
+            ) {
                 dataObj.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
             }
             this.setProperties(dataObj, true);
@@ -4161,19 +4162,23 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: any,
         isBlob?: boolean, isServerExport?: boolean  // eslint-disable-line @typescript-eslint/no-unused-vars
     ): void {
-        if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0)) && this.dataSourceSettings.mode !== 'Server') {
-            this.excelExportModule.exportToExcel('Excel', excelExportProperties, isBlob);
+        if (isServerExport && this.dataSourceSettings.mode === 'Server') {
+            this.getEngine('onExcelExport', null, null, null, null, null, null, null, null, excelExportProperties);
         } else {
-            this.exportType = 'Excel';
-            this.grid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob);
-        }
-        this.actionObj.actionName = this.getActionCompleteName();
-        const actionInfo: PivotActionInfo = {
-            exportInfo: { type: this.exportType, info: excelExportProperties }
-        };
-        this.actionObj.actionInfo = actionInfo;
-        if (this.actionObj.actionName) {
-            this.actionCompleteMethod();
+            if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0)) && this.dataSourceSettings.mode !== 'Server') {
+                this.excelExportModule.exportToExcel('Excel', excelExportProperties, isBlob);
+            } else {
+                this.exportType = 'Excel';
+                this.grid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob);
+            }
+            this.actionObj.actionName = this.getActionCompleteName();
+            const actionInfo: PivotActionInfo = {
+                exportInfo: { type: this.exportType, info: excelExportProperties }
+            };
+            this.actionObj.actionInfo = actionInfo;
+            if (this.actionObj.actionName) {
+                this.actionCompleteMethod();
+            }
         }
     }
 
@@ -4189,19 +4194,23 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any, max-len, @typescript-eslint/no-unused-vars
     public csvExport(excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: any, isBlob?: boolean, isServerExport?: boolean): void {
-        if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0)) && this.dataSourceSettings.mode !== 'Server') {
-            this.excelExportModule.exportToExcel('CSV', excelExportProperties, isBlob);
+        if (isServerExport && this.dataSourceSettings.mode === 'Server') {
+            this.getEngine('onCsvExport', null, null, null, null, null, null, null, null, excelExportProperties);
         } else {
-            this.exportType = 'CSV';
-            this.grid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob);
-        }
-        this.actionObj.actionName = this.getActionCompleteName();
-        const actionInfo: PivotActionInfo = {
-            exportInfo: { type: this.exportType, info: excelExportProperties }
-        };
-        this.actionObj.actionInfo = actionInfo;
-        if (this.actionObj.actionName) {
-            this.actionCompleteMethod();
+           if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0)) && this.dataSourceSettings.mode !== 'Server') {
+                this.excelExportModule.exportToExcel('CSV', excelExportProperties, isBlob);
+            } else {
+                this.exportType = 'CSV';
+                this.grid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob);
+            }
+            this.actionObj.actionName = this.getActionCompleteName();
+            const actionInfo: PivotActionInfo = {
+                exportInfo: { type: this.exportType, info: excelExportProperties }
+            };
+            this.actionObj.actionInfo = actionInfo;
+            if (this.actionObj.actionName) {
+                this.actionCompleteMethod();
+            }
         }
     }
 

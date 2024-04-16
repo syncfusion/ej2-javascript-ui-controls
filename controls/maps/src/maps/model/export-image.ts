@@ -42,7 +42,7 @@ export class ImageExport {
             const svgParent: HTMLElement = document.getElementById(maps.element.id + '_Tile_SVG_Parent');
             let svgDataElement: string;
             let tileSvg: Element;
-            let svgObject: Element = getElementByID(maps.element.id + '_svg').cloneNode(true) as Element;
+            const svgObject: Element = getElementByID(maps.element.id + '_svg').cloneNode(true) as Element;
             const backgroundElement: HTMLElement = svgObject.childNodes[0] as HTMLElement;
             const backgroundColor: string = backgroundElement.getAttribute('fill');
             if ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) {
@@ -106,7 +106,7 @@ export class ImageExport {
                         const tile: HTMLElement = document.getElementById(maps.element.id + '_tile_' + (i - 1));
                         const exportTileImg: HTMLImageElement = new Image();
                         exportTileImg.crossOrigin = 'Anonymous';
-                        let background: string = maps.background ? maps.background : ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) ? '#ffffff' :
+                        const background: string = maps.background ? maps.background : ((maps.theme === 'Tailwind' || maps.theme === 'Bootstrap5' || maps.theme === 'Fluent' || maps.theme === 'Material3') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent')) ? '#ffffff' :
                             (maps.theme === 'TailwindDark' || maps.theme === 'Bootstrap5Dark' || maps.theme === 'FluentDark' || maps.theme === 'Material3Dark') && (backgroundColor === 'rgba(255,255,255, 0.0)' || backgroundColor === 'transparent') ? '#000000' : '#ffffff';
                         ctxt.fillStyle = background;
                         ctxt.fillRect(0, 0, maps.availableSize.width, maps.availableSize.height);
@@ -149,7 +149,6 @@ export class ImageExport {
                                     }
                                 }
                             }
-                            
                         });
                         if (i === 0 || i === imgTileLength + 1) {
                             if (i === 0) {
@@ -187,6 +186,6 @@ export class ImageExport {
      * @returns {void}
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void { }
 }

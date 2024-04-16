@@ -56,9 +56,10 @@ export class TreeMapLegend {
         this.addEventListener();
     }
 
-    // eslint-disable-next-line valid-jsdoc
     /**
      * method for legend
+     *
+     * @returns {void}
      * @private
      */
     public renderLegend(): void {
@@ -536,6 +537,7 @@ export class TreeMapLegend {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To draw the legend
+     *
      * @private
      */
     public drawLegend(): void {
@@ -648,8 +650,7 @@ export class TreeMapLegend {
                         shapeId, observedArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, legend.opacity, ''
                     );
                     legendElement.appendChild(
-                        drawSymbol(shapeLocation, observedArgs.shape, shapeSize, observedArgs.imageUrl, renderOptions, legendText)
-                    );
+                        drawSymbol(shapeLocation, observedArgs.shape, shapeSize, observedArgs.imageUrl, renderOptions));
                     textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
                     renderTextElement(
                         textOptions, legend.textStyle, legend.textStyle.color || treemap.themeStyle.legendTextColor, legendElement
@@ -756,7 +757,8 @@ export class TreeMapLegend {
                 (this.legendItemRect.x) + (this.legendItemRect.width / 2),
                 this.legendItemRect.y - (textSize.height / 2) - (spacing / 2),
                 'middle', trimTitle, '');
-            let textElement: Element = renderTextElement(textOptions, textStyle, textStyle.color || this.treemap.themeStyle.legendTitleColor, this.legendGroup);
+            const textElement: Element = renderTextElement(textOptions, textStyle, textStyle.color ||
+                this.treemap.themeStyle.legendTitleColor, this.legendGroup);
             textElement.setAttribute('role', 'region');
             textElement.setAttribute('aria-label', legendTitle);
         }
@@ -898,8 +900,11 @@ export class TreeMapLegend {
             this.translate = new Location(x, y);
         }
     }
-    // eslint-disable-next-line valid-jsdoc
-    /** @private */
+    /**
+     * @param {PointerEvent} e - Specifies the event.
+     * @returns {void}
+     * @private
+     */
     public mouseUpHandler(e: PointerEvent): void {
         this.renderInteractivePointer(e);
         clearTimeout(this.clearTimeout);
@@ -908,6 +913,7 @@ export class TreeMapLegend {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To remove the interactive pointer
+     *
      * @private
      */
     public removeInteractivePointer(): void {
@@ -945,6 +951,7 @@ export class TreeMapLegend {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To add the event listener
+     *
      * @private
      */
     public addEventListener(): void {
@@ -957,6 +964,7 @@ export class TreeMapLegend {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To remove the event listener
+     *
      * @private
      */
     public removeEventListener(): void {
@@ -983,6 +991,8 @@ export class TreeMapLegend {
      * @private
      */
     public destroy(): void {
+        clearTimeout(this.clearTimeout);
+        this.clearTimeout = null;
         this.legendRenderingCollections = [];
         this.legendCollections = [];
         this.outOfRangeLegend = null;
@@ -996,8 +1006,7 @@ export class TreeMapLegend {
         this.legendInteractiveGradient = [];
         this.legendItemRect = null;
         this.removeEventListener();
-        //TODO: The removeInteractivePointer method (calling method) is called in a timer in the mouseUpHandler method. Because of this handling, adding the below code results in a spec failure.
-        //this.treemap = null;
+        this.treemap = null;
     }
     /**
      * Get the gradient color for interactive legend.

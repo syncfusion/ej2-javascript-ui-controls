@@ -109,7 +109,7 @@ export class CommandHandler {
     public canUpdateTemplate: boolean = false;
 
     private childTable: {} = {};
-
+    private objectStore:any = [];
     private parentTable: {} = {};
     private blazor: string = 'Blazor';
     private blazorInterop: string = 'sfBlazor';
@@ -6181,7 +6181,12 @@ Remove terinal segment in initial
             if(isBlazor()) {
                 this.canUpdateTemplate = true;
             }
+            if(this.layoutAnimateModule.setIntervalObject.length > 0){
+                this.layoutAnimateModule.stopCurrentAnimation(this.objectStore[0],diagram,node);
+                this.objectStore = [];
+            }
             objects = this.diagram.doLayout() as ILayout;
+            this.objectStore.push(objects);
         }
         this.canUpdateTemplate = false;
         this.diagram.blazorActions &= ~BlazorAction.expandNode;

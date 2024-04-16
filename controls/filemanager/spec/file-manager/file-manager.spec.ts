@@ -716,8 +716,8 @@ describe('FileManager control', () => {
                 expect(treeLi.length).toEqual(6);
                 expect(largeLi.length).toEqual(5);
                 expect(addressLi.length).toEqual(1);
-                expect(feObj.path).toBe('1/');
-                expect(addressLi[0].getAttribute('data-utext')).toBe('1/');
+                expect(feObj.path).toBe('/');
+                expect(addressLi[0].getAttribute('data-utext')).toBe('/');
                 expect(addressLi[0].innerText).toBe('Files');
                 expect((document.getElementById('file_search') as any).placeholder).toBe('Search Files');
                 done();
@@ -766,8 +766,8 @@ describe('FileManager control', () => {
                 expect(treeLi.length).toEqual(6);
                 expect(gridLi.length).toEqual(5);
                 expect(addressLi.length).toEqual(1);
-                expect(feObj.path).toBe('1/');
-                expect(addressLi[0].getAttribute('data-utext')).toBe('1/');
+                expect(feObj.path).toBe('/');
+                expect(addressLi[0].getAttribute('data-utext')).toBe('/');
                 expect(addressLi[0].innerText).toBe('Files');
                 expect((document.getElementById('file_search') as any).placeholder).toBe('Search Files');
                 done();
@@ -817,8 +817,8 @@ describe('FileManager control', () => {
                 expect(treeLi.length).toEqual(6);
                 expect(gridLi.length).toEqual(5);
                 expect(addressLi.length).toEqual(1);
-                expect(feObj.path).toBe('1/');
-                expect(addressLi[0].getAttribute('data-utext')).toBe('1/');
+                expect(feObj.path).toBe('/');
+                expect(addressLi[0].getAttribute('data-utext')).toBe('/');
                 expect(addressLi[0].innerText).toBe('Files');
                 expect((document.getElementById('file_search') as any).placeholder).toBe('Search Files');
                 done();
@@ -849,8 +849,8 @@ describe('FileManager control', () => {
                 expect(treeLi.length).toEqual(6);
                 expect(gridLi.length).toEqual(5);
                 expect(addressLi.length).toEqual(1);
-                expect(feObj.path).toBe('1/');
-                expect(addressLi[0].getAttribute('data-utext')).toBe('1/');
+                expect(feObj.path).toBe('/');
+                expect(addressLi[0].getAttribute('data-utext')).toBe('/');
                 expect(addressLi[0].innerText).toBe('Files');
                 expect((document.getElementById('file_search') as any).placeholder).toBe('Search More Files');
                 done();

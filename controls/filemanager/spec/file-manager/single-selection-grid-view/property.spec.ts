@@ -95,8 +95,8 @@ describe('FileManager control single selection Grid view', () => {
                 expect(treeLi.length).toEqual(9);
                 expect(gridLi.length).toEqual(6);
                 expect(addressLi.length).toEqual(3);
-                expect(feObj.path).toBe('1/6174/6176/');
-                expect(addressLi[0].getAttribute('data-utext')).toBe('1/');
+                expect(feObj.path).toBe('/6174/6176/');
+                expect(addressLi[0].getAttribute('data-utext')).toBe('/');
                 expect(addressLi[0].innerText).toBe('Files');
                 expect((document.getElementById('file_search') as any).placeholder).toBe('Search Employees');
                 done();

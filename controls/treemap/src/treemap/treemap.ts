@@ -52,21 +52,25 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     //Module Declaration for treemap.
     /**
      * Sets and gets the module that is used to add tooltip in the treemap.
+     *
      * @private
      */
     public treeMapTooltipModule: TreeMapTooltip;
     /**
      * Sets and gets the module that is used to add highlight functionality in the treemap.
+     *
      * @private
      */
     public treeMapHighlightModule: TreeMapHighlight;
     /**
      * Sets and gets the module that is used to add selection functionality in the treemap.
+     *
      * @private
      */
     public treeMapSelectionModule: TreeMapSelection;
     /**
      * Sets and gets the module that is used to add legend in the treemap.
+     *
      * @private
      */
     public treeMapLegendModule: TreeMapLegend;
@@ -580,9 +584,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fetchApiModule.onSuccess = (args: any) => {
                 if (!isNullOrUndefined(args.type) && args.type === 'application/octet-stream') {
-                    let reader: FileReader = new FileReader();
-                    let treemap: TreeMap = this;
-                    reader.onload = function (data) {
+                    const reader: FileReader = new FileReader();
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias
+                    const treemap: TreeMap = this;
+                    reader.onload = function (): void {
                         args = JSON.parse(reader.result.toString());
                         treemap.dataSource = args;
                         treemap.renderTreeMapElements();
@@ -1647,6 +1652,20 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.legendId = [];
         this.removeSvg();
         super.destroy();
+        this.areaRect = null;
+        this.themeStyle = null;
+        this.totalRect = null;
+        this.drilledLegendItems = null;
+        this.doubleTapTimer = null;
+        this.treemapLevelData = null;
+        this.resizeEvent = null;
+        this.availableSize = null;
+        this.intl = null;
+        if (!isNullOrUndefined(this.layout)) {
+            this.layout.destroy();
+        }
+        this.layout = null;
+        this.renderer = null;
     }
 
     private removeSvg(): void {

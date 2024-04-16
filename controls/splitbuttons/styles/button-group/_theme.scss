@@ -52,7 +52,7 @@
 
     //Focus state for Normal and Outline GroupButton
     .e-btn:focus,
-    input:focus+label.e-btn {
+    input:focus-visible+label.e-btn {
       @include button-focus;
       @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap4' and $skin-name != 'tailwind' {
         box-shadow: none;

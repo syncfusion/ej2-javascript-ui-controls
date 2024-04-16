@@ -68,8 +68,8 @@ export function updatePath(node: HTMLLIElement, data: Object, instance: IFileMan
  */
 export function getPath(element: Element | Node, text: string, hasId: boolean): string {
     const matched: string[] = getParents(<Element>element, text, false, hasId);
-    let path: string = hasId ? '' : '/';
-    const len: number = matched.length - (hasId ? 1 : 2);
+    let path: string = '/';
+    const len: number = matched.length - (2);
     for (let i: number = len; i >= 0; i--) {
         path += matched[i as number] + '/';
     }
@@ -144,8 +144,8 @@ export function getParents(element: Element, text: string, isId: boolean, hasId?
  */
 export function generatePath(parent: IFileManager): void {
     const key: string = parent.hasId ? 'id' : 'name';
-    let newPath: string = parent.hasId ? '' : '/';
-    let i: number = parent.hasId ? 0 : 1;
+    let newPath: string = '/';
+    let i: number = 1;
     for (i; i < parent.pathId.length; i++) {
         // eslint-disable-next-line
         const data: Object = getValue(parent.pathId[i], parent.feParent);
@@ -802,11 +802,16 @@ export function setNextPath(parent: IFileManager, path: string): void {
         const newPath: string = (folders[i as number] === '') ? '/' : (parent.path + folders[i as number] + '/');
         // eslint-disable-next-line
         const data: Object = getObject(parent, key, folders[i]);
-        const id: string = getValue('_fm_id', data);
-        parent.setProperties({ path: newPath }, true);
-        parent.pathId.push(id);
-        parent.itemData = [data];
-        parent.pathNames.push(getValue('name', data));
+        if (!isNullOrUndefined(data)) {
+            const id: string = getValue('_fm_id', data);
+            parent.setProperties({ path: newPath }, true);
+            parent.pathId.push(id);
+            parent.itemData = [data];
+            parent.pathNames.push(getValue('name', data));
+        }
+        else {
+            parent.originalPath = newPath;
+        }
         read(parent, eventName, parent.path);
         break;
     }

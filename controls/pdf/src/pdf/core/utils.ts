@@ -3899,3 +3899,33 @@ export function _decodeText(text: string, isColorSpace: boolean, isPassword: boo
     }
     return text;
 }
+/**
+ * Number of bytes required to save the number.
+ *
+ * @param {number} input number.
+ * @returns {number} number of bytes.
+ */
+export function _getSize(input: number): number {
+    let size: number = 0;
+    const uintMaxValue: number = 0xFFFFFFFF;
+    const ushortMaxValue: number = 0xFFFF;
+    const byteMaxValue: number = 0xFF;
+    if (input <= uintMaxValue) {
+        if (input <= ushortMaxValue) {
+            if (input <= byteMaxValue) {
+                size = 1;
+            } else {
+                size = 2;
+            }
+        } else {
+            if (input <= (ushortMaxValue | (ushortMaxValue << 8))) {
+                size = 3;
+            } else {
+                size = 4;
+            }
+        }
+    } else {
+        size = 8;
+    }
+    return size;
+}

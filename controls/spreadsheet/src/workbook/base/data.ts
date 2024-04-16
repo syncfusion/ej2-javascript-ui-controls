@@ -81,7 +81,7 @@ export function getData(
                                 const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
                                 if (valueOnly) {
                                     cells[key as string] = getValueFromFormat(context, cell, sRow, i, false, intl);
-                                    cellProp = cell && !isNullOrUndefined(cell.value) ? cell.value : '';
+                                    cellProp = cell && (cell.value || <unknown>cell.value === 0) ? cell.value : null;
                                     if (typeof cellProp === 'string') {
                                         if (localeObj.decimal !== '.' && cellProp.includes(localeObj.decimal)) {
                                             parsedNumVal = cellProp.replace(localeObj.decimal, '.');

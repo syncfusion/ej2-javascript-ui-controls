@@ -63,8 +63,8 @@ export class Marker {
         let translatePoint: any;
         if (!maps.isTileMap) {
             translatePoint = !isNullOrUndefined(maps.zoomModule) && maps.zoomSettings.zoomFactor > 1 ?
-            getZoomTranslate(maps, currentLayer, allowAnimation) :
-            getTranslate(maps, currentLayer, allowAnimation)
+                getZoomTranslate(maps, currentLayer, allowAnimation) :
+                getTranslate(maps, currentLayer, allowAnimation);
         }
         Array.prototype.forEach.call(currentLayer.markerSettings, (markerSettings: MarkerSettingsModel, markerIndex: number) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,6 +79,7 @@ export class Marker {
                     border: markerSettings.border, colorValuePath: markerSettings.colorValuePath,
                     shapeValuePath: markerSettings.shapeValuePath, imageUrlValuePath: markerSettings.imageUrlValuePath
                 };
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
                     eventArgs = markerColorChoose(eventArgs, data);
                     eventArgs = markerShapeChoose(eventArgs, data);
@@ -128,11 +129,11 @@ export class Marker {
                             if ((currentLayer.layerType === 'OSM' || (currentLayer.urlTemplate.indexOf('openstreetmap') !== -1 && isNullOrUndefined(currentLayer.shapeData)))
                                 && maps.zoomSettings.enable) {
                                 isMarkersClustered = clusterTemplate(currentLayer, this.markerSVGObject,
-                                                maps, layerIndex, this.markerSVGObject, layerElement, true, false);
+                                                                     maps, layerIndex, this.markerSVGObject, layerElement, true, false);
                                 layerElement.appendChild(this.markerSVGObject);
                             } else {
                                 isMarkersClustered = clusterTemplate(currentLayer, this.markerSVGObject,
-                                                maps, layerIndex, this.markerSVGObject, layerElement, true, false);
+                                                                     maps, layerIndex, this.markerSVGObject, layerElement, true, false);
                             }
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (maps as any).renderReactTemplates();
@@ -188,7 +189,7 @@ export class Marker {
         if (!isNullOrUndefined(this.maps)) {
             if (this.maps.zoomSettings.shouldZoomInitially && this.maps.markerModule) {
                 let minLong: number; let maxLat: number; let minLat: number; let maxLong: number;
-                let latZoom: number; let lngZoom: number; let result: number; let zoomLevel: number;
+                let zoomLevel: number;
                 let centerLat: number; let centerLong: number; const maxZoomFact: number = this.maps.zoomSettings.maxZoom;
                 const mapWidth: number = this.maps.mapAreaRect.width;
                 const mapHeight: number = this.maps.mapAreaRect.height;
@@ -300,6 +301,7 @@ export class Marker {
     }
     /**
      * To check and trigger marker click event
+     *
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
      * @private
@@ -310,7 +312,7 @@ export class Marker {
             const ancestor: Element = (e.target as Element).closest('.' + this.maps.element.id + '_marker_template_element');
             if (!isNullOrUndefined(ancestor) && ancestor.id.indexOf('_MarkerIndex_') > -1) {
                 target = ancestor.id;
-            } 
+            }
         }
         if (target.indexOf('_LayerIndex_') === -1 || target.indexOf('_cluster_') > 0) {
             return;
@@ -320,7 +322,7 @@ export class Marker {
             return;
         }
         if (options.marker.enableDrag){
-            document.getElementById(this.maps.element.id + "_svg").style.cursor = 'grabbing';
+            document.getElementById(this.maps.element.id + '_svg').style.cursor = 'grabbing';
         }
         const eventArgs: IMarkerClickEventArgs = {
             cancel: false, name: markerClick, data: options.data, maps: this.maps,
@@ -331,14 +333,14 @@ export class Marker {
         };
         this.maps.trigger(markerClick, eventArgs);
         if (options.marker.enableDrag) {
-            let isCluster = false;
+            let isCluster: boolean = false;
             const layerIndex: number = parseInt(target.split('_LayerIndex_')[1].split('_')[0], 10);
             const markerIndex: number = parseInt(target.split('_MarkerIndex_')[1].split('_')[0], 10);
             const dataIndex: number = parseInt(target.split('_dataIndex_')[1].split('_')[0], 10);
             const marker: MarkerSettingsModel = this.maps.layers[layerIndex as number].markerSettings[markerIndex as number];
             if (this.sameMarkerData.length > 0) {
-                isCluster = (this.sameMarkerData[0].data.filter((el) => { return ((el['index'] as number) == dataIndex); })).length > 0 &&
-                    this.sameMarkerData[0].layerIndex === layerIndex && this.sameMarkerData[0].markerIndex === markerIndex
+                isCluster = (this.sameMarkerData[0].data.filter((el : object) => { return ((el['index'] as number) === dataIndex); })).length > 0 &&
+                    this.sameMarkerData[0].layerIndex === layerIndex && this.sameMarkerData[0].markerIndex === markerIndex;
             }
             if (!isCluster) {
                 const dragEventArgs: IMarkerDragEventArgs = {
@@ -352,14 +354,16 @@ export class Marker {
                     targetId: target, x: e.clientX, y: e.clientY,
                     latitude: options.data['latitude'] || options.data['Latitude'],
                     longitude: options.data['longitude'] || options.data['Longitude'],
-                    shape: isNullOrUndefined(marker.shapeValuePath) ? marker.shape : marker.dataSource[dataIndex as number][marker.shapeValuePath],
+                    shape: isNullOrUndefined(marker.shapeValuePath) ? marker.shape
+                        : marker.dataSource[dataIndex as number][marker.shapeValuePath],
                     layerIndex: layerIndex, markerIndex: markerIndex, dataIndex: dataIndex
-                }
+                };
             }
         }
     }
     /**
      * To check and trigger Cluster click event
+     *
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
      * @private
@@ -381,7 +385,7 @@ export class Marker {
             }
             if (this.sameMarkerData.length > 0 && !this.maps.markerClusterExpandCheck) {
                 this.maps.markerClusterExpandCheck = true;
-                mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
+                mergeSeparateCluster(this.sameMarkerData, this.maps);
             }  else {
                 this.sameMarkerData = options.clusterCollection;
                 this.maps.markerClusterExpandCheck = false;
@@ -400,7 +404,7 @@ export class Marker {
      * To get marker from target id
      *
      * @param {string} target - Specifies the target
-     * @returns {string} - Returns the string
+     * @returns {object} - Returns the marker, data, clusterCollection, markCollection
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private getMarker(target: string): { marker: MarkerSettingsModel, data: any,
@@ -470,8 +474,8 @@ export class Marker {
             return;
         }
         if (options.marker.enableDrag){
-            document.getElementById(this.maps.element.id + "_svg").style.cursor = isNullOrUndefined(this.maps.markerDragArgument) ?
-                    'pointer' : 'grabbing';
+            document.getElementById(this.maps.element.id + '_svg').style.cursor = isNullOrUndefined(this.maps.markerDragArgument) ?
+                'pointer' : 'grabbing';
         }
         const eventArgs: IMarkerMoveEventArgs = {
             cancel: false, name: markerMouseMove, data: options.data,
@@ -505,9 +509,12 @@ export class Marker {
         this.maps.trigger(markerClusterMouseMove, eventArgs);
     }
 
-    /** @private */
+    /** @private
+     *
+     * @returns {void}
+     */
     public initializeMarkerClusterList(): void {
-        for (let i = 0; i < this.maps.layers.length; i++) {
+        for (let i: number = 0; i < this.maps.layers.length; i++) {
             this.initialMarkerCluster[i as number] = [];
             this.zoomedMarkerCluster[i as number] = [];
         }

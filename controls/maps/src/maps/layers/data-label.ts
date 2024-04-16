@@ -50,7 +50,7 @@ export class DataLabel {
      *
      * @param {LayerSettings} layer - Specifies the layer settings
      * @param {number} layerIndex - Specifies the layer index.
-     * @param {any} shape - Specifies the shape.
+     * @param {object} shape - Specifies the shape.
      * @param {any[]} layerData - Specifies the layer data.
      * @param {Element} group Specifies the element.
      * @param {HTMLElement} labelTemplateElement - Specifies the template element.
@@ -60,8 +60,7 @@ export class DataLabel {
      * @private
      */
     public renderLabel(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        layer: LayerSettings, layerIndex: number, shape: any,
+        layer: LayerSettings, layerIndex: number, shape: object,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         layerData: any[], group: Element, labelTemplateElement: HTMLElement, index: number, intersect: any[]
     ): void {
@@ -245,7 +244,7 @@ export class DataLabel {
                     width = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
                         && this.maps.zoomShapeCollection.length > index ? (this.maps.dataLabelShape[index as number]) * scale :
                         ((location1['rightMax']['x'] - location1['leftMax']['x']) * scale) > 0 ?
-                        ((location1['rightMax']['x'] - location1['leftMax']['x']) * scale) : width;
+                            ((location1['rightMax']['x'] - location1['leftMax']['x']) * scale) : width;
                 }
                 const xpositionEnds: number = ((location['x'] + transPoint['x']) * scale) + textSize['width'] / 2;
                 const xpositionStart: number = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
@@ -255,9 +254,9 @@ export class DataLabel {
                     templateFn = getTemplateFunction(eventargs.template, this.maps);
                     const templateElement: Element = templateFn ? templateFn(!isNullOrUndefined(datasrcObj) ?
                         datasrcObj : shapeData['properties'], this.maps, eventargs.template, this.maps.element.id + '_LabelTemplate', false) : document.createElement('div');
-                    templateElement.innerHTML =  !templateFn ? eventargs.template as any : '';
+                    templateElement.innerHTML =  !templateFn ? eventargs.template as string : '';
                     labelElement = <HTMLElement>convertElementFromLabel(
-                        templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
+                        templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties']);
                     if (this.maps.isTileMap) {
                         labelElement.style.left = (((location['x'] + transPoint['x']) * scale) - (textSize['width'] / 2)) + 'px';
                         labelElement.style.top = (((location['y'] + transPoint['y']) * scale) - textSize['height']) + 'px';
@@ -388,7 +387,8 @@ export class DataLabel {
                     if (!isNullOrUndefined(element)) {
                         this.datalabelAnimate(element as HTMLElement, dataLabelSettings.animationDuration, style.opacity, false);
                         if (!isNullOrUndefined(rect)) {
-                            this.datalabelAnimate(rect as HTMLElement, dataLabelSettings.animationDuration, dataLabelSettings.opacity, true);
+                            this.datalabelAnimate(rect as HTMLElement, dataLabelSettings.animationDuration,
+                                                  dataLabelSettings.opacity, true);
                         }
                     }
                 }
@@ -399,7 +399,7 @@ export class DataLabel {
     private datalabelAnimate(element: HTMLElement, duration: number, opacity: number, isRect: boolean): void {
         let height: number = 0;
         new Animation({}).animate(<HTMLElement>element, {
-            duration: (duration === 0 && animationMode === 'Enable') ? 1000: duration,
+            duration: (duration === 0 && animationMode === 'Enable') ? 1000 : duration,
             delay: 0,
             progress: (args: AnimationOptions) => {
                 if (args.timeStamp > args.delay) {
@@ -408,7 +408,7 @@ export class DataLabel {
                     element.setAttribute(isRect ? 'fill-opacity' : 'opacity', (opacity * height).toString());
                 }
             },
-            end: (model: AnimationOptions) => {
+            end: () => {
                 element.style.visibility = 'visible';
                 element.setAttribute(isRect ? 'fill-opacity' : 'opacity', opacity.toString());
             }
@@ -420,7 +420,7 @@ export class DataLabel {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             Array.prototype.forEach.call(shapes, (current: any) => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                Array.prototype.forEach.call(current, (shape:any) => {
+                Array.prototype.forEach.call(current, (shape: any) => {
                     points.push(new Point(shape['point']['x'], shape['point']['y']));
                 });
             });

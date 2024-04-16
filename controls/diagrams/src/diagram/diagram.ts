@@ -2189,6 +2189,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
         this.layerZIndex = -1;
         this.layerZIndexTable = {};
+        //878837 : initialize parameter for passing container as a parameter
+        if ( this.swimlaneChildTable === undefined && this.swimlaneZIndexTable === undefined){
+            this.swimlaneChildTable = {};
+            this.swimlaneZIndexTable = {};
+        }
         this.nameTable = {};
         this.pathTable = {};
         this.groupTable = {};
@@ -2363,6 +2368,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.updateTemplate();
         }
         this.isLoading = false;
+        this.refreshRoutingConnectors();
         this.renderComplete();
         this.updateFitToPage();
         if (this.refreshing) {
@@ -5372,11 +5378,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     parentNode.wrapper.children.push(childNode.wrapper);
                     // SF-362880 - Below lines added for adding the childs to swimlane after Undo.
                     const swimlane: NodeModel = this.getObject((node as Node).parentId);
+                    let childAlreadyInCollection = false;
                     if (swimlane && (swimlane as Node).shape instanceof SwimLane) {
                         for (let h: number = 0; h < ((swimlane as Node).shape as SwimLane).lanes.length; h++) {
                             const laneId = (childNode as Node).parentId.split((node as Node).parentId);
                             if (((swimlane as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].id === laneId[1].slice(0, -1)) {
-                                ((swimlane as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children.push(childNode);
+                                //Bug 876330: After performing cut operations followed by an undo, lanes and nodes in the swimlane are not rendered properly.
+                                // To avoid adding the child node multiple times in the collection.
+                                for(let i=0;i<((swimlane as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children.length;i++){
+                                    if(((swimlane as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children[parseInt(i.toString(), 10)].id === childNode.id){
+                                        childAlreadyInCollection = true;
+                                        break;
+                                    }
+                                }
+                                if(!childAlreadyInCollection){
+                                    ((swimlane as Node).shape as SwimLane).lanes[parseInt(h.toString(), 10)].children.push(childNode);
+                                }
                                 break;
                             }
                         }
@@ -5558,10 +5575,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 if (node.shape && node.shape.type === 'UmlClassifier') { node = this.nameTable[(node as Node).children[0]]; }
                 let bpmnAnnotation: boolean = false;
-                if (this.bpmnModule) {
-                    textWrapper = this.bpmnModule.getTextAnnotationWrapper(node as NodeModel, id);
-                    if (textWrapper) { node = this.nameTable[node.id.split('_textannotation_')[0]]; }
-                }
                 if (!textWrapper) {
                     if (node.shape.type !== 'Text' && node.annotations.length === 0) {
                         if (!(node.constraints & NodeConstraints.ReadOnly)) {
@@ -5635,8 +5648,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             'px; containerName:' + node.id + ';'
                     };
                     setAttributeHtml(textEditing, attributes);
+                    //879137 - aria-label missing in annotation textEdit mode.
                     attributes = {
-                        'id': this.element.id + '_editBox', 'style': 'width:' + ((bounds.width + 1) * scale) +
+                        'aria-label': text, 'id': this.element.id + '_editBox', 'style': 'width:' + ((bounds.width + 1) * scale) +
                             'px;height:' + (bounds.height * scale) + 'px;resize: none;outline: none;overflow: hidden;' +
                             ';font-family:' + style.fontFamily +
                             ';font-size:' + (style.fontSize * scale) + 'px;text-align:' +
@@ -5867,8 +5881,37 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (update) {
             this.updateDiagramElementQuad();
         }
+        if ((this.diagramActions & DiagramAction.Render) && this.layout.enableRouting){
+            this.refreshRoutingConnectors();
+        }
         return ((this.blazorActions & BlazorAction.expandNode) ? layout : isBlazor() ? null : true);
     }
+
+    //Bug 877799: Optimize the routing segment distance while using enableRouting in layout.
+    //Stored the routingConnectors in resetRoutingSegments method and then Refresh the routing connectors after layout completion.
+    private refreshRoutingConnectors(){
+        this.isProtectedOnChange = true;
+        if((this as any).routingConnectors){
+            for(let i=0;i<(this as any).routingConnectors.length;i++){
+                let connector = (this as any).routingConnectors[parseInt(i.toString(), 10)];
+                const sourceNode = this.nameTable[connector.sourceID];
+                const targetNode = this.nameTable[connector.targetID];
+                const lineRouting = new LineRouting();
+                if(sourceNode.visible && targetNode.visible){
+                    lineRouting.renderVirtualRegion(this, true);
+                    lineRouting.refreshConnectorSegments(this, connector, false,true);
+                    let points = this.getPoints(connector);
+                    updateConnector(connector, points);
+                    connector.wrapper.measure(new Size(undefined, undefined));
+                    connector.wrapper.arrange(connector.wrapper.desiredSize);
+                    this.updateDiagramObject(connector, true);
+                    (this as any).routingConnectors.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+        this.isProtectedOnChange = false;
+    };
      //Checks if line distribution is enabled.
      private canDistribute(canEnableRouting: boolean,canDoOverlap: boolean){
         if ((canEnableRouting && this.lineDistributionModule) || ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) || (this.layout.arrangement === 'Linear' && this.lineDistributionModule)) {
@@ -9447,7 +9490,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel), null, null, selectorModel.handleSize);
             }
             if (!(selectorModel.annotation) && !this.currentSymbol) {
-                this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform, diagramUserHandlelayer);
+                this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform, diagramUserHandlelayer, (this.eventHandler as any).currentAction, (this.eventHandler as any).inAction);
                 if (isBlazor() && innertemplate.length > 0) {
                     for (i = 0; i < this.selectedItems.userHandles.length; i++) {
                         const userHandle: UserHandleModel = this.selectedItems.userHandles[parseInt(i.toString(), 10)];
@@ -9545,7 +9588,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateThumbConstraints(selector.connectors, selector, true);
                 }
                 if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation)) && !this.currentSymbol) {
-                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform, diagramUserHandlelayer);
+                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform, diagramUserHandlelayer, (this.eventHandler as any).currentAction, (this.eventHandler as any).inAction);
                     if (isBlazor() && innertemplate.length > 0) {
                         for (i = 0; i < this.selectedItems.userHandles.length; i++) {
                             const userHandletemplate: UserHandleModel = this.selectedItems.userHandles[parseInt(i.toString(), 10)];

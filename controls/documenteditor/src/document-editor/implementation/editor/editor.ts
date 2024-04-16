@@ -237,6 +237,7 @@ export class Editor {
      */
     public isXmlMapped: boolean = false;
     private isAutoList: boolean = false;
+    private isLastParaMarkCopied: boolean = false;
     private combineLastBlock: boolean = false;
     /**
      * @private
@@ -5426,6 +5427,7 @@ export class Editor {
                 parser.isHtmlPaste = false;
             }
             if (pasteContent[lastParagraphMarkCopiedProperty[this.keywordIndex]]) {
+                this.isLastParaMarkCopied = true;
                 let paragraphWidget: ParagraphWidget = new ParagraphWidget();
                 bodyWidget.childWidgets.push(paragraphWidget);
             }
@@ -5714,6 +5716,7 @@ export class Editor {
         this.pasteImageIndex = undefined;
         this.isInsertField = false;
         this.isPasteListUpdated = false;
+        this.isLastParaMarkCopied = false;
     }
     private pasteContentsInternal(widgets: BodyWidget[], isPaste: boolean, currentFormat?: WParagraphFormat): void {
         this.isPaste = isPaste;
@@ -6265,7 +6268,7 @@ export class Editor {
                     this.owner.enableLocalPaste? 
                         isNullOrUndefined((widget as ParagraphWidget).isCreatedUsingHtmlSpanTag)? false: !(widget as ParagraphWidget).isCreatedUsingHtmlSpanTag
                         : (widget as ParagraphWidget).isCreatedUsingHtmlSpanTag);
-                if (widget instanceof ParagraphWidget && (isPara || (j === widgets.length - 1 && (this.isInsertingTOC || isConsiderLastBlock || this.owner.documentHelper.isDragging || this.isRemoteAction)))
+                if (widget instanceof ParagraphWidget && (isPara || (j === widgets.length - 1 && (this.isLastParaMarkCopied || this.isInsertingTOC || isConsiderLastBlock || this.owner.documentHelper.isDragging || this.isRemoteAction)))
                     && (!isNullOrUndefined(widget.paragraphFormat.listFormat)
                         && isNullOrUndefined(widget.paragraphFormat.listFormat.list)
                         && widget.paragraphFormat.listFormat.listId === -1)) {
@@ -18673,7 +18676,7 @@ export class Editor {
             end = this.selection.start;
         }
         if (!(end.offset === this.selection.getLineLength(end.currentWidget) + 1
-            && this.selection.isParagraphLastLine(end.currentWidget))) {
+            && this.selection.isParagraphLastLine(end.currentWidget)) && !this.owner.documentHelper.isDragging) {
             end.offset += 1;
         }
         let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(start);

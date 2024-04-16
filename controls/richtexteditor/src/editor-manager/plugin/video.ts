@@ -131,7 +131,7 @@ export class VideoCommand {
                           ((e.item.selectParent[0] as HTMLElement).firstElementChild as HTMLIFrameElement));
         } else {
             if (!e.item.isEmbedUrl) {
-                wrapElement = createElement('span', { className: classes.CLASS_VIDEO_WRAP, attrs: { contentEditable: 'false', title: e.item.fileName }});
+                wrapElement = createElement('span', { className: classes.CLASS_VIDEO_WRAP, attrs: { contentEditable: 'false', title: ((!isNOU(e.item.title)) ? e.item.title : (!isNOU(e.item.fileName) ? e.item.fileName : '')) }});
                 vidElement = createElement('video', { className: classes.CLASS_VIDEO + ' ' + classes.CLASS_VIDEO_INLINE, attrs: { controls: '' }});
                 sourceElement = createElement('source');
                 this.setStyle((sourceElement as HTMLSourceElement), e, vidElement);

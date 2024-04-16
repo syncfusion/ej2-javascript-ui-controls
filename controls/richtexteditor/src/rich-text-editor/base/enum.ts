@@ -96,3 +96,15 @@ export type ToolbarConfigItems = 'Alignments' | 'JustifyLeft'| 'JustifyCenter' |
 | 'UpperCase' | 'Print' | 'Formats'|'FormatPainter'|'EmojiPicker'|'UnderLine'|'ZoomOut'|'ZoomIn'
 | 'SourceCode' | 'Preview' | 'ViewSide' | 'InsertCode' |'Audio'|'Video'|'NumberFormatList'
 |'BulletFormatList'|'FileManager'| '|'|'-';
+
+/**
+ * Defines types to be used as inserted image.
+ */
+export enum UploadRequest {
+    /** Defines UploadRequest as Uploaded */
+    Uploaded = 'Uploaded',
+    /** Defines UploadRequest as Dropped */
+    Dropped = 'Dropped',
+    /** Defines UploadRequest as Pasted */
+    Pasted = 'Pasted'
+}

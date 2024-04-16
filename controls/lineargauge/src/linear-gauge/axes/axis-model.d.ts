@@ -176,6 +176,7 @@ export interface TickModel {
 
     /**
      * Sets and gets the width of the tick line in the axis. The default value is 2 for major ticks and 1 for minor ticks.
+     *
      * @default 2
      */
     width?: number;
@@ -353,7 +354,7 @@ export interface PointerModel {
     text?: string;
 
     /**
-     * Defines the font properties such as font-size, font family and others for the text pointer. 
+     * Defines the font properties such as font-size, font family and others for the text pointer.
      */
     textStyle?: TextStyleModel;
 

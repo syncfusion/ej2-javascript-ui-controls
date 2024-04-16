@@ -2096,21 +2096,22 @@ export class SfdtExport {
         let blocks: any = {};
         blocks[inlinesProperty[this.keywordIndex]] = [];
         let inlines: any = {};
+        let dataName: string = "";
+        let text: string = "";
+        let url: string = "";
         if (mentions && mentions.length > 0) {
-            let text: string = "";
-            let url: string = "";
-            let dataName: string = "";
             for (var i = 0; i < mentions.length; i++) {
-                dataName =  (mentions[i] as any).Name;
+                dataName = (mentions[i] as any).Name;
                 if (ctext.indexOf(dataName) !== -1 && (mentions[i] as any).Name) {
-                    text = ctext.substring((mentions[i] as any).Name.length + 1, ctext.length);
+                    let temp: string[] = ctext.split("&nbsp;");
+                    text = temp.length > 1 ? temp[1] : temp[0];
                     dataName = (mentions[i] as any).Name;
                     url = (mentions[i] as any).EmailId;
                 }
             }
             blocks = this.serializeMentions(dataName, url, blocks);
         }
-        inlines[textProperty[this.keywordIndex]] = ctext;
+        inlines[textProperty[this.keywordIndex]] = mentions.length > 0 ? text : ctext;
         blocks[inlinesProperty[this.keywordIndex]].push(inlines);
         return blocks;
     }

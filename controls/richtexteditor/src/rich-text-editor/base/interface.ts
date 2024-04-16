@@ -1,7 +1,7 @@
 import { Component, Observer, L10n, KeyboardEventArgs, EmitType } from '@syncfusion/ej2-base';
 import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
 import { ItemModel as DropDownItemModel, DropDownButton } from '@syncfusion/ej2-splitbuttons';
-import { ToolbarType, RenderType } from './enum';
+import { ToolbarType, RenderType, UploadRequest } from './enum';
 import { Toolbar } from '../actions/toolbar';
 import { UndoRedoManager } from '../../editor-manager/plugin/undo';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -450,6 +450,8 @@ export interface IAudioCommandsArgs {
     cssClass?: string
     /** Defines the audio element to be edited */
     selectParent?: Node[]
+    /** Defines the title of the audio */
+    title?: string
 }
 
 /**
@@ -472,6 +474,8 @@ export interface IVideoCommandsArgs {
     cssClass?: string
     /** Defines the video element to be edited */
     selectParent?: Node[]
+    /** Defines the title of the video */
+    title?: string
 }
 
 /**
@@ -1196,6 +1200,10 @@ export interface ImageSuccessEventArgs {
      * Specify the name of the event.
      */
     element?: HTMLElement
+    /**
+     * Specify the request type of the event.
+     */
+    requestType?: UploadRequest
 }
 
 /**

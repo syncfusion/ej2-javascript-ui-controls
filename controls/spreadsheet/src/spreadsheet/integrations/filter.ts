@@ -725,7 +725,8 @@ export class Filter {
         }
     }
 
-    private cboxListSelected(args: FilterCheckboxArgs, selectedList: string[], listCount: number, e: MouseEvent, searched?: boolean): void {
+    private cboxListSelected(
+        args: FilterCheckboxArgs, selectedList: string[], listCount: number, e: MouseEvent, searched?: boolean): boolean {
         const wrapper: Element = parentsUntil(<Element>e.target, 'e-ftrchk');
         if (wrapper) {
             const addCurCbox: Element = searched && wrapper.querySelector('.e-add-current');
@@ -735,11 +736,12 @@ export class Filter {
                     if (!selectedList.length) {
                         (args.btnObj.element as HTMLButtonElement).disabled = true;
                     }
+                    return false;
                 } else {
                     classList(addCurCbox, ['e-check'], ['e-uncheck']);
                     (args.btnObj.element as HTMLButtonElement).disabled = false;
+                    return true;
                 }
-                return;
             }
             let selectAll: Element = wrapper.querySelector('.e-selectall');
             if (selectAll) {
@@ -776,6 +778,7 @@ export class Filter {
                 args, selectAll, selectAll.parentElement.querySelector('.e-chk-hidden') as HTMLInputElement,
                 selectedList.length !== listCount, selectedList.length);
         }
+        return null;
     }
 
     private initCboxList(args: FilterCheckboxArgs, excelFilter: ExcelFilterBase): void {
@@ -832,10 +835,13 @@ export class Filter {
         const cBox: HTMLInputElement = selectAll.querySelector('.e-chk-hidden') as HTMLInputElement;
         this.updateState(args, cBoxFrame, cBox, selectedList.length !== listData.length, selectedList.length);
         const mainCboxList: Element[] = [].slice.call(args.element.childNodes);
-        let searchedSelectedList: string[];
+        let searchedSelectedList: string[]; let searchedList: string[]; let addCurCboxSelected: boolean;
         args.element.addEventListener('click', (e: MouseEvent): void => {
             if (searchedSelectedList) {
-                this.cboxListSelected(args, searchedSelectedList, args.element.childElementCount - 2, e, true);
+                const isCurSelect: boolean = this.cboxListSelected(args, searchedSelectedList, args.element.childElementCount - 2, e, true);
+                if (isCurSelect !== null) {
+                    addCurCboxSelected = isCurSelect;
+                }
             } else {
                 this.cboxListSelected(args, selectedList, listData.length, e);
             }
@@ -850,7 +856,7 @@ export class Filter {
             const cBoxFrag: DocumentFragment = document.createDocumentFragment();
             cBoxFrag.appendChild(selectAll);
             if (searchValue) {
-                searchedSelectedList = [];
+                searchedList = []; searchedSelectedList = [];
                 listData.forEach((data: string): void => {
                     if (data.toLowerCase().includes(searchValue)) {
                         const obj: { [key: string]: string } = {};
@@ -858,6 +864,7 @@ export class Filter {
                         cBoxFrag.appendChild(
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             createCboxWithWrap(getUid('cbox'), (excelFilter as any).createCheckbox(data, true, obj), 'e-ftrchk'));
+                        searchedList.push(data);
                         searchedSelectedList.push(data);
                     }
                 });
@@ -881,7 +888,7 @@ export class Filter {
                     addCurrentCbox.querySelector('.e-frame').classList.add('e-add-current');
                 }
             } else if (mainCboxList) {
-                searchedSelectedList = null;
+                searchedSelectedList = null; searchedList = null;
                 this.updateState(args, cBoxFrame, cBox, selectedList.length !== listData.length, selectedList.length);
                 selectAll.classList.remove('e-hide');
                 mainCboxList.forEach((element: Element): void => {
@@ -892,15 +899,13 @@ export class Filter {
             args.element.appendChild(cBoxFrag);
         };
         const applyBtnClickHandler: Function = (): void => {
-            const addCurCbox: Element = args.element.querySelector('.e-add-current');
-            if (addCurCbox) {
-                if (addCurCbox.classList.contains('e-check')) {
-                    let cBox: Element; let text: string; let index: number;
+            if (searchedList) {
+                if (addCurCboxSelected) {
+                    let text: string; let index: number;
                     selectedList = initSelectedList;
-                    for (let idx: number = 2, len: number = args.element.childElementCount; idx < len; idx++) {
-                        cBox = args.element.children[idx as number];
-                        text = cBox.querySelector('.e-checkboxfiltertext').textContent;
-                        if (cBox.querySelector('.e-frame').classList.contains('e-check')) {
+                    for (let idx: number = 0, len: number = searchedList.length; idx < len; idx++) {
+                        text = searchedList[idx as number];
+                        if (searchedList.length === searchedSelectedList.length || searchedSelectedList.indexOf(text) > -1) {
                             if (selectedList.indexOf(text) === -1) {
                                 selectedList.push(text);
                             }
@@ -1032,12 +1037,16 @@ export class Filter {
                                 }
                             }
                         }
+                    } else if (operator === 'notequal' && val === null) {
+                        val = '';
                     }
                 } else if (operator === 'equal') {
                     if (isNumber(val)) {
                         val = val.toString();
                     } else if (typeof val === 'string' && isNumber(parseValue(val, 'notequal'))) {
                         val = val.trim();
+                    } else if (val === null) {
+                        val = '';
                     }
                 }
                 return val;
@@ -1098,7 +1107,7 @@ export class Filter {
             const predicates: PredicateModel[] = this.filterCollection.get(this.parent.activeSheetIndex);
             let criteriaIdx: number;
             for (let idx: number = 0; idx < predicates.length; idx++) {
-                if (predicates[idx as number].field === args.column) {
+                if (predicates[idx as number].field === args.column && predicates[idx as number].value !== null) {
                     criteriaIdx = criterias.indexOf(predicates[idx as number].operator);
                     if (criteriaIdx > -1) {
                         if (predicates[idx as number].operator === 'equal' && isDateTime(predicates[idx as number].value)) {

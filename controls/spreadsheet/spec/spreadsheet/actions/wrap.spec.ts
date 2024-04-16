@@ -342,4 +342,54 @@ describe('Wrap ->', () => {
             });
         });
     });
+    describe('EJ2-877806->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [{
+                        cells: [{ value: 'Hello \n world' },
+                        { value: 'Syncfusion \n Spreadsheet \n Component' }]
+                    }]
+                }], allowWrap: false,
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Row split occurs when data with a new line character at initial load with allowWrap as false.->', (done: Function) => {
+            let td1: Element = helper.invoke('getCell', [0, 0]);
+            let td2: Element = helper.invoke('getCell', [0, 1]);
+            expect(td1.textContent.includes('\n')).toBeFalsy();
+            expect(td2.textContent.includes('\n')).toBeFalsy();
+            done();
+        });
+    });
+    describe('EJ2-877806->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [{
+                        cells: [{ value: 'Syncfusion \n Spreadsheet \n Component' }]
+                    }]
+                }],
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Row split occurs when copying and pasting the data with a new line character.->', (done: Function) => {
+            helper.invoke('selectRange', ['A1:A1']);
+            expect(helper.invoke('getCell', [0, 0]).classList).toContain('e-wraptext');
+            helper.getElement('#' + helper.id + '_wrap').click();
+            expect(helper.invoke('getCell', [0, 0]).classList).toContain('e-alt-unwrap');
+            helper.invoke('copy', ['A1:A1']).then(() => {
+                helper.invoke('selectRange', ['B1:B1']);
+                helper.invoke('paste');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 1]).classList).toContain('e-alt-unwrap');
+                    done();
+                });
+            });
+        });
+    });
 });

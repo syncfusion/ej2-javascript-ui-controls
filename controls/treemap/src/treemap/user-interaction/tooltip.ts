@@ -53,10 +53,12 @@ export class TreeMapTooltip {
                     markerFill = item['options']['fill'];
                 }
                 if (this.treemap.enableRtl) {
-                    tooltipContent = [(!isNullOrUndefined(this.tooltipSettings.format) ? textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) : null)
+                    tooltipContent = [(!isNullOrUndefined(this.tooltipSettings.format) ?
+                        textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) : null)
                         || formatValue(value, this.treemap) + ' : ' + this.treemap.weightValuePath.toString()];
                 } else {
-                    tooltipContent = [(!isNullOrUndefined(this.tooltipSettings.format) ? textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) : null)
+                    tooltipContent = [(!isNullOrUndefined(this.tooltipSettings.format) ?
+                        textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) : null)
                         || this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
                 }
                 if (document.getElementById(this.tooltipId)) {
@@ -164,6 +166,7 @@ export class TreeMapTooltip {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To bind events for tooltip module
+     *
      * @private
      */
     public addEventListener(): void {
@@ -176,6 +179,7 @@ export class TreeMapTooltip {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To unbind events for tooltip module
+     *
      * @private
      */
     public removeEventListener(): void {

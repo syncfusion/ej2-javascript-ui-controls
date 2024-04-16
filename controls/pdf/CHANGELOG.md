@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.40 (2024-04-16)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the form field preservation issues in a large PDF documents.
+
 ## 25.1.39 (2024-04-09)
 
 ### PDF Parser

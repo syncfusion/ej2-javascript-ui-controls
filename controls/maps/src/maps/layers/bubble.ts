@@ -12,11 +12,11 @@ import { BorderModel } from '../model/base-model';
  */
 export class Bubble {
     private maps: Maps;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     /** @private */
-    public bubbleCollection: any[];
+    public bubbleCollection: object[];
     /**
      * Bubble Id for current layer
+     *
      * @private
      */
     public id: string = '';
@@ -24,15 +24,27 @@ export class Bubble {
         this.maps = maps;
         this.bubbleCollection = [];
     }
-    // eslint-disable-next-line valid-jsdoc
     /**
      * To render bubble
+     *
+     * @param {BubbleSettingsModel} bubbleSettings - Specifies the bubble data to be rendered
+     * @param {object} shapeData - Specifies the data about the shape
+     * @param {string} color - Specifies the color of the bubble
+     * @param {number} range - Specifies the range of the bubble
+     * @param {number} range.min - Specifies the minimum range of the bubble
+     * @param {number} range.max - Specifies the maximum range of the bubble
+     * @param {number} bubbleIndex - Specifies the index of the bubble
+     * @param {number} dataIndex - Specifies the index of the data
+     * @param {number} layerIndex - Specifies the index of the layer
+     * @param {LayerSettings} layer - Specifies the layer data
+     * @param {Element} group - Specifies the element group
+     * @param {string} bubbleID - Specifies the ID of the bubble
+     * @returns {void}
      *
      * @private
      */
     public renderBubble(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        bubbleSettings: BubbleSettingsModel, shapeData: any, color: string, range: { min: number, max: number },
+        bubbleSettings: BubbleSettingsModel, shapeData: object, color: string, range: { min: number, max: number },
         bubbleIndex: number, dataIndex: number, layerIndex: number, layer: LayerSettings, group: Element, bubbleID? : string
     ): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -125,6 +137,7 @@ export class Bubble {
                     return;
                 }
             }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             this.maps.trigger('bubbleRendering', eventArgs, (bubbleArgs: IBubbleRenderingEventArgs) => {
                 if (eventArgs.cancel) {
                     return;
@@ -167,8 +180,10 @@ export class Bubble {
                 const bubbleDataSource: any[] = bubbleSettings.dataSource as any[];
                 const scale: number = translate['scale']; const transPoint: Point = translate['location'] as Point;
                 const position: MapLocation = new MapLocation(
-                    (this.maps.isTileMap ? ((eventArgs.cx + this.maps.translatePoint.x) * this.maps.tileZoomLevel) : ((eventArgs.cx + transPoint.x) * scale)),
-                    (this.maps.isTileMap ? ((eventArgs.cy + this.maps.translatePoint.y) * this.maps.tileZoomLevel) : ((eventArgs.cy + transPoint.y) * scale)));
+                    (this.maps.isTileMap ? ((eventArgs.cx + this.maps.translatePoint.x) * this.maps.tileZoomLevel)
+                        : ((eventArgs.cx + transPoint.x) * scale)),
+                    (this.maps.isTileMap ? ((eventArgs.cy + this.maps.translatePoint.y) * this.maps.tileZoomLevel)
+                        : ((eventArgs.cy + transPoint.y) * scale)));
                 bubbleElement.setAttribute('transform', 'translate( ' + (position.x) + ' ' + (position.y) + ' )');
                 const bubble: string = (bubbleDataSource.length - 1) === dataIndex ? 'bubble' : null;
                 if (bubbleSettings.bubbleType === 'Square') {

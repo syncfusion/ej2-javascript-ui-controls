@@ -4,7 +4,7 @@ import { EmitType, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base'
 import { Event, EventHandler, Complex, Collection, isNullOrUndefined, remove, createElement, Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { Border, Font, Container, Margin, Annotation, TooltipSettings } from './model/base';
 import { FontModel, BorderModel, ContainerModel, MarginModel, AnnotationModel, TooltipSettingsModel } from './model/base-model';
-import { AxisModel, PointerModel, RangeModel } from './axes/axis-model';
+import { AxisModel, PointerModel} from './axes/axis-model';
 import { Axis, Pointer } from './axes/axis';
 import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, gaugeMouseUp, resized, valueChange } from './model/constant';
 import { LinearGaugeModel } from './linear-gauge-model';
@@ -120,7 +120,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public height: string;
 
     /**
-     * Defines the duration of the loading animation in linear gauge, which animates the 
+     * Defines the duration of the loading animation in linear gauge, which animates the
      * axis line, ticks, axis labels, ranges, pointers, and annotations. The value of this property will be in milliseconds.
      *
      * @default 0
@@ -606,7 +606,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 clearTimeout(this.styleRemove);
             }
             this.styleRemove = setTimeout((): void => {
-                let styleElement: NodeListOf<HTMLStyleElement> = document.querySelectorAll('style.' + this.element.id + 'animation');
+                const styleElement: NodeListOf<HTMLStyleElement> = document.querySelectorAll('style.' + this.element.id + 'animation');
                 if (styleElement.length > 0) { styleElement[0].remove(); }
             }, (this.animationDuration === 0 && animationMode === 'Enable') ? 1000 : this.animationDuration);
         }
@@ -617,7 +617,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         const elements: NodeListOf<HTMLStyleElement> = document.querySelectorAll('style.' + this.element.id + 'animation');
         new Animation({}).animate(<HTMLElement>element, {
             duration: (this.animationDuration === 0 && animationMode === 'Enable') ? 1000 : this.animationDuration > 0 ?
-                      this.animationDuration / this.splitUpCount : 0,
+                this.animationDuration / this.splitUpCount : 0,
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp > args.delay) {
                     tempOpacity = ((args.timeStamp - args.delay) / args.duration);
@@ -754,7 +754,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     private renderTitle(): void {
-        const width: number = (this.availableSize.width - this.margin.left - this.margin.right);        
+        const width: number = (this.availableSize.width - this.margin.left - this.margin.right);
         const style: FontModel = {
             size: this.titleStyle.size || this.themeStyle.titleFontSize,
             color: this.titleStyle.color,
@@ -764,7 +764,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             opacity: this.titleStyle.opacity
         };
         const trimmedTitle: string = textTrim(width, this.title, style);
-        const size: Size = measureText(trimmedTitle, style);        
+        const size: Size = measureText(trimmedTitle, style);
         const options: TextOption = new TextOption(
             this.element.id + '_LinearGaugeTitle',
             this.availableSize.width / 2,
@@ -781,7 +781,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         const y: number = (isNullOrUndefined(titleBounds)) ? this.margin.top : titleBounds.y;
         const height: number = (this.availableSize.height - y - this.margin.bottom);
         this.actualRect = { x: x, y: y, width: width, height: height };
-        if (this.title) {            
+        if (this.title) {
             const element: Element = textElement(
                 options, style, style.color || this.themeStyle.titleFontColor, null, this.svgObject
             );
@@ -803,11 +803,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.element, (Browser.isPointer ? 'pointerleave' : 'mouseleave'),
             this.mouseLeave
         );
-        EventHandler.remove(
-            <HTMLElement & Window>window,
-            (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.resizeEvent
-        );
+        window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
+        this.resizeEvent);
     }
 
     /*
@@ -826,7 +823,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         );
         this.resizeEvent = this.gaugeResize.bind(this);
         EventHandler.add(
-            <HTMLElement & Window>window,
+            window as any,
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.resizeEvent
         );
@@ -903,7 +900,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.nearSizes = [];
         this.farSizes = [];
         this.themeStyle = null;
+        this.intl = null;
         this.removeSvg();
+        this.resizeEvent = null;
         this.svgObject = null;
         this.renderer = null;
     }
@@ -1379,10 +1378,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             if (pointer.markerType === 'Text') {
                 textOptions = new TextOption('pointerID', x, y, 'middle', pointer.text, null, 'auto');
                 textOptions = calculateTextPosition(pointer.bounds, pointer.markerType,
-                    textOptions, this.orientation, axis, pointer);
+                                                    textOptions, this.orientation, axis, pointer);
             }
             options = calculateShapes(pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
-                pointer.imageUrl, options, this.orientation, axis, pointer);
+                                      pointer.imageUrl, options, this.orientation, axis, pointer);
             if (pointer.markerType === 'Image' || pointer.markerType === 'Text') {
                 this.mouseElement.setAttribute('x', (pointer.markerType === 'Text' ? textOptions.x : pointer.bounds.x - (pointer.bounds.width / 2)).toString());
                 this.mouseElement.setAttribute('y', (pointer.markerType === 'Text' ? textOptions.y : pointer.bounds.y - (pointer.bounds.height / 2)).toString());
@@ -1599,7 +1598,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         const modules: ModuleDeclaration[] = [];
         let annotationEnable: boolean = false;
         this.annotations.map((annotation: Annotation) => {
-            annotationEnable = annotation.content != null;
+            if (!annotationEnable) {
+                annotationEnable = !isNullOrUndefined(annotation.content) && annotation.content.length !== 0;
+            }
         });
         if (annotationEnable) {
             modules.push({
@@ -1659,6 +1660,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Get component name
+     *
      * @private
      */
 
@@ -1727,17 +1729,21 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                                     const pointerPropertyLength: number = Object.keys(newProp.axes[x as number].pointers).length;
                                     for (let y: number = 0; y < pointerPropertyLength; y++) {
                                         const index: number = parseInt(Object.keys(newProp.axes[x as number].pointers)[y as number], 10);
-                                        if (!isNaN(index) && !isNullOrUndefined(Object.keys(newProp.axes[x as number].pointers[index as number]))) {
+                                        if (!isNaN(index) &&
+                                            !isNullOrUndefined(Object.keys(newProp.axes[x as number].pointers[index as number]))) {
                                             this.allowLoadingAnimation = false;
                                             this.isPointerAnimationInProgress = false;
                                             this.axes[x as number].pointers[index as number]['startValue'] = this.axes[x as number].pointers[index as number]['currentValue'];
                                             this.axes[x as number].pointers[index as number]['isPointerAnimation'] = Object.keys(newProp.axes[x as number].pointers[index as number]).indexOf('value') > -1;
                                             if (this.pointerDrag) {
                                                 this.axes[x as number].pointers[index as number]['isPointerAnimation'] = false;
-                                                if (this.isTouchPointer && newProp.axes[x as number].pointers[index as number].text !== oldProp.axes[x as number].pointers[index as number].text) {
-                                                    let currentPointer: PointerModel = this.axes[x as number].pointers[index as number];
-                                                    let pointerId: string = this.element.id + '_AxisIndex_' + x + '_' + currentPointer.type + 'Pointer' + '_' + index;
-                                                    this.axisRenderer.updateTextPointer(pointerId, <Pointer>currentPointer, <Axis>this.axes[x as number])
+                                                if (this.isTouchPointer &&
+                                                    newProp.axes[x as number].pointers[index as number].text
+                                                    !== oldProp.axes[x as number].pointers[index as number].text) {
+                                                    const currentPointer: PointerModel = this.axes[x as number].pointers[index as number];
+                                                    const pointerId: string = this.element.id + '_AxisIndex_' + x + '_' + currentPointer.type + 'Pointer' + '_' + index;
+                                                    this.axisRenderer.updateTextPointer(pointerId, <Pointer>currentPointer,
+                                                                                        <Axis>this.axes[x as number]);
                                                 }
                                             }
                                         }

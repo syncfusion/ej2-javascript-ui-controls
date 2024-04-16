@@ -2004,7 +2004,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                                     }
                                 }
                                 while (i < pFormula.length && (this.isDigit(pFormula[i as number]) ||
-                                    pFormula[i as number] === decimalSep)) {
+                                    (pFormula[i as number] === decimalSep || pFormula[i as number] === '.'))) {
                                     s += pFormula[i as number] === decimalSep ? '.' : pFormula[i as number];
                                     i = i + 1;
                                 }

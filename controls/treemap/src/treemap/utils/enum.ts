@@ -227,6 +227,7 @@ export type RenderingMode =
 
 /**
  * Defines the shape of the marker in the tooltip of the treemap.
+ *
  * @private
  */
 export type MarkerShape =

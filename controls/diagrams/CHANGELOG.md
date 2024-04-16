@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 25.1.40 (2024-04-16)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#FB51986` - Now, The Diagram is rendered with swimlane when passing element container as a second parameter.
+- `#FB52116` - Now, The user handle is not visible while dragging the node/connector.
+- `#I570099` - Now, Phase is selectable after deleting first phase without swimlane header.
+- `#I51986` - Now, aria-label value is added in text edit mode for annotation resolving accessibility error.
+- `#I561938` - Now, the connectors routed properly with shortest routing distance while using enable routing.
+- `#I568115` - Prevented overlapping of Nodes during collapse of multiple nodes with Layout Animation.
+- `#FB52027` - Now, the text edit for Bpmn text annotation working properly.
+
 ## 25.1.39 (2024-04-09)
 
 ### Diagram
@@ -9,7 +23,6 @@
 #### Bug Fixes
 
 - `#I570446` - Now, zoom in and zoom out works properly while setting canZoomOut as true.
-- `#I561938` - Now, the connectors routed properly with shortest routing distance while using enable routing.
 - `#I565099` - Now, the undo redo works properly for swimlane after cut and delete.
 
 ## 25.1.38 (2024-04-02)

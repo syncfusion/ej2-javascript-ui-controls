@@ -188,7 +188,8 @@ export class Formatter {
             event: e, callBack: () => {
                 self.notify(CONSTANT.contentChanged, {});
                 this.enableUndo(self);
-            }
+            },
+            enterAction : self.enterKey
         });
     }
     /**

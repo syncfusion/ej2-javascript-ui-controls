@@ -570,4 +570,63 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('BPMN Text Annotation throws error when start Text Edit', () => {
+
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagramBpmnTextEdit' });
+            document.body.appendChild(ele);
+
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'textAnnotationNode',
+                    width: 100,
+                    height: 100,
+                    offsetX:300,
+                    offsetY:100,
+                    shape: {
+                      type: 'Bpmn',
+                      shape: 'TextAnnotation',
+                    },
+                  },
+            ]
+            diagram = new Diagram({
+                width: 1500, height: 1000, nodes: nodes
+            });
+            diagram.appendTo('#diagramBpmnTextEdit');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Text Annotation node textBox by double clicking the node', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nameTable['textAnnotationNode'];
+            mouseEvents.mouseMoveEvent(diagramCanvas, node.offsetX, node.offsetY);
+            mouseEvents.mouseDownEvent(diagramCanvas, node.offsetX, node.offsetY);
+            mouseEvents.mouseUpEvent(diagramCanvas, node.offsetX, node.offsetY);
+            mouseEvents.dblclickEvent(diagramCanvas, node.offsetX, node.offsetY);
+            expect(node.annotations.length > 0 && node.annotations[0].content === '').toBe(true);
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            node.annotations[0].content = 'Text Annotation';
+            diagram.dataBind();
+            mouseEvents.mouseMoveEvent(diagramCanvas, node.offsetX, node.offsetY);
+            mouseEvents.mouseDownEvent(diagramCanvas, node.offsetX, node.offsetY);
+            mouseEvents.mouseUpEvent(diagramCanvas, node.offsetX, node.offsetY);
+            mouseEvents.dblclickEvent(diagramCanvas, node.offsetX, node.offsetY);
+            expect(node.annotations.length > 0&& node.annotations[0].content === 'Text Annotation').toBe(true);
+            done();
+        });
+    });
+
 });

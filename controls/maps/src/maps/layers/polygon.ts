@@ -5,8 +5,12 @@ import { PathOption, calculatePolygonPath, maintainSelection } from '../utils/he
  * When injected, this module will be used to render polygon shapes over the Maps.
  */
 export class Polygon {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    /* eslint-disable @typescript-eslint/no-empty-function */
     constructor(maps: Maps) {
     }
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+    /* eslint-enable @typescript-eslint/no-empty-function */
     /**
      * To render polygon for maps
      *
@@ -25,8 +29,7 @@ export class Polygon {
             const polygonSVGObject: Element = maps.renderer.createGroup({
                 id: maps.element.id + '_LayerIndex_' + layerIndex + '_Polygons_Group_' + polygonIndex
             });
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const polygonData: Coordinate[] = polygonSetting.points;            
+            const polygonData: Coordinate[] = polygonSetting.points;
             const path: string = calculatePolygonPath(maps, factor, currentLayer, polygonData);
             const pathOptions: PathOption = new PathOption(
                 maps.element.id + '_LayerIndex_' + layerIndex + '_PolygonIndex_' + polygonIndex,
@@ -34,7 +37,7 @@ export class Polygon {
                 polygonSetting.opacity, polygonSetting.borderOpacity, '', path);
             const polygonEle: Element = maps.renderer.drawPath(pathOptions) as SVGPathElement;
             maintainSelection(maps.selectedPolygonElementId, maps.polygonSelectionClass, polygonEle,
-                                'PolygonselectionMapStyle');
+                              'PolygonselectionMapStyle');
             polygonSVGObject.appendChild(polygonEle);
             polygonsSVGObject.appendChild(polygonSVGObject);
         });
@@ -56,6 +59,7 @@ export class Polygon {
      * @returns {void}
      * @private
      */
+    //eslint-disable-next-line @typescript-eslint/no-empty-function
     public destroy(): void {
     }
 }

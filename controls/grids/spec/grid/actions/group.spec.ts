@@ -2148,3 +2148,63 @@ describe('EJ2-867832-groupSettings not updated properly when cancelling group ac
         gridObj = actionBegin = null;
     });
 });
+
+
+describe('EJ2-881066-Refreshing aggregateModule throws script error with Grouping => ', () => {
+    let gridObj: Grid;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 120
+                    },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 120, format: 'C2', validationRules: { required: true, min: 0, number: true }
+                    },
+                    {
+                        field: 'OrderDate', headerText: 'Order Date', editType: 'datepickeredit', format: 'yMd',
+                        width: 170
+                    },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150,
+                        edit: { params: { popupHeight: '300px' } }
+                    }
+                ],
+                allowPaging: true,
+                allowGrouping: true,
+                groupSettings: { columns: ['ShipCity'] },
+                aggregates: [
+                    {
+                      columns: [
+                        {
+                          field: 'Freight',
+                          columnName: 'Freight',
+                          type: 'Custom',
+                          format: 'C2',
+                          footerTemplate: 'Sum: ${Custom}',
+                          customAggregate() {
+                            const selectedRecords = gridObj.getSelectedRecords();
+                            return (
+                              selectedRecords.length > 0 ? selectedRecords : gridObj.dataSource as any
+                            ).reduce((sum?: any, rec?: any) => sum + rec['Freight'], 0);
+                          },
+                        },
+                      ],
+                    },
+                  ]
+            }, done);
+    });
+    it('Checking script error occurs when refresh aggragtes', () => {
+        (gridObj.aggregateModule as any).refresh();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -549,6 +549,7 @@ export class ThumbnailView {
         let pageLink: HTMLAnchorElement = document.getElementById('page_'  + pageIndex) as HTMLAnchorElement;
         let thumbnailPageNumber: HTMLElement = document.getElementById(this.pdfViewer.element.id+ '_thumbnail_pagenumber_' + pageIndex);
         let currentPageImage: any = this.getThumbnailImageElement(pageIndex);
+        if (!isNullOrUndefined(thumbnail) && !isNullOrUndefined(currentPageImage)) {
         currentPageImage.src = this.pdfViewerBase.clientSideRendering || typeof data.thumbnailImage === 'string' || data.thumbnailImage instanceof String ? data.thumbnailImage : data.thumbnailImage[pageIndex];
         currentPageImage.alt = this.pdfViewer.element.id + '_thumbnail_page_' + pageIndex;
         if (this.pdfViewerBase.pageSize[pageIndex] && (this.pdfViewerBase.pageSize[pageIndex].height < this.pdfViewerBase.pageSize[pageIndex].width)) {
@@ -565,6 +566,7 @@ export class ThumbnailView {
         if(pageIndex === 0) {
             this.pdfViewerBase.navigationPane.enableThumbnailButton();
             this.isThumbnailViewOpen();
+        }
         }
     }
 

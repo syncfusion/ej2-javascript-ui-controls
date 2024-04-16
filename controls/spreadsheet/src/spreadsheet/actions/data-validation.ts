@@ -1497,7 +1497,7 @@ export class DataValidation {
             errorDialogInst.hide();
             if (el.innerText) {
                 window.getSelection().selectAllChildren(el);
-                if (this.listObj) {
+                if (this.listObj && !this.listObj.isDestroyed) {
                     this.listObj.showPopup();
                 }
             }

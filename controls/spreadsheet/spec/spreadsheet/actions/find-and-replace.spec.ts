@@ -1112,5 +1112,99 @@ describe('Find & Replace ->', () => {
                 });
             });
         });
+        describe('EJ2-875231 ->', () => {
+            beforeAll(function (done) {
+                helper.initializeSpreadsheet({
+                    sheets: [
+                        {
+                            rows: [
+                                { cells: [{ value: 'the test Value' }] }, { cells: [{ value: 'Test value' }] }, { cells: [{ value: '10Test Value!' }] }, { cells: [{ value: '10Test Value10' }] }, { cells: [{ value: 'Test Value' }] }
+                            ]
+                        },
+                        {
+                            rows: [
+                                { cells: [{ value: 'The Test Value' }] }, { cells: [{ value: 'TeSt vAlue' }] }, { cells: [{ value: 'TeST VaLUE!' }] }, { cells: [{ value: 'test ValuE10' }] }, { cells: [{ value: 'Test VALUE@' }] }
+                            ]
+                        }
+                    ]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('When find value contains uppercase letters case sensitive is set false and entire cell is set true', (done: Function) => {
+                let findAllArray: string[] = helper.invoke('findAll', ['Test Value', 'Workbook', false, true]);
+                setTimeout(() => {
+                    expect(findAllArray.length).toBe(3);
+                    expect(findAllArray[0]).toBe('Sheet1!A2');
+                    expect(findAllArray[1]).toBe('Sheet1!A5');
+                    expect(findAllArray[2]).toBe('Sheet2!A2');
+                    findAllArray = helper.invoke('findAll', ['Test Value', 'Sheet', false, true]);
+                    setTimeout(() => {
+                        expect(findAllArray.length).toBe(2);
+                        expect(findAllArray[0]).toBe('Sheet1!A2');
+                        expect(findAllArray[1]).toBe('Sheet1!A5');
+                        done();
+                    });
+                });
+            });
+            it('When find value contains uppercase letters case sensitive is set false and entire cell is set false', (done: Function) => {
+                let findAllArray: string[] = helper.invoke('findAll', ['Test Value', 'Workbook', false, false]);
+                setTimeout(() => {
+                    expect(findAllArray.length).toBe(10);
+                    expect(findAllArray[0]).toBe('Sheet1!A1');
+                    expect(findAllArray[1]).toBe('Sheet1!A2');
+                    expect(findAllArray[2]).toBe('Sheet1!A3');
+                    expect(findAllArray[3]).toBe('Sheet1!A4');
+                    expect(findAllArray[4]).toBe('Sheet1!A5');
+                    expect(findAllArray[5]).toBe('Sheet2!A1');
+                    expect(findAllArray[6]).toBe('Sheet2!A2');
+                    expect(findAllArray[7]).toBe('Sheet2!A3');
+                    expect(findAllArray[8]).toBe('Sheet2!A4');
+                    expect(findAllArray[9]).toBe('Sheet2!A5');
+                    findAllArray = helper.invoke('findAll', ['Test Value', 'Sheet', false, false]);
+                    setTimeout(() => {
+                        expect(findAllArray.length).toBe(5);
+                        expect(findAllArray[0]).toBe('Sheet1!A1');
+                        expect(findAllArray[1]).toBe('Sheet1!A2');
+                        expect(findAllArray[2]).toBe('Sheet1!A3');
+                        expect(findAllArray[3]).toBe('Sheet1!A4');
+                        expect(findAllArray[4]).toBe('Sheet1!A5');
+                        done();
+                    })
+                });
+            });
+            it('When find value contains uppercase letters case sensitive is set true and entire cell is set true', (done: Function) => {
+                let findAllArray: string[] = helper.invoke('findAll', ['Test Value', 'Workbook', true, true]);
+                setTimeout(() => {
+                    expect(findAllArray.length).toBe(1);
+                    expect(findAllArray[0]).toBe('Sheet1!A5');
+                    findAllArray = helper.invoke('findAll', ['Test Value', 'Sheet', true, true]);
+                    setTimeout(() => {
+                        expect(findAllArray.length).toBe(1);
+                        expect(findAllArray[0]).toBe('Sheet1!A5');
+                        done();
+                    });
+                });
+            });
+            it('When find value contains uppercase letters case sensitive is set true and entire cell is set false', (done: Function) => {
+                let findAllArray: string[] = helper.invoke('findAll', ['Test Value', 'Workbook', true, false]);
+                setTimeout(() => {
+                    expect(findAllArray.length).toBe(4);
+                    expect(findAllArray[0]).toBe('Sheet1!A3');
+                    expect(findAllArray[1]).toBe('Sheet1!A4');
+                    expect(findAllArray[2]).toBe('Sheet1!A5');
+                    expect(findAllArray[3]).toBe('Sheet2!A1');
+                    findAllArray = helper.invoke('findAll', ['Test Value', 'Sheet', true, false]);
+                    setTimeout(() => {
+                        expect(findAllArray.length).toBe(3);
+                        expect(findAllArray[0]).toBe('Sheet1!A3');
+                        expect(findAllArray[1]).toBe('Sheet1!A4');
+                        expect(findAllArray[2]).toBe('Sheet1!A5');
+                        done();
+                    });
+                });
+            });
+        });
     });
 });

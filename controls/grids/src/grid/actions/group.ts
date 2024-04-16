@@ -1758,9 +1758,9 @@ export class Group implements IAction {
         let initData: Object[] = this.parent.getCurrentViewRecords().slice();
         const field: string = this.parent.getPrimaryKeyFieldNames()[0];
         const dragParentRowObjects: Row<Column>[] = editedData && editedData.length ?
-            (editedData[0]['dragRowObjects'] as Row<Column>[]) : null;
+            editedData[0] && (editedData[0]['dragRowObjects'] as Row<Column>[]) : null;
         const dropParentRowObjects: Row<Column>[] = editedData && editedData.length ?
-            (editedData[0]['dropRowObjects'] as Row<Column>[]) : null;
+            editedData[0] && (editedData[0]['dropRowObjects'] as Row<Column>[]) : null;
         let dropRootKey: String | Date = null;
         let dragRootKey: String | Date = null;
         if (this.parent.enableVirtualization && this.parent.allowGrouping && this.parent.groupSettings.columns.length &&

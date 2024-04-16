@@ -212,6 +212,7 @@ export class Tick extends ChildProperty<Tick> {
 
     /**
      * Sets and gets the width of the tick line in the axis. The default value is 2 for major ticks and 1 for minor ticks.
+     *
      * @default 2
      */
     @Property(2)
@@ -414,7 +415,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public text: string;
 
     /**
-     * Defines the font properties such as font-size, font family and others for the text pointer. 
+     * Defines the font properties such as font-size, font family and others for the text pointer.
      */
     @Complex<TextStyleModel>({ size: '16px', fontStyle: 'normal', fontWeight: 'normal', fontFamily: null }, TextStyle)
     public textStyle: TextStyleModel;

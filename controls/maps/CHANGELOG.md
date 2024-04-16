@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+## 25.1.40 (2024-04-16)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I566503` - The slight variation between the sublayer shape map and tile images of the online map in the base layer is now properly synchronized when panning the Maps.
+- `#F186927` - The pinch zooming will now work properly for the online maps, which zoom in and out by a factor of 1.
+
 ## 25.1.37 (2024-03-26)
 
 ### Maps

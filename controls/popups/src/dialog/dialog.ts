@@ -1992,7 +1992,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         this.ftrTemplateContent = null;
         this.headerContent = null;
-        if (!isNullOrUndefined(this.contentEle)) {
+        if (!(this as any).isReact && !isNullOrUndefined(this.contentEle)) {
             this.removeAllChildren(this.contentEle);
         }
         this.contentEle = null;

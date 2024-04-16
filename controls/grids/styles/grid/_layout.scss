@@ -4632,7 +4632,7 @@ margin: $grid-group-animator-cell-margin;
         text-align: left;
       }
       
-      &.e-default table th:not([rowspan = '1']):not(.e-detailcell,.e-detailindentcell,.e-stackedheadercell)  {
+      &.e-default table th:not([rowspan = '1']):not(.e-detailcell,.e-detailindentcell,.e-stackedheadercell,.e-detailheadercell,.e-rowdragheader)  {
         border-width: $grid-headercell-both-border-width;
       }
 
@@ -4658,7 +4658,7 @@ margin: $grid-group-animator-cell-margin;
         border-right-width: 1px;
       }
       
-      &.e-rtl.e-default table th:not([rowspan = '1']):not(.e-detailcell,.e-detailindentcell,.e-stackedheadercell)  {
+      &.e-rtl.e-default table th:not([rowspan = '1']):not(.e-detailcell,.e-detailindentcell,.e-stackedheadercell,.e-detailheadercell,.e-rowdragheader)  {
         border-width: $grid-rtl-headercell-both-border-width;
       }
 

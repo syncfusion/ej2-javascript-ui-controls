@@ -1716,12 +1716,21 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 select('.' + CHECKBOXFRAME, checkboxEle).classList.add(CHECK);
                 e.item.setAttribute('aria-checked', 'true');
                 this.addCheck(e.item);
+                if (Browser.userAgent.indexOf("Edg") > -1) {
+                    checkboxEle.setAttribute('aria-label', "checked");
+                }
             } else if (!isNOU(checkValue) && checkValue.toString() === 'true') {
                 select('.' + CHECKBOXFRAME, checkboxEle).classList.add(CHECK);
                 e.item.setAttribute('aria-checked', 'true');
                 this.addCheck(e.item);
+                if (Browser.userAgent.indexOf("Edg") > -1) {
+                    checkboxEle.setAttribute('aria-label', "checked");
+                }
             } else {
                 e.item.setAttribute('aria-checked', 'false');
+                if (Browser.userAgent.indexOf("Edg") > -1) {
+                    checkboxEle.setAttribute('aria-label', "unchecked");
+                }
             }
             let frame: Element = select('.' + CHECKBOXFRAME, checkboxEle);
             EventHandler.add(frame, 'mousedown', this.frameMouseHandler, this);
@@ -2235,6 +2244,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         ariaState = state === 'check' ? 'true' : state === 'uncheck' ? 'false' : ariaState;
         if (!isNOU(ariaState)) {
             currLi.setAttribute('aria-checked', ariaState);
+            if (Browser.userAgent.indexOf("Edg") > -1) {
+                if (ariaState === 'true') {
+                    wrapper.setAttribute('aria-label', "checked");
+                }
+                else if (ariaState === 'false') {
+                    wrapper.setAttribute('aria-label', "unchecked");
+                }
+                else if (ariaState === 'mixed') {
+                    wrapper.setAttribute('aria-label', "indeterminate");
+                }
+            }
         }
         if (isAdd) {
             let data: { [key: string]: Object }[] = [].concat([], this.checkActionNodes);

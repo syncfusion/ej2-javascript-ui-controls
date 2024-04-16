@@ -2826,7 +2826,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let li : HTMLElement;
         for (let i : number = 0;  i < files.length; i++) {
             li = this.getLiElement(files[i as number]);
-            if (!li.classList.contains(UPLOAD_SUCCESS)) {
+            if (!isNullOrUndefined(li) && !li.classList.contains(UPLOAD_SUCCESS)) {
+                filterFiles.push(files[i as number]);
+            }
+            else if (!this.showFileList && files[i as number].status !== "File uploaded successfully") {
                 filterFiles.push(files[i as number]);
             }
         }
@@ -3035,7 +3038,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         const status : XMLHttpRequest = e.target as XMLHttpRequest;
         if (status.readyState === 4 && status.status >= 200 && status.status <= 299 ) {
             const li : HTMLElement = this.getLiElement(file);
-            if (isNullOrUndefined(li)  &&  (!customUI || isNullOrUndefined(customUI)) ) {
+            if (isNullOrUndefined(li)  &&  (!customUI || isNullOrUndefined(customUI)) && this.showFileList ) {
                 return;
             }
             if (!isNullOrUndefined(li)) {

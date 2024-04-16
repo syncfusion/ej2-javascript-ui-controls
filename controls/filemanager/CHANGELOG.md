@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.40 (2024-04-16)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I574902` - The error dialog that appears when refreshing the File Manager component's SQL service has been resolved.
+
 ## 25.1.39 (2024-04-09)
 
 ### FileManager
@@ -9,6 +17,8 @@
 #### Bug Fixes
 
 - `#I574481` - The issue with context menu items not getting disabled when menu items contain spaces in the File Manager component has been resolved.
+- `#I573974` - The console error while trying to persist the deleted file in the File Manager component has been resolved.
+- `#I574902` - The error dialog that appears when refreshing the File Manager component's SQL service has been resolved.
 
 ## 25.1.38 (2024-04-02)
 

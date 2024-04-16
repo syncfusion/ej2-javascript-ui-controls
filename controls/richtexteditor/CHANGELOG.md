@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 25.1.39 (2024-04-09)
+## 25.1.40 (2024-04-16)
 
 ### RichTextEditor
 
@@ -10,13 +10,25 @@
 
 - `#I569839` - Now, the `title` attribute is added properly for the audio and video elements, inserted using the `executeCommand` public method in the Rich Text Editor.
 
-- `#I572044` - Now, the cursor is set after the image when pasting the image or image with text into the Rich Text Editor.
+- `#I572603` - Now, pressing the enter key after inserting the table work's properly.
+
+- `#I567787` - Now, copy and paste text into the Rich Text Editor when using `enterkey` as `BR` work's properly.
+
+## 25.1.39 (2024-04-09)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I572044` - Now the cursor is set after the image when you paste the image only when `PasteCleanup` module is used into the Rich Text Editor.
 
 - `#I569849` - Now, the abort icon and uploading percentage are aligned properly in the image dialog of the Rich Text Editor.
 
 - `#I570370` - Now, the backspace key is working properly when copying and pasting an image with content.
 
 - `#I553157` - Now, the bullet format list gets removed properly when we replace the content in RichTextEditor.
+
+- `#I572138` - Now, pressing the enter key by placing the cursor at the end of the table creates a new line, and the cursor is focused on the new line.
 
 ## 25.1.38 (2024-04-02)
 

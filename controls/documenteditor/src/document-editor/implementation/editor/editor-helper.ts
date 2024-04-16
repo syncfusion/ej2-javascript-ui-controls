@@ -10,7 +10,7 @@ import {
     boldProperty, italicProperty, fontSizeProperty, fontFamilyProperty, underlineProperty,
     strikethroughProperty, baselineAlignmentProperty, highlightColorProperty, fontColorProperty,
     styleNameProperty, bidiProperty, bdoProperty, boldBidiProperty, italicBidiProperty, fontSizeBidiProperty,
-    fontFamilyBidiProperty, allCapsProperty, localeIdBidiProperty, complexScriptProperty, fontFamilyAsciiProperty,
+    fontFamilyBidiProperty, allCapsProperty, localeIdBidiProperty, localeIdProperty, complexScriptProperty, fontFamilyAsciiProperty,
     characterSpacingProperty, scalingProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, bordersProperty, leftIndentProperty,
     rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, beforeSpacingProperty,
     afterSpacingProperty, spaceBeforeAutoProperty, spaceAfterAutoProperty, lineSpacingProperty,
@@ -811,6 +811,7 @@ export class HelperMethods {
         characterFormat[fontFamilyBidiProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyBidi :isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
         characterFormat[allCapsProperty[keywordIndex]] = isWriteAllValues? format.allCaps :isInline ? HelperMethods.getBoolInfo(format.allCaps, keywordIndex) : format.getValue('allCaps');
         characterFormat[localeIdBidiProperty[keywordIndex]] = isWriteAllValues? format.localeIdBidi :isInline ? format.localeIdBidi : format.getValue('localeIdBidi');
+        characterFormat[localeIdProperty[keywordIndex]]= isWriteAllValues? format.localeIdBidi :isInline ? format.localeIdAscii : format.getValue('localeIdAscii');
         characterFormat[complexScriptProperty[keywordIndex]] = isWriteAllValues? format.complexScript :isInline ? HelperMethods.getBoolInfo(format.complexScript, keywordIndex) : format.getValue('complexScript');
         characterFormat[fontFamilyAsciiProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyAscii :isInline ? this.toWriteInline(format, 'fontFamilyAscii') : format.getValue('fontFamilyAscii');
         characterFormat[fontFamilyNonFarEastProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyNonFarEast :isInline ? this.toWriteInline(format, 'fontFamilyNonFarEast') : format.getValue('fontFamilyNonFarEast');

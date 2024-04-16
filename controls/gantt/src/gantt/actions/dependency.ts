@@ -509,7 +509,7 @@ export class Dependency {
                     && this.parent.allowParentDependency) {
                     this.updateChildItems(flatData[count as number]);
                 }
-                if (flatData[count as number].parentItem) {
+                if (flatData[count as number].parentItem && !this.parent.isLoad) {
                     let recordId = flatData[count as number].parentItem.taskId;
                     traverseParents(this.parent.getRecordByID(recordId));
                 }
@@ -996,7 +996,7 @@ export class Dependency {
                             for (let i: number = 0; i < parentData.ganttProperties.predecessor.length; i++) {
                                 if (parentData.ganttProperties.predecessor[i as number].to != parentData.ganttProperties.taskId.toString()) {
                                     const childRec: IGanttData = this.parent.flatData[this.parent.ids.indexOf(parentData.ganttProperties.predecessor[i as number].to)];
-                                    if (childRec) {
+                                    if (childRec && childRec.parentItem) {
                                         this.validateChildGanttRecord(record, childRec);
                                     }
                                 }

@@ -401,7 +401,8 @@ export class SfdtReader {
             if (blocks[i][inlinesProperty[this.keywordIndex]].length == 6) {
                 for (let j: number = 0; j < blocks[i][inlinesProperty[this.keywordIndex]].length; j++) {
                     let cmtText: string = blocks[i][inlinesProperty[this.keywordIndex]][j][textProperty[this.keywordIndex]]
-                    if (cmtText && (cmtText.indexOf('span') !== -1)) {
+                    // Added the below line to fix the breaking issue to preserve the mentions in docx.
+                    if (cmtText && (cmtText.indexOf('span') !== -1 || j === blocks[i][inlinesProperty[this.keywordIndex]].length - 1)) {
                         text = text + blocks[i][inlinesProperty[this.keywordIndex]][j][textProperty[this.keywordIndex]];
                     }
                 }

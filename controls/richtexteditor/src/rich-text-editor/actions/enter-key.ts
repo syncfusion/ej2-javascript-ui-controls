@@ -45,6 +45,17 @@ export class EnterKeyAction {
         this.getRangeNode();
         let isTableEnter: boolean = true;
         this.formatTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'];
+        const isCursorAtTableEnd: boolean = this.range.collapsed && (this.range.startContainer.nodeType === 1) &&
+            (this.range.startContainer as HTMLElement).isContentEditable &&
+            this.range.startContainer.childNodes[this.range.startOffset - 1] &&
+            (this.range.startContainer.childNodes[this.range.startOffset - 1] as HTMLElement).nodeName === 'TABLE';
+        const isCursorAtTableStart: boolean = this.range.collapsed && (this.range.startContainer.nodeType === 1) &&
+            (this.range.startContainer as HTMLElement).isContentEditable && this.range.startContainer.childNodes[this.range.startOffset] &&
+            (this.range.startContainer.childNodes[this.range.startOffset] as HTMLElement).nodeName === 'TABLE';
+        if (isCursorAtTableEnd || isCursorAtTableStart) {
+            this.handleCursorAtTableSide(e, isCursorAtTableStart, isCursorAtTableEnd);
+            return;
+        }
         if (!isNOU(this.startNode.closest('TABLE')) && !isNOU(this.endNode.closest('TABLE'))) {
             isTableEnter = false;
             let curElement: HTMLElement = this.startNode as HTMLElement;
@@ -519,5 +530,40 @@ export class EnterKeyAction {
             insertElem.setAttribute('style', nextBlockNode.getAttribute('style'));
         }
         return insertElem;
+    }
+
+    private handleCursorAtTableSide(e: NotifyArgs, isStart: boolean, isEnd: boolean): void {
+        if (this.parent.enterKey !== 'BR') {
+            const shiftKey: boolean = (e.args as KeyboardEventArgs).shiftKey;
+            const actionBeginArgs: ActionBeginEventArgs = {
+                cancel: false,
+                name: events.actionBegin,
+                requestType: shiftKey ? 'ShiftEnterAction' : 'EnterAction',
+                originalEvent: (e.args as KeyboardEventArgs)
+            };
+            this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+                if (!actionBeginArgs.cancel) {
+                    const newElement: HTMLElement = this.parent.createElement(this.parent.enterKey);
+                    newElement.innerHTML = '<br>';
+                    let tableElement: HTMLTableElement;
+                    if (isStart) {
+                        tableElement = this.range.startContainer.childNodes[this.range.startOffset] as HTMLTableElement;
+                        tableElement.parentElement.insertBefore(newElement, tableElement);
+                    }
+                    if (isEnd) {
+                        tableElement = this.range.startContainer.childNodes[this.range.startOffset - 1] as HTMLTableElement;
+                        if (!isNOU(tableElement.nextSibling)) {
+                            tableElement.parentElement.insertBefore(newElement, tableElement.nextSibling);
+                        }
+                        else if (isNOU(tableElement.nextSibling)) {
+                            tableElement.parentElement.appendChild(newElement);
+                        }
+                    }
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(), newElement, 0);
+                    (e.args as KeyboardEventArgs).preventDefault();
+                    this.parent.trigger(events.actionComplete, { requestType: shiftKey ? 'ShiftEnterAction' : 'EnterAction', args: (e.args as KeyboardEventArgs) });
+                }
+            });
+        }
     }
 }

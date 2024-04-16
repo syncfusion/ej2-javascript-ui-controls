@@ -16,6 +16,7 @@ import { cloneBlazorObject } from '../utility/diagram-util';
 export class LayoutAnimation {
 
     private protectChange: boolean = false;
+    public setIntervalObject: any = [];
 
     /**
      * Layout expand function for animation of expand and collapse \
@@ -32,10 +33,10 @@ export class LayoutAnimation {
         const i: number = 0;
         let j: number = 0;
         diagram.realActions = diagram.realActions | RealAction.AnimationClick;
-        setIntervalObject[parseInt(i.toString(), 10)] = setInterval(
+        this.setIntervalObject[parseInt(i.toString(), 10)] = setInterval(
             () => {
                 j++;
-                return this.layoutAnimation(objects, setIntervalObject, j === 6, diagram, node);
+                return this.layoutAnimation(objects, this.setIntervalObject, j === 6, diagram, node);
             },
             20);
         if (node.isExpanded) {
@@ -62,6 +63,31 @@ export class LayoutAnimation {
             }
         }
     }
+    //Bug 877226: Nodes overlapped while changing isExpanded property with Layout Animation.
+    // To stop the and clear the existing setinterval object
+    // Added this to stop the existing setinterval object when the layout animation is called for multiple nodes.
+    public stopCurrentAnimation(objValue:ILayout,  diagram:Diagram, node:NodeModel) {
+        clearInterval(this.setIntervalObject[0]);
+        this.setIntervalObject = [];
+        for (var k = 0; k < objValue.objects.length; k++) {
+            var node_1 = diagram.nameTable[objValue.objects[parseInt(k.toString(), 10)].id];
+            node_1.offsetX += objValue.objects[parseInt(k.toString(), 10)].differenceX - (objValue.objects[parseInt(k.toString(), 10)].differenceX / 5);
+            node_1.offsetY += objValue.objects[parseInt(k.toString(), 10)].differenceY - (objValue.objects[parseInt(k.toString(), 10)].differenceY / 5);
+        }
+        diagram.realActions = diagram.realActions & RealAction.AnimationClick;
+        diagram.refreshCanvasLayers();
+        diagram.protectPropertyChange(true);
+        diagram.triggerEvent(DiagramEvent.animationComplete, undefined);
+        diagram.layout.fixedNode = '';
+        diagram.protectPropertyChange(this.protectChange);
+        const arg: IExpandStateChangeEventArgs = {
+            element: cloneBlazorObject(clone(node)), state: (node.isExpanded) ? true : false
+        };
+        diagram.triggerEvent(DiagramEvent.expandStateChange, arg);
+        if (diagram.lineRoutingModule && diagram.constraints & DiagramConstraints.LineRouting) {
+            diagram.resetSegments();
+        }
+    };
 
 
 
@@ -86,6 +112,7 @@ export class LayoutAnimation {
         }
         if (stop) {
             clearInterval(layoutTimer[0]);
+            this.setIntervalObject = [];
             diagram.realActions = diagram.realActions & ~RealAction.AnimationClick;
             diagram.refreshCanvasLayers();
             diagram.protectPropertyChange(true);

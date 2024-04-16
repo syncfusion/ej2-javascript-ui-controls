@@ -2,7 +2,6 @@ import { Maps } from '../../index';
 import { HighlightSettingsModel, ISelectionEventArgs, itemHighlight, shapeHighlight, IShapeSelectedEventArgs } from '../index';
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getElementsByClassName, getElement, removeClass, createStyle, customizeStyle, getTargetElement } from '../utils/helper';
-import { BorderModel } from '../model/base-model';
 /**
  * Highlight module class
  */
@@ -41,9 +40,13 @@ export class Highlight {
         this.maps.off(Browser.touchMoveEvent, this.mouseMove);
         this.maps.off(Browser.touchStartEvent, this.mouseMove);
     }
-    // eslint-disable-next-line valid-jsdoc
     /**
      * Public method for highlight module
+     *
+     * @param {number} layerIndex - Specifies the index of the layer.
+     * @param {string} name - Specifies the name.
+     * @param {boolean} enable - Specifies the enabling of highlight in map.
+     * @returns {void}
      * @private
      */
     public addHighlight(layerIndex: number, name: string, enable: boolean): void {
@@ -143,10 +146,16 @@ export class Highlight {
     }
 
     /**
+     * Handles the highlighting events in map
+     *
+     * @param {Element} targetElement - Specifies the target element.
+     * @param {number} layerIndex - Specifies the index of the layer.
+     * @param {object} data - Specifies the data for the map.
+     * @param {object} shapeData - Specifies the data for the map to render.
+     * @returns {void}
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public handleHighlight(targetElement: Element, layerIndex: number, data: any, shapeData: any): void {
+    public handleHighlight(targetElement: Element, layerIndex: number, data: object, shapeData: object): void {
         if (this.maps.legendSettings.visible && targetElement.id.indexOf('_MarkerIndex_') === -1 && this.maps.legendModule
             && this.maps.legendSettings.type === 'Layers') {
             this.maps.legendModule.shapeHighLightAndSelection(

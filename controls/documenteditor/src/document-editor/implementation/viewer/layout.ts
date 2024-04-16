@@ -1936,7 +1936,7 @@ export class Layout {
                     }
                 } else {
                     this.hasFloatingElement = false;
-                    if (this.is2013Justification && !isNullOrUndefined(this.nextElementToLayout)) {
+                    if (this.is2013Justification && !isNullOrUndefined(this.nextElementToLayout) && !(!isNullOrUndefined((element.paragraph.containerWidget as TextFrame).containerShape) && (element.paragraph.containerWidget as TextFrame).containerShape === this.nextElementToLayout)) {
                         element = this.nextElementToLayout;
                     } else {
                         // if (!line.paragraph.isInsideTable && bodyIndex !== line.paragraph.containerWidget.indexInOwner && !isNullOrUndefined(element.nextElement)) {
@@ -2270,7 +2270,9 @@ export class Layout {
                 this.splitElementForClientArea(paragraph, element);
                 this.checkLineWidgetWithClientArea(line, element);
             }
+            let is2013Justification: boolean = this.is2013Justification;
             this.layoutShape(element);
+            this.is2013Justification = is2013Justification;
         }
         // tslint:disable-next-line:max-line-length
         if (element instanceof FootnoteElementBox && (!element.isLayout || this.isLayoutWhole) && this.documentHelper.owner.layoutType === 'Pages') {
@@ -2368,7 +2370,7 @@ export class Layout {
                 if (element instanceof FieldTextElementBox) {
                     this.updateFieldText(element);
                 }
-            } while (element.line !== line && this.cutClientWidth(element));
+            } while (element.line !== line && this.cutClientWidth(element, true));
         }
         let contentControl: ContentControl;
         if(!isNullOrUndefined(element.nextNode) && element.nextNode instanceof ContentControl){
@@ -3436,7 +3438,7 @@ export class Layout {
             }
         }
     }
-    private cutClientWidth(currentElement: ElementBox): boolean {
+    private cutClientWidth(currentElement: ElementBox, isNeedToLayoutShape?: boolean): boolean {
         if(this.is2013Justification) {
             return false;
         }
@@ -3446,6 +3448,9 @@ export class Layout {
         let width: number = 0;
         for (let i: number = 0; i < line.children.length; i++) {
             const element: ElementBox = line.children[i];
+            if (isNeedToLayoutShape && element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') {
+                this.layoutShape(element);
+            }
             width += element.width;
             if (currentElement === element) {
                 break;
@@ -5545,7 +5550,11 @@ export class Layout {
             case 'Number':
                 return (listValue).toString();
             case 'OrdinalText':
-                return (listValue).toString();
+                if (listLevel.characterFormat.localeIdAscii === 3082 || this.documentHelper.characterFormat.localeIdAscii === 3082) {
+                    return this.getOrdinalTextInSpanish(true, listValue.toString()).toUpperCase();
+                } else {
+                    return this.getOrdinalText(true, listValue.toString()).toUpperCase();
+                }
             case 'Ordinal':
                 return this.getAsOrdinal(listValue, listLevel.characterFormat).toString();
             case 'FarEast':
@@ -5607,6 +5616,204 @@ export class Layout {
         retval += this.generateNumber(this.value, 4, 'IV');
         retval += this.generateNumber(this.value, 1, 'I');
         return retval.toString();
+    }
+
+    private getOrdinalText(ordinalString: boolean, text: string): string {
+        //Check whether the text contain alphabet or not
+        if (ordinalString) {
+            text = text.trim();
+            for (let i: number = 0; i < text.length; i++)
+            {
+                if (/[a-zA-Z]/.test(text.charAt(i))) {
+                    ordinalString = false;
+                    break;
+                }
+            }
+            //Get ordinal string
+            if (ordinalString) {
+                text = this.numberToWords(parseInt(text), false);
+            }
+        }
+        return text;
+    }
+    private numberToWords(number: number, isCardText: boolean): string {
+        if (number === 0)
+            return "zero";
+        let words = '';
+
+        if (Math.floor(number / 1000000) > 0) {
+            words += this.numberToWords(Math.floor(number / 1000000), isCardText) + " million ";
+            if (!isCardText && number % 10 === 0)
+                words += "th ";
+            number %= 1000000;
+        }
+
+        if (Math.floor(number / 1000) > 0) {
+            words += this.numberToWords(Math.floor(number / 1000), isCardText) + " thousand ";
+            if (!isCardText && number % 10 === 0)
+                words += "th ";
+            number %= 1000;
+        }
+
+        if (Math.floor(number / 100) > 0) {
+            words += this.numberToWords(Math.floor(number / 100), isCardText) + " hundred ";
+            if (!isCardText && number % 10 === 0)
+                words += "th ";
+            number %= 100;
+        }
+
+        if (number > 0) {
+            if (words !== '' && isCardText)
+                words += "and ";
+            let unitsValue = null;
+            if (isCardText) {
+                unitsValue = [
+                    "", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven",
+                    "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"
+                ];
+            } else {
+                unitsValue = [
+                    "", "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",
+                    "tenth", "eleventh", "twelfth", "thirteenth", "fourteenth", "fifteenth", "sixteenth",
+                    "seventeenth", "eighteenth", "nineteenth"
+                ];
+            }
+            const tensValue = [
+                "", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty",
+                "ninety"
+            ];
+            const tensValue_ith = [
+                "", "tenth", "twentieth", "thirtieth", "fortieth", "fiftieth", "sixtieth", "seventieth",
+                "eightieth", "ninetieth"
+            ];
+
+            if (number < 20)
+                words += unitsValue[number];
+            else {
+                if (isCardText || number % 10 > 0)
+                    words += tensValue[Math.floor(number / 10)];
+                if (number % 10 === 0 && !isCardText)
+                    words += tensValue_ith[Math.floor(number / 10)];
+                else if (number % 10 > 0)
+                    words += "-" + unitsValue[number % 10];
+            }
+        }
+        return words;
+    }
+
+    private getOrdinalTextInSpanish(ordinalString: boolean, text: string): string {
+        //Check whether the text contain alphabet or not
+        if (ordinalString) {
+            text = text.trim();
+            for (let i: number = 0; i < text.length; i++)
+            {
+                if (/[a-zA-Z]/.test(text.charAt(i))) {
+                    ordinalString = false;
+                    break;
+                }
+            }
+            //Get ordinal string
+            if (ordinalString) {
+                text = this.numberToSpanishWords(parseInt(text), false);
+            }
+        }
+        return text;
+    }
+
+    private numberToSpanishWords(number: number, isCardText: boolean): string {
+        if (number === 0 && isCardText)
+            return "cero";
+
+        let words: string = '';
+
+        if (Math.floor(number / 1000) > 0 && number <= 10000) {
+            const thousandCardinalValue = [
+                "", "mil", "dos mil", "tres mil", "cuatro mil", "cinco mil", "seis mil", "siete mil", "ocho mil",
+                "nueve mil", "diez mil"
+            ];
+            const thousandOrdinalValue = [
+                "", "milésimo", "dosmilésimo", "tresmilésimo", "cuatromilésimo", "cincomilésimo", "seismilésimo", "sietemilésimo",
+                "ochomilésimo", "nuevemilésimo", "diezmilésimo"
+            ];
+
+            if (isCardText)
+                words += thousandCardinalValue[Math.floor(number / 1000)];
+            else
+                words += thousandOrdinalValue[Math.floor(number / 1000)];
+
+            number %= 1000;
+        }
+
+        if (Math.floor(number / 100) > 0) {
+            if (words !== '')
+                words += " ";
+            const cardinalHundredsValue = [
+                "", "ciento", "doscientos", "trescientos", "cuatrocientos", "quinientos", "seiscientos", "setecientos",
+                "ochocientos", "novecientos"
+            ];
+            const ordinalHundredsValue = [
+                "", "centésimo", "ducentésimo", "tricentésimo", "cuadringentésimo", "quingentésimo", "sexcentésimo",
+                "septingentésimo", "octingentésimo", "noningentésimo"
+            ];
+
+            if (isCardText)
+                words += cardinalHundredsValue[Math.floor(number / 100)];
+            else
+                words += ordinalHundredsValue[Math.floor(number / 100)];
+
+            number %= 100;
+        }
+
+        if (number > 0 && number < 100) {
+            if (words !== '')
+                words += " ";
+            let unitsValue = null;
+            if (isCardText) {
+                unitsValue = [
+                    "", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez", "once",
+                    "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve"
+                ];
+            } else {
+                unitsValue = [
+                    "", "primero", "segundo", "tercero", "cuarto", "quinto", "sexto", "séptimo", "octavo",
+                    "noveno", "décimo", "undécimo", "duodécimo", "decimotercero", "decimocuarto", "decimoquinto",
+                    "decimosexto", "decimoséptimo", "decimoctavo", "decimonoveno"
+                ];
+            }
+            const tensValue = [
+                "", "diez", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta",
+                "noventa"
+            ];
+            const tensValue_Ordinal = [
+                "", "décimo", "vigésimo", "trigésimo", "cuadragésimo", "quincuagésimo", "sexagésimo", "septuagésimo",
+                "octogésimo", "nonagésimo"
+            ];
+            const cardNumberFrom21to29Value = [
+                "", "veintiuno", "veintidós", "veintitrés", "veinticuatro", "veinticinco", "veintiséis", "veintisiete",
+                "veintiocho", "veintinueve"
+            ];
+
+            if (number < 20)
+                words += unitsValue[number];
+            else if (number > 20 && number < 30 && isCardText) {
+                words += cardNumberFrom21to29Value[number % 10];
+            } else {
+                if (isCardText && number % 10 > 0)
+                    words += tensValue[Math.floor(number / 10)];
+                else if (isCardText && number % 10 === 0)
+                    words += tensValue[Math.floor(number / 10)];
+                if (number % 10 > 0 && !isCardText)
+                    words += tensValue_Ordinal[Math.floor(number / 10)];
+                if (number % 10 === 0 && !isCardText)
+                    words += tensValue_Ordinal[Math.floor(number / 10)];
+                else if (number % 10 > 0)
+                    if (isCardText)
+                        words += " y " + unitsValue[number % 10];
+                    else
+                        words += " " + unitsValue[number % 10];
+            }
+        }
+        return words;
     }
 
     private getAsOrdinal(number: number, characterFormat: WCharacterFormat): string {

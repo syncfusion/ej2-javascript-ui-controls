@@ -1106,11 +1106,10 @@ export function colorNameToHex(color: string): string {
  * @param {Size} size - Specifies the size
  * @param {string} url - Specifies the url
  * @param {PathOption} options - Specifies the options
- * @param {string} label - Specifies the label
  * @returns {Element} - Returns the element
  * @private
  */
-export function drawSymbol(location: Location, shape: string, size: Size, url: string, options: PathOption, label: string): Element {
+export function drawSymbol(location: Location, shape: string, size: Size, url: string, options: PathOption): Element {
     const svgRenderer: SvgRenderer = new SvgRenderer('');
     const temp: IShapes = renderLegendShape(location, size, shape, options, url);
     const htmlElement: Element = svgRenderer['draw' + temp.functionName](temp.renderOption);

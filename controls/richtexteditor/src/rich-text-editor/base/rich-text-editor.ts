@@ -1484,7 +1484,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public executeCommand(
         commandName: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
-        IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel,
+        IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel | IAudioCommandsArgs | IVideoCommandsArgs,
         option?: ExecuteCommandOption): void {
         value = this.htmlPurifier(commandName, value);
         let internalValue: string | HTMLElement | ILinkCommandsArgs |

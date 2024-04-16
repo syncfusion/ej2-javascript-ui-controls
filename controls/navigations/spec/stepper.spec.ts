@@ -2188,6 +2188,18 @@ describe('Stepper', () => {
             expect(stepperElement.querySelectorAll('.e-step-focus').length).toBe(1);
             expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(3);
             expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
+            keyboardEventArgs.action = 'tab';
+            (stepper as any).keyActionHandler(keyboardEventArgs);
+            expect((liElementArray[2].classList.contains('e-step-focus'))).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-focus').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(3);
+            expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
+            keyboardEventArgs.action = 'shiftTab';
+            (stepper as any).keyActionHandler(keyboardEventArgs);
+            expect((liElementArray[1].classList.contains('e-step-focus'))).toEqual(true);
+            expect(stepperElement.querySelectorAll('.e-step-focus').length).toBe(1);
+            expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(3);
+            expect(stepperElement.querySelectorAll('.e-step-selected').length).toBe(1);
             keyboardEventArgs.action = 'home';
             (stepper as any).keyActionHandler(keyboardEventArgs);
             expect((liElementArray[3] as HTMLElement).classList.contains('e-step-focus')).toEqual(true);

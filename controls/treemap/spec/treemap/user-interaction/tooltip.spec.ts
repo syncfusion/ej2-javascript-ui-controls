@@ -143,7 +143,6 @@ describe('TreeMap component Spec', () => {
         });
 
         it('Checking with add event listener method', () => {
-            treemap.isDestroyed = true;
             treemap.treeMapTooltipModule.addEventListener();
         });
 

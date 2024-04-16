@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, extend } from '@syncfusion/ej2-base';import { Placement, ContainerType, TooltipPosition } from '../utils/enum';
+import { Property, ChildProperty, Complex} from '@syncfusion/ej2-base';import { Placement, ContainerType, TooltipPosition } from '../utils/enum';
 
 /**
  * Interface for a class Font
@@ -61,14 +61,14 @@ export interface TextStyleModel {
     fontFamily?: string;
 
     /**
-     * Defines the font-weight of the text pointer. 
+     * Defines the font-weight of the text pointer.
      *
      * @default 'normal'
      */
     fontWeight?: string;
 
     /**
-     * Defines the font-style of the text pointer. 
+     * Defines the font-style of the text pointer.
      *
      * @default 'normal'
      */
@@ -142,6 +142,7 @@ export interface AnnotationModel {
 
     /**
      * Sets and gets the content for the annotation.
+     *
      * @default ''
      * @aspType string
      */

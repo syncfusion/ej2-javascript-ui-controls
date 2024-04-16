@@ -1226,7 +1226,8 @@ export class Edit {
             return;
         }
         if (triggerEventArgs.value && triggerEventArgs.value.toString().indexOf('\n') > -1) {
-            wrapText(this.parent.getActiveSheet().selectedRange, true, this.parent as Workbook);
+            let cell : CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, this.parent.getActiveSheet());
+            wrapText(this.parent.getActiveSheet().selectedRange, cell ? (cell.wrap === false ? false : true) : true, this.parent as Workbook);
             this.refreshEditor(triggerEventArgs.value, this.isCellEdit, false, false, false);
         }
         this.updateEditedValue(true, triggerEventArgs.value, event, isPublic);

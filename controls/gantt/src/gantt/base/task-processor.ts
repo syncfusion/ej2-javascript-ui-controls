@@ -577,8 +577,8 @@ export class TaskProcessor extends DateProcessor {
                                     duration > remainingDuration ? remainingDuration : duration;
                             endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
                         } else if (!taskSettings.duration && taskSettings.endDate) {
-                            endDate = (!isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() >
-                            data.ganttProperties.endDate.getTime() && i !== segments.length - 1 ? endDate : data.ganttProperties.endDate;
+                            endDate = (!isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() >=
+                                data.ganttProperties.endDate.getTime() && i == segments.length - 1 ? data.ganttProperties.endDate : endDate;
                             duration = this.getDuration(
                                 startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule,
                                 data.ganttProperties.isMilestone
@@ -611,7 +611,7 @@ export class TaskProcessor extends DateProcessor {
                             endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
                         } else if (!taskSettings.duration && taskSettings.endDate) {
                             endDate = (!isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() <
-                            data.ganttProperties.endDate.getTime() && i !== segments.length - 1 ? endDate : data.ganttProperties.endDate;
+                                data.ganttProperties.endDate.getTime() && i == segments.length - 1 ? data.ganttProperties.endDate : endDate;
                             duration = this.getDuration(
                                 startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule,
                                 data.ganttProperties.isMilestone

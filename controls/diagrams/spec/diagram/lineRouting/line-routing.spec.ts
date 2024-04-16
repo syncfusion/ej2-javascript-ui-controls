@@ -7884,13 +7884,13 @@ describe('Diagram Control', () => {
             diagram.doLayout();
             let routedConnector = diagram.connectors[4];
             let pathData = (routedConnector.wrapper.children[0] as any).data;
-            expect(pathData === "M540 535 L580 535 L580 795 L130 795 L130 628.83 L150 628.83 L150 628.83 L160 628.83 L160 628.8333333333334 L169.5 628.99").toBe(true);
+            expect(pathData === "M540 535 L550 535 L550 490 L450 490 L450 530 L170 530 L170 590 L150 590 L150 628.83 L164 628.83 L164 628.8333333333334 L169.5 628.99").toBe(true);
             diagram.loadDiagram(data);
             diagram.constraints = DiagramConstraints.Default | DiagramConstraints.LineRouting;
             diagram.dataBind();
             diagram.doLayout();
             let pathData2 = (routedConnector.wrapper.children[0] as any).data;
-            expect(pathData2 === "M540 535 L580 535 L580 795 L130 795 L130 628.83 L150 628.83 L150 628.83 L160 628.83 L160 628.8333333333334 L169.5 628.99").toBe(true);
+            expect(pathData2 === "M540 535 L550 535 L550 490 L450 490 L450 530 L170 530 L170 590 L150 590 L150 628.83 L164 628.83 L164 628.8333333333334 L169.5 628.99").toBe(true);
             done();
         });
     });

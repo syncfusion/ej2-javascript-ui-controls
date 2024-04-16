@@ -7,7 +7,7 @@ import {
 import { LegendArrangement, LegendMode } from '../index';
 import {
     Rect, measureText, PathOption, textTrim, drawBalloon,
-    removeClass, querySelector, getTemplateFunction, maintainStyleClass, getValueFromObject
+    removeClass, querySelector, maintainStyleClass, getValueFromObject, getTemplateFunction
 } from '../utils/helper';
 import { RectOption, Size, TextOption, Point, renderTextElement, drawSymbol, checkPropertyPath, getElement } from '../utils/helper';
 import { isNullOrUndefined, Browser, EventHandler, remove, extend } from '@syncfusion/ej2-base';
@@ -183,7 +183,6 @@ export class Legend {
             const textPadding: number = 10;
             const shapeHeight: number = legend.shapeHeight; const shapeWidth: number = legend.shapeWidth;
             let shapeLocation: Point[] = []; let textLocation: Rect[] = [];
-            let legendRectCollection: Rect[] = [];
             const position: LegendPosition = legend.position;
             const labelAction: LabelIntersectAction = legend.labelDisplayMode;
             const arrangement: LegendArrangement = (legend.orientation === 'None') ? ((position === 'Top' || position === 'Bottom')
@@ -292,7 +291,6 @@ export class Legend {
                                     j = 0;
                                     shapeLocation = [];
                                     textLocation = [];
-                                    legendRectCollection = [];
                                     shapeX = startX;
                                     shapeY = startY;
                                 } else {
@@ -311,7 +309,6 @@ export class Legend {
                                 if ((nextPositionX + shapePadding + legendTextSize.width) > legendWidth) {
                                     shapeX = startX;
                                     shapeY = startY;
-                                    legendRectCollection = [];
                                     textLocation = [];
                                     shapeLocation = [];
                                     this.getPageChanged();
@@ -379,9 +376,9 @@ export class Legend {
      * Get the legend collections
      *
      * @param {number} layerIndex - Specifies the layer index
-     * @param {object[]} layerData - Specifies the layer data
+     * @param {any[]} layerData - Specifies the layer data
      * @param {ColorMappingSettings[]} colorMapping - Specifies the color mapping
-     * @param {object[]} dataSource - Specifies the data source
+     * @param {any[]} dataSource - Specifies the data source
      * @param {string} dataPath - Specifies the data path
      * @param {string} colorValuePath - Specifies the color value path
      * @param {string | string[]} propertyPath - Specifies the property path
@@ -427,6 +424,7 @@ export class Legend {
     // eslint-disable-next-line valid-jsdoc
     /**
      * To draw the legend shape and text.
+     *
      * @private
      */
     public drawLegend(): void {
@@ -470,7 +468,7 @@ export class Legend {
         }
     }
     /**
-     * @param {string} page - Specifies the legend page.
+     * @param {number} page - Specifies the legend page.
      * @returns {void}
      * @private
      */
@@ -493,8 +491,6 @@ export class Legend {
                 const legendElement: Element = render.createGroup({ id: map.element.id + '_Legend_Index_' + collection['idIndex'] });
                 let legendText: string = collection['DisplayText'];
                 const pagingArrowPadding: number = 4;
-                const shape: LegendShape = <LegendShape>((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
-                    legend.shape : 'Image') : collection['legendShape']);
                 const strokeColor: string = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
                     || legend.shape === 'Cross') ? isNullOrUndefined(legend.fill) ? '#000000' : legend.fill : shapeBorder.color;
                 const strokeWidth: number = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
@@ -831,7 +827,7 @@ export class Legend {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public pushCollection(targetElement: Element, collection: any[], oldElement: any, shapeSettings: ShapeSettings): void {
+    public pushCollection(targetElement: Element, collection: any[], oldElement: object, shapeSettings: ShapeSettings): void {
         collection.push({
             legendElement: targetElement, legendOldFill: oldElement['fill'], legendOldOpacity: oldElement['opacity'],
             legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth'],
@@ -911,8 +907,7 @@ export class Legend {
     }
 
     public shapeHighLightAndSelection(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        targetElement: Element, data: any, module: SelectionSettingsModel | HighlightSettingsModel,
+        targetElement: Element, data: object, module: SelectionSettingsModel | HighlightSettingsModel,
         getValue: string, layerIndex: number): void {
         if (data !== undefined) {
             this.updateLegendElement();
@@ -1164,7 +1159,7 @@ export class Legend {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public legendIndexOnShape(data: any, index: number): any {
+    public legendIndexOnShape(data: object, index: number): any {
         let legendIndex: number;
         let actualIndex: number;
         const path: string = this.maps.layers[index as number].shapeDataPath;
@@ -1362,9 +1357,12 @@ export class Legend {
         }
         if (legendTitle) {
             textStyle.color = (textStyle.color !== null) ? textStyle.color : this.maps.themeStyle.legendTitleFontColor;
-            textStyle.fontFamily = !isNullOrUndefined(textStyle.fontFamily) ? textStyle.fontFamily : this.maps.themeStyle.fontFamily;
-            textStyle.size = !isNullOrUndefined(textStyle.size) ? textStyle.size : this.maps.themeStyle.subTitleFontSize || Theme.legendTitleFont.size;
-            textStyle.fontWeight = !isNullOrUndefined(textStyle.fontWeight) ? textStyle.fontWeight : this.maps.themeStyle.titleFontWeight || Theme.legendTitleFont.fontWeight;
+            textStyle.fontFamily = !isNullOrUndefined(textStyle.fontFamily) ? textStyle.fontFamily
+                : this.maps.themeStyle.fontFamily;
+            textStyle.size = !isNullOrUndefined(textStyle.size) ? textStyle.size
+                : this.maps.themeStyle.subTitleFontSize || Theme.legendTitleFont.size;
+            textStyle.fontWeight = !isNullOrUndefined(textStyle.fontWeight) ? textStyle.fontWeight
+                : this.maps.themeStyle.titleFontWeight || Theme.legendTitleFont.fontWeight;
             textOptions = new TextOption(
                 map.element.id + '_LegendTitle',
                 (this.legendItemRect.x) + (this.legendItemRect.width / 2),
@@ -1472,7 +1470,6 @@ export class Legend {
             const field: string = marker.legendText;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let templateFn: any;
-            let isDuplicate: boolean;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             Array.prototype.forEach.call(dataSource, (data: any, dataIndex: number) => {
                 let imageSrc: string = null;
@@ -1484,6 +1481,7 @@ export class Legend {
                         const templateElement: Element = templateFn(this.maps);
                         const markerEle: Element = isNullOrUndefined(templateElement.childElementCount) ? templateElement[0] :
                             templateElement;
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         imageSrc = markerEle.querySelector('img').src;
                     }
                     const text: string = isNullOrUndefined(data[field as string]) ? '' : data[field as string];
@@ -1616,7 +1614,7 @@ export class Legend {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const fill: string = this.maps.legendSettings.fill; const equalValues: any[] = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let legendText: string; let legendIndex: number = 0; let equalData: any[] = [];
+        let legendText: string; let equalData: any[] = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const outOfRangeValues: any[] = []; const outOfRange: any[] = [];
         for (const colorMap of colorMapping) {
@@ -1656,7 +1654,6 @@ export class Legend {
                 }
                 const legendFill: string = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]'
                     ? colorMap.color[0] : <string>colorMap.color : fill;
-                legendIndex++;
                 this.getOverallLegendItemsCollection(legendText, legendFill, equalData, colorMap.showLegend);
             } else if (isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)
                 && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to) && !isNullOrUndefined(colorMap.color)) {
@@ -1672,7 +1669,6 @@ export class Legend {
                     }
                 });
                 if (outOfRangeValues.length === 0) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     let range: boolean = false;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     Array.prototype.forEach.call(dataSource, (data: any, dataIndex: number) => {
@@ -1696,7 +1692,6 @@ export class Legend {
                 const outfill: string = ((Object.prototype.toString.call(colorMap.color) === '[object Array]'))
                     ? colorMap.color[0] : <string>colorMap.color;
                 const legendOutFill: string = outfill;
-                legendIndex++;
                 this.getOverallLegendItemsCollection(legendText, legendOutFill, outOfRange, colorMap.showLegend);
             }
         }
@@ -1911,13 +1906,21 @@ export class Legend {
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
                                     if (!this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
-                                        this.setToggleAttributes(legendTextId, legendShapeId, legendToggleFill, legendToggleOpacity, legendToggleBorderColor, legendToggleBorderWidth, legendToggleBorderOpacity,
-                                            legendToggleFill);
+                                        this.setToggleAttributes(legendTextId, legendShapeId, legendToggleFill,
+                                                                 legendToggleOpacity, legendToggleBorderColor, legendToggleBorderWidth,
+                                                                 legendToggleBorderOpacity, legendToggleFill);
                                     } else {
-                                        this.setToggleAttributes(legendTextId, legendShapeId, this.maps.layers[k as number].shapeSettings.fill, this.maps.layers[k as number].shapeSettings.opacity, this.maps.layers[k as number].shapeSettings.border.color,
-                                            isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.width) ? 0 : this.maps.layers[k as number].shapeSettings.border.width,
-                                            isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.opacity) ? this.maps.layers[k as number].shapeSettings.opacity : this.maps.layers[k as number].shapeSettings.border.opacity,
-                                            this.maps.layers[k as number].shapeSettings.fill);
+                                        this.setToggleAttributes(legendTextId, legendShapeId,
+                                                                 this.maps.layers[k as number].shapeSettings.fill,
+                                                                 this.maps.layers[k as number].shapeSettings.opacity,
+                                                                 this.maps.layers[k as number].shapeSettings.border.color,
+                                                                 isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.width)
+                                                                     ? 0 : this.maps.layers[k as number].shapeSettings.border.width,
+                                                                 /* eslint-disable-next-line max-len */
+                                                                 isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.opacity)
+                                                                     ? this.maps.layers[k as number].shapeSettings.opacity
+                                                                     : this.maps.layers[k as number].shapeSettings.border.opacity,
+                                                                 this.maps.layers[k as number].shapeSettings.fill);
                                     }
                                 }
                             } else {
@@ -1930,8 +1933,8 @@ export class Legend {
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
                                     this.setToggleAttributes(legendTextId, legendShapeId, this.legendCollection[legendIndex as number]['fill'], this.legendCollection[legendIndex as number]['opacity'],
-                                        this.legendCollection[legendIndex as number]['shapeBorder']['color'], this.legendCollection[legendIndex as number]['shapeBorder']['width'],
-                                        this.legendCollection[legendIndex as number]['shapeBorder']['opacity'], '#757575');
+                                                             this.legendCollection[legendIndex as number]['shapeBorder']['color'], this.legendCollection[legendIndex as number]['shapeBorder']['width'],
+                                                             this.legendCollection[legendIndex as number]['shapeBorder']['opacity'], '#757575');
                                     if (this.maps.legendSettings.shape === 'HorizontalLine' || this.maps.legendSettings.shape === 'VerticalLine' || this.maps.legendSettings.shape === 'Cross') {
                                         legendShapeId.setAttribute('stroke', this.legendCollection[legendIndex as number]['fill']);
                                     }
@@ -1980,13 +1983,21 @@ export class Legend {
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
                                     if (!this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
-                                        this.setToggleAttributes(legendTextId, legendShapeId, legendToggleFill, legendToggleOpacity, legendToggleBorderColor, legendToggleBorderWidth, legendToggleBorderOpacity,
-                                            legendToggleFill);
+                                        this.setToggleAttributes(legendTextId, legendShapeId, legendToggleFill, legendToggleOpacity,
+                                                                 legendToggleBorderColor, legendToggleBorderWidth,
+                                                                 legendToggleBorderOpacity, legendToggleFill);
                                     } else {
-                                        this.setToggleAttributes(legendTextId, legendShapeId, this.maps.layers[j as number].shapeSettings.fill, this.maps.layers[j as number].shapeSettings.opacity,
-                                            this.maps.layers[j as number].shapeSettings.border.color, isNullOrUndefined(this.maps.layers[j as number].shapeSettings.border.width) ? 0 : this.maps.layers[j as number].shapeSettings.border.width,
-                                            isNullOrUndefined(this.maps.layers[j as number].shapeSettings.border.opacity) ? this.maps.layers[j as number].shapeSettings.opacity : this.maps.layers[j as number].shapeSettings.border.opacity,
-                                            this.maps.layers[j as number].shapeSettings.fill);
+                                        this.setToggleAttributes(legendTextId, legendShapeId,
+                                                                 this.maps.layers[j as number].shapeSettings.fill,
+                                                                 this.maps.layers[j as number].shapeSettings.opacity,
+                                                                 this.maps.layers[j as number].shapeSettings.border.color,
+                                                                 isNullOrUndefined(this.maps.layers[j as number].shapeSettings.border.width)
+                                                                     ? 0 : this.maps.layers[j as number].shapeSettings.border.width,
+                                                                 /* eslint-disable-next-line max-len */
+                                                                 isNullOrUndefined(this.maps.layers[j as number].shapeSettings.border.opacity)
+                                                                     ? this.maps.layers[j as number].shapeSettings.opacity
+                                                                     : this.maps.layers[j as number].shapeSettings.border.opacity,
+                                                                 this.maps.layers[j as number].shapeSettings.fill);
                                     }
                                 }
                             } else {
@@ -2007,8 +2018,8 @@ export class Legend {
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
                                     this.setToggleAttributes(legendTextId, legendShapeId, this.legendCollection[legendIndex as number]['fill'], this.legendCollection[legendIndex as number]['opacity'],
-                                        this.legendCollection[legendIndex as number]['shapeBorder']['color'], this.legendCollection[legendIndex as number]['shapeBorder']['width'],
-                                        this.legendCollection[legendIndex as number]['shapeBorder']['opacity'], '#757575');
+                                                             this.legendCollection[legendIndex as number]['shapeBorder']['color'], this.legendCollection[legendIndex as number]['shapeBorder']['width'],
+                                                             this.legendCollection[legendIndex as number]['shapeBorder']['opacity'], '#757575');
                                 }
                             }
                         }
@@ -2061,14 +2072,23 @@ export class Legend {
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
                                     if (!this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
-                                        this.setToggleAttributes(legendTextId, legendShapeId, legendToggleFill, legendToggleOpacity, legendToggleBorderColor,
-                                            legendToggleBorderWidth, legendToggleBorderOpacity, legendToggleFill);
+                                        this.setToggleAttributes(legendTextId, legendShapeId, legendToggleFill,
+                                                                 legendToggleOpacity, legendToggleBorderColor,
+                                                                 legendToggleBorderWidth, legendToggleBorderOpacity, legendToggleFill);
                                     } else {
-                                        this.setToggleAttributes(legendTextId, legendShapeId, this.maps.layers[k as number].shapeSettings.fill,
-                                            this.maps.layers[k as number].shapeSettings.opacity, this.maps.layers[k as number].shapeSettings.border.color,
-                                            (isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.width) ? 0 : this.maps.layers[k as number].shapeSettings.border.width),
-                                            (isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.opacity) ? this.maps.layers[k as number].shapeSettings.opacity : this.maps.layers[k as number].shapeSettings.border.opacity),
-                                            this.maps.layers[k as number].shapeSettings.fill);
+                                        this.setToggleAttributes(legendTextId, legendShapeId,
+                                                                 this.maps.layers[k as number].shapeSettings.fill,
+                                                                 this.maps.layers[k as number].shapeSettings.opacity,
+                                                                 this.maps.layers[k as number].shapeSettings.border.color,
+                                                                 /* eslint-disable-next-line max-len */
+                                                                 (isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.width)
+                                                                     ? 0
+                                                                     : this.maps.layers[k as number].shapeSettings.border.width),
+                                                                 /* eslint-disable-next-line max-len */
+                                                                 (isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.opacity)
+                                                                     ? this.maps.layers[k as number].shapeSettings.opacity
+                                                                     : this.maps.layers[k as number].shapeSettings.border.opacity),
+                                                                 this.maps.layers[k as number].shapeSettings.fill);
                                     }
                                 }
                             } else {
@@ -2131,13 +2151,21 @@ export class Legend {
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
                                     if (!this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
-                                        this.setToggleAttributes(legendTextId, legendShapeId, legendToggleFill, legendToggleOpacity, legendToggleBorderColor, legendToggleBorderWidth,
-                                            legendToggleBorderOpacity, legendToggleFill);
+                                        this.setToggleAttributes(legendTextId, legendShapeId, legendToggleFill,
+                                                                 legendToggleOpacity, legendToggleBorderColor, legendToggleBorderWidth,
+                                                                 legendToggleBorderOpacity, legendToggleFill);
                                     } else {
-                                        this.setToggleAttributes(legendTextId, legendShapeId, this.maps.layers[0].shapeSettings.fill, this.maps.layers[k as number].shapeSettings.opacity,
-                                            this.maps.layers[0].shapeSettings.border.color, isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.width) ? 0 : this.maps.layers[k as number].shapeSettings.border.width,
-                                            isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.opacity) ? this.maps.layers[k as number].shapeSettings.opacity : this.maps.layers[k as number].shapeSettings.border.opacity,
-                                            this.maps.layers[0].shapeSettings.fill);
+                                        this.setToggleAttributes(legendTextId, legendShapeId, this.maps.layers[0].shapeSettings.fill,
+                                                                 this.maps.layers[k as number].shapeSettings.opacity,
+                                                                 this.maps.layers[0].shapeSettings.border.color,
+                                                                 isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.width)
+                                                                     ? 0
+                                                                     : this.maps.layers[k as number].shapeSettings.border.width,
+                                                                 /* eslint-disable-next-line max-len */
+                                                                 isNullOrUndefined(this.maps.layers[k as number].shapeSettings.border.opacity)
+                                                                     ? this.maps.layers[k as number].shapeSettings.opacity
+                                                                     : this.maps.layers[k as number].shapeSettings.border.opacity,
+                                                                 this.maps.layers[0].shapeSettings.fill);
                                     }
                                 }
                             } else {
@@ -2159,8 +2187,8 @@ export class Legend {
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
                                     legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
                                     this.setToggleAttributes(legendTextId, legendShapeId, this.legendCollection[legendIndex as number]['fill'], this.legendCollection[legendIndex as number]['opacity'],
-                                        this.legendCollection[legendIndex as number]['shapeBorder']['color'], this.legendCollection[legendIndex as number]['shapeBorder']['width'],
-                                        this.legendCollection[legendIndex as number]['shapeBorder']['opacity'], '#757575');
+                                                             this.legendCollection[legendIndex as number]['shapeBorder']['color'], this.legendCollection[legendIndex as number]['shapeBorder']['width'],
+                                                             this.legendCollection[legendIndex as number]['shapeBorder']['opacity'], '#757575');
                                 }
                             }
                         }
@@ -2238,7 +2266,8 @@ export class Legend {
         return legendData;
     }
 
-    private setToggleAttributes(textElement: Element, shapeElement: Element, fillColor: string, fillOpacity: number, borderColor: string, borderWidth: number, borderOpacity: number, textColor: string): void {
+    private setToggleAttributes(textElement: Element, shapeElement: Element, fillColor: string, fillOpacity: number,
+                                borderColor: string, borderWidth: number, borderOpacity: number, textColor: string): void {
         textElement.setAttribute('fill', textColor);
         shapeElement.setAttribute('fill', fillColor);
         shapeElement.setAttribute('fill-opacity', (fillOpacity).toString());

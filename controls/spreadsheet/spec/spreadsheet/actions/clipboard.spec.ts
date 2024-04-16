@@ -1352,4 +1352,54 @@ describe('Clipboard ->', () => {
                 });
             });
         });
+    describe('EJ2-875893', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{
+                        dataSource: defaultData
+                    }]
+                }]
+            }, done)
+        })
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('List validation is applied for all pasted cells after copy and pasting the cells with column validation', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['A1:A100']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                let ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                ddlElem.ej2_instances[0].value = 'List';
+                ddlElem.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '1,2,3,4';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                setTimeout(() => {
+                    helper.invoke('copy', ['A2:C5']).then(() => {
+                        helper.invoke('selectRange', ['B13']);
+                        helper.invoke('paste');
+                        setTimeout(() => {
+                            expect(JSON.stringify(spreadsheet.sheets[0].rows[12].cells[1].validation)).toBe('{"operator":"Between","type":"List","value1":"1,2,3,4","value2":"","inCellDropDown":true,"ignoreBlank":true}');
+                            expect(JSON.stringify(spreadsheet.sheets[0].rows[13].cells[1].validation)).toBe('{"operator":"Between","type":"List","value1":"1,2,3,4","value2":"","inCellDropDown":true,"ignoreBlank":true}');
+                            expect(JSON.stringify(spreadsheet.sheets[0].rows[14].cells[1].validation)).toBe('{"operator":"Between","type":"List","value1":"1,2,3,4","value2":"","inCellDropDown":true,"ignoreBlank":true}');
+                            expect(JSON.stringify(spreadsheet.sheets[0].rows[15].cells[1].validation)).toBe('{"operator":"Between","type":"List","value1":"1,2,3,4","value2":"","inCellDropDown":true,"ignoreBlank":true}');
+                            expect(spreadsheet.sheets[0].rows[12].cells[2].validation).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[13].cells[2].validation).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[14].cells[2].validation).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[15].cells[2].validation).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[12].cells[3].validation).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[13].cells[3].validation).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[14].cells[3].validation).toBeUndefined();
+                            expect(spreadsheet.sheets[0].rows[15].cells[3].validation).toBeUndefined();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
 });

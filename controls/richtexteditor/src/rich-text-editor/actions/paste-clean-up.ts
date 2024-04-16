@@ -13,7 +13,7 @@ import { pasteCleanupGroupingTags } from '../../common/config';
 import { NodeSelection } from '../../selection/selection';
 import * as EVENTS from './../../common/constant';
 import { ServiceLocator } from '../services/service-locator';
-import { RenderType } from '../base/enum';
+import { RenderType, UploadRequest } from '../base/enum';
 import { DialogRenderer } from '../renderer/dialog-renderer';
 import { Uploader, MetaData, UploadingEventArgs, SelectedEventArgs, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
@@ -429,6 +429,7 @@ export class PasteCleanup {
     private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: ImageSuccessEventArgs): void {
         this.parent.inputElement.contentEditable = 'true';
         e.element = imgElem as HTMLElement;
+        e.requestType = UploadRequest.Pasted;
         this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
             if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
                 const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
@@ -742,21 +743,6 @@ export class PasteCleanup {
                 (returnArgs: IHtmlFormatterCallBack) => {
                     extend(args, { elements: returnArgs.elements, imageElements: returnArgs.imgElem }, true);
                     this.parent.formatter.onSuccess(this.parent, args);
-                    if (!isNOU(returnArgs.elements) && !isNOU(returnArgs.imgElem) &&
-                    (returnArgs.imgElem as Element[]).length > 0) {
-                        const pasteContent: Element[] = returnArgs.elements as Element[];
-                        const imageContent: Element[] = returnArgs.imgElem as Element[];
-                        const lastElementChild: Element | null = this.findLastElement(pasteContent[pasteContent.length - 1]);
-                        const isImageAtLast: boolean = !isNOU(lastElementChild) ? lastElementChild.nodeName === 'IMG' : false;
-                        if (isImageAtLast || pasteContent[pasteContent.length - 1] === imageContent[imageContent.length - 1]) {
-                            this.parent.notify(events.insertCompleted, {
-                                args: (args as IHtmlFormatterCallBack).event,
-                                type: 'Images',
-                                isNotify: true,
-                                elements: imageContent[imageContent.length - 1]
-                            } as IShowPopupArgs);
-                        }
-                    }
                 },
                 clipBoardElem, null, null, this.parent.enterKey
             );
@@ -1169,17 +1155,6 @@ export class PasteCleanup {
             }
         }
         return clipBoardElem;
-    }
-
-    private findLastElement(element: Element): Element {
-        if (!isNOU(element) && !isNOU(element.lastElementChild)) {
-            let lastChild: Element = element.lastElementChild;
-            while(lastChild && lastChild.lastElementChild) {
-                lastChild = lastChild.lastElementChild;
-            }
-            return lastChild;
-        }
-        return null;
     }
 
     private processPictureElement(clipBoardElem: HTMLElement): void {

@@ -530,9 +530,16 @@ describe('Zoom feature tesing for map control', () => {
                     };
                     map.zoomModule.mapMouseWheel(<WheelEvent>wheelArgs);
                 }
+                let panningArgs: Object = {
+                    clientX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                    clientY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                    type: 'mousemove',
+                    layerX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                    layerY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                };
                 map.zoomModule.mouseDownPoints = { x: (rect.left + 100), y: (rect.top + 100) };
                 map.zoomModule.mouseMovePoints = { x: (rect.left + 200), y: (rect.top + 100) };
-                map.zoomModule.panning('None', null, null, <PointerEvent | TouchEvent>wheelArgs);
+                map.zoomModule.panning('None', null, null, <PointerEvent | TouchEvent>panningArgs);
             };
             map.refresh();
         });
@@ -550,11 +557,18 @@ describe('Zoom feature tesing for map control', () => {
                     pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
                     pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
                 };
+                let panningArgs: Object = {
+                    clientX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                    clientY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                    type: 'mousemove',
+                    layerX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                    layerY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                };
                 map.zoomModule.mouseDownPoints = { x: (rect.left + 100), y: (rect.top + 100) };
                 map.zoomModule.mouseMovePoints = { x: (rect.left + 200), y: (rect.top + 100) };
                 map.scale = 2;
                 map.tileZoomLevel = 2;
-                map.zoomModule.panning('None', null, null, <PointerEvent | TouchEvent>wheelArgs);
+                map.zoomModule.panning('None', null, null, <PointerEvent | TouchEvent>panningArgs);
             };
             map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
@@ -580,11 +594,18 @@ describe('Zoom feature tesing for map control', () => {
                   pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
                   pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
               };
+              let panningArgs: Object = {
+                clientX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                clientY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                type: 'mousemove',
+                layerX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                layerY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+              };
               map.zoomModule.mouseDownPoints = { x: (rect.left + 100), y: (rect.top + 100) };
               map.zoomModule.mouseMovePoints = { x: (rect.left + 200), y: (rect.top + 100) };
               map.scale = 2;
               map.tileZoomLevel = 2;
-              map.zoomModule.panning('None', null, null, <PointerEvent | TouchEvent>wheelArgs);
+              map.zoomModule.panning('None', null, null, <PointerEvent | TouchEvent>panningArgs);
           };
           map.load = (args: ILoadEventArgs) => {
               let bing: BingMap = new BingMap(map);
@@ -790,6 +811,12 @@ describe('Zoom feature tesing for map control', () => {
                 map.zoomModule.touchMoveList = move;
                 map.zoomModule.currentScale = 1;
                 map.zoomModule.performPinchZooming(<TouchEvent>{});
+                move = [
+                    { pageX: rect.left + 200, pageY: (rect.top + 200) },
+                    { pageX: (rect.left - 300), pageY: rect.top + 300 }
+                ];
+                map.zoomModule.touchMoveList = move;
+                map.zoomModule.performPinchZooming(<TouchEvent>{});
             };
             map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
@@ -839,7 +866,7 @@ describe('Zoom feature tesing for map control', () => {
                 let element: Element = getElementByID(map.element.id + '_svg');
                 let rect: ClientRect = element.getBoundingClientRect();
                 trigger.dragAndDropEvent(element, (rect.left + (rect.width / 2)), (rect.top + (rect.height / 2)),
-                    (rect.left + rect.width), (rect.top + rect.height), '', map);
+                    (rect.left + rect.width), (rect.top + rect.height), 'touch', map);
             };
             map.refresh();
         });
@@ -848,7 +875,7 @@ describe('Zoom feature tesing for map control', () => {
                 let element: Element = getElementByID(map.element.id + '_svg');
                 let rect: ClientRect = element.getBoundingClientRect();
                 trigger.dragAndDropEvent(element, (rect.left + (rect.width / 2)), (rect.top + (rect.height / 2)),
-                    (rect.left + rect.width), (rect.top + rect.height), '', map);
+                    (rect.left + rect.width), (rect.top + rect.height), 'touch', map);
             };
             map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
@@ -1057,7 +1084,10 @@ describe('Zoom feature tesing for map control', () => {
             let eventObj: Object = {
                 target: element,
                 pageX: element.getBoundingClientRect().left,
-                pageY: element.getBoundingClientRect().top
+                pageY: element.getBoundingClientRect().top,
+                layerX: element.getBoundingClientRect().left,
+                layerY: element.getBoundingClientRect().top,
+                type: 'mousemove'
             };
             map.zoomByPosition({ latitude: 21, longitude: 78 }, 5);
             map.panByDirection('Left', <PointerEvent>eventObj);
@@ -1070,7 +1100,10 @@ describe('Zoom feature tesing for map control', () => {
             let eventObj: Object = {
                 target: element,
                 pageX: element.getBoundingClientRect().left,
-                pageY: element.getBoundingClientRect().top
+                pageY: element.getBoundingClientRect().top,
+                layerX: element.getBoundingClientRect().left,
+                layerY: element.getBoundingClientRect().top,
+                type: 'mousemove'
             };
             map.zoomByPosition(null, 2);
             map.panByDirection('Top', <PointerEvent>eventObj);

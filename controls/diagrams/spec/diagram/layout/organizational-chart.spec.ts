@@ -11,7 +11,7 @@ import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(DataBinding, HierarchicalTree);
 Diagram.Inject(LayoutAnimation, LineRouting);
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { Animation } from '../../../src/diagram/objects/interface/IElement'
+import { Animation, ISelectionChangeEventArgs } from '../../../src/diagram/objects/interface/IElement'
 
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Selector } from '../../../src/diagram/objects/node';
@@ -5215,6 +5215,235 @@ describe('Node Expand & Collapse does not work properly issue', () => {
         done();
     });
 
+});
+
+describe('877226 - Nodes overlapped while changing isExpanded property with Layout Animation', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents = new MouseEvents();
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramexpand' });
+        document.body.appendChild(ele);
+ 
+
+        let localBindData: object[] = [
+            {
+                "Id": "parent",
+                "Role": "Board",
+                "color": "#71AF17"
+            },
+            {
+                "Id": "1",
+                "Role": "General Manager",
+                "Manager": "parent",
+                "ChartType": "right",
+                "color": "#71AF17"
+            },
+            {
+                "Id": "2",
+                "Role": "Human Resource Manager",
+                "Manager": "6",
+                "ChartType": "right",
+                "color": "#1859B7"
+            },
+            
+            {
+                "Id": "4",
+                "Role": "Recruiting Team",
+                "Manager": "2",
+                "color": "#2E95D8"
+            },
+            {
+                "Id": "5",
+                "Role": "Finance Asst. Manager",
+                "Manager": "2",
+                "color": "#2E95D8"
+            },
+            {
+                "Id": "6",
+                "Role": "Design Manager",
+                "Manager": "1",
+                "ChartType": "right",
+                "color": "#1859B7"
+            },
+            {
+                "Id": "7",
+                "Role": "Design Supervisor",
+                "Manager": "6",
+                "color": "#2E95D8"
+            },
+            {
+                "Id": "77",
+                "Role": "Design Editor",
+                "Manager": "7",
+                "color": "#2E95D8"
+            },
+            {
+                "Id": "8",
+                "Role": "Development Supervisor",
+                "Manager": "6",
+                "color": "#2E95D8"
+            },
+           
+            {
+                "Id": "10",
+                "Role": "Operations Manager",
+                "Manager": "1",
+                "ChartType": "right",
+                "color": "#1859B7"
+            },
+            {
+                "Id": "11",
+                "Role": "Statistics Department",
+                "Manager": "10",
+                "color": "#2E95D8"
+            },
+            {
+                "Id": "12",
+                "Role": "Logistics Department",
+                "Manager": "10",
+                "color": "#2E95D8"
+            },
+            {
+                "Id": "16",
+                "Role": "Marketing Manager",
+                "Manager": "1",
+                "ChartType": "right",
+                "color": "#1859B7"
+            },
+           
+            {
+                "Id": "18",
+                "Role": "Petroleum Manager",
+                "Manager": "16",
+                "color": "#2E95D8"
+            },
+            {
+                "Id": "20",
+                "Role": "Service Department Manager",
+                "Manager": "18",
+                "color": "#2E95D8"
+            },
+            {
+                "Id": "21",
+                "Role": "Quality Control Department",
+                "Manager": "18",
+                "color": "#2E95D8"
+            }
+        ];
+        
+        let items: DataManager = new DataManager(localBindData as JSON[], new Query().take(25));
+        
+        diagram = new Diagram({
+            width: '100%', height: 1000,
+            selectionChange: function (args: ISelectionChangeEventArgs) {
+                const nodes: NodeModel[] = diagram.nodes as NodeModel[];
+                if(args.state === 'Changed' && args.newValue.length > 0){
+                    collapseNodes();
+                }
+            },
+            layout: {
+                type: 'OrganizationalChart',
+                getLayoutInfo: (node: Node, options: TreeInfo) => {
+                    options.orientation = 'Horizontal';
+                     options.type = 'Center';
+                },
+        
+             },
+            dataSourceSettings: {
+                id: 'Id', parentId: 'Manager', dataSource: items,
+                doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
+                    nodeModel.shape = {
+                        type: 'Basic', 
+        
+                        margin: { left: 10, right: 10, top: 10, bottom: 10 },
+                        cornerRadius:20
+                    };
+                }
+            },
+            getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
+                obj.annotations=[{content: (obj.data as any).Role}],
+                obj.style = { strokeColor: 'lightgreen', color: 'lightgreen',strokeWidth:2 };
+                obj.expandIcon = { height: 15, width: 15, shape: 'Minus', fill: 'lightgray', offset: { x: .5, y: 1 } };
+                obj.collapseIcon = { height:15, width: 15, shape: 'Plus', fill: 'lightgray', offset: { x: .5, y: 1 } };
+               
+                obj.width = 120;
+                obj.height = 60;
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.targetDecorator.style={fill:"lightgreen",strokeColor:"lightgreen"}
+                connector.type = 'Orthogonal';
+                connector.style = {fill:"lightgreen",strokeColor:"lightgreen",strokeWidth:2};
+                connector.cornerRadius = 0;
+                return connector;
+            },
+        });
+        
+        diagram.appendTo('#diagramexpand');
+    });
+    function  collapseNodes() {
+        let selectedNode = diagram.selectedItems.nodes[0];
+            findSibling(selectedNode);
+      }
+    
+      function findSibling(selectedNode:any){
+        let nodes: NodeModel[] = diagram.nodes;
+        let siblingNodes = nodes.filter(
+            (obj) => (obj as any).data.Manager === selectedNode.data.Manager
+          );
+        for(let i=0;i<siblingNodes.length;i++){
+            let sibNode = siblingNodes[i];
+            if (sibNode.isExpanded) {
+                sibNode.isExpanded = false;
+                diagram.dataBind();
+            }
+        }
+      }
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking collapse of single node with layout animation', (done: Function) => {
+        let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        let designNode = diagram.nodes.find((node) => (node as any).data.Role === 'Design Manager');
+        designNode.isExpanded = false;
+        diagram.dataBind();
+        let designChild = diagram.nodes.find((node) => (node as any).data.Manager === '6');
+        console.log(designChild.visible);
+        expect(designChild.visible).toBe(false);
+        designNode.isExpanded = true;
+        diagram.dataBind();
+        console.log(designChild.visible);
+        expect(designChild.visible).toBe(true);
+        done();
+    });
+    it('Checking collapse of multiple nodes with layout animation', (done: Function) => {
+        let designNode = diagram.nodes.find((node) => (node as any).data.Role === 'Design Manager');
+        diagram.select([designNode]);
+        let designChild = diagram.nodes.find((node) => (node as any).data.Manager === '6');
+        let operationChild = diagram.nodes.find((node) => (node as any).data.Manager === '10');
+        let marketChild = diagram.nodes.find((node) => (node as any).data.Manager === '16');
+        expect(designChild.visible === false && marketChild.visible === false && operationChild.visible === false).toBe(true);
+        for(let i=0;i<diagram.nodes.length;i++){
+            diagram.nodes[i].isExpanded = true;
+            diagram.dataBind();
+        }
+        expect(designChild.visible === true && marketChild.visible === true && operationChild.visible === true).toBe(true);
+        done();
+    });
+    it('Checking collapse of level 4 node with layout animation', (done: Function) => {
+        let designSupervisorNode = diagram.nodes.find((node) => (node as any).data.Role === 'Design Supervisor');
+        diagram.select([designSupervisorNode]);
+        let designSupervisorChild = diagram.nodes.find((node) => (node as any).data.Manager === '7');
+        let hrChild = diagram.nodes.find((node) => (node as any).data.Manager === '2');
+        expect(designSupervisorChild.visible === false && hrChild.visible === false).toBe(true);
+        for(let i=0;i<diagram.nodes.length;i++){
+            diagram.nodes[i].isExpanded = true;
+            diagram.dataBind();
+        }
+        expect(designSupervisorChild.visible === true && hrChild.visible === true).toBe(true);
+        done();
+    });
 });
 
 

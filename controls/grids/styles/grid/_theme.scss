@@ -845,6 +845,14 @@
       border-top: 1px solid $grid-header-border-color;
     }
 
+    .e-gridcontent table tbody tr:first-child .e-normaledit .e-dragindentcell {
+      border-top: 0 solid $grid-header-border-color;
+    }
+
+    .e-detailrow .e-grid.e-default .e-normaledit .e-lastrowcell {
+      border-bottom: 0;
+    }
+
     .e-ccdlg {
       .e-footer-content {
         border-color: $grid-columnchooser-footer-border-color;

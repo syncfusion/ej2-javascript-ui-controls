@@ -115,7 +115,7 @@ export class CellRenderer implements ICellRenderer {
     }
 
     private setWrapByValue(sheet: SheetModel, args: CellRenderArgs): void {
-        if (args.cell && !args.cell.wrap && args.cell.value && args.cell.value.toString().includes('\n')) {
+        if (args.cell && isNullOrUndefined(args.cell.wrap) && args.cell.value && args.cell.value.toString().includes('\n')) {
             setCell(args.rowIdx, args.colIdx, sheet, { wrap: true }, true);
             this.parent.notify(
                 wrapEvent, { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, initial: true, sheet: sheet,
@@ -225,9 +225,9 @@ export class CellRenderer implements ICellRenderer {
                 this.parent.notify(applyCellFormat, args);
             }
         }
-        if (args.cell && args.cell.wrap) {
+        if (args.cell && !isNullOrUndefined(args.cell.wrap)) {
             this.parent.notify(wrapEvent, {
-                range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet: sheet, initial: true, td: args.td, row:
+                range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: args.cell.wrap, sheet: sheet, initial: true, td: args.td, row:
                     args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh && getRowHeight(sheet, args.rowIdx) > 20
             });
         }

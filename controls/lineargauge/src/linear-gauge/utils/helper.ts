@@ -804,8 +804,8 @@ export function getExtraWidth(gaugeElement: HTMLElement): number {
 export function showTooltip(text: string, gauge: LinearGauge): void {
     let tooltip: HTMLElement = getElement(gauge.element.id + '_EJ2_Title_Tooltip');
     if (!tooltip) {
-        let titleWidth: number = measureText(text, { size: "12px", fontFamily: 'Segoe UI' }).width + 10;
-        titleWidth = titleWidth < gauge.actualRect.width ? titleWidth : gauge.actualRect.width - 10;        
+        let titleWidth: number = measureText(text, { size: '12px', fontFamily: 'Segoe UI' }).width + 10;
+        titleWidth = titleWidth < gauge.actualRect.width ? titleWidth : gauge.actualRect.width - 10;
         tooltip = createElement('div', { id: gauge.element.id + '_EJ2_Title_Tooltip', className: 'EJ2-LinearGauge-Tooltip' });
         tooltip.innerText = text;
         tooltip.style.cssText = 'top:' + (gauge.actualRect.y + 10).toString() + 'px; left:' + (gauge.actualRect.x).toString() +

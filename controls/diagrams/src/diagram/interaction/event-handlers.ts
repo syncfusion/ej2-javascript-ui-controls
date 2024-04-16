@@ -1851,9 +1851,6 @@ export class DiagramEventHandler {
                     if (layer && !layer.lock && layer.visible) {
                         if (!(this.diagram.diagramActions & DiagramAction.TextEdit)) {
                             let id: string = '';
-                            if (((obj as Node).shape as BpmnShapeModel).shape === 'TextAnnotation') {
-                                id = obj.wrapper.children[1].id.split('_')[1];
-                            }
                             this.diagram.startTextEdit
                             // eslint-disable-next-line no-unexpected-multiline
                             (obj, id || (annotation instanceof TextElement ?

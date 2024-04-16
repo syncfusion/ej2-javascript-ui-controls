@@ -1824,6 +1824,18 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
             };
             diagram.triggerEvent(DiagramEvent.collectionChange, args);
             if (!args.cancel) {
+                let removableLane = shape.lanes[parseInt(laneIndex.toString(), 10)];
+                //Bug 876330: After performing cut operations followed by an undo, lanes and nodes in the swimlane are not rendered properly.
+                //Here we are removing the children from lane and re-adding it to the lane after getting it from diagram nodes collection.
+                //Because the wrapper of nodes are not updated properly after undo operation.
+                let removableLaneChild = removableLane.children;
+                removableLane.children = [];
+                for(let i = 0; i < removableLaneChild.length; i++) {
+                    let child = diagram.getObject(removableLaneChild[parseInt(i.toString(), 10)].id);
+                    if(child){
+                        removableLane.children.push(child);
+                    }
+                }
                 const undoObj: LaneModel = cloneObject(shape.lanes[parseInt(laneIndex.toString(), 10)]) as LaneModel;
                 removeLaneChildNode(diagram, swimLane, lane as NodeModel, undefined, laneIndex);
                 if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
@@ -1941,7 +1953,8 @@ export function removePhase(diagram: Diagram, phase: NodeModel, swimLane: NodeMo
             removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane);
         }
         updateHeaderMaxWidth(diagram, swimLane);
-        ChangeLaneIndex(diagram, swimLane, 1);
+        //878835- selecting swimlane phase after deleting first phase wihtout header throws error
+        ChangeLaneIndex(diagram, swimLane, (swimLane as Node).isHeader ? 1 : 0);
         checkPhaseOffset(swimLane, diagram);
         diagram.protectPropertyChange(false);
         diagram.updateDiagramObject(swimLane);

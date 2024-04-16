@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 25.1.40 (2024-04-16)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I572876` - The issue with "The checkbox state are not read by the screen reader in the TreeView component with edge browser" has been resolved.
+
+### Stepper
+
+#### Bug Fixes
+
+- `#I570244` - The issue with stepper component styles being overridden using CSS `important` has been resolved.
+
+### Accordion
+
+#### Bug Fixes
+
+- An issue where the `expandedIndices` returns empty when the HTML sanitizer is enabled has been fixed.
+
 ## 25.1.38 (2024-04-02)
 
 ### Menu

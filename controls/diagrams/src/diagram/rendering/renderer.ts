@@ -38,6 +38,7 @@ import { canDrawThumbs, avoidDrawSelector } from '../utility/constraints-util';
 import { AnnotationConstraints} from '../enum/enum';
 import { Diagram } from '../diagram';
 import { getSegmentThumbShapeHorizontal, getSegmentThumbShapeVertical } from '../objects/dictionary/common';
+import { Actions } from '../interaction/actions';
 /**
  * Renderer module is used to render basic diagram elements
  */
@@ -1138,12 +1139,14 @@ export class DiagramRenderer {
      */
     public renderUserHandler(
         selectorItem: SelectorModel, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms,
-        diagramUserHandlelayer?: HTMLElement): void {
+        diagramUserHandlelayer?: HTMLElement, currentAction?: Actions, inAction?: boolean): void {
         const wrapper: DiagramElement = selectorItem.wrapper; let canDraw: boolean;
         for (const obj of selectorItem.userHandles) {
             canDraw = true;
+            // 879279 : Userhandle should be removed on dragging the node/connector in mousemove action
             if ((obj.disableConnectors && selectorItem.connectors.length > 0) ||
-                (obj.disableNodes && selectorItem.nodes.length > 0)) {
+                (obj.disableNodes && selectorItem.nodes.length > 0) ||
+                (currentAction === 'Drag' && inAction)) {
                 canDraw = false;
             }
             const div: HTMLElement = document.getElementById(obj.name + '_template_hiddenUserHandle');

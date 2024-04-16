@@ -169,6 +169,7 @@ export interface IItemClickEventArgs extends ITreeMapEventArgs {
 
 /**
  * Defines the event argument of the treemap item data.
+ *
  * @private
  */
 export interface IItemDataEventArgs {
@@ -367,6 +368,7 @@ export interface ITreeMapTooltipRenderEventArgs extends ITreeMapEventArgs {
 
 /**
  * Specifies the event arguments available for the tooltip events in the treemap.
+ *
  * @private
  */
 export interface ITreeMapTooltipArgs extends ITreeMapEventArgs {
@@ -388,7 +390,7 @@ export interface ITreeMapTooltipArgs extends ITreeMapEventArgs {
     textStyle: FontModel;
     /**
      * Defines the template for rendering the tooltip.
-     * 
+     *
      * @aspType string
      */
     template: string | Function;
@@ -482,6 +484,7 @@ export interface IShapes {
 
 /**
  * Defines the theme supported for treemap.
+ *
  * @private
  */
 export interface IThemeStyle {

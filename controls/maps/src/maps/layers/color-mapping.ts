@@ -7,8 +7,12 @@ import { getValueFromObject } from '../utils/helper';
  * ColorMapping class
  */
 export class ColorMapping {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    /* eslint-disable @typescript-eslint/no-empty-function */
     constructor(maps: Maps) {
     }
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+    /* eslint-enable @typescript-eslint/no-empty-function */
     /**
      * To get color based on shape settings.
      *
@@ -19,7 +23,7 @@ export class ColorMapping {
      * @private
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public getShapeColorMapping(shapeSettings: ShapeSettingsModel, layerData: any, color: string): any {
+    public getShapeColorMapping(shapeSettings: ShapeSettingsModel, layerData: object, color: string): any {
         const colorValuePath: string = shapeSettings.colorValuePath ? shapeSettings.colorValuePath : shapeSettings.valuePath;
         const equalValue: string = (!isNullOrUndefined(colorValuePath)) ? ((colorValuePath.indexOf('.') > -1) ?
             getValueFromObject(layerData, colorValuePath) : layerData[colorValuePath as string]) : layerData[colorValuePath as string];

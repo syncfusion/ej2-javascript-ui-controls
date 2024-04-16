@@ -199,7 +199,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
 
     private dataBoundEvent(): void {
         const dataBoundEve: string = 'dataBound'; const initialRowTop: string = 'initialRowTop';
-        if (!isNullOrUndefined(this.parent.getRowByIndex(0)) && this.parent.getRows().length && !this[`${initialRowTop}`]) {
+        if (this.parent.getRows().length && !isNullOrUndefined(this.parent.getRowByIndex(0)) && !this[`${initialRowTop}`]) {
             const rowTop: number = this.parent.getRowByIndex(0).getBoundingClientRect().top;
             const gridTop: number = this.parent.element.getBoundingClientRect().top;
             if (rowTop > 0){

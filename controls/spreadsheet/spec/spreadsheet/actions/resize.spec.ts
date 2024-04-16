@@ -465,6 +465,33 @@ describe('Resize ->', () => {
                 }, 50);
             });
         });
+        describe('EJ2-876040->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [
+                        {
+                            rows: [
+                                { cells: [{ value: 'Add Some Content' }] }, { cells: [{ value: '100' }] }, { cells: [{ value: '100' }] }, { cells: [{ value: '100' }] }
+                            ]
+                        }
+                    ]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Autofit is not working properly when column contains wrap text cell with Bold style', (done: Function) => {
+                helper.invoke('setColWidth', [200, 0]);
+                helper.invoke('selectRange', ['A1:A4']);
+                helper.getElement('#' + helper.id + '_wrap').click();
+                helper.invoke('cellFormat', [{ fontSize: '14pt', fontWeight: 'bold' }, 'A1:A4']);
+                helper.invoke('autoFit', ['A']);
+                setTimeout((): void => {
+                    expect(helper.getInstance().sheets[0].columns[0].width).toBe(158);
+                    done();
+                });
+            });
+        });
     });
     describe('EJ2-56123 ->', () => {
         beforeEach((done: Function) => {

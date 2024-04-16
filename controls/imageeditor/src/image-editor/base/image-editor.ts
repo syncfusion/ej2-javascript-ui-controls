@@ -1238,7 +1238,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public showDialogPopup(type?: string): void {
         let content: string = '';
         (this.element.querySelector('#' + this.element.id + '_dialog') as HTMLElement).style.display = 'block';
-        let headerObj: Object; const okObj: Object = { key: 'OK' };
+        let headerObj: Object; const okObj: Object = { key: 'DlgOK' };
         this.notify('toolbar', { prop: 'getLocaleText', onPropertyChange: false, value: {obj: okObj }});
         if (type === 'multi-select-image') {
             headerObj = { key: 'ImageErrorDialogHeader' };
@@ -1266,7 +1266,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             close: this.dlgCloseBtnClick.bind(this),
             buttons: [
                 { click: this.dlgCloseBtnClick.bind(this),
-                    buttonModel: { content: okObj['value'], iconCss: 'e-icons e-close' }
+                    buttonModel: { content: okObj['value'] }
                 }
             ]
         });

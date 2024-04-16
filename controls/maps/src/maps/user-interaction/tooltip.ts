@@ -4,7 +4,6 @@ import { createElement, Browser, isNullOrUndefined, extend, remove } from '@sync
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
 import { MapLocation, getMousePosition, Internalize, checkPropertyPath, getValueFromObject,
     formatValue, convertStringToValue } from '../utils/helper';
-import { click } from '../model/constants';
 /**
  * Map Tooltip
  */
@@ -28,6 +27,8 @@ export class MapsTooltip {
     }
 
     /**
+     * @param {PointerEvent} e - Specifies the event.
+     * @returns {void}
      * @private
      */
     public renderTooltip(e: PointerEvent): void {
@@ -51,10 +52,10 @@ export class MapsTooltip {
             this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
         }
         if (target.id.indexOf(this.maps.element.id) === -1) {
-            const ancestor: Element = target.closest('.' + this.maps.element.id + '_marker_template_element');            
+            const ancestor: Element = target.closest('.' + this.maps.element.id + '_marker_template_element');
             if (!isNullOrUndefined(ancestor) && ancestor.id.indexOf('_MarkerIndex_') > -1) {
                 target = ancestor;
-            } 
+            }
         }
         let option: TooltipSettingsModel;
         let polygonTooltipOption : PolygonTooltipSettingsModel;
@@ -207,6 +208,7 @@ export class MapsTooltip {
                     }
                     document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(tooltipEle);
                 }
+                // eslint-disable-next-line no-constant-condition
                 if (typeof (isPolygon ? polygon.tooltipTemplate !== 'function' : option.template !== 'function') && (isPolygon ? polygon.tooltipTemplate !== null : option.template !== null) && Object.keys(typeof (isPolygon ? polygon.tooltipTemplate === 'object' : option.template === 'object') ? (isPolygon ? polygon.tooltipTemplate : option.template) : {}).length === 1) {
                     if (isPolygon) {
                         polygon.tooltipTemplate = polygon.tooltipTemplate[Object.keys(polygon.tooltipTemplate)[0]];
@@ -319,7 +321,7 @@ export class MapsTooltip {
                 this.clearTooltip(<HTMLElement>e.target);
             }
         } else {
-            let tooltipElement: Element = (e.target as HTMLElement).closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
+            const tooltipElement: Element = (e.target as HTMLElement).closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
             if (isNullOrUndefined(tooltipElement)) {
                 this.clearTooltip(<HTMLElement>e.target);
             }
@@ -359,6 +361,10 @@ export class MapsTooltip {
         return format;
     }
     /**
+     * Handles the mouse up
+     *
+     * @param {PointerEvent} e - Specifies the event
+     * @returns {void}
      * @private
      */
     public mouseUpHandler(e: PointerEvent): void {
@@ -372,6 +378,9 @@ export class MapsTooltip {
     }
 
     /**
+     * Removes the tooltip
+     *
+     * @returns {boolean} - Returns the boolean whether tooltip is removed or not.
      * @private
      */
     public removeTooltip(): boolean {
@@ -384,7 +393,8 @@ export class MapsTooltip {
     }
 
     private clearTooltip(element: HTMLElement): void {
-        let tooltipElement = element.closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
+        // eslint-disable-next-line @typescript-eslint/tslint/config
+        const tooltipElement = element.closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
         if (isNullOrUndefined(tooltipElement)) {
             const isTooltipRemoved: boolean = this.removeTooltip();
             if (isTooltipRemoved) {
@@ -394,9 +404,10 @@ export class MapsTooltip {
         }
 
     }
-    // eslint-disable-next-line valid-jsdoc
     /**
      * To bind events for tooltip module
+     *
+     * @returns {void}
      * @private
      */
     public addEventListener(): void {
@@ -414,6 +425,9 @@ export class MapsTooltip {
         this.maps.element.addEventListener('contextmenu', this.removeTooltip);
     }
     /**
+     * Removes the event listeners
+     *
+     * @returns {void}
      * @private
      */
     public removeEventListener(): void {

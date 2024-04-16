@@ -8,6 +8,7 @@ import { ProtectionType, CompatibilityMode, BreakClearType } from '../../base';
 import { DocumentHelper } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
 import { sectionsProperty, fontSubstitutionTableProperty, paraStyleNameProperty, isLegalStyleNumberingProperty, breakClearTypeProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty , isAfterRowMarkProperty, isAfterParagraphMarkProperty, columnCountProperty, gridProperty, characterSpacingProperty, scalingProperty, horizontalRuleProperty} from '../../index';
+import { FieldSettingsModel } from '@syncfusion/ej2-navigations';
 
 /**
  * Exports the document to Word format.
@@ -857,7 +858,7 @@ export class WordExport {
             if (comment.initial && comment.initial !== '') {
                 writer.writeAttributeString('w', 'initials', this.wNamespace, comment.initial);
             }
-            const blocks: any[] = this.retrieveCommentText(comment.text);
+            const blocks: any[] = this.retrieveCommentText(comment.text, comment.mentions);
             for (let k: number = 0; k < blocks.length; k++) {
                 this.isInsideComment = true;
                 this.commentParaID++;
@@ -879,18 +880,66 @@ export class WordExport {
         }
 
     }
-    private retrieveCommentText(text: string): any[] {
-        const blocks: any = [];
+    private retrieveCommentText(text: string, mentions: FieldSettingsModel[]): any[] {
+        let blocks: any = [];
         let multiText: string[] = text.split('\n');
+        let tempText : string = "";
         while (multiText.length > 0) {
             let block: any = {};
             block[inlinesProperty[this.keywordIndex]] = [];
             let inlines: any = {};
-            inlines[textProperty[this.keywordIndex]] = multiText[0];
+            let dataName: string = "";
+            if (mentions && mentions.length > 0) {
+                let text: string = "";
+                let url: string = "";
+                for (let i: number = 0; i < mentions.length; i++) {
+                    dataName = (mentions[parseInt(i.toString(), 10)] as any).Name;
+                    if (multiText[0].indexOf('span') !== -1 && (mentions[parseInt(i.toString(), 10)] as any).Name) {
+                        const regex = /(<span[^>]*>.*<\/span>)/;
+                        const match = multiText[0].match(regex);
+                        text = multiText[0].substring(match.index + match[0].length);
+                        let temp: string[] = text.split("&nbsp;");
+                        dataName = (mentions[parseInt(i.toString(), 10)] as any).Name;
+                        url = (mentions[parseInt(i.toString(), 10)] as any).EmailId;
+                        tempText = temp.length > 1 ? temp[1] : temp[0];
+                    }
+                }
+                block = this.serializeMentions(dataName, url, block);
+            }
+            inlines[textProperty[this.keywordIndex]] = mentions.length > 0 ? tempText : multiText[0];
             block[inlinesProperty[this.keywordIndex]].push(inlines);
             blocks.push(block);
             multiText.splice(0, 1);
         }
+        return blocks;
+    }
+
+    private serializeMentions(dataName: string, url: string, blocks: string): any {
+        var inlines = {};
+        inlines[characterFormatProperty[this.keywordIndex]] = {};
+        inlines["fieldType"] = 0;
+        inlines["hasFieldEnd"] = true;
+        blocks[inlinesProperty[this.keywordIndex]].push(inlines);
+        var inlines2 = {};
+        inlines2[characterFormatProperty[this.keywordIndex]] = {};
+        inlines2[textProperty[this.keywordIndex]] = ' HYPERLINK \"' + url + '\" ';
+        blocks[inlinesProperty[this.keywordIndex]].push(inlines2);
+        var inlines3 = {};
+        inlines3[characterFormatProperty[this.keywordIndex]] = {};
+        inlines3["fieldType"] = 2;
+        blocks[inlinesProperty[this.keywordIndex]].push(inlines3);
+        var inlines4 = {};
+        inlines4[characterFormatProperty[this.keywordIndex]] = {
+            "underline": "Single",
+            "fontColor": "#0563c1",
+            "bidi": false
+        };
+        inlines4[textProperty[this.keywordIndex]] = dataName;
+        blocks[inlinesProperty[this.keywordIndex]].push(inlines4);
+        var inlines5 = {};
+        inlines5[characterFormatProperty[this.keywordIndex]] = {};
+        inlines5["fieldType"] = 1;
+        blocks[inlinesProperty[this.keywordIndex]].push(inlines5);
         return blocks;
     }
     // Serialize the comments (commentsExtended.xml)

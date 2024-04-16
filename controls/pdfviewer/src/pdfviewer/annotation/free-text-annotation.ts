@@ -252,7 +252,7 @@ export class FreeTextAnnotation {
         this.opacity = this.pdfViewer.freeTextSettings.opacity ? this.pdfViewer.freeTextSettings.opacity : 1;
         this.fontColor = this.pdfViewer.freeTextSettings.fontColor ? this.pdfViewer.freeTextSettings.fontColor : '#000';
         // eslint-disable-next-line max-len
-        this.author = (this.pdfViewer.freeTextSettings.author !== 'Guest') ? this.pdfViewer.freeTextSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+        this.author = (this.pdfViewer.freeTextSettings.author && this.pdfViewer.freeTextSettings.author !== 'Guest') ? this.pdfViewer.freeTextSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
         if (!isNullOrUndefined(this.pdfViewer.annotationModule)) {
             if (this.getRgbCode(this.borderColor).a === 0) {
                 this.borderWidth = 0;
@@ -489,7 +489,7 @@ export class FreeTextAnnotation {
                             // eslint-disable-next-line
                             customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode, allowedInteractions: annotation.allowedInteractions,
                             isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly,
-                            isAddAnnotationProgrammatically: isAddedProgramatically
+                            isAddAnnotationProgrammatically: isAddedProgramatically, isTransparentSet: annotation.IsTransparentSet
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;
@@ -548,7 +548,7 @@ export class FreeTextAnnotation {
                     fillColor: this.fillColor, opacity: this.opacity, notes: '', isCommentLock: false,
                     thickness: this.borderWidth, borderDashArray: '0', modifiedDate: modifiedDateRect,
                     // eslint-disable-next-line max-len
-                    author: this.pdfViewer.freeTextSettings.author, subject: this.pdfViewer.freeTextSettings.subject, font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
+                    author: this.author, subject: this.pdfViewer.freeTextSettings.subject, font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
                 };
                 this.pdfViewer.tool = 'Select';
                 break;

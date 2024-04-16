@@ -187,13 +187,14 @@ export class ToolbarModule {
             ConfirmDialogHeader: 'Confirm Save Changes',
             ConfirmDialogContent: 'Do you want to save the changes you made to the image?',
             AlertDialogHeader: 'Unsupported file',
-            AlertDialogContent: 'The dropped file is unsupported.',
+            AlertDialogContent: 'The selected file is unsupported.',
             Yes: 'Yes',
             No: 'No',
             ImageErrorDialogHeader: 'Image Selection Error',
             ImageErrorDialogContent: 'Please select only one image to open.',
             Straighten: 'Straighten',
             NoOutline: 'No outline',
+            DlgOK: 'OK'
         };
         this.l10n = new L10n('image-editor', this.defaultLocale, this.parent.locale);
     }

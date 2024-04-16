@@ -6,7 +6,7 @@ import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clus
 import { markerTemplate, removeElement, getElement, clusterSeparate, markerColorChoose, calculatePolygonPath } from '../utils/helper';
 import { markerShapeChoose   } from '../utils/helper';
 import { isNullOrUndefined, EventHandler, Browser, remove, createElement, animationMode } from '@syncfusion/ej2-base';
-import { MarkerSettings, LayerSettings, changeBorderWidth, IMarkerRenderingEventArgs, markerRendering, Polygon } from '../index';
+import { MarkerSettings, LayerSettings, changeBorderWidth, IMarkerRenderingEventArgs, markerRendering} from '../index';
 import { IMapZoomEventArgs, IMapPanEventArgs, IMinMaxLatitudeLongitude, GeoPosition } from '../model/interface';
 import { pan } from '../model/constants';
 import { getValueFromObject } from '../utils/helper';
@@ -63,9 +63,8 @@ export class Zoom {
     public zoomColor: string;
     /** @private */
     public browserName: string = Browser.info.name;
-    // eslint-disable-next-line @typescript-eslint/ban-types
     /** @private */
-    public isPointer: Boolean = Browser.isPointer;
+    public isPointer: boolean = Browser.isPointer;
     private handled: boolean = false;
     private fingers: number;
     /** @private */
@@ -80,14 +79,11 @@ export class Zoom {
     private startTouches: any[] = [];
     private index: number;
     private templateCount: number;
-    private distanceX: number;
-    private distanceY: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private pinchDistance: number;
     /** @private */
-    public mouseDownLatLong: any = { x: 0, y: 0 };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public mouseDownLatLong: object = { x: 0, y: 0 };
     /** @private */
-    public mouseMoveLatLong: any = { x: 0, y: 0 };
+    public mouseMoveLatLong: object = { x: 0, y: 0 };
     /** @private */
     public isSingleClick: boolean = false;
     /** @private */
@@ -123,14 +119,14 @@ export class Zoom {
         const scale: number = map.previousScale = map.scale;
         const maxZoom: number = map.zoomSettings.maxZoom;
         const minZoom: number = map.zoomSettings.minZoom;
-        newZoomFactor = maxZoom >= newZoomFactor ? newZoomFactor : maxZoom;let isToolbarPerform: boolean = true;
+        newZoomFactor = maxZoom >= newZoomFactor ? newZoomFactor : maxZoom; let isToolbarPerform: boolean = true;
         switch (type.toLowerCase()) {
-            case 'zoomin':
-                isToolbarPerform = newZoomFactor <= this.maps.zoomSettings.maxZoom;
-                break;
-            case 'zoomout':
-                isToolbarPerform = newZoomFactor >= this.maps.zoomSettings.minZoom;
-                break;
+        case 'zoomin':
+            isToolbarPerform = newZoomFactor <= this.maps.zoomSettings.maxZoom;
+            break;
+        case 'zoomout':
+            isToolbarPerform = newZoomFactor >= this.maps.zoomSettings.minZoom;
+            break;
         }
         if (isToolbarPerform) {
             const prevTilePoint: Point = map.tileTranslatePoint;
@@ -200,7 +196,6 @@ export class Zoom {
                     }
                     this.markerLineAnimation(map);
                     map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint, type + 'wheel', null, position);
-                    const element1: HTMLElement = document.getElementById(this.maps.element.id + '_tiles');
                     const animationDuration: number = this.maps.layersCollection[0].animationDuration === 0 && animationMode === 'Enable' ? 1000 : this.maps.layersCollection[0].animationDuration;
                     setTimeout(() => {
                         // if (type === 'ZoomOut') {
@@ -242,8 +237,8 @@ export class Zoom {
             map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.mapScaleValue)) / map.scale;
             map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.mapScaleValue)) / map.scale;
         }
-        const minMaxLatitudeLongitude = this.maps.getMinMaxLatitudeLongitude();
-        if (!map.isTileMap) {            
+        const minMaxLatitudeLongitude : IMinMaxLatitudeLongitude = this.maps.getMinMaxLatitudeLongitude();
+        if (!map.isTileMap) {
             zoomArgs = {
                 cancel: false, name: 'zoom', type: type, maps: map,
                 tileTranslatePoint: {}, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
@@ -255,7 +250,7 @@ export class Zoom {
             zoomArgs = {
                 cancel: false, name: 'zoom', type: type, maps: map,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint }, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
-                tileZoomLevel: { previous: prevLevel, current: map.tileZoomLevel }, scale: { previous: map.previousScale, current: map.scale },                
+                tileZoomLevel: { previous: prevLevel, current: map.tileZoomLevel }, scale: { previous: map.previousScale, current: map.scale },
                 minLatitude: minMaxLatitudeLongitude.minLatitude, maxLatitude: minMaxLatitudeLongitude.maxLatitude,
                 minLongitude: minMaxLatitudeLongitude.minLongitude, maxLongitude: minMaxLatitudeLongitude.maxLongitude
             };
@@ -280,6 +275,7 @@ export class Zoom {
     }
 
     /**
+     * @returns {void}
      * @private
      */
     public performRectZooming(): void {
@@ -359,27 +355,29 @@ export class Zoom {
     }
 
     /**
+     * @param {PointerEvent} e - Specifies the vent in the map
+     * @returns {void}
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public performPinchZooming(e: PointerEvent | TouchEvent): void {
         const map: Maps = this.maps;
         const prevLevel: number = map.tileZoomLevel;
-        const availSize: Rect = map.mapAreaRect;
-        map.isMarkerZoomCompleted = false;
-        map.previousScale = map.scale;
-        map.previousPoint = map.translatePoint;
-        map.previousProjection = map.projectionType; 
-        const prevTilePoint: Point = map.tileTranslatePoint;
-        const scale: number = calculateScale(<ITouches[]>this.touchStartList, <ITouches[]>this.touchMoveList);
-        const touchCenter: Point = getTouchCenter(getTouches(<ITouches[]>this.touchMoveList, this.maps));
-        const newScale: number = scale / this.lastScale;
-        this.lastScale = scale;
-        this.pinchFactor *= newScale;
-        this.pinchFactor = Math.min(this.maps.zoomSettings.maxZoom, Math.max(this.pinchFactor, this.maps.zoomSettings.minZoom));
         let zoomCalculationFactor: number = this.pinchFactor;
-        let zoomArgs: IMapZoomEventArgs;
         let isZoomCancelled: boolean;
+        const prevTilePoint: Point = map.tileTranslatePoint;
         if (!map.isTileMap) {
+            const availSize: Rect = map.mapAreaRect;
+            map.isMarkerZoomCompleted = false;
+            map.previousScale = map.scale;
+            map.previousPoint = map.translatePoint;
+            map.previousProjection = map.projectionType;
+            const scale: number = calculateScale(<ITouches[]>this.touchStartList, <ITouches[]>this.touchMoveList);
+            const touchCenter: Point = getTouchCenter(getTouches(<ITouches[]>this.touchMoveList, this.maps));
+            const newScale: number = scale / this.lastScale;
+            this.lastScale = scale;
+            this.pinchFactor *= newScale;
+            this.pinchFactor = Math.min(this.maps.zoomSettings.maxZoom, Math.max(this.pinchFactor, this.maps.zoomSettings.minZoom));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const minBounds: any = map.baseMapRectBounds['min'] as any;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -413,23 +411,36 @@ export class Zoom {
                 map.scale = map.previousScale;
             }
         } else {
-            const newTileFactor: number = zoomCalculationFactor;
-            this.getTileTranslatePosition(prevLevel, newTileFactor, { x: touchCenter.x, y: touchCenter.y });
-            map.tileZoomLevel = newTileFactor;
-            map.translatePoint.x = (map.tileTranslatePoint.x - (0.5 * Math.pow(2, newTileFactor))) /
-                (Math.pow(2, newTileFactor));
-            map.translatePoint.y = (map.tileTranslatePoint.y - (0.5 * Math.pow(2, newTileFactor))) /
-                (Math.pow(2, newTileFactor));
-            map.scale = (Math.pow(2, newTileFactor));
-            isZoomCancelled = this.triggerZoomEvent(prevTilePoint, prevLevel, '');
-            if (isZoomCancelled) {
-                map.translatePoint = map.tileTranslatePoint = new Point(0, 0);
-                map.scale = map.previousScale;
-                map.tileZoomLevel = prevLevel;
-                map.zoomSettings.zoomFactor = map.previousScale;
-            } else {
-                map.mapLayerPanel.generateTiles(newTileFactor, map.tileTranslatePoint);
+            const touchCenter: Point = this.getTouchCenterPoint();
+            const distance: number = Math.sqrt(Math.pow((this.touchMoveList[0].pageX - this.touchMoveList[1].pageX), 2) + Math.pow((this.touchMoveList[0].pageY - this.touchMoveList[1].pageY), 2));
+            let factor: number = map.tileZoomLevel;
+            if (!isNullOrUndefined(this.pinchDistance)) {
+                if (this.pinchDistance > distance) {
+                    factor = factor - 1;
+                } else if (this.pinchDistance < distance) {
+                    factor = factor + 1;
+                }
+                factor = Math.min(this.maps.zoomSettings.maxZoom, Math.max(this.maps.zoomSettings.minZoom, factor));
+                if (factor !== map.tileZoomLevel) {
+                    this.pinchFactor = factor;
+                    map.previousScale = map.scale;
+                    map.tileZoomLevel = this.pinchFactor;
+                    map.scale = Math.pow(2, map.tileZoomLevel - 1);
+                    this.getTileTranslatePosition(prevLevel, this.pinchFactor, { x: touchCenter.x, y: touchCenter.y }, null);
+                    map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
+                    map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
+                    isZoomCancelled = this.triggerZoomEvent(prevTilePoint, prevLevel, '');
+                    if (isZoomCancelled) {
+                        map.translatePoint = map.tileTranslatePoint = new Point(0, 0);
+                        map.scale = map.previousScale;
+                        map.tileZoomLevel = prevLevel;
+                        map.zoomSettings.zoomFactor = map.previousScale;
+                    } else {
+                        map.mapLayerPanel.generateTiles(factor, map.tileTranslatePoint);
+                    }
+                }
             }
+            this.pinchDistance = distance;
         }
         map.mapScaleValue = zoomCalculationFactor;
         if (!isZoomCancelled) {
@@ -439,6 +450,17 @@ export class Zoom {
         if (Browser.isDevice) {
             this.removeToolbarOpacity(map.isTileMap ? Math.round(map.tileZoomLevel) : map.scale, map.element.id + '_Zooming_');
         }
+    }
+
+    private getTouchCenterPoint(): Point {
+        const touchList: Point[] = [];
+        for (let i: number = 0; i < this.touchMoveList.length; i++) {
+            touchList.push(this.getMousePosition(this.touchMoveList[i as number].pageX, this.touchMoveList[i as number].pageY));
+        }
+        return {
+            x: (touchList[0].x + touchList[1].x) / 2,
+            y: (touchList[0].y + touchList[1].y) / 2
+        };
     }
 
     private triggerZoomComplete(map: Maps, prevLevel: number, type: string): void {
@@ -472,6 +494,7 @@ export class Zoom {
     }
 
     /**
+     * @returns {void}
      * @private
      */
     public drawZoomRectangle(): void {
@@ -484,7 +507,6 @@ export class Zoom {
         const height: number = Math.abs(move.y - down.y);
         const x: number = ((move.x > down.x) ? down.x : down.x - width);
         const y: number = ((move.y > down.y) ? down.y : down.y - height);
-        const elementRect: ClientRect = getElementByID(map.element.id).getBoundingClientRect();
         if ((x > map.mapAreaRect.x && x < (map.mapAreaRect.x + map.mapAreaRect.width)) &&
             (y > map.mapAreaRect.y) && (y < map.mapAreaRect.y + map.mapAreaRect.height)) {
             this.zoomingRect = new Rect(x, y, width, height);
@@ -525,21 +547,21 @@ export class Zoom {
     }
 
     /**
+     * @param {Maps} maps - Specifies the Map control
+     * @param {boolean} animate - Specifies the animation is available or not
+     * @param {boolean} isPanning - Specifies that it is panning or not
+     * @returns {void}
      * @private
      */
     public applyTransform(maps: Maps, animate?: boolean, isPanning?: boolean): void {
         let layerIndex: number;
         this.templateCount = 0;
-        let layer: LayerSettings;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let zoomshapelocation: any;
-        let i: number; let markerStyle: string;
+        let markerStyle: string;
         const scale: number = maps.scale;
         const x: number = maps.translatePoint.x;
         const y: number = maps.translatePoint.y;
         let currentLabelIndex: number = 0;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const collection: any[] = []; maps.zoomShapeCollection = [];
+        maps.zoomShapeCollection = [];
         if (document.getElementById(maps.element.id + '_mapsTooltip')) {
             removeElement(maps.element.id + '_mapsTooltip');
         }
@@ -571,10 +593,10 @@ export class Zoom {
                                 }
                             } else if (maps.isTileMap && (currentEle.id.indexOf('_Polygons_Group') > -1)){
                                 if (this.currentLayer.polygonSettings.polygons.length > 0) {
-                                    this.currentLayer.polygonSettings.polygons.map((polygonSettings: PolygonSettingModel, polygonIndex: number) => { 
+                                    this.currentLayer.polygonSettings.polygons.map((polygonSettings: PolygonSettingModel, polygonIndex: number) => {
                                         const markerData: Coordinate[] = polygonSettings.points;
                                         const path: string = calculatePolygonPath(maps, maps.tileZoomLevel, this.currentLayer, markerData);
-                                        let element: Element = document.getElementById(maps.element.id + '_LayerIndex_' + this.index + '_PolygonIndex_' + polygonIndex);
+                                        const element: Element = document.getElementById(maps.element.id + '_LayerIndex_' + this.index + '_PolygonIndex_' + polygonIndex);
                                         element.setAttribute('d', path);
                                     });
                                     document.getElementById(maps.element.id + '_LayerIndex_' + this.index + '_Polygons_Group').style.visibility = '';
@@ -587,14 +609,13 @@ export class Zoom {
 
                         } else if (currentEle.id.indexOf('_Markers_Group') > -1) {
                             if ((!this.isPanModeEnabled) && !isNullOrUndefined(currentEle.childNodes[0])) {
-                                this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement, animate);
+                                this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement);
                             }
                             currentEle = layerElement.childNodes[j as number] as Element;
                             let markerAnimation: boolean;
                             if (!isNullOrUndefined(currentEle) && currentEle.id.indexOf('Markers') !== -1) {
                                 Array.prototype.forEach.call(currentEle.childNodes, (childNode: HTMLElement, k: number) => {
                                     this.markerTranslate(<Element>childNode, factor, x, y, scale, 'Marker', animate);
-                                    const layerIndex : number = parseInt(childNode['id'].split('_LayerIndex_')[1].split('_')[0], 10);
                                     const dataIndex : number = parseInt(childNode['id'].split('_dataIndex_')[1].split('_')[0], 10);
                                     const markerIndex  : number = parseInt(childNode['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
                                     markerAnimation = this.currentLayer.markerSettings[markerIndex as number].animationDuration > 0 || animationMode === 'Enable';
@@ -607,8 +628,8 @@ export class Zoom {
                                                 this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection[x as number]['longitude'] ===
                                                 markerSelectionValues['longitude']) {
                                                 maps.markerSelection(this.currentLayer.markerSettings[markerIndex as number].selectionSettings,
-                                                    maps, currentEle.children[k as number],
-                                                    this.currentLayer.markerSettings[markerIndex as number].dataSource[dataIndex as number]
+                                                                     maps, currentEle.children[k as number],
+                                                                     this.currentLayer.markerSettings[markerIndex as number].dataSource[dataIndex as number]
                                                 );
                                             }
                                         }
@@ -684,11 +705,13 @@ export class Zoom {
                             maps.zoomLabelPositions = [];
                             maps.zoomLabelPositions = maps.dataLabelModule.dataLabelCollections;
                             const labelAnimate: boolean = !maps.isTileMap && animate;
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const intersect: any[] = [];
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             Array.prototype.forEach.call(currentEle.childNodes, (childNode: any, k: number) => {
                                 if (currentEle.childNodes[k as number]['id'].indexOf('_LabelIndex_') > -1) {
                                     const labelIndex: number = parseFloat(currentEle.childNodes[k as number]['id'].split('_LabelIndex_')[1].split('_')[0]);
-                                    var zoomShapeWidth = (currentEle.childNodes[k as number] as Element).id;
+                                    const zoomShapeWidth : string = (currentEle.childNodes[k as number] as Element).id;
                                     maps.zoomShapeCollection.push(zoomShapeWidth);
                                     this.dataLabelTranslate(<Element>currentEle.childNodes[k as number], factor, x, y, scale, 'DataLabel', labelAnimate, currentLabelIndex, isPanning, intersect);
                                     currentLabelIndex++;
@@ -725,8 +748,7 @@ export class Zoom {
     }
 
     private markerTranslates(
-        element: Element | HTMLElement, factor: number, x: number, y: number, scale: number, type: string, layerElement: Element, animate: boolean = false
-    ): void {
+        element: Element | HTMLElement, factor: number, x: number, y: number, scale: number, type: string, layerElement: Element): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let templateFn: any;
         let nullCount: number = 0;
@@ -755,7 +777,7 @@ export class Zoom {
             removeElement(markerTemplateElements.id);
         }
         const currentLayers: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex as number];
-        Array.prototype.forEach.call(currentLayers.markerSettings, (markerSettings: MarkerSettings, markerIndex: number)=> {
+        Array.prototype.forEach.call(currentLayers.markerSettings, (markerSettings: MarkerSettings, markerIndex: number) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const markerDatas: any[] = <any[]>markerSettings.dataSource;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -770,6 +792,7 @@ export class Zoom {
                 };
                 eventArgs = markerShapeChoose(eventArgs, data);
                 eventArgs = markerColorChoose(eventArgs, data);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
                         eventArgs = markerShapeChoose(eventArgs, data);
@@ -810,7 +833,7 @@ export class Zoom {
                     let isMarkersClustered: boolean = false;
                     if (markerSVGObject.childElementCount === (markerDataLength - markerTemplateCounts - nullCount) && (type !== 'Template')) {
                         if (this.maps.isTileMap) {
-                            const polygonsElement: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' + layerIndex + '_Polygons_Group');                            
+                            const polygonsElement: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' + layerIndex + '_Polygons_Group');
                             const polygonElement: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' + layerIndex + '_Polygon_Group');
                             if (!isNullOrUndefined(polygonsElement)) {
                                 polygonsElement.insertAdjacentElement('afterend', markerSVGObject);
@@ -818,7 +841,7 @@ export class Zoom {
                                 if (!isNullOrUndefined(polygonElement)) {
                                     polygonElement.insertAdjacentElement('afterend', markerSVGObject);
                                 } else {
-                                    layerElement.insertBefore(markerSVGObject, layerElement.firstElementChild)
+                                    layerElement.insertBefore(markerSVGObject, layerElement.firstElementChild);
                                 }
                             }
                         } else {
@@ -876,13 +899,14 @@ export class Zoom {
             }
             if (!isNullOrUndefined(polygonElement)) {
                 for (let k: number = 0; k < polygonElement.childElementCount; k++) {
-                    let width: number = maps.layersCollection[i as number].polygonSettings.polygons[k as number].borderWidth;
+                    const width: number = maps.layersCollection[i as number].polygonSettings.polygons[k as number].borderWidth;
                     (polygonElement.childNodes[k as number].childNodes[0] as HTMLElement).setAttribute('stroke-width', (width / scale).toString());
                 }
             }
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private dataLabelTranslate(element: Element | HTMLElement, factor: number, x: number, y: number, scale: number, type: string, animate: boolean = false, currentLabelIndex: number, isPanning?: boolean, intersect?: any[]): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const labelCollection: any[] = this.maps.dataLabelModule.dataLabelCollections;
@@ -897,8 +921,8 @@ export class Zoom {
         }
         const duration: number = this.currentLayer.animationDuration === 0 && animationMode === 'Enable' ? 1000 : this.currentLayer.animationDuration;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let label: any = labelCollection[currentLabelIndex as number];
-        let index: number = currentLabelIndex;
+        const label: any = labelCollection[currentLabelIndex as number];
+        const index: number = currentLabelIndex;
         if (label['layerIndex'] === layerIndex && label['shapeIndex'] === shapeIndex
             && label['labelIndex'] === labelIndex) {
             let labelX: number = label['location']['x'];
@@ -946,7 +970,7 @@ export class Zoom {
                             element.textContent = text;
                         }
                     }
-                    let widthList: number[] = [];
+                    const widthList: number[] = [];
                     if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Trim') {
                         if (scale > 1) {
                             zoomtrimLabel = textTrim((this.maps.dataLabelShape[index as number] * scale), zoomtext, style, zoomtextSize.width, true, widthList);
@@ -982,7 +1006,7 @@ export class Zoom {
                                     || textLocations['heightTop'] > intersect[j as number]['heightBottom']) {
                                     trimmedLable = !isNullOrUndefined(text) ? text : zoomtext;
                                     if (scale > 1) {
-                                        let trimmedWidth: number = widthList.length > 0 ? widthList[0] : zoomtextSize.width;
+                                        const trimmedWidth: number = widthList.length > 0 ? widthList[0] : zoomtextSize.width;
                                         trimmedLable = textTrim((this.maps.dataLabelShape[index as number] * scale), trimmedLable, style, trimmedWidth, true);
                                     }
                                     element.textContent = trimmedLable;
@@ -991,7 +1015,7 @@ export class Zoom {
                                         const width: number = intersect[j as number]['rightWidth'] - textLocations['leftWidth'];
                                         const difference: number = width - (textLocations['rightWidth'] - textLocations['leftWidth']);
                                         text = !isNullOrUndefined(text) ? text : zoomtext;
-                                        let trimmedWidth: number = widthList.length > 0 ? widthList[0] : zoomtextSize.width;
+                                        const trimmedWidth: number = widthList.length > 0 ? widthList[0] : zoomtextSize.width;
                                         trimmedLable = textTrim(difference, text, style, trimmedWidth, true);
                                         element.textContent = trimmedLable;
                                         break;
@@ -1000,7 +1024,7 @@ export class Zoom {
                                         const width: number = textLocations['rightWidth'] - intersect[j as number]['leftWidth'];
                                         const difference: number = Math.abs(width - (textLocations['rightWidth'] - textLocations['leftWidth']));
                                         text = !isNullOrUndefined(text) ? text : zoomtext;
-                                        let trimmedWidth: number = widthList.length > 0 ? widthList[0] : zoomtextSize.width;
+                                        const trimmedWidth: number = widthList.length > 0 ? widthList[0] : zoomtextSize.width;
                                         trimmedLable = textTrim(difference, text, style, trimmedWidth, true);
                                         element.textContent = trimmedLable;
                                         break;
@@ -1116,11 +1140,11 @@ export class Zoom {
      * @param {PanDirection} direction - Specifies the direction of the panning.
      * @param {number} xDifference - Specifies the distance moved in the horizontal direction.
      * @param {number} yDifference - Specifies the distance moved in the vertical direction.
-     * @param {PointerEvent | TouchEvent | KeyboardEvent} mouseLocation - Specifies the pointer event argument.
+     * @param {PointerEvent | TouchEvent | KeyboardEvent} event - Specifies the pointer event argument.
      * @returns {void}
      * @private
      */
-    public panning(direction: PanDirection, xDifference: number, yDifference: number, mouseLocation?: PointerEvent | TouchEvent | KeyboardEvent): void {
+    public panning(direction: PanDirection, xDifference: number, yDifference: number, event?: PointerEvent | TouchEvent | KeyboardEvent): void {
         const map: Maps = this.maps; let panArgs: IMapPanEventArgs;
         const down: Point = this.mouseDownPoints;
         const move: Point = this.mouseMovePoints;
@@ -1134,6 +1158,8 @@ export class Zoom {
         let x: number; let y: number;
         xDifference = !isNullOrUndefined(xDifference) ? xDifference : (down.x - move.x);
         yDifference = !isNullOrUndefined(yDifference) ? yDifference : (down.y - move.y);
+        const layerX: number = event.type.indexOf('mouse') > -1 || event.type.indexOf('key') > -1 ? event['layerX'] : (event as TouchEvent).touches[0].pageX;
+        const layerY: number = event.type.indexOf('mouse') > -1 || event.type.indexOf('key') > -1 ? event['layerY'] : (event as TouchEvent).touches[0].pageY;
         this.maps.mergeCluster();
         if (!map.isTileMap) {
             const legendElement: HTMLElement = document.getElementById(map.element.id + '_Legend_Group');
@@ -1147,7 +1173,7 @@ export class Zoom {
             const panningYDirection: boolean = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
                 ((layerRect.top + layerRect.height + legendHeight + map.margin.top) >= (elementRect.top + elementRect.height))));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const location: any = this.maps.getGeoLocation(this.maps.layersCollection.length - 1, mouseLocation['layerX'], mouseLocation['layerY']);
+            const location: any = this.maps.getGeoLocation(this.maps.layersCollection.length - 1, layerX, layerY);
             const minMaxLatitudeLongitude: IMinMaxLatitudeLongitude = this.maps.getMinMaxLatitudeLongitude();
             panArgs = {
                 cancel: false, name: pan, maps: map,
@@ -1173,8 +1199,6 @@ export class Zoom {
         } else if (this.maps.tileZoomLevel > 1) {
             x = map.tileTranslatePoint.x - xDifference;
             y = map.tileTranslatePoint.y - yDifference;
-            this.distanceX = x - map.tileTranslatePoint.x;
-            this.distanceY = y - map.tileTranslatePoint.y;
             map.tileTranslatePoint.x = x;
             map.tileTranslatePoint.y = y;
             if ((map.tileTranslatePoint.y > -10 && yDifference < 0) || ((map.tileTranslatePoint.y < -((Math.pow(2, this.maps.tileZoomLevel) - 2) * 256) && yDifference > 0))) {
@@ -1184,7 +1208,7 @@ export class Zoom {
             map.translatePoint.x = (map.tileTranslatePoint.x) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y) / map.scale;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const location: any = this.maps.getTileGeoLocation(mouseLocation['layerX'], mouseLocation['layerY']);
+            const location: any = this.maps.getTileGeoLocation(layerX, layerY);
             const minMaxLatitudeLongitude: IMinMaxLatitudeLongitude = this.maps.getMinMaxLatitudeLongitude();
             panArgs = {
                 cancel: false, name: pan, maps: map,
@@ -1205,15 +1229,10 @@ export class Zoom {
         this.isSingleClick = false;
     }
 
-    private toAlignSublayer(): void {
-        this.maps.translatePoint.x = !isNullOrUndefined(this.distanceX) ? (this.maps.translatePoint.x -
-            (this.distanceX / this.maps.scale)) : this.maps.translatePoint.x;
-        this.maps.translatePoint.y = !isNullOrUndefined(this.distanceY) ? this.maps.translatePoint.y -
-            (this.distanceY / this.maps.scale) : this.maps.translatePoint.y;
-        this.applyTransform(this.maps, false);
-    }
-
     /**
+     * @param {number} zoomFactor - Specifies the factor for zooming
+     * @param {string} type - Specifies the type
+     * @returns {void}
      * @private
      */
     public toolBarZooming(zoomFactor: number, type: string): void {
@@ -1235,7 +1254,6 @@ export class Zoom {
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
         zoomFactor = (type === 'Reset') ? minZoom : (Math.round(zoomFactor) === 0) ? 1 : zoomFactor;
         zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
-        let zoomArgs: IMapZoomEventArgs;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && Math.round(zoomFactor) <= maxZoom : zoomFactor >= minZoom
         || map.isReset)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1303,7 +1321,6 @@ export class Zoom {
                     }
                     this.markerLineAnimation(map);
                     map.mapLayerPanel.generateTiles(tileZoomFactor, map.tileTranslatePoint, type);
-                    const element1: HTMLElement = document.getElementById(this.maps.element.id + '_tiles');
                     const animationDuration: number = this.maps.layersCollection[0].animationDuration === 0 && animationMode === 'Enable' ? 1000 : this.maps.layersCollection[0].animationDuration;
                     setTimeout(() => {
                         if (type === 'ZoomOut' || type === 'Reset') {
@@ -1324,12 +1341,11 @@ export class Zoom {
     }
 
     /**
+     * @returns {void}
      * @private
      */
     public createZoomingToolbars(): void {
         const map: Maps = this.maps;
-        let zoomInElements: Element;
-        let zoomOutElements: Element;
         this.toolBarGroup = map.renderer.createGroup({
             id: map.element.id + '_Zooming_KitCollection',
             opacity: map.theme.toLowerCase() === 'fluentdark' ? 0.6 : 0.3
@@ -1387,9 +1403,8 @@ export class Zoom {
             this.currentToolbarEle.appendChild(map.renderer.drawCircle(
                 new CircleOption(map.element.id + '_Zooming_ToolBar_' + toolbar + '_Rect', button.fill, { color: borderColor, width: button.borderWidth, opacity: button.borderOpacity }, button.opacity, cx, cy, radius, '')
             ) as SVGRectElement);
-            const fillColor: string = '';
-            let opacity: number = 1;
-            let direction: string = ''; const polygonDirection: string = '';
+            const opacity: number = 1;
+            let direction: string = '';
             const fill: string = button.fill;
             this.selectionColor = this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor;
             switch (toolbar.toLowerCase()) {
@@ -1412,13 +1427,10 @@ export class Zoom {
                 } else if (!this.maps.zoomSettings.enablePanning && this.maps.zoomSettings.enableSelectionZooming) {
                     fillColor = this.maps.themeStyle.zoomFillColor;
                     strokeColor = pathStroke;
-                } else if (!this.maps.zoomSettings.enablePanning && !this.maps.zoomSettings.enableSelectionZooming) {
-                    fillColor = fill;
-                    strokeColor = pathStroke;
                 } else {
                     fillColor = this.selectionColor;
                     strokeColor = this.selectionColor;
-                }                
+                }
                 const zoomPath: Element = map.renderer.drawPath(new PathOption(
                     map.element.id + '_Zooming_ToolBar_' + toolbar, fillColor, 1, strokeColor, opacity, opacity, null,
                     direction + '4.114s-1.828,4.114-4.114,4.114S5.943,8.229,5.943,5.943z')
@@ -1430,23 +1442,25 @@ export class Zoom {
                 break;
             }
             case 'zoomin':
-                direction = 'M 8, 0 L 8, 16 M 0, 8 L 16, 8';                
+                direction = 'M 8, 0 L 8, 16 M 0, 8 L 16, 8';
+                /* eslint-disable no-case-declarations */
                 const zoomInPath: Element = map.renderer.drawPath(new PathOption(
                     map.element.id + '_Zooming_ToolBar_' + toolbar + '_Path', fill, 3, pathStroke, 1, 1, null, direction)
                 );
+                /* eslint-enable no-case-declarations */
                 zoomInPath.setAttribute('transform', 'scale( ' + scaleX + ',' + scaleX + ' )');
                 this.currentToolbarEle.appendChild(zoomInPath);
-                zoomInElements = this.currentToolbarEle;
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                 break;
             case 'zoomout':
-                direction = 'M 0, 8 L 16, 8';                
+                direction = 'M 0, 8 L 16, 8';
+                /* eslint-disable no-case-declarations */
                 const zoomOutPath: Element = map.renderer.drawPath(new PathOption(
                     map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 3, pathStroke, 1, 1, null, direction)
                 );
+                /* eslint-enable no-case-declarations */
                 zoomOutPath.setAttribute('transform', 'scale( ' + scaleX + ',' + scaleX + ' )');
                 this.currentToolbarEle.appendChild(zoomOutPath);
-                zoomOutElements = this.currentToolbarEle;
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                 break;
             case 'pan': {
@@ -1459,10 +1473,10 @@ export class Zoom {
                 } else if (!this.maps.zoomSettings.enablePanning) {
                     color = this.selectionColor || this.maps.themeStyle.zoomFillColor;
                     this.currentToolbarEle.setAttribute('class', '');
-                } 
+                }
                 else {
                     color = fill || this.maps.themeStyle.zoomFillColor;
-                }                
+                }
                 const panPath: Element = map.renderer.drawPath(new PathOption(
                     map.element.id + '_Zooming_ToolBar_' + toolbar, color, 1, pathStroke, opacity, opacity, null,
                     direction)
@@ -1478,20 +1492,24 @@ export class Zoom {
                 direction = 'M12.364,8h-2.182l2.909,3.25L16,8h-2.182c0-3.575-2.618-6.5-5.818-6.5c-1.128,0-2.218,0.366-3.091,';
                 direction += '1.016l1.055,1.178C6.581,3.328,7.272,3.125,8,3.125C10.4,3.125,12.363,5.319,12.364,8L12.364,8z M11.091,';
                 direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
+                /* eslint-disable no-case-declarations */
                 const resetPath: Element = map.renderer.drawPath(new PathOption(
                     map.element.id + '_Zooming_ToolBar_' + toolbar, fill, null, pathStroke,
                     1, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')
                 );
+                /* eslint-enable no-case-declarations */
                 resetPath.setAttribute('transform', 'scale( ' + scaleX + ',' + scaleX + ' )');
                 this.currentToolbarEle.appendChild(resetPath);
                 this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                 break;
-            }            
+            }
             this.toolBarGroup.appendChild(this.currentToolbarEle);
         }
     }
 
     /**
+     * @param {PointerEvent} e - Specifies the event in the map
+     * @returns {void}
      * @private
      */
     public performToolBarAction(e: PointerEvent): void {
@@ -1501,18 +1519,20 @@ export class Zoom {
         const toolbar: string = target.id.split('_Zooming_ToolBar_')[1].split('_')[0];
         let isToolbarPerform: boolean = true;
         switch (toolbar.toLowerCase()) {
-            case 'zoomin':
-                isToolbarPerform = (this.maps.isTileMap ? this.maps.tileZoomLevel : this.maps.scale) + 1 <= this.maps.zoomSettings.maxZoom;
-                break;
-            case 'zoomout':
-                const scaleValue: number = this.maps.isTileMap ? this.maps.tileZoomLevel : this.maps.scale;
-                isToolbarPerform = (this.maps.projectionType === 'Miller' || this.maps.projectionType === 'Winkel3' ||
+        case 'zoomin':
+            isToolbarPerform = (this.maps.isTileMap ? this.maps.tileZoomLevel : this.maps.scale) + 1 <= this.maps.zoomSettings.maxZoom;
+            break;
+        case 'zoomout':
+            /* eslint-disable no-case-declarations */
+            const scaleValue: number = this.maps.isTileMap ? this.maps.tileZoomLevel : this.maps.scale;
+            /* eslint-enable no-case-declarations */
+            isToolbarPerform = (this.maps.projectionType === 'Miller' || this.maps.projectionType === 'Winkel3' ||
                 this.maps.projectionType === 'AitOff') ? Math.round(scaleValue) - 1 >= this.maps.zoomSettings.minZoom :
                 (scaleValue) - 1 >= this.maps.zoomSettings.minZoom;
-                break;
-            case 'reset' :
-                isToolbarPerform = Math.round(this.maps.isTileMap ? this.maps.tileZoomLevel : this.maps.scale) != this.maps.zoomSettings.minZoom;
-                break;
+            break;
+        case 'reset' :
+            isToolbarPerform = Math.round(this.maps.isTileMap ? this.maps.tileZoomLevel : this.maps.scale) !== this.maps.zoomSettings.minZoom;
+            break;
         }
         if (isTouch && isToolbarPerform) {
             this.handled = true;
@@ -1571,7 +1591,7 @@ export class Zoom {
                 } else if (scale === 1 && !this.maps.isTileMap) {
                     this.applySelection(this.zoomElements, stateColor);
                     this.applySelection(this.panElements, stateColor);
-                } 
+                }
             }
             break;
         case 'zoomout':
@@ -1640,6 +1660,8 @@ export class Zoom {
     }
 
     /**
+     * @param {PointerEvent} e - Specifies the event in the map
+     * @returns {void}
      * @private
      */
     public showTooltip(e: PointerEvent): void {
@@ -1669,6 +1691,7 @@ export class Zoom {
     }
 
     /**
+     * @returns {void}
      * @private
      */
     public removeTooltip(): void {
@@ -1677,6 +1700,7 @@ export class Zoom {
         }
     }
     /**
+     * @returns {void}
      * @private
      */
     public alignToolBar(): void {
@@ -1735,6 +1759,9 @@ export class Zoom {
     }
 
     /**
+     * @param {number} factor - Specifies the factor for toolbar
+     * @param {string} id - Specifies the id
+     * @returns {void}
      * @private
      */
     public removeToolbarOpacity(factor: number, id: string): void {
@@ -1745,27 +1772,27 @@ export class Zoom {
                     this.removeToolbarClass('', '', '', '', '');
                 } else {
                     this.removeToolbarClass(this.maps.zoomSettings.enableSelectionZooming ? 'e-maps-toolbar' : '', 'e-maps-toolbar', 'e-maps-toolbar',
-                        this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', 'e-maps-toolbar');
+                                            this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', 'e-maps-toolbar');
                 }
-                let toolbarShapeOpacity: number = this.maps.toolbarProperties.shapeOpacity;
-                let toolbarButtonOpacity: number = this.maps.toolbarProperties.borderOpacity;
+                const toolbarShapeOpacity: number = this.maps.toolbarProperties.shapeOpacity;
+                const toolbarButtonOpacity: number = this.maps.toolbarProperties.borderOpacity;
 
                 if (this.maps.isTileMap && (factor <= 1.1 || this.maps.zoomSettings.minZoom === factor)) {
                     if (!this.maps.isDevice) {
                         this.removeToolbarClass(this.maps.zoomSettings.enableSelectionZooming ? 'e-maps-toolbar' : '', 'e-maps-toolbar', '',
-                            this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', '');
+                                                this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', '');
                     }
                     if (this.maps.zoomSettings.enablePanning) {
                         this.removePanColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor);
                     }
                     if (this.isZoomSelection && this.maps.zoomSettings.enableSelectionZooming && !this.maps.isReset) {
-                        this.removeZoomColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor)
+                        this.removeZoomColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor);
                         this.removePanColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
                     }
                     this.removeZoomOpacity((this.maps.zoomSettings.enableSelectionZooming ? toolbarShapeOpacity : 0.3),
-                        (this.maps.zoomSettings.enableSelectionZooming ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity,
-                        0.3, 0.3, (this.maps.zoomSettings.enablePanning ? toolbarShapeOpacity : 0.3),
-                        (this.maps.zoomSettings.enablePanning ? toolbarButtonOpacity : 0.3), 0.3, 0.3);
+                                           (this.maps.zoomSettings.enableSelectionZooming ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity,
+                                           0.3, 0.3, (this.maps.zoomSettings.enablePanning ? toolbarShapeOpacity : 0.3),
+                                           (this.maps.zoomSettings.enablePanning ? toolbarButtonOpacity : 0.3), 0.3, 0.3);
 
                 } else if ((factor <= 1.1 || this.maps.zoomSettings.minZoom === factor)) {
                     if (!this.maps.isDevice) {
@@ -1775,33 +1802,33 @@ export class Zoom {
                         this.removePanColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
                     }
                     if (this.isZoomSelection && this.maps.zoomSettings.enableSelectionZooming && !this.maps.isReset) {
-                        this.removeZoomColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor)
+                        this.removeZoomColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor);
                         this.removePanColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
                     }
                     this.removeZoomOpacity((this.maps.zoomSettings.enableSelectionZooming ? toolbarShapeOpacity : 0.3),
-                        (this.maps.zoomSettings.enableSelectionZooming ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity,
-                        0.3, 0.3, 0.3, 0.3, 0.3, 0.3);
+                                           (this.maps.zoomSettings.enableSelectionZooming ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity,
+                                           0.3, 0.3, 0.3, 0.3, 0.3, 0.3);
 
                 } else if (factor < this.maps.zoomSettings.maxZoom) {
                     if (!this.maps.isDevice) {
                         this.removeToolbarClass(this.maps.zoomSettings.enableSelectionZooming ? 'e-maps-toolbar' : '', 'e-maps-toolbar', 'e-maps-toolbar',
-                            this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', 'e-maps-toolbar');
+                                                this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', 'e-maps-toolbar');
                     }
                     if (!this.maps.zoomModule.isZoomFinal) {
                         this.removeZoomOpacity((this.maps.zoomSettings.enableSelectionZooming ? toolbarShapeOpacity : 0.3),
-                            (this.maps.zoomSettings.enableSelectionZooming ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity,
-                            toolbarShapeOpacity, toolbarButtonOpacity, (this.maps.zoomSettings.enablePanning ? toolbarShapeOpacity : 0.3),
-                            (this.maps.zoomSettings.enablePanning ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity);
+                                               (this.maps.zoomSettings.enableSelectionZooming ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity,
+                                               toolbarShapeOpacity, toolbarButtonOpacity, (this.maps.zoomSettings.enablePanning ? toolbarShapeOpacity : 0.3),
+                                               (this.maps.zoomSettings.enablePanning ? toolbarButtonOpacity : 0.3), toolbarShapeOpacity, toolbarButtonOpacity);
                     } else {
                         this.maps.zoomModule.isZoomFinal = false;
                     }
                     if (this.isZoomSelection && this.maps.zoomSettings.enableSelectionZooming) {
-                        this.removeZoomColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor)
+                        this.removeZoomColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor);
                         if (this.maps.zoomModule.isPan && this.maps.zoomSettings.enablePanning) {
                             this.removePanColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
                         }
                     } else if (!this.isZoomSelection && this.maps.zoomSettings.enablePanning) {
-                        this.removePanColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor)
+                        this.removePanColor(this.maps.toolbarProperties.selectionColor || this.maps.themeStyle.zoomSelectionColor);
                         if (this.maps.zoomSettings.enableSelectionZooming) {
                             this.removeZoomColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
                         }
@@ -1811,8 +1838,8 @@ export class Zoom {
                         this.removeToolbarClass('', '', 'e-maps-toolbar', this.maps.zoomSettings.enablePanning ? 'e-maps-toolbar' : '', 'e-maps-toolbar');
                     }
                     this.removeZoomOpacity(0.3, 0.3, 0.3, 0.3, toolbarShapeOpacity, toolbarButtonOpacity,
-                        (this.maps.zoomSettings.enablePanning ? toolbarShapeOpacity : 0.3), (this.maps.zoomSettings.enablePanning ? toolbarButtonOpacity : 0.3),
-                        toolbarShapeOpacity, toolbarButtonOpacity);
+                                           (this.maps.zoomSettings.enablePanning ? toolbarShapeOpacity : 0.3), (this.maps.zoomSettings.enablePanning ? toolbarButtonOpacity : 0.3),
+                                           toolbarShapeOpacity, toolbarButtonOpacity);
                     if (this.maps.zoomSettings.enableSelectionZooming) {
                         this.removeZoomColor(this.maps.toolbarProperties.color || this.maps.themeStyle.zoomFillColor);
                     }
@@ -1840,18 +1867,24 @@ export class Zoom {
     }
 
     private removeZoomOpacity(zoomOpacity: number, zoomStrokeOpacity: number, zoomInOpacity: number, zoomInStrokeOpacity: number, zoomOutOpacity: number,
-        zoomOutStrokeOpacity: number, panOpacity: number, panStrokeOpacity: number, resetOpacity: number, resetStrokeOpacity: number): void {
+                              zoomOutStrokeOpacity: number, panOpacity: number, panStrokeOpacity: number, resetOpacity: number, resetStrokeOpacity: number): void {
         this.setOpacity('_Zooming_ToolBar_Zoom_Rect', '_Zooming_ToolBar_Zoom', zoomStrokeOpacity, zoomOpacity);
         this.setOpacity('_Zooming_ToolBar_ZoomIn_Rect', '_Zooming_ToolBar_ZoomIn_Path', zoomInStrokeOpacity, zoomInOpacity);
         this.setOpacity('_Zooming_ToolBar_ZoomOut_Rect', '_Zooming_ToolBar_ZoomOut', zoomOutStrokeOpacity, zoomOutOpacity);
         this.setOpacity('_Zooming_ToolBar_Pan_Rect', '_Zooming_ToolBar_Pan', panStrokeOpacity, panOpacity);
-        this.setOpacity('_Zooming_ToolBar_Reset_Rect', '_Zooming_ToolBar_Reset', resetStrokeOpacity, resetOpacity);        
+        this.setOpacity('_Zooming_ToolBar_Reset_Rect', '_Zooming_ToolBar_Reset', resetStrokeOpacity, resetOpacity);
     }
     /**
-     * @private 
+     * @param {string} zoomClassStyle - Specifies the style for zoom class.
+     * @param {string} zoomInClassStyle - Specifies the style for zoom in.
+     * @param {string} zoomOutClassStyle - Specifies the style for zoom out.
+     * @param {string} panClassStyle -  Specifies the style for pan.
+     * @param {string} resetClassStyle - Specifies the style for reset.
+     * @returns {void}
+     * @private
      */
     public removeToolbarClass(zoomClassStyle: string, zoomInClassStyle: string, zoomOutClassStyle: string,
-        panClassStyle: string, resetClassStyle: string): void {
+                              panClassStyle: string, resetClassStyle: string): void {
         if (getElementByID(this.maps.element.id + '_Zooming_KitCollection')) {
             if (document.getElementById(this.maps.element.id + '_Zooming_ToolBar_ZoomIn_Group')) {
                 getElementByID(this.maps.element.id + '_Zooming_ToolBar_ZoomIn_Group').setAttribute('class', zoomInClassStyle);
@@ -1887,31 +1920,31 @@ export class Zoom {
      * To bind events.
      *
      * @param {Element} element - Specifies the element.
-     * @param {any} process - Specifies the process.
+     * @param {Function} process - Specifies the process.
      * @returns {void}
      * @private
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public wireEvents(element: Element, process: any): void {
+    public wireEvents(element: Element, process: Function): void {
         EventHandler.add(element, Browser.touchStartEvent, process, this);
         EventHandler.add(element, 'mouseover', this.showTooltip, this);
         EventHandler.add(element, 'mouseout', this.removeTooltip, this);
     }
 
     /**
+     * @param {WheelEvent} e - Specifies the wheel event in the map for zooming
+     * @returns {void}
      * @private
      */
     public mapMouseWheel(e: WheelEvent): void {
         if (this.maps.zoomSettings.enable && this.maps.zoomSettings.mouseWheelZoom) {
             const map: Maps = this.maps;
-            const size: Size = map.availableSize;
             map.markerZoomedState = false;
             map.zoomPersistence = map.enablePersistence;
             const position: Point = this.getMousePosition(e.pageX, e.pageY);
             const prevLevel: number = map.tileZoomLevel;
             const prevScale: number = map.scale;
             const delta: number = 1;
-            const staticMaxZoomLevel : number = 22; // google map maximum zoom level value
+            const staticMaxZoomLevel : number =  map.zoomSettings.maxZoom;
             const value: number = (map.isTileMap) ? prevLevel : prevScale;
             if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
                 (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
@@ -1924,8 +1957,8 @@ export class Zoom {
                     map.staticMapZoom = map.tileZoomLevel;
                     if (map.staticMapZoom > 0 && map.staticMapZoom < staticMaxZoomLevel) {
                         map.staticMapZoom += 1;
+                        this.performZooming(position, (value + delta), direction);
                     }
-                    this.performZooming(position, (value + delta), direction);
                 } else {
                     map.mapScaleValue = value - delta;
                     map.isReset = (map.mapScaleValue < 1) ? true : false;
@@ -1941,23 +1974,23 @@ export class Zoom {
                 }
             }
             this.removeToolbarOpacity(map.mapScaleValue, (!this.maps.isDevice ? (!isNullOrUndefined(e.target) ?  e.target['id'] :
-            this.maps.element.id) : this.maps.element.id + '_Zooming_'));
+                this.maps.element.id) : this.maps.element.id + '_Zooming_'));
         }
     }
 
     /**
+     * @param {PointerEvent} e - Specifies the event in the map
+     * @returns {void}
      * @private
      */
     public doubleClick(e: PointerEvent): void {
         const pageX: number = e.pageX;
         const pageY: number = e.pageY;
-        const target: Element = <Element>(<PointerEvent>e).target;
-        let tooltipElement: Element = (e.target as HTMLElement).closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
+        const tooltipElement: Element = (e.target as HTMLElement).closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
         if (this.maps.zoomSettings.enable && this.maps.zoomSettings.doubleClickZoom
             && !(e.target['id'].indexOf('_Zooming_') > -1) && isNullOrUndefined(tooltipElement)) {
             const position: Point = this.getMousePosition(pageX, pageY);
             const map: Maps = this.maps;
-            const size: Size = map.availableSize;
             const prevLevel: number = map.tileZoomLevel;
             const prevScale: number = map.scale;
             map.mapScaleValue = map.mapScaleValue + 1;
@@ -1970,6 +2003,8 @@ export class Zoom {
     }
 
     /**
+     * @param {PointerEvent} e - Specifies the event in the map
+     * @returns {void}
      * @private
      */
     public mouseDownHandler(e: PointerEvent | TouchEvent): void {
@@ -1977,6 +2012,7 @@ export class Zoom {
         let pageY: number;
         let target: Element;
         let touches: TouchList = null;
+        //eslint-disable-next-line @typescript-eslint/no-unused-vars
         const element: Element = <Element>e.target;
         if (e.type === 'touchstart') {
             this.isTouch = true;
@@ -1987,6 +2023,7 @@ export class Zoom {
         } else {
             pageX = (<PointerEvent>e).pageX;
             pageY = (<PointerEvent>e).pageY;
+            //eslint-disable-next-line @typescript-eslint/no-unused-vars
             target = <Element>e.target;
         }
         if (!this.maps.zoomSettings.enablePanning) {
@@ -1995,11 +2032,11 @@ export class Zoom {
         } else {
             this.isPan = this.isPanModeEnabled = !this.isZoomSelection;
         }
-        this.mouseDownLatLong = { x: pageX, y: pageY };        
-        let scale: number = this.maps.isTileMap ? Math.round(this.maps.tileZoomLevel) : Math.round(this.maps.mapScaleValue);
+        this.mouseDownLatLong = { x: pageX, y: pageY };
+        const scale: number = this.maps.isTileMap ? Math.round(this.maps.tileZoomLevel) : Math.round(this.maps.mapScaleValue);
         this.rectZoomingStart = ((this.isZoomSelection && scale < this.maps.zoomSettings.maxZoom) && this.maps.zoomSettings.enable);
         this.mouseDownPoints = this.getMousePosition(pageX, pageY);
-        if (this.isTouch) {
+        if (this.isTouch && touches !== null) {
             this.firstMove = true;
             this.pinchFactor = this.maps.scale;
             this.fingers = touches.length;
@@ -2008,12 +2045,15 @@ export class Zoom {
     }
 
     /**
+     * @param {PointerEvent} e - Specifies the event in the map
+     * @returns {void}
      * @private
      */
     public mouseMoveHandler(e: PointerEvent | TouchEvent): void {
         let pageX: number;
         let pageY: number;
         const map: Maps = this.maps;
+        //eslint-disable-next-line @typescript-eslint/no-unused-vars
         let touchArg: TouchEvent;
         let target: Element;
         let touches: TouchList = null;
@@ -2034,11 +2074,11 @@ export class Zoom {
                 getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', '1');
             }
             else if (!map.isDevice) {
-                getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', map.theme.toLowerCase() === 'fluentdark' ? '0.6' : '0.3');                
+                getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', map.theme.toLowerCase() === 'fluentdark' ? '0.6' : '0.3');
             }
         }
         if (this.isTouch) {
-            if (this.maps.zoomSettings.pinchZooming) {
+            if (this.maps.zoomSettings.pinchZooming && touches !== null) {
                 if (this.firstMove && touches.length === 2) {
                     this.rectZoomingStart = false;
                     this.updateInteraction();
@@ -2053,9 +2093,7 @@ export class Zoom {
             }
         }
         this.mouseMovePoints = this.getMousePosition(pageX, pageY);
-        const targetId: string = e.target['id'];
-        const targetEle: Element = <Element>e.target;
-        if (zoom.enable && this.isPanModeEnabled && this.maps.markerDragId.indexOf('_MarkerIndex_') == -1 && ((Browser.isDevice && touches.length >= 1) || !Browser.isDevice)) {
+        if (zoom.enable && this.isPanModeEnabled && this.maps.markerDragId.indexOf('_MarkerIndex_') === -1 && ((Browser.isDevice && touches.length >= 1) || !Browser.isDevice)) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };
@@ -2067,9 +2105,9 @@ export class Zoom {
                 this.mouseDownLatLong['y'] = pageY;
             }
         }
-        if (this.isTouch ? (touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart) {
+        if (this.isTouch ? (touches !== null && touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart) {
             e.preventDefault();
-            let scale : number = this.maps.isTileMap ? Math.round(this.maps.tileZoomLevel) : Math.round(this.maps.mapScaleValue);
+            const scale : number = this.maps.isTileMap ? Math.round(this.maps.tileZoomLevel) : Math.round(this.maps.mapScaleValue);
             if (this.maps.zoomSettings.enableSelectionZooming && scale < this.maps.zoomSettings.maxZoom) {
                 this.drawZoomRectangle();
             }
@@ -2081,11 +2119,11 @@ export class Zoom {
     }
 
     /**
+     * @param {PointerEvent} e - Specifies the event in the map
+     * @returns {void}
      * @private
      */
     public mouseUpHandler(e: PointerEvent | TouchEvent): void {
-        let isDragZoom: boolean;
-        const map: Maps = this.maps;
         this.rectZoomingStart = false;
         this.isSingleClick = this.isSingleClick ? true : false;
         this.isTouch = false;
@@ -2093,7 +2131,6 @@ export class Zoom {
         this.touchMoveList = [];
         this.lastScale = 1;
         this.maps.element.style.cursor = 'auto';
-        // eslint-disable-next-line max-len
         if (this.isPanModeEnabled && this.maps.zoomSettings.enablePanning && !isNullOrUndefined(this.maps.previousPoint) &&
             (this.maps.translatePoint.x !== this.maps.previousPoint.x && this.maps.translatePoint.y !== this.maps.previousPoint.y)) {
             let pageX: number;
@@ -2101,10 +2138,9 @@ export class Zoom {
             let layerX: number = 0;
             let layerY: number = 0;
             let target: Element;
-            const rect: ClientRect = this.maps.element.getBoundingClientRect();
             const element: Element = <Element>e.target;
             if (e.type.indexOf('touch') !== - 1) {
-                let touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
+                const touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
                 layerX = pageX = touchArg.changedTouches[0].pageX;
                 pageY = touchArg.changedTouches[0].pageY;
                 layerY = pageY - (this.maps.isTileMap ? 10 : 0);
@@ -2115,6 +2151,7 @@ export class Zoom {
                 pageY = (e as PointerEvent).pageY;
                 layerX = e['layerX'];
                 layerY = e['layerY'] - (this.maps.isTileMap ? 10 : 0);
+                //eslint-disable-next-line @typescript-eslint/no-unused-vars
                 target = <Element>e.target;
             }
             let panCompleteEventArgs: IMapPanEventArgs;
@@ -2127,7 +2164,7 @@ export class Zoom {
                     cancel: false, name: 'panComplete', maps: this.maps,
                     tileTranslatePoint: {}, translatePoint: { previous: this.maps.previousPoint, current: this.maps.translatePoint },
                     scale: this.maps.scale, tileZoomLevel: this.maps.tileZoomLevel, latitude: !isNullOrUndefined(location) ?
-                    location.latitude : 0, longitude: !isNullOrUndefined(location) ? location.longitude : 0,
+                        location.latitude : 0, longitude: !isNullOrUndefined(location) ? location.longitude : 0,
                     minLatitude: minMaxLatitudeLongitude.minLatitude, maxLatitude: minMaxLatitudeLongitude.maxLatitude,
                     minLongitude: minMaxLatitudeLongitude.minLongitude, maxLongitude: minMaxLatitudeLongitude.maxLongitude
                 };
@@ -2145,23 +2182,22 @@ export class Zoom {
             this.maps.trigger('panComplete', panCompleteEventArgs);
         }
         this.isPanModeEnabled = false;
-        if ((!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) && (!isNullOrUndefined(this.currentLayer) && this.currentLayer.type === 'SubLayer')) {
-            this.toAlignSublayer();
-            this.distanceX = this.distanceY = null;
-        }
         const zoomRectElement: HTMLElement = <HTMLElement>getElementByID(this.maps.element.id + '_Selection_Rect_Zooming');
         if (zoomRectElement && this.maps.zoomSettings.enable && this.maps.zoomSettings.enableSelectionZooming) {
-            isDragZoom = true;
             remove(zoomRectElement);
             this.performRectZooming();
         }
         this.mouseMoveLatLong = { x: 0, y: 0 };
         this.mouseDownLatLong = { x: 0, y: 0 };
+        this.pinchDistance = null;
     }
 
     /**
+     * @param {PointerEvent} e - Specifies the event in the map
+     * @returns {void}
      * @private
      */
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     public mouseCancelHandler(e: PointerEvent): void {
         this.isPanModeEnabled = false;
         this.isTouch = false;
@@ -2181,7 +2217,7 @@ export class Zoom {
      */
     public click(e: PointerEvent): void {
         const map: Maps = this.maps;
-        let tooltipElement: Element = (e.target as HTMLElement).closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
+        const tooltipElement: Element = (e.target as HTMLElement).closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
         if ((map.markerModule && map.markerModule.sameMarkerData.length > 0) ||
             (e.target['id'].indexOf('MarkerIndex') > -1 && e.target['id'].indexOf('cluster') === -1) || !isNullOrUndefined(tooltipElement)) {
             return null;
@@ -2203,6 +2239,11 @@ export class Zoom {
     }
 
     /**
+     * Gets the Mouse Position
+     *
+     * @param {number} pageX - Specifies the Page x in map
+     * @param {number} pageY - Specifies the Page y in map
+     * @returns {Point} - returns the mouse point position
      * @private
      */
     public getMousePosition(pageX: number, pageY: number): Point {
@@ -2218,6 +2259,7 @@ export class Zoom {
     }
 
     /**
+     * @returns {void}
      * @private
      */
     public addEventListener(): void {
@@ -2234,6 +2276,7 @@ export class Zoom {
     }
 
     /**
+     * @returns {void}
      * @private
      */
     public removeEventListener(): void {
@@ -2282,6 +2325,7 @@ export class Zoom {
         this.removeEventListener();
         this.layerCollectionEle = null;
         this.currentLayer = null;
+        this.pinchDistance = null;
         this.maps = null;
     }
 }

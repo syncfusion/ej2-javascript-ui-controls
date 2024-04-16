@@ -2242,6 +2242,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                         alignClass = 'e-right-align';
                     }
                     value = args.result;
+                    if (!this.allowWrap) {
+                        if (value.toString().includes('\n')) {
+                            value = value.replace(/\n/g, '');
+                        }
+                    }
                     if (args.isRightAlign) {
                         td.classList.add(alignClass);
                     } else {

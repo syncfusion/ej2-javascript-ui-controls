@@ -83,7 +83,10 @@ export class PdfPage {
             if (this._pageDictionary.has('Annots')) {
                 const annots: Array<_PdfReference> = this._getProperty('Annots');
                 if (annots && Array.isArray(annots)) {
-                    const widgets: Array<_PdfReference> = this._crossReference._document.form._parseWidgetReferences();
+                    let widgets: Array<_PdfReference>;
+                    if (this._crossReference._document._catalog._catalogDictionary.has('AcroForm')) {
+                        widgets = this._crossReference._document.form._parseWidgetReferences();
+                    }
                     if (widgets && widgets.length > 0) {
                         const validAnnotations: _PdfReference[] = [];
                         annots.forEach((entry: _PdfReference) => {

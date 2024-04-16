@@ -128,6 +128,7 @@ export class NavigationLine {
                     pathOption = new PathOption(arcId, 'none', width, color, 1, 1, dashArray, d);
                     navigationEle = this.maps.renderer.drawPath(pathOption) as SVGLineElement;
                     if (!isNullOrUndefined(arrowPosition)) {
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         const position: void = (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)
                             : navigationEle.setAttribute('marker-end', endArrow);
                     }

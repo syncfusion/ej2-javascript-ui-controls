@@ -167,7 +167,7 @@ export class Annotations {
      * @param {Element} element - Specifies the element.
      * @param {LinearGauge} gauge - Specifies the instance of gauge.
      * @returns {void}
-     * 
+     *
      * @private
      */
     public annotationAnimate(element: Element, gauge: LinearGauge): void {

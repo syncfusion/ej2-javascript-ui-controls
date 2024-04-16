@@ -821,13 +821,14 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
             return innerEle;
         }
         if (item.header && this.angularnativeCondiCheck(item, 'header')) {
+            let header: string = item.header;
             if (this.enableHtmlSanitizer && typeof (item.header) === 'string') {
-                item.header = SanitizeHtmlHelper.sanitize(item.header);
+                header = SanitizeHtmlHelper.sanitize(item.header);
             }
             const ctnEle: HTEle = this.headerEleGenerate();
             const hdrEle: HTEle = this.createElement('div', { className: CLS_HEADERCTN });
             ctnEle.appendChild(hdrEle);
-            ctnEle.appendChild(this.fetchElement(hdrEle, item.header, index));
+            ctnEle.appendChild(this.fetchElement(hdrEle, header, index));
             innerEle.appendChild(ctnEle);
         }
         let hdr: HTEle = <HTEle>select('.' + CLS_HEADER, innerEle);

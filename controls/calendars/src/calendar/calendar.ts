@@ -634,8 +634,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
     private removeContentFocus(args: any): void {
-        const focusedDate: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
-        const selectedDate: Element = this.tableBodyElement.querySelector('tr td.e-selected');
+        const focusedDate: Element = !isNullOrUndefined(this.tableBodyElement) ? this.tableBodyElement.querySelector('tr td.e-focused-date') : null;
+        const selectedDate: Element = !isNullOrUndefined(this.tableBodyElement) ? this.tableBodyElement.querySelector('tr td.e-selected') : null;
         if (!isNullOrUndefined(selectedDate)) {
             selectedDate.classList.remove(FOCUSEDCELL);
         }

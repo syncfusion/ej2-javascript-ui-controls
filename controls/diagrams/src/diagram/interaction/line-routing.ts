@@ -203,14 +203,14 @@ export class LineRouting {
      * @private
      */
     public refreshConnectorSegments(
-        diagram: Diagram, connector: Connector, isUpdate: boolean): void {
+        diagram: Diagram, connector: Connector, isUpdate: boolean,isEnableRouting?: boolean): void {
         const sourceId: string = connector.sourceID; const targetId: string = connector.targetID;
         const sourcePortID: string = connector.sourcePortID; const targetPortID: string = connector.targetPortID;
         let startPoint: PointModel; let targetPoint: PointModel; let sourcePortDirection: string; let targetPortDirection: string;
         let grid: VirtualBoundaries; let sourceTop: VirtualBoundaries; let sourceBottom: VirtualBoundaries; let isBreak: boolean;
         let sourceLeft: VirtualBoundaries; let sourceRight: VirtualBoundaries; let targetRight: VirtualBoundaries;
         let targetTop: VirtualBoundaries; let targetBottom: VirtualBoundaries; let targetLeft: VirtualBoundaries;
-        if (canEnableRouting(connector, diagram)) {
+        if (canEnableRouting(connector, diagram) || isEnableRouting) {
             this.startNode = diagram.nameTable[`${sourceId}`]; this.targetNode = diagram.nameTable[`${targetId}`];
             this.intermediatePoints = []; this.startArray = []; this.targetGridCollection = []; this.sourceGridCollection = [];
             this.startGrid = undefined; this.targetGrid = undefined;

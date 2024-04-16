@@ -355,6 +355,7 @@ export class Resize {
                 cellEle.textContent = content;
                 cellEle.style.fontFamily = (cell.style && cell.style.fontFamily) || this.parent.cellStyle.fontFamily;
                 cellEle.style.fontSize = (cell.style && cell.style.fontSize) || this.parent.cellStyle.fontSize;
+                cellEle.style.fontWeight = (cell.style && cell.style.fontWeight) || this.parent.cellStyle.fontWeight;
                 row = <HTMLElement>rowEle.cloneNode();
                 row.appendChild(cellEle);
                 tBody.appendChild(row);

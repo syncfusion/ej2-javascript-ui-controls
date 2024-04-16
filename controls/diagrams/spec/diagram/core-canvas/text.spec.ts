@@ -6,6 +6,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { TextElement } from '../../../src/diagram/core/elements/text-element';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { NodeModel, Rect, DiagramElement } from '../../../src';
+import { MouseEvents } from '../interaction/mouseevents.spec';
 
 /**
  * Text Element
@@ -385,5 +386,51 @@ describe('Diagram Control', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+
+    describe('879137: Annotaiton text edit', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramtextEdit' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node',
+                    offsetX: 100, offsetY: 100,
+                    height: 100,
+                    width: 100,
+                    annotations: [{ id: "annotation", content: "Edit" }]
+                }
+            ];
+
+            diagram = new Diagram({
+                width: '80%',
+                height: '600px',
+                nodes: nodes,
+            });
+            diagram.appendTo('#diagramtextEdit');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('check the aria-label value in text-edit mode', (done: Function) => {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            expect(diagram.nodes.length).toBe(1);
+            diagram.select([diagram.nodes[0]]);
+            mouseEvents.clickEvent(diagramCanvas, 100, 100);
+            mouseEvents.dblclickEvent(diagramCanvas, 100, 100);
+            const textElement = document.getElementById('node_annotation_text');
+            let flag: boolean = false;
+            // Check if the aria-label attribute is present
+            if (textElement.hasAttribute('aria-label')) {
+                flag = true;
+            }
+            expect(flag).toBe(true);
+            done();
+        });
+        
     });
 });

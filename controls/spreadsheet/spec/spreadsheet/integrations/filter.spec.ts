@@ -26,18 +26,16 @@ describe('Filter ->', () => {
             focus(helper.invoke('getCell', [0, 5]));
             helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
             setTimeout(() => {
-                const searchEle: HTMLInputElement = helper.getElementFromSpreadsheet('.e-searchinput') as HTMLInputElement;
-                searchEle.value = '20';
-                const excelFilter: HTMLElement = helper.getElementFromSpreadsheet('.e-excelfilter');
-                helper.triggerMouseAction('click', { x: 0, y: 0 }, excelFilter, helper.getElementFromSpreadsheet('.e-searchclear'));
                 setTimeout(() => {
+                    const searchEle: HTMLInputElement = helper.getElementFromSpreadsheet('.e-searchinput') as HTMLInputElement;
+                    searchEle.value = '20';
                     const spreadsheet: any = helper.getInstance();
+                    spreadsheet.notify(refreshCheckbox, { event: { type: 'keyup', target: searchEle } });
                     expect(spreadsheet.filterModule.filterRange.size).toBe(1);
                     expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(1);
                     expect(spreadsheet.filterModule.filterCollection.get(0)[0].value).toBe('10');
-                    helper.triggerMouseAction(
-                        'click', { x: 0, y: 0 }, helper.getElementFromSpreadsheet('.e-excelfilter'),
-                        helper.getElementFromSpreadsheet('.e-add-current'));
+                    helper.getElementFromSpreadsheet('.e-add-current').click();
+                    const excelFilter: HTMLElement = helper.getElementFromSpreadsheet('.e-excelfilter');
                     (excelFilter.querySelector('.e-btn.e-primary') as HTMLElement).click();
                     expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(2);
                     expect(spreadsheet.filterModule.filterCollection.get(0)[0].value).toBe('10');

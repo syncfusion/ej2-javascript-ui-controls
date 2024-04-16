@@ -1,6 +1,6 @@
 import { _PdfStream } from './base-stream';
 import { _PdfDictionary, _PdfReferenceSet, _isCommand, _PdfReference, _PdfCommand, _PdfName } from './pdf-primitives';
-import { BaseException, FormatError, _escapePdfName, _bytesToString, ParserEndOfFileException, _numberToString, _stringToPdfString } from './utils';
+import { BaseException, FormatError, _escapePdfName, _bytesToString, ParserEndOfFileException, _numberToString, _stringToPdfString, _getSize } from './utils';
 import { _PdfParser, _PdfLexicalOperator } from './pdf-parser';
 import { _PdfBaseStream } from './base-stream';
 import { PdfCrossReferenceType } from './enumerator';
@@ -747,39 +747,40 @@ export class _PdfCrossReference {
                 }
                 this._writeObject(archiveStream, buffer, archiveRef, cipher);
             }
+            const formatValue: number = Math.max(_getSize(this._stream.bytes.length), _getSize(this._nextReferenceNumber));
             const newRef: _PdfReference = this._getNextReference();
             const newStartXref: number = currentLength + buffer.length;
             const newXref: _PdfDictionary = new _PdfDictionary(this);
             newXref.set('Type', _PdfName.get('XRef'));
             newXref.set('Index', indexes);
-            newXref.set('W', [1, 3, 1]);
+            newXref.set('W', [1, formatValue, 1]);
             this._copyTrailer(newXref);
             if (this._ids && this._ids.length > 0) {
                 newXref.update('ID', [this._ids[0], this._computeMessageDigest(newStartXref)]);
             }
             const newXrefData: Array<number> = [];
             this._writeLong(0, 1, newXrefData);
-            this._writeLong(1, 3, newXrefData);
+            this._writeLong(1, formatValue, newXrefData);
             this._writeLong(-1, 1, newXrefData);
             if (uncompressedCount > 0) {
                 for (let index: number = 0; index < uncompressedCount; index++) {
                     this._writeLong(1, 1, newXrefData);
-                    this._writeLong(uncompressedOffsets[index], 3, newXrefData); // eslint-disable-line
+                    this._writeLong(uncompressedOffsets[index], formatValue, newXrefData); // eslint-disable-line
                     this._writeLong(0, 1, newXrefData);
                 }
             }
             if (updatedCount > 0) {
                 for (let index: number = 0; index < updatedCount; index++) {
                     this._writeLong(2, 1, newXrefData);
-                    this._writeLong(archiveRef.objectNumber, 3, newXrefData);
+                    this._writeLong(archiveRef.objectNumber, formatValue, newXrefData);
                     this._writeLong(index, 1, newXrefData);
                 }
                 this._writeLong(1, 1, newXrefData);
-                this._writeLong(archiveOffset, 3, newXrefData);
+                this._writeLong(archiveOffset, formatValue, newXrefData);
                 this._writeLong(0, 1, newXrefData);
             }
             this._writeLong(1, 1, newXrefData);
-            this._writeLong(newStartXref, 3, newXrefData);
+            this._writeLong(newStartXref, formatValue, newXrefData);
             this._writeLong(0, 1, newXrefData);
             newXref.set('Length', newXrefData.length);
             const newXrefStream: _PdfStream = new _PdfStream(newXrefData, newXref, 0, newXrefData.length);
@@ -829,7 +830,8 @@ export class _PdfCrossReference {
         return array;
     }
     _copyTrailer(newXref: _PdfDictionary): void {
-        newXref.set('Size', this._nextReferenceNumber);
+        const reference: _PdfReference = this._getNextReference();
+        newXref.set('Size', reference.objectNumber);
         newXref.set('Prev', this._prevXRefOffset);
         const root: any = this._trailer.getRaw('Root'); // eslint-disable-line
         if (typeof root !== 'undefined' && root !== null) {

@@ -600,7 +600,7 @@ export class MarkerClusterSettings extends ChildProperty<MarkerClusterSettings> 
      * Enables or disables intense marker clustering for improved accuracy.
      * The default value is true, and clustering logic will be executed twice for improved accuracy.
      * If set to false, the clustering logic will only be executed once, increasing performance while maintaining decent accuracy.
-     * 
+     *
      * @default true
      */
     @Property(true)
@@ -952,14 +952,14 @@ export class PolygonSetting extends ChildProperty<PolygonSettings> {
      */
     @Property([])
     public points: Coordinate[];
-        /**
+    /**
      * Specifies the tooltip text to be displayed for the polygon shape. If it is not set, the tooltip will not be displayed.
      *
      * @default ''
      */
     @Property('')
     public tooltipText: string;
-        /**
+    /**
      * Specifies any HTML content as a tooltip on the polygon shape. If it is not set, the tooltip will not be displayed.
      *
      * @default ''
@@ -990,7 +990,7 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
     @Complex<HighlightSettingsModel>({}, HighlightSettings)
     public highlightSettings: HighlightSettingsModel;
     /**
-     * Specifies the properties such as visibility, fill, border and text style to customize the tooltip. 
+     * Specifies the properties such as visibility, fill, border and text style to customize the tooltip.
      */
     @Complex<PolygonTooltipSettingsModel>({}, PolygonTooltipSettings)
     public tooltipSettings: PolygonTooltipSettingsModel;
@@ -1328,6 +1328,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public verticalAlignment: Alignment;
     /**
      * Gets or sets the items that are to be shown in the zooming toolbar of the maps. Zoom-in, zoom-out and reset buttons are displayed by default.
+     *
      * @deprecated
      */
     @Property(['ZoomIn', 'ZoomOut', 'Reset'])
@@ -2048,10 +2049,12 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
  * Gets or sets the options to customize the markers in the maps.
  */
 export class MarkerSettings extends MarkerBase {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
+    // eslint-enable @typescript-eslint/no-explicit-any
+    // eslint-enable @typescript-eslint/explicit-module-boundary-types
 }
 
 /**

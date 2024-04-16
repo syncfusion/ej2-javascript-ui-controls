@@ -7278,9 +7278,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.element.getElementsByClassName('e-cloneproperties').length || this.checkEdit(e)) {
             return;
         }
-        if (((!this.allowRowDragAndDrop && (parentsUntil(e.target as Element,  literals.gridContent) ||
-            (e.target as Element).tagName === 'TD')) || (!(this.allowGrouping || this.allowReordering) &&
-                parentsUntil(e.target as Element, 'e-gridheader'))) && e.touches) {
+        if (((!this.allowRowDragAndDrop && (parentsUntil(e.target as Element, literals.gridContent) ||
+            (e.target as Element).tagName === 'TD')) || (parentsUntil(e.target as Element, 'e-headercell') &&
+                parentsUntil(e.target as Element, 'e-headercell').querySelector('.e-checkselectall')) ||
+            (!(this.allowGrouping || this.allowReordering) && parentsUntil(e.target as Element, 'e-gridheader'))) &&
+            e.touches) {
             return;
         }
         if (parentsUntil(e.target as Element, 'e-gridheader') && this.allowRowDragAndDrop &&

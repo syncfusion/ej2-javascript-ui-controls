@@ -14,7 +14,7 @@ import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { RenderType } from '../base/enum';
+import { RenderType, UploadRequest } from '../base/enum';
 import { dispatchEvent, parseHtml, hasClass, convertToBlob } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
@@ -1834,7 +1834,8 @@ export class Image {
                     this.parent.trigger(events.imageUploading, e);
                 }
             },
-            success: (e: Object) => {
+            success: (e: ImageSuccessEventArgs) => {
+                e.requestType = UploadRequest.Uploaded;
                 this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
                     if (!isNOU(this.parent.insertImageSettings.path)) {
                         const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
@@ -2264,6 +2265,7 @@ export class Image {
         imageElement.style.opacity = '1';
         imageElement.classList.add(classes.CLS_IMG_FOCUS);
         e.element = imageElement;
+        e.requestType = UploadRequest.Dropped;
         this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
             if (!isNOU(this.parent.insertImageSettings.path)) {
                 const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
