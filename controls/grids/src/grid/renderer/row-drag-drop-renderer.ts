@@ -13,7 +13,7 @@ export class RowDragDropRenderer extends CellRenderer implements ICellRenderer<C
 
     public element: HTMLElement = this.parent.createElement('TD', {
         className: 'e-rowdragdrop e-rowdragdropcell',
-        attrs: { tabindex: '-1', role:'gridcell' }
+        attrs: { tabindex: '-1', role: 'gridcell' }
     });
 
     /**

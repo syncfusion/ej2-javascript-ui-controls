@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 25.1.41 (2024-04-23)
+
+### Grid
+
+#### Bug fixes
+
+- `#FB52588` - Fixed the content overlap issue in exported PDF documents in hierarchy grid.
+- `#I571259` - Resolved the issue where the `selectRow` method was not working when both `virtualization` and grouping were enabled in grid.
+- `#I569550` - Fixed the issue where focusing on the grid through the tab key press did not properly focus on the first cell of the grid.
+- `#I573371` - The issue with the Grid search bar in `ODataV4Adaptor`, where the Excel filter displayed no matches found after searching for a record, has been fixed.
+
 ## 25.1.40 (2024-04-16)
 
 ### Grid

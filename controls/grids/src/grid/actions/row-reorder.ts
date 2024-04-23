@@ -763,7 +763,7 @@ export class RowDD {
             parentsUntil(cloneElement.parentElement, 'e-grid').id === parentsUntil(element, 'e-grid').id) || this.istargetGrid)) {
             if (this.parent.allowGrouping && this.parent.groupSettings.columns && this.parent.groupSettings.columns.length) {
                 removeClass(node.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'), ['e-dragtop', 'e-dragright',
-                'e-dragbottom', 'e-dragleft']);
+                    'e-dragbottom', 'e-dragleft']);
             } else {
                 removeClass(node.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'), ['e-dragborder']);
             }

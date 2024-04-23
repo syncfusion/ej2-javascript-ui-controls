@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 25.1.41 (2024-04-23)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I576244` - Resolved the tracking changes avatar undefined when last name empty.
+- `#I572963` - Resolved the overlapping issue when hitting the backspace key.
+- `#I575590` - Resolve the console error issue while adding the mail merge fields.
+
+## 25.1.40 (2024-04-16)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I565023` - Resolved the list formatting issue in the attached document.
+- `#I542227` - Resolved the overlapping issue when editing the justified paragraph.
+- `#I573648` - Resolved the empty paragraph added issue while pasting content.
+
 ## 25.1.39 (2024-04-09)
 
 ### DocumentEditor

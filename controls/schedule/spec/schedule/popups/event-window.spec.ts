@@ -3545,6 +3545,61 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('ES-881659 - XSS vulnerable checking for resources.', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Burning Man',
+            StartTime: '2023-02-09T09:30:00.000Z',
+            EndTime: '2023-02-09T11:30:00.000Z',
+            ProjectId: 1
+        }
+        ];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2023, 1, 9),
+                group: {
+                    resources: ['Projects']
+                },
+                resources: [
+                    {
+                        field: 'ProjectId',
+                        title: 'Choose Project',
+                        name: 'Projects',
+                        dataSource: [
+                            { text: '<img src=1 href=1 onerror="javascript:alert(1)"></img>', id: 1, color: '#cb6bb2' },
+                            { text: 'PROJECT 2', id: 2, color: '#56ca85' },
+                            { text: 'PROJECT 3', id: 3, color: '#df5286' },
+                            { text: 'PROJECT 4', id: 4, color: '#df5286' }
+                        ],
+                        textField: 'text',
+                        idField: 'id',
+                        colorField: 'color',
+                        allowMultiple: true
+                    }
+                ]
+            };
+            schObj = util.createSchedule(schOptions, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('To multi select selected value - The XSS values rendred as string in value text box', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const resourceElement: MultiSelect =
+                (dialogElement.querySelector('.e-' + schObj.resourceBase.resourceCollection[0].field) as EJ2Instance).ej2_instances[0] as MultiSelect;
+            expect(resourceElement.value.length).toEqual(1);
+            expect(resourceElement.text).toEqual('<img src=1 href=1 onerror="javascript:alert(1)"></img>');
+            const closeButton: HTMLElement = dialogElement.querySelector('.e-dlg-closeicon-btn') as HTMLElement;
+            closeButton.click();
+        });
+    });
+
     describe('Customize inner elements in the recurrence editor dynamically', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {

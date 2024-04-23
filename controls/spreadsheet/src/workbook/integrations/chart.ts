@@ -1,6 +1,6 @@
 import { getRangeIndexes, ChartModel, inRange, checkRange, getSwapRange, getRangeAddress } from '../common/index';
 import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetIndexFromId } from '../base/index';
-import { setChart, initiateChart, refreshChart, updateChart, deleteChartColl, refreshChartSize, focusChartBorder } from '../common/event';
+import { setChart, initiateChart, refreshChart, updateChart, deleteChartColl, refreshChartSize, focusChartBorder, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit } from '../common/event';
 import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
 
 /**
@@ -95,13 +95,30 @@ export class WorkbookChart {
                     const sheetIdx: number = args.sheetId === undefined ? ((chartModel.range && chartModel.range.indexOf('!') > 0) ?
                         getSheetIndex(this.parent, chartModel.range.split('!')[0]) : this.parent.activeSheetIndex) :
                         getSheetIndexFromId(this.parent, args.sheetId);
-                    const indexes: number[] = args.isPaste ? getRangeIndexes(args.range) : getRangeIndexes(chartModel.range);
+                        const chartRowIdx: { clientY: number, isImage?: boolean } = { clientY: chartModel.top, isImage: true };
+                        const chartColIdx: { clientX: number, isImage?: boolean } = { clientX: chartModel.left, isImage: true };
+                        this.parent.notify(getChartRowIdxFromClientY, chartRowIdx); this.parent.notify(getChartColIdxFromClientX, chartColIdx);
                     const sheet: SheetModel = isUndefined(sheetIdx) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIdx as number];
-                    const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
+                    const cell: CellModel = getCell(chartRowIdx.clientY, chartColIdx.clientX, sheet);
                     if (cell && cell.chart) {
                         cell.chart.push(chartModel);
                     } else {
-                        setCell(indexes[0], indexes[1], sheet, { chart: [chartModel] }, true);
+                        setCell(chartRowIdx.clientY, chartColIdx.clientX, sheet, { chart: [chartModel] }, true);
+                    }
+                }
+                else {
+                    const indexes: number[] = getRangeIndexes(args.range)
+                    const chartRowIdx: { clientY: number, isImage?: boolean } = { clientY: chartModel.top, isImage: true };
+                    const chartColIdx: { clientX: number, isImage?: boolean } = { clientX: chartModel.left, isImage: true };
+                    this.parent.notify(getChartRowIdxFromClientY, chartRowIdx); this.parent.notify(getChartColIdxFromClientX, chartColIdx);
+                    const eventArgs: Object = {
+                        prevTop: chartModel.top, prevLeft: chartModel.left, prevRowIdx: indexes[0], prevColIdx: indexes[1],
+                        prevHeight: chartModel.height, prevWidth: chartModel.width, currentTop: chartModel.top, currentLeft: chartModel.left,
+                        currentRowIdx: chartRowIdx.clientY, currentColIdx: chartColIdx.clientX, currentHeight: chartModel.height,
+                        currentWidth: chartModel.width, id: chartModel.id, requestType: 'chartRefreshOnInit'
+                    };
+                    if (indexes[0] !== chartRowIdx.clientY || indexes[1] !== chartColIdx.clientX) {
+                        this.parent.notify(refreshChartCellOnInit, eventArgs);
                     }
                 }
                 i++;

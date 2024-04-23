@@ -1888,21 +1888,30 @@ export class BaseHistoryInfo {
     /**
      * @private
      */
-    public recordInsertRevisionDeletetion(widget: IWidget): void {
+    public recordInsertRevisionDeletetion(widget: IWidget, startOffset?: number, endOffset?: number): void {
+        if (this.startIndex > this.endIndex) {
+            let temp: number = this.startIndex;
+            this.startIndex = this.endIndex;
+            this.endIndex = temp;
+        }
         let startIndex: number = this.startIndex;
         let endIndex: number = this.endIndex;
         if (widget instanceof TextElementBox || widget instanceof ImageElementBox || widget instanceof FieldElementBox || widget instanceof BookmarkElementBox) {
             if (widget.revisions.length > 0) {
                 const currentStart = this.owner.selectionModule.getElementPosition(widget, true).startPosition;
+                startOffset = isNullOrUndefined(startOffset) ? 0 : startOffset;
+                endOffset = isNullOrUndefined(endOffset) ? widget.length : endOffset;
+                currentStart.setPositionParagraph(widget.line, startOffset + currentStart.offset);
                 this.startIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(currentStart);
-                this.endIndex = this.startIndex + widget.length;
+                this.endIndex = this.startIndex + endOffset;
                 let revision: Revision = this.owner.editorModule.retrieveRevisionInOder(widget);
                 let currentUser: string = this.owner.currentUser === '' ? 'Guest user' : this.owner.currentUser;
                 if (revision.revisionType === 'Insertion' && revision.author !== currentUser) {
                     this.revisionOperation.push(this.getFormatOperation(widget));
                 } else if (revision.revisionType === 'Insertion') {
-                    this.revisionOperation.push(this.getDeleteOperation(this.action, undefined, this.getRemovedText(widget)));
-                    endIndex -= widget.length;
+                    let operation: Operation = this.getDeleteOperation(this.action, undefined, undefined)
+                    this.revisionOperation.push(operation);
+                    endIndex -= operation.length;
                 } else if (revision.revisionType === 'Deletion') {
                     if (revision.author !== currentUser) {
                         let operation: Operation = this.getFormatOperation(widget);
@@ -1919,19 +1928,22 @@ export class BaseHistoryInfo {
                 }
             }
         } else if (widget instanceof ParagraphWidget) {
-            let isAllrevision: boolean = true;
+            let isAllRevision: boolean = true;
             for (let i: number = 0; i < widget.childWidgets.length; i++) {
                 let line: LineWidget = widget.childWidgets[i] as LineWidget;
+                if (line.children.length === 0) {
+                    isAllRevision = false;
+                }
                 for (let j: number = 0; j < line.children.length; j++) {
                     let element: ElementBox = line.children[j];
                     if (element.revisions.length <= 0) {
-                        isAllrevision = false;
+                        isAllRevision = false;
                     } else if (element.revisions[0].revisionType !== 'Insertion') {
-                        isAllrevision = false;
+                        isAllRevision = false;
                     }
                 }
             }
-            if (isAllrevision) {
+            if (isAllRevision) {
                 let position: TextPosition = new TextPosition(this.owner);
                 position.setPositionParagraph(widget.childWidgets[0] as LineWidget, 0);
                 this.startIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(position);
@@ -1943,6 +1955,8 @@ export class BaseHistoryInfo {
                 for (let i: number = 0; i < widget.childWidgets.length; i++) {
                     for (let j: number = 0; j < (widget.childWidgets[i] as LineWidget).children.length; j++) {
                         this.recordInsertRevisionDeletetion((widget.childWidgets[i] as LineWidget).children[j]);
+                        startIndex = this.startIndex;
+                        endIndex = this.endIndex;
                     }
                 }
             }
@@ -1950,6 +1964,7 @@ export class BaseHistoryInfo {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
     }
+
 
 
     /**
@@ -2949,7 +2964,9 @@ export class BaseHistoryInfo {
      */
     public getDeleteOperation(action: Action, setEndIndex?: boolean, text?: string): Operation {
         if (this.startIndex > this.endIndex) {
-            [this.startIndex, this.endIndex] = [this.endIndex, this.startIndex];
+            let temp: number = this.startIndex;
+            this.startIndex = this.endIndex;
+            this.endIndex = temp;
         }
         // if (action === 'Delete' && this.endIndex === this.startIndex) {
         //     this.startIndex++;
@@ -3432,7 +3449,9 @@ export class BaseHistoryInfo {
      */
     public getFormatOperation(element?: ElementBox, action?: string, skipIncrement?: boolean): Operation {
         if (this.startIndex > this.endIndex) {
-            [this.startIndex, this.endIndex] = [this.endIndex, this.startIndex];
+            let temp: number = this.startIndex;
+            this.startIndex = this.endIndex;
+            this.endIndex = temp;
         }
         let length: number = 0;
         if (this.endIndex === this.startIndex && !skipIncrement && this.action !== 'DeleteBookmark' && this.action !== 'RemoveEditRange' && this.action !== 'InsertHyperlink') {

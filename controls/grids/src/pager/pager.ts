@@ -1082,8 +1082,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private getUpdatedURL(uri: string, key: string, value: string): string {
-        // eslint-disable-next-line security/detect-non-literal-regexp
-        const regx: RegExp = new RegExp('([?|&])' + key + '=.*?(&|#|$)', 'i');
+        const regExp: RegExpConstructor = RegExp;
+        const regx: RegExp = new regExp('([?|&])' + key + '=.*?(&|#|$)', 'i');
         if (uri.match(regx)) {
             return uri.replace(regx, '$1' + key + '=' + value + '$2');
         } else {

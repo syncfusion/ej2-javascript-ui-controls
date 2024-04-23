@@ -83,8 +83,8 @@ describe('Combobox_virtualization', () => {
          */
         it('virtualization Down key pressed ', (done) => {
             dropObj.showPopup();
-            expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-            expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+            expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+            expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
             expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
             let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
             keyEventArgs.action = 'down';
@@ -101,8 +101,8 @@ describe('Combobox_virtualization', () => {
                     dropObj.keyActionHandler(keyEventArgs);
                 }
                 setTimeout(function () {
-                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                     //expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[7].textContent.trim()).toBe('Item 12');
                     done();
                     }, 850)
@@ -139,13 +139,13 @@ describe('Combobox_virtualization', () => {
                 expect((li[6] as Element).classList.contains('e-active')).toBe(true);
                 keyEventArgs.action = 'pageDown';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect((li[9] as Element).classList.contains('e-active')).toBe(true);
+                expect((li[12] as Element).classList.contains('e-active')).toBe(true);
                 keyEventArgs.action = 'pageUp';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect((li[4] as Element).classList.contains('e-active')).toBe(true);
+                expect((li[7] as Element).classList.contains('e-active')).toBe(true);
                 keyEventArgs.action = 'pageUp';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect((li[0] as Element).classList.contains('e-active')).toBe(true);
+                expect((li[2] as Element).classList.contains('e-active')).toBe(true);
                 done();
             }, 450);
         });
@@ -223,8 +223,8 @@ describe('Combobox_virtualization', () => {
                 dropObj.sortOrder = 'Ascending';
                 dropObj.dataBind();
                 dropObj.showPopup();
-                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                 expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
                 dropObj.filterInput.value = "Item 2";
                 dropObj.onInput()
@@ -262,8 +262,8 @@ describe('Combobox_virtualization', () => {
                 //dropObj.sortOrder = 'Ascending';
                 dropObj.dataBind();
                 dropObj.showPopup();
-                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                 expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
                 dropObj.filterInput.value = "Item 132";
                 dropObj.onInput();
@@ -272,7 +272,7 @@ describe('Combobox_virtualization', () => {
                 let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
                 keyEventArgs.action = 'down';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect(li[3].classList.contains('e-active')).toBe(true);
+                expect(li[13].classList.contains('e-active')).toBe(true);
                 dropObj.filterInput.value = "P";
                 dropObj.onInput();
                 dropObj.isTyped = true;
@@ -399,8 +399,8 @@ describe('Combobox_virtualization', () => {
                     dropObj.clearText();
                     var clearElement = dropObj.filterInput.parentElement.querySelector('.e-clear-icon');
                     expect(clearElement.style.visibility).toBe('hidden');
-                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                     //expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
                     done();
                 }, 650);

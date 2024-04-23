@@ -4836,9 +4836,11 @@ export abstract class ElementBox {
             if (!isNullOrUndefined(fieldSeparator.fieldBegin)) {
                 fieldSeparator.fieldBegin.fieldSeparator = fieldSeparator;
                 //Links to field end traversing from field separator.
-                let isFieldEnd: boolean = this.linkFieldTraversingForward(this.line, fieldSeparator.fieldBegin, fieldSeparator);
-                if (isNullOrUndefined(fieldSeparator.fieldEnd) && isFieldEnd) {
-                    fieldSeparator.fieldEnd = fieldSeparator.fieldBegin.fieldEnd;
+                if (isNullOrUndefined(fieldSeparator.fieldEnd)) {
+                    let isFieldEnd: boolean = this.linkFieldTraversingForward(this.line, fieldSeparator.fieldBegin, fieldSeparator);
+                    if (isFieldEnd) {
+                        fieldSeparator.fieldEnd = fieldSeparator.fieldBegin.fieldEnd;
+                    }
                 }
                 if (fieldSeparator.fieldEnd) {
                     fieldSeparator.fieldEnd.fieldSeparator = fieldSeparator;

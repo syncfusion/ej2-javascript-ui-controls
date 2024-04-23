@@ -249,4 +249,108 @@ describe('Diagram Control', () => {
             done()
         });
     });
+
+    describe('880814-Adding element to bpmn expanded subprocess located in swimlane throws an exception', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramSub-Swim' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'Start',
+                    height: 50, width: 50,
+                    margin: { left: 30, top: 30 },
+                    shape: {
+                        type: 'Bpmn',
+                        shape: 'Event',
+                        event: { event: 'Start' },
+                    },
+                },
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                            orientation: 'Horizontal',
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 200,
+                                children:[
+                                    {
+                                        id: 'subProcess',
+                                        width: 300,
+                                        height: 100,
+                                        constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                                        margin: { left: 60, top: 20 },
+                                        shape: {
+                                            shape: 'Activity',
+                                            type: 'Bpmn',
+                                            activity: {
+                                                activity: 'SubProcess',
+                                                subProcess: {
+                                                    collapsed: false,
+                                                    processes: ['Start']
+                                                },
+                                            },
+                                        },
+                                    },
+                                ]
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { content: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 520, offsetY: 270,
+                    height: 100,
+                    width: 750
+                },
+            ];
+            diagram = new Diagram({
+                width: 1200, height: 1200, nodes: nodes,
+            });
+
+            diagram.appendTo('#diagramSub-Swim');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('drag and drop the process child from subProcess to diagram ', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nameTable['subProcess'].wrapper;
+            let obj = diagram.nameTable['subProcess'];
+            mouseEvents.mouseDownEvent(diagramCanvas,node.bounds.center.x, node.bounds.center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.bounds.center.x + 150, node.bounds.center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.bounds.center.x + 300, node.bounds.center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.bounds.center.x  + 600, node.bounds.center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas,node.bounds.center.x  + 700, node.bounds.center.y);
+            mouseEvents.mouseUpEvent(diagramCanvas,node.bounds.center.x  + 700, node.bounds.center.y);
+            expect(obj.id === 'subProcess' && (obj.shape as BpmnShape).activity.subProcess.processes.length > 0).toBe(true);
+            done()
+        });
+    });
 });

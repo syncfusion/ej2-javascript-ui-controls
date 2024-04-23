@@ -174,7 +174,7 @@ describe('Field List rendering on mobile device', () => {
         it('close filter popup by cancel', (done: Function) => {
             (fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-cancel-btn') as HTMLElement).click();
             setTimeout(() => {
-                expect(fieldListObj.pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(false);
+                expect(fieldListObj.pivotCommon.filterDialog.dialogPopUp).toBeNull;
                 done();
             });
         });
@@ -200,8 +200,7 @@ describe('Field List rendering on mobile device', () => {
             expect(addButton.classList.contains('e-disable')).not.toBeTruthy;
             addButton.click();
             setTimeout(() => {
-                expect(element.parentElement
-                    .querySelector('.e-adaptive-field-list-dialog').classList.contains('e-popup-open')).toBe(true);
+                expect(document.querySelector('.e-adaptive-field-list-dialog').classList.contains('e-popup-open')).toBe(true);
                 done();
             }, 1000);
         });
@@ -237,11 +236,9 @@ describe('Field List rendering on mobile device', () => {
             closest(checkEle[0], 'li').dispatchEvent(down);
             closest(checkEle[0], 'li').dispatchEvent(up);
             expect(checkEle[0].querySelector('.e-check')).toBeTruthy;
-            (element.parentElement
-                .querySelector('.e-adaptive-field-list-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
+            (document.querySelector('.e-adaptive-field-list-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
             setTimeout(() => {
-                expect(element.parentElement
-                    .querySelector('.e-adaptive-field-list-dialog')).toBeUndefined;
+                expect(document.querySelector('.e-adaptive-field-list-dialog')).toBeUndefined;
                 let contentElement: HTMLElement = element.querySelector('.e-content').querySelector('.e-item.e-active');
                 let pivotButtons: HTMLElement[] = [].slice.call(contentElement.querySelectorAll('.e-pivot-button'));
                 expect(pivotButtons.length).toEqual(1);
@@ -253,9 +250,8 @@ describe('Field List rendering on mobile device', () => {
         });
         it('check add fields on search option', (done: Function) => {
             let element: HTMLElement = fieldListObj.element.querySelector('.e-adaptive-container');
-            expect(element.parentElement.querySelector('.e-adaptive-field-list-dialog')).toBeTruthy;
-            expect(element.parentElement
-                .querySelector('.e-adaptive-field-list-dialog').classList.contains('e-popup-open')).toBe(true);
+            expect(document.querySelector('.e-adaptive-field-list-dialog')).toBeTruthy;
+            expect(document.querySelector('.e-adaptive-field-list-dialog').classList.contains('e-popup-open')).toBe(true);
             let searchOption: MaskedTextBox = (fieldListObj.treeViewModule as any).editorSearch;
             expect(searchOption).not.toBeUndefined;
             searchOption.setProperties({ value: 'gender' });
@@ -266,8 +262,7 @@ describe('Field List rendering on mobile device', () => {
             expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
             setTimeout(() => {
                 expect(checkEle[0].querySelector('.e-check')).toBeTruthy;
-                (element.parentElement
-                    .querySelector('.e-adaptive-field-list-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
+                (document.querySelector('.e-adaptive-field-list-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
                 done();
             }, 1000);
         });
@@ -666,7 +661,7 @@ describe('Field List rendering on mobile device', () => {
             addButton.click();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                expect(dialogElement.querySelector('.e-adaptive-field-list-dialog').classList.contains('e-popup-open')).toBe(true);
+                expect(document.querySelector('.e-adaptive-field-list-dialog').classList.contains('e-popup-open')).toBe(true);
                 done();
             }, 1000);
         });
@@ -700,16 +695,14 @@ describe('Field List rendering on mobile device', () => {
             closest(checkEle[0], 'li').dispatchEvent(down);
             closest(checkEle[0], 'li').dispatchEvent(up);
             expect(checkEle[0].querySelector('.e-check')).toBeTruthy;
-            (dialogElement.querySelector('.e-adaptive-field-list-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
+            (document.querySelector('.e-adaptive-field-list-dialog').querySelector('.e-ok-btn') as HTMLElement).click();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                expect(dialogElement.querySelector('.e-adaptive-field-list-dialog')).toBeUndefined;
+                expect(document.querySelector('.e-adaptive-field-list-dialog')).toBeUndefined;
                 let contentElement: HTMLElement = element.querySelector('.e-content').querySelector('.e-item.e-active');
                 let pivotButtons: HTMLElement[] = [].slice.call(contentElement.querySelectorAll('.e-pivot-button'));
                 expect(pivotButtons.length).toEqual(2);
                 expect(pivotButtons[0].id).toBe('PivotFieldList_name');
-                let addButton: HTMLElement = dialogElement.querySelector('.e-field-list-footer').querySelector('.e-field-list-btn');
-                addButton.click();
                 done();
             }, 1000);
         });

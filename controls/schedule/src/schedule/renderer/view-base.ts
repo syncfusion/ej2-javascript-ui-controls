@@ -493,7 +493,7 @@ export class ViewBase {
             const colWidth: number = (util.getElementWidth(contentBody) / (colElements.length / 2));
             if (content.offsetHeight !== content.clientHeight) {
                 const resourceColumn: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
-                if (!isNullOrUndefined(resourceColumn)) {
+                if (!isNullOrUndefined(resourceColumn) && resourceColumn.offsetHeight !== content.clientHeight) {
                     setStyleAttribute(resourceColumn, { 'height': formatUnit(content.clientHeight) });
                 }
             }

@@ -330,18 +330,12 @@ export class TreeViewRenderer implements IAction {
             }],
             closeOnEscape: false,
             cssClass: this.parent.cssClass,
-            target: this.parentElement.parentElement,
-            close: this.dialogClose.bind(this)
+            close: this.closeTreeDialog.bind(this),
+            target: document.body
         });
         this.fieldDialog.isStringTemplate = true;
         this.fieldDialog.appendTo(fieldListDialog);
         // this.fieldDialog.element.querySelector('.e-dlg-header').innerText = this.parent.localeObj.getConstant('adaptiveFieldHeader');
-    }
-
-    private dialogClose(): void {
-        if (document.getElementById(this.parent.element.id + '_FieldListTreeView')) {
-            remove(document.getElementById(this.parent.element.id + '_FieldListTreeView'));
-        }
     }
 
     private createTreeView(treeData: { [key: string]: Object }[]): HTMLElement {
@@ -1093,6 +1087,11 @@ export class TreeViewRenderer implements IAction {
     private closeTreeDialog(): void {
         this.selectedNodes = [];
         this.fieldDialog.hide();
+        this.fieldDialog.destroy();
+        if (document.getElementById(this.parent.element.id + '_FieldListTreeView')) {
+            remove(document.getElementById(this.parent.element.id + '_FieldListTreeView'));
+        }
+        this.fieldDialog = null;
     }
     private keyPress(e: KeyboardEvent): void {
         if (e.keyCode === 13 && e.target) {

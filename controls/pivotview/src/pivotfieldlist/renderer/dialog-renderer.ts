@@ -667,6 +667,10 @@ export class DialogRenderer {
             this.deferUpdateCancelButton.destroy();
             this.deferUpdateCancelButton = null;
         }
+        if (this.adaptiveElement && !this.adaptiveElement.isDestroyed) {
+            this.adaptiveElement.destroy();
+            this.adaptiveElement = null;
+        }
         if (this.parent.renderMode === 'Popup') {
             if (this.fieldListDialog && !this.fieldListDialog.isDestroyed) {
                 this.fieldListDialog.destroy();

@@ -2289,3 +2289,36 @@ describe('EJ2-871826: Error when using Stacked Header with Column Template and u
         gridObj = null;
     });
 });
+
+describe('EJ2-880511: When entering the grid through the tab key press, want to focus first cell of grid =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    height: 300,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 50 },
+                    columns: [
+                        {
+                            field: 'OrderID',
+                            headerText: 'Order ID',
+                            width: 120,
+                            isPrimaryKey: true,
+                            textAlign: 'Right',
+                        },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                        { field: 'Details', width: 150 },
+                    ],
+                }, done);
+    });
+    it('Check tab index for Grid when empty record', () => {
+        expect(gridObj.element.tabIndex).toBe(-1);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

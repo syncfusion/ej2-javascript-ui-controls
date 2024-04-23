@@ -10,7 +10,7 @@ import { colWidthChanged, protectSelection, editOperation, initiateFormulaRefere
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 import { addressHandle, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle } from '../common/index';
 import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell } from '../../workbook/index';
-import { getIndexesFromAddress, selectionComplete, skipHiddenIdx, parseFormulaArgument } from '../../workbook/common/index';
+import { getIndexesFromAddress, selectionComplete, skipHiddenIdx, parseFormulaArgument, getChartRowIdxFromClientY, getChartColIdxFromClientX } from '../../workbook/common/index';
 
 
 /**
@@ -57,6 +57,8 @@ export class Selection {
         this.parent.on(clearCellRef, this.clearBorder, this);
         this.parent.on(getRowIdxFromClientY, this.getRowIdxFromClientY, this);
         this.parent.on(getColIdxFromClientX, this.getColIdxFromClientX, this);
+        this.parent.on(getChartRowIdxFromClientY, this.getRowIdxFromClientY, this);
+        this.parent.on(getChartColIdxFromClientX, this.getColIdxFromClientX, this);
         this.parent.on(focusBorder, this.chartBorderHandler, this);
         this.parent.on(selectionStatus, this.isTouchSelectionStarted, this);
         this.parent.on(rangeSelectionByKeydown, this.selectionByKeydown, this);
@@ -76,6 +78,8 @@ export class Selection {
             this.parent.off(clearCellRef, this.clearBorder);
             this.parent.off(getRowIdxFromClientY, this.getRowIdxFromClientY);
             this.parent.off(getColIdxFromClientX, this.getColIdxFromClientX);
+            this.parent.off(getChartRowIdxFromClientY, this.getRowIdxFromClientY);
+            this.parent.off(getChartColIdxFromClientX, this.getColIdxFromClientX);
             this.parent.off(focusBorder, this.chartBorderHandler);
             this.parent.off(selectionStatus, this.isTouchSelectionStarted);
             this.parent.off(rangeSelectionByKeydown, this.selectionByKeydown);

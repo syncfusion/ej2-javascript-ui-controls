@@ -185,20 +185,20 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                             cellArgs.colSpan = 1;
                         } else {
                             if (isFrozen) {
-                                let columns: Column[] = this.parent.getColumns();
+                                const columns: Column[] = this.parent.getColumns();
                                 const right: number = this.parent.getFrozenRightColumnsCount();
                                 const left: number = this.parent.getFrozenLeftCount();
-                                let movableCount: number = columns.length - right;
+                                const movableCount: number = columns.length - right;
                                 const cellIdx: number = cellArgs.column.index;
                                 if (left > cellIdx && left < (cellIdx + cellArgs.colSpan)) {
-                                    let colSpan: number = (cellIdx + cellArgs.colSpan) - left;
+                                    const colSpan: number = (cellIdx + cellArgs.colSpan) - left;
                                     cellArgs.colSpan = cellArgs.colSpan - colSpan;
                                 } else if (movableCount <= cellIdx && columns.length < (cellIdx + cellArgs.colSpan)) {
-                                    let colSpan: number = (cellIdx + cellArgs.colSpan) - columns.length;
+                                    const colSpan: number = (cellIdx + cellArgs.colSpan) - columns.length;
                                     cellArgs.colSpan = cellArgs.colSpan - colSpan;
                                 } else if (cellArgs.column.freeze === 'Fixed') {
                                     let colSpan: number = 1;
-                                    let index: number = cellIdx;
+                                    const index: number = cellIdx;
                                     for (let j: number = index + 1; j < index + cellArgs.colSpan; j++) {
                                         if (columns[parseInt(j.toString(), 10)].freeze === 'Fixed') {
                                             colSpan++;
@@ -208,7 +208,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                                     }
                                     cellArgs.colSpan = colSpan;
                                 } else if (movableCount > cellIdx && movableCount < (cellIdx + cellArgs.colSpan)) {
-                                    let colSpan: number = (cellIdx + cellArgs.colSpan) - movableCount;
+                                    const colSpan: number = (cellIdx + cellArgs.colSpan) - movableCount;
                                     cellArgs.colSpan = cellArgs.colSpan - colSpan;
                                 }
                             }
@@ -239,8 +239,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                             } else if (!isRtl && i === 1 && direction === 'Left') {
                                 td.classList.add('e-addfreezefirstchildborder');
                             }
-                        } 
-                        if (nextRowCell && (nextRowCell.isRowSpanned || nextRowCell.rowSpanRange > 1) && nextRowCell.visible && 
+                        }
+                        if (nextRowCell && (nextRowCell.isRowSpanned || nextRowCell.rowSpanRange > 1) && nextRowCell.visible &&
                             nextRowCell.column.freeze === 'Fixed' && direction === 'Fixed' && cellArgs.colSpan < 2) {
                             td.classList.add(isRtl ? 'e-removefreezeleftborder' : 'e-removefreezerightborder');
                         }
@@ -257,7 +257,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         let emptyColspan: number = 0;
         if (this.parent.groupSettings.columns.length && this.parent.getFrozenLeftColumnsCount()) {
             if (tr.classList.contains('e-groupcaptionrow')) {
-                let freezeCells: HTMLElement[] = [].slice.call(tr.querySelectorAll(
+                const freezeCells: HTMLElement[] = [].slice.call(tr.querySelectorAll(
                     '.e-leftfreeze,.e-unfreeze,.e-rightfreeze,.e-fixedfreeze,.e-freezerightborder,.e-freezeleftborder'));
                 if (freezeCells.length) {
                     removeClass(freezeCells, ['e-leftfreeze', 'e-unfreeze', 'e-rightfreeze', 'e-fixedfreeze', 'e-freezerightborder', 'e-freezeleftborder']);
@@ -374,14 +374,14 @@ export class RowRenderer<T> implements IRowRenderer<T> {
     }
     private resetrowSpanvalue(rowCount: number, cellArgs: QueryCellInfoEventArgs, rowIndex: number): void {
         if (rowCount > rowIndex && rowCount < rowIndex + cellArgs.rowSpan) {
-            let rowSpan: number = (rowIndex + cellArgs.rowSpan) - rowCount;
+            const rowSpan: number = (rowIndex + cellArgs.rowSpan) - rowCount;
             cellArgs.rowSpan = cellArgs.rowSpan - rowSpan;
         }
     }
     private disableRowSelection (thisRef: RowRenderer<T>, row: Row<T>, args: RowDataBoundEventArgs, eventArg: RowDataBoundEventArgs): void {
         const selIndex: number[] = this.parent.getSelectedRowIndexes();
         this.parent.selectionModule.isPartialSelection = true; row.isSelected = false;
-        let selRowIndex: number = selIndex.indexOf(row.index);
+        const selRowIndex: number = selIndex.indexOf(row.index);
         if (selRowIndex > -1) {
             selIndex.splice(selRowIndex, 1);
         }
@@ -403,7 +403,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         if (isDrag) {
             removeClass([isDrag], ['e-selectionbackground', 'e-active']);
         }
-    };
+    }
     private refreshMergeCells(row: Row<T>): Row<T> {
         for (const cell of row.cells) {
             cell.isSpanned = false;

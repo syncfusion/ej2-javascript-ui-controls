@@ -181,9 +181,9 @@ export class NormalEdit {
         }
         if (inputs.length) {
             for (let i: number = 0; i < inputs.length; i++) {
-                const input = inputs[parseInt(i.toString(), 10)];
+                const input: Element = inputs[parseInt(i.toString(), 10)];
                 const uid: string = input.getAttribute('e-mappinguid');
-                const column = this.parent.getColumnByUid(uid);
+                const column: Column = this.parent.getColumnByUid(uid);
                 const error: Element = parentsUntil(input, 'e-rowcell').querySelector('.e-error');
                 if (error) {
                     error.classList.remove('e-error');
@@ -192,7 +192,7 @@ export class NormalEdit {
                     if (prevent && isNullOrUndefined(column.defaultValue)) {
                         (<EJ2Intance>input).ej2_instances[0].value = null;
                         (input as HTMLInputElement).value = null;
-                    } 
+                    }
                     if (!isNullOrUndefined(disable)) {
                         (<EJ2Intance>input).ej2_instances[0].enabled = disable && column.allowEditing ? true : false;
                     }
@@ -200,7 +200,7 @@ export class NormalEdit {
                     if (prevent && (input as HTMLInputElement).value && (input as HTMLInputElement).value.length &&
                         isNullOrUndefined(column.defaultValue)) {
                         (input as HTMLInputElement).value = null;
-                    } 
+                    }
                     if (!isNullOrUndefined(disable)) {
                         if (!disable) {
                             input.classList.add('e-disabled');
@@ -291,7 +291,7 @@ export class NormalEdit {
         const dlgWrapper: Element = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
         const dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') :  gObj.editSettings.showAddNewRow &&
         gObj.element.querySelector('.' + literals.editedRow) ?  gObj.element.querySelector(
-            '.' + literals.editedRow).getElementsByClassName('e-gridform')[0] : gObj.element.getElementsByClassName('e-gridform')[0];
+                '.' + literals.editedRow).getElementsByClassName('e-gridform')[0] : gObj.element.getElementsByClassName('e-gridform')[0];
         const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
             virtualData: extend({}, {}, this.previousData, true), isAdd: false, isScroll: false, endEdit: true
         };
@@ -539,7 +539,7 @@ export class NormalEdit {
                         } else {
                             leftrightCells[parseInt(j.toString(), 10)].style.left = (this.parent.leftrightColumnWidth('left') -
                                 this.parent.translateX) + 'px';
-                        leftrightCells[parseInt(j.toString(), 10)].style.right = (this.parent.leftrightColumnWidth('right') +
+                            leftrightCells[parseInt(j.toString(), 10)].style.right = (this.parent.leftrightColumnWidth('right') +
                                 this.parent.translateX) + 'px';
                         }
                     }

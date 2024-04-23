@@ -40,7 +40,7 @@ export class PagerMessage implements IRender {
 
     /**
      * Refreshes the pager information.
-    *
+     *
      * @returns {void}
      */
     public refresh(): void {
@@ -99,14 +99,16 @@ export class PagerMessage implements IRender {
      * To format the PagerMessage
      *
      * @function format
-     * @returns {string}
+     * @param {string} str - specifies the string
+     * @param {number[]} args - specifies the argument
+     * @returns {string} returns the format string
      * @hidden
      */
     public format(str: string, args: number[]): string {
         let regx: RegExp;
+        const regExp: RegExpConstructor = RegExp;
         for (let i: number = 0; i < args.length; i++) {
-            // eslint-disable-next-line security/detect-non-literal-regexp
-            regx = new RegExp('\\{' + (i) + '\\}', 'gm');
+            regx = new regExp('\\{' + (i) + '\\}', 'gm');
             str = str.replace(regx, args[parseInt(i.toString(), 10)].toString());
         }
         return str;

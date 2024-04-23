@@ -35,7 +35,7 @@ export class Toolbar {
         'ColumnChooser', 'PdfExport', 'ExcelExport', 'CsvExport', 'WordExport'];
     private searchBoxObj: SearchBox;
     private evtHandlers: { event: string, handler: Function }[];
-    private isRightToolbarMenu: Boolean = false;
+    private isRightToolbarMenu: boolean = false;
     private responsiveToolbarMenu: Menu;
     // internal variables
     private toolbarMenuElement: HTMLUListElement;
@@ -127,7 +127,7 @@ export class Toolbar {
             if (toolbarItems.indexOf(items[parseInt(i.toString(), 10)] as string) >= 0) {
                 return isRight ? false : true;
             }
-        } 
+        }
         return isRight ? true : false;
     }
 
@@ -374,7 +374,7 @@ export class Toolbar {
             }
         } else {
             if ((gObj.isEdit || edit.showAddNewRow) && (edit.allowAdding || edit.allowEditing)) {
-                enableItems = addRow ? [this.gridID + '_update', this.gridID + '_cancel',this.gridID + '_edit', this.gridID + '_delete'] :
+                enableItems = addRow ? [this.gridID + '_update', this.gridID + '_cancel', this.gridID + '_edit', this.gridID + '_delete'] :
                     [this.gridID + '_update', this.gridID + '_cancel'];
                 disableItems = addRow ? [this.gridID + '_add'] :
                     [this.gridID + '_add', this.gridID + '_edit', this.gridID + '_delete'];
@@ -390,7 +390,6 @@ export class Toolbar {
     private getItems(): ItemModel[] {
         const items: ItemModel[] = [];
         const toolbarItems: (ToolbarItems | string | ItemModel | ToolbarItem)[] = this.parent.toolbar || [];
-        let toolbarItemsString: boolean = false; 
         if (typeof (this.parent.toolbar) === 'string') {
             return [];
         }
@@ -405,7 +404,6 @@ export class Toolbar {
         for (const item of toolbarItems) {
             if (this.parent.enableAdaptiveUI && ['Print', 'ColumnChooser',
                 'PdfExport', 'ExcelExport', 'CsvExport'].indexOf(item as string) !== -1) {
-                toolbarItemsString = true;
                 continue;
             }
             switch (typeof item) {
@@ -467,71 +465,71 @@ export class Toolbar {
                 toolbarargs.originalEvent = toolbarargs.originalEvent ? toolbarargs.originalEvent : originalEvent;
                 if (!toolbarargs.cancel) {
                     switch (!isNullOrUndefined(toolbarargs.item) && toolbarargs.item.id) {
-                        case gID + '_print':
-                            gObj.print();
-                            break;
-                        case gID + '_edit':
-                            gObj.startEdit();
-                            break;
-                        case gID + '_update':
-                            gObj.endEdit();
-                            break;
-                        case gID + '_cancel':
-                            gObj.closeEdit();
-                            break;
-                        case gID + '_add':
-                            gObj.addRecord();
-                            break;
-                        case gID + '_delete':
-                            gObj.deleteRecord();
-                            break;
-                        case gID + '_search':
-                            if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton' && this.searchElement) {
-                                this.search();
-                            } else if (gObj.enableAdaptiveUI && !this.searchElement
+                    case gID + '_print':
+                        gObj.print();
+                        break;
+                    case gID + '_edit':
+                        gObj.startEdit();
+                        break;
+                    case gID + '_update':
+                        gObj.endEdit();
+                        break;
+                    case gID + '_cancel':
+                        gObj.closeEdit();
+                        break;
+                    case gID + '_add':
+                        gObj.addRecord();
+                        break;
+                    case gID + '_delete':
+                        gObj.deleteRecord();
+                        break;
+                    case gID + '_search':
+                        if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton' && this.searchElement) {
+                            this.search();
+                        } else if (gObj.enableAdaptiveUI && !this.searchElement
                                 && ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-search-wrapper')
                                     || (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton')) {
-                                this.renderResponsiveSearch(true);
+                            this.renderResponsiveSearch(true);
+                        }
+                        else if ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-clear-icon') && (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement) {
+                            this.searchElement.value = '';
+                            if (this.searchElement) {
+                                this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
+                                this.sIcon.classList.remove('e-clear-icon');
+                                this.sIcon.removeAttribute('title');
+                                this.sIcon.style.cursor = 'default';
                             }
-                            else if ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-clear-icon') && (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement) {
-                                this.searchElement.value = '';
-                                if (this.searchElement) {
-                                    this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
-                                    this.sIcon.classList.remove('e-clear-icon');
-                                    this.sIcon.removeAttribute('title');
-                                    this.sIcon.style.cursor = 'default';
-                                }
-                                if (this.isSearched || this.parent.searchSettings.key.length) {
-                                    this.parent.search(this.searchElement.value);
-                                    this.isSearched = false;
-                                }
+                            if (this.isSearched || this.parent.searchSettings.key.length) {
+                                this.parent.search(this.searchElement.value);
+                                this.isSearched = false;
                             }
-                            break;
-                        case gID + '_columnchooser':
-                            if (this.parent.enableAdaptiveUI) {
-                                gObj.showResponsiveCustomColumnChooser();
-                            } else {
-                                /* eslint-disable */
+                        }
+                        break;
+                    case gID + '_columnchooser':
+                        if (this.parent.enableAdaptiveUI) {
+                            gObj.showResponsiveCustomColumnChooser();
+                        } else {
+                            /* eslint-disable */
                                 const tarElement: Element = this.parent.element.querySelector('.e-ccdiv');
                                 let y: number = tarElement.getBoundingClientRect().top;
                                 const x: number = tarElement.getBoundingClientRect().left;
                                 const targetEle: Element = (<HTMLElement>toolbarargs.originalEvent.target);
                                 /* eslint-enable */
-                                y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
-                                gObj.createColumnchooser(x, y, targetEle);
-                            }
-                            break;
-                        case gID + '_responsivefilter':
-                            gObj.notify(events.renderResponsiveChangeAction, { action: 3 });
-                            gObj.showResponsiveCustomFilter();
-                            break;
-                        case gID + '_responsivesort':
-                            gObj.notify(events.renderResponsiveChangeAction, { action: 2 });
-                            gObj.showResponsiveCustomSort();
-                            break;
-                        case gID + '_responsiveback':
-                            this.renderResponsiveSearch(false);
-                            break;
+                            y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
+                            gObj.createColumnchooser(x, y, targetEle);
+                        }
+                        break;
+                    case gID + '_responsivefilter':
+                        gObj.notify(events.renderResponsiveChangeAction, { action: 3 });
+                        gObj.showResponsiveCustomFilter();
+                        break;
+                    case gID + '_responsivesort':
+                        gObj.notify(events.renderResponsiveChangeAction, { action: 2 });
+                        gObj.showResponsiveCustomSort();
+                        break;
+                    case gID + '_responsiveback':
+                        this.renderResponsiveSearch(false);
+                        break;
                     }
                 }
             });
@@ -573,15 +571,15 @@ export class Toolbar {
     }
 
     private getMenuItems(): Object[] {
-        let items: Object[] = [];
+        const items: Object[] = [];
         const toolbarItems: (ToolbarItems | string | ItemModel | ToolbarItem)[] = this.parent.toolbar || [];
         for (const item of toolbarItems) {
-            if (typeof item === 'string' && (item === 'ColumnChooser' || item === 'PdfExport'|| item === 'ExcelExport' ||
+            if (typeof item === 'string' && (item === 'ColumnChooser' || item === 'PdfExport' || item === 'ExcelExport' ||
                 item === 'CsvExport' || item === 'Print')) {
                 items.push({
-                    text: this.getLocaleText(item), 
+                    text: this.getLocaleText(item),
                     id: this.gridID + '_' + item.toLowerCase(),
-                    iconCss: 'e-btn-icon e-' + item.toLowerCase() + ' e-icons' 
+                    iconCss: 'e-btn-icon e-' + item.toLowerCase() + ' e-icons'
                 });
             }
         }
@@ -616,12 +614,12 @@ export class Toolbar {
             enablePersistence: this.parent.enablePersistence,
             locale: this.parent.locale,
             items: this.getMenuItems(),
-            select: this.ResponsiveToolbarMenuItemClick.bind(this),
+            select: this.ResponsiveToolbarMenuItemClick.bind(this)
         });
         this.responsiveToolbarMenu.appendTo(this.toolbarMenuElement);
     }
 
-    private ResponsiveToolbarMenuItemClick(args: ColumnMenuClickEventArgs) {
+    private ResponsiveToolbarMenuItemClick(args: ColumnMenuClickEventArgs): void {
         const gObj: IGrid = this.parent;
         const element: Element = args.element;
         args.item.id = element.id;
@@ -629,13 +627,13 @@ export class Toolbar {
         gObj.trigger(events.toolbarClick, newArgs, (toolbarargs: ClickEventArgs) => {
             if (!toolbarargs.cancel) {
                 switch (!isNullOrUndefined(toolbarargs.item) && toolbarargs.item.id) {
-                    case this.gridID + '_columnchooser':
-                        gObj.notify(events.renderResponsiveChangeAction, { action: 5 });
-                        gObj.showResponsiveCustomColumnChooser();
-                        break;
-                    case this.gridID + '_print':
-                        gObj.print();
-                        break;
+                case this.gridID + '_columnchooser':
+                    gObj.notify(events.renderResponsiveChangeAction, { action: 5 });
+                    gObj.showResponsiveCustomColumnChooser();
+                    break;
+                case this.gridID + '_print':
+                    gObj.print();
+                    break;
                 }
             }
         });

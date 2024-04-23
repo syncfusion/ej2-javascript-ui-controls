@@ -52,7 +52,7 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
                     if (typeof gCaptionTemp === 'string' && gCaptionTemp.includes('$')) {
                         gTemplateValue = (gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)]
                             .groupCaptionTemplate as string).split('$')[0] + data[gObj.getVisibleColumns()[0].field][gObj
-                                .aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].type] +
+                            .aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].type] +
                             (gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)]
                                 .groupCaptionTemplate as string).split('}')[1];
                     }

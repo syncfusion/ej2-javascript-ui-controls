@@ -2159,7 +2159,8 @@
         }
       }
 
-      .e-content-wrap {
+      .e-content-wrap,
+      .e-resource-column-wrap {
         &.e-transition {
           transition: all 1000ms linear; // sass-lint:disable-line no-transition-all
         }

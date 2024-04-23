@@ -4935,6 +4935,9 @@ export class Layout {
                     } else {
                         if (!previousBlock.paragraphFormat.widowControl) {
                             startIndex = (previousBlock.lastChild as LineWidget).indexInOwner;
+                            if (startIndex !== 0) {
+                                break;
+                            }
                         } else {
                             startIndex = (previousBlock.lastChild as LineWidget).indexInOwner - 1;
                             if (startIndex === 1 || startIndex < 0 ) {
@@ -10553,12 +10556,14 @@ export class Layout {
         } else {
             let startBlock: BlockWidget;
             let keepWithNext: boolean = false;
+            let startIndex: number = 0;
             viewer.columnLayoutArea.setColumns(previousBodyWidget.sectionFormat);
             nextBodyWidget = this.createOrGetNextBodyWidget(previousBodyWidget, this.viewer);
             let blockInfo: BlockInfo = this.alignBlockElement(paragraphWidget);
-            if (!this.isInitialLoad && !isNullOrUndefined(blockInfo.node) && !paragraphWidget.isEndsWithPageBreak && !paragraphWidget.isEndsWithColumnBreak) {
+            if (!this.isInitialLoad && !isNullOrUndefined(blockInfo.node) && !paragraphWidget.isEndsWithPageBreak && !paragraphWidget.isEndsWithColumnBreak && isNullOrUndefined(paragraphWidget.previousSplitWidget)) {
                 startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : blockInfo.node as BlockWidget;
                 if (startBlock.containerWidget instanceof BodyWidget && startBlock.containerWidget.firstChild !== startBlock) {
+                    startIndex = startBlock instanceof TableWidget ? 0 : parseInt(blockInfo.position.index, 10);
                     paragraphWidget = startBlock as ParagraphWidget;
                     keepWithNext = true;
                     if (!isNullOrUndefined(paragraphWidget.nextRenderedWidget) && paragraphWidget.nextRenderedWidget instanceof ParagraphWidget) {
@@ -10572,8 +10577,33 @@ export class Layout {
                 nextBodyWidget = this.moveBlocksToNextPage(paragraphWidget, true);
                 if (previousBodyWidget !== nextBodyWidget) {
                     viewer.updateClientArea(nextBodyWidget, nextBodyWidget.page);
-                    this.updateContainerWidget(paragraphWidget, nextBodyWidget, 0, true);
-                    this.addParagraphWidget(this.viewer.clientActiveArea, paragraphWidget);
+                    if (startIndex > 0 && this.keepWithNext) {
+                        this.viewer.updateClientAreaForBlock(paragraphWidget, true);
+                        let nextParagraph: ParagraphWidget;
+                        if (nextBodyWidget.firstChild instanceof ParagraphWidget && nextBodyWidget.firstChild.equals(paragraphWidget)) {
+                            nextParagraph = nextBodyWidget.firstChild;
+                        } else {
+                            nextParagraph = new ParagraphWidget();
+                        }
+                        nextParagraph = this.moveChildsToParagraph(paragraphWidget, startIndex, nextParagraph);
+                        nextParagraph.containerWidget = nextBodyWidget;
+                        for (let m = 0; m < nextParagraph.floatingElements.length; m++) {
+                            const element: ShapeBase = nextParagraph.floatingElements[m];
+                            if (element.line.paragraph.bodyWidget !== paragraphWidget.bodyWidget && element.textWrappingStyle !== 'Inline') {
+                                paragraphWidget.bodyWidget.floatingElements.splice(paragraphWidget.bodyWidget.floatingElements.indexOf(element), 1);
+                            }
+                        }
+                        paragraphWidget = nextParagraph;
+                        if (nextBodyWidget.childWidgets.indexOf(paragraphWidget) === -1) {
+                            nextBodyWidget.childWidgets.splice(0, 0, paragraphWidget);
+                        }
+                        this.viewer.updateClientAreaLocation(paragraphWidget, this.viewer.clientActiveArea);
+                        this.layoutBlock(paragraphWidget, 0, true);
+                        this.viewer.updateClientAreaForBlock(paragraphWidget, false);
+                    } else {
+                        this.updateContainerWidget(paragraphWidget, nextBodyWidget, 0, true);
+                        this.addParagraphWidget(this.viewer.clientActiveArea, paragraphWidget);
+                    }
                     this.moveFootNotesToPage(footWidget, previousBodyWidget, nextBodyWidget);
                 }
                 if (previousBodyWidget.page === nextBodyWidget.page) {
@@ -10586,9 +10616,9 @@ export class Layout {
             }
         }
         if (previousBodyWidget === paragraphWidget.containerWidget) {
-            if (paragraphWidget.x !== paragraphWidget.containerWidget.x) {
-                paragraphWidget.x = paragraphWidget.containerWidget.x;
-            }
+            // if (paragraphWidget.x !== paragraphWidget.containerWidget.x) {
+            //     paragraphWidget.x = paragraphWidget.containerWidget.x;
+            // }
             paragraphWidget.y = viewer.clientActiveArea.y;
             viewer.cutFromTop(viewer.clientActiveArea.y + paragraphWidget.height);
         } else {

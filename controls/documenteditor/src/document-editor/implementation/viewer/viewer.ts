@@ -1548,7 +1548,7 @@ export class DocumentHelper {
             if (userinitial === '' || isNullOrUndefined(userinitial)) {
                 const authorName: string[] = author.split(' ');
                 let initial: string = authorName[0].charAt(0);
-                if (authorName.length > 1) {
+                if (authorName.length > 1 && authorName[authorName.length - 1] !== '') {
                     initial += authorName[authorName.length - 1][0];
                 }
                 avatar.innerText = initial.toUpperCase();

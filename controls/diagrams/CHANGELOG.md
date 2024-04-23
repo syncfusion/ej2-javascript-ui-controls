@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 25.1.41 (2024-04-23)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#FB52256` - Now, dropping child node inside the subprocess node within the swimlane is working properly.
+- `#FB52022` - Now, the swimlane highlighter rendered properly while dropping opposite orientation lane and the lane added to swimlane properly.
+- `#I573514` - Now, the connector annotation text updated properly while adjusting its end points dynamically.
+- `#FB52023` - Now, The Swimlane helper guides are shown at correct position with Zoom Changes.
+
 ## 25.1.40 (2024-04-16)
 
 ### Diagram

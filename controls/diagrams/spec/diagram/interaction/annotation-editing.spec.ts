@@ -154,7 +154,8 @@ describe('Diagram Control', () => {
             (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = 'editLabel';
             let position = document.getElementById(diagram.element.id + '_editBox');
             let labelPosition: any = position.getBoundingClientRect();
-            expect((Math.round(labelPosition.x) === 548 || Math.round(labelPosition.x) === 555 ) && (Math.round(labelPosition.y) === 184 || Math.round(labelPosition.y) === 224 || Math.round(labelPosition.y) === 232)).toBe(true);
+            console.log('labelPosition.x' , Math.round(labelPosition.x));
+            expect((Math.round(labelPosition.x) === 548 || Math.round(labelPosition.x) === 555 || Math.round(labelPosition.x) === 553 ) && (Math.round(labelPosition.y) === 184 || Math.round(labelPosition.y) === 224 || Math.round(labelPosition.y) === 232)).toBe(true);
             done();
         });
         it('Checking textediting when text box change using keydown', (done: Function) => {

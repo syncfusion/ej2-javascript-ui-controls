@@ -2111,6 +2111,13 @@ export class SfdtExport {
             }
             blocks = this.serializeMentions(dataName, url, blocks);
         }
+        if (ctext.indexOf('span') !== -1) {
+            let emailMatch : RegExpMatchArray = ctext.match(/mailto:([^"]+)/);
+            let email : string = emailMatch ? emailMatch[1] : '';
+            let matchText : RegExpMatchArray = ctext.match(/&nbsp;(.+)/);
+            let text : string = matchText ? matchText[1] : '';
+            ctext = email + " " + text;
+        }
         inlines[textProperty[this.keywordIndex]] = mentions.length > 0 ? text : ctext;
         blocks[inlinesProperty[this.keywordIndex]].push(inlines);
         return blocks;

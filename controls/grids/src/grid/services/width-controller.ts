@@ -117,14 +117,15 @@ export class ColumnWidthService {
         const header: Element = this.parent.getHeaderTable();
         const content: Element = this.parent.getContentTable();
         const fWidth: string = formatUnit(width);
-        const headerCol: HTMLTableColElement = (<HTMLTableColElement>header.querySelector(literals.colGroup).children[parseInt(index.toString(), 10)]);
+        const headerCol: HTMLTableColElement = (<HTMLTableColElement>header.querySelector(literals.colGroup)
+            .children[parseInt(index.toString(), 10)]);
         if (headerCol && !clear) {
             headerCol.style.width = fWidth;
         } else if (headerCol && clear) {
             headerCol.style.width = '';
         }
         const contentCol: HTMLTableColElement = (<HTMLTableColElement>content.querySelector(
-                literals.colGroup).children[parseInt(index.toString(), 10)]);
+            literals.colGroup).children[parseInt(index.toString(), 10)]);
         if (contentCol && !clear) {
             contentCol.style.width = fWidth;
         } else if (contentCol && clear) {

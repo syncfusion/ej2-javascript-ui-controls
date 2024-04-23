@@ -906,6 +906,13 @@ export class WordExport {
                 }
                 block = this.serializeMentions(dataName, url, block);
             }
+            if (multiText[0].indexOf('span') !== -1) {
+                let emailMatch : RegExpMatchArray = multiText[0].match(/mailto:([^"]+)/);
+                let email : string = emailMatch ? emailMatch[1] : '';
+                let matchText : RegExpMatchArray = multiText[0].match(/&nbsp;(.+)/);
+                let text : string = matchText ? matchText[1] : '';
+                multiText[0] = email + " " + text;
+            }
             inlines[textProperty[this.keywordIndex]] = mentions.length > 0 ? tempText : multiText[0];
             block[inlinesProperty[this.keywordIndex]].push(inlines);
             blocks.push(block);

@@ -714,6 +714,20 @@ export class VerticalView extends ViewBase implements IRenderer {
             append(tooltipTemplate, ntd);
         }
         ntd.setAttribute('data-date', cellDate.getTime().toString());
+        const skeleton: string = 'full';
+        if (!this.parent.activeViewOptions.timeScale.enable) {
+            const announcementText: string =
+                this.parent.globalize.formatDate(tdData.date, { skeleton: skeleton, calendar: this.parent.getCalendarMode() });
+            ntd.setAttribute('aria-label', announcementText);
+        } else {
+            const startDateText: string = this.parent.globalize.formatDate( cellDate, {
+                type: 'dateTime', skeleton: skeleton, calendar: this.parent.getCalendarMode()
+            });
+            const endDateText: string = this.parent.globalize.formatDate(this.getEndDateFromStartDate(cellDate), {
+                type: 'dateTime', skeleton: skeleton, calendar: this.parent.getCalendarMode()
+            });
+            ntd.setAttribute('aria-label', startDateText + ' ' + this.parent.localeObj.getConstant('endAt') + ' ' + endDateText);
+        }
         if (!isNullOrUndefined(tdData.groupIndex) || this.parent.uiStateValues.isGroupAdaptive) {
             const groupIndex: number = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex :
                 tdData.groupIndex;

@@ -118,13 +118,13 @@ export class VirtualScroll {
             }
             if ((requestType === 'save' && pageingDetails.actionArgs.index >= (counts.count - this.parent.grid.pageSettings.pageSize)) || (requestType === 'refresh' && this.parent['isGantt'] && this.parent['isAddedFromGantt'])) {
                 const modifiedStartIndex: number = counts.startIndex + (counts.count - counts.endIndex);
-                if (counts.startIndex <= modifiedStartIndex && counts.endIndex <= modifiedStartIndex) {
-                    startIndex = counts.startIndex;
-                    endIndex = counts.endIndex;
-                }
-                else {
+                if (counts.count - counts.startIndex <= this.parent.grid.pageSettings.pageSize) {
                     startIndex = modifiedStartIndex;
                     endIndex = counts.count;
+                }
+                else {
+                    startIndex = counts.startIndex;
+                    endIndex = counts.endIndex;
                 }
                 this.parent['isAddedFromGantt'] = false;
             }

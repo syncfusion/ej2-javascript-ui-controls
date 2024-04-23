@@ -168,7 +168,7 @@ export class Resize implements IAction {
         const result: boolean = gObj.getColumns().some((x: Column) => x.width === null
             || x.width === undefined || (x.width as string).length <= 0);
         if (result === false) {
-            let element: Column[] = gObj.getColumns() as Column[];
+            const element: Column[] = gObj.getColumns() as Column[];
             for (let i: number = 0; i < element.length; i++) {
                 if (element[parseInt(i.toString(), 10)].visible) {
                     tWidth = tWidth + parseFloat(element[parseInt(i.toString(), 10)].width as string);
@@ -263,7 +263,7 @@ export class Resize implements IAction {
      * @hidden
      */
     protected createTable(table: Element, text: Element[], tag: string,
-                         startRowIndex: number = 1, endRowIndex: number = text.length): number {
+                          startRowIndex: number = 1, endRowIndex: number = text.length): number {
         if (startRowIndex > endRowIndex) {
             startRowIndex ^= endRowIndex;
             endRowIndex ^= startRowIndex;
@@ -569,7 +569,7 @@ export class Resize implements IAction {
         return width;
     }
 
-    
+
 
     private refreshResizePosition(): void {
         this.refreshResizefrzCols(true);

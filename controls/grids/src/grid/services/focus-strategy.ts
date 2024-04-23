@@ -182,7 +182,7 @@ export class FocusStrategy {
         if (!isContent && isNullOrUndefined(closest(<HTMLElement>e.target, '.' + literals.gridHeader))) { this.clearOutline(); return; }
         const beforeArgs: CellFocusArgs = { cancel: false, byKey: false, byClick: !isNullOrUndefined(e.target), clickArgs: <Event>e };
         this.parent.notify(event.beforeCellFocused, beforeArgs);
-        if (beforeArgs.cancel || (closest(<Element>e.target, '.e-inline-edit') && (!this.parent.editSettings.showAddNewRow && 
+        if (beforeArgs.cancel || (closest(<Element>e.target, '.e-inline-edit') && (!this.parent.editSettings.showAddNewRow &&
             (this.parent.editSettings.showAddNewRow && !this.parent.element.querySelector('.e-editedrow'))))) { return; }
         this.setActive(isContent);
         if (this.getContent()) {
@@ -630,9 +630,9 @@ export class FocusStrategy {
         return (e.action === 'delete'
             || (this.parent.editSettings.mode !== 'Batch' && ((this.parent.isEdit && (!this.parent.editSettings.showAddNewRow ||
                 (this.parent.editSettings.showAddNewRow && ((!isNullOrUndefined(this.parent.element.querySelector('.e-editedrow')) ||
-                (!isNullOrUndefined(parentsUntil(target,'e-addedrow')) && !isNullOrUndefined(closest((e.target as HTMLElement), 'input')) && !isNullOrUndefined(document.querySelector('.e-popup-open'))) ||
-                (!isNullOrUndefined(parentsUntil(target,'e-addedrow')) && (target && !target.querySelector('.e-cancel-icon')) &&
-                !isNullOrUndefined(parentsUntil(target,'e-unboundcell')))))))) || ['insert', 'f2'].indexOf(e.action) > -1))
+                (!isNullOrUndefined(parentsUntil(target, 'e-addedrow')) && !isNullOrUndefined(closest((e.target as HTMLElement), 'input')) && !isNullOrUndefined(document.querySelector('.e-popup-open'))) ||
+                (!isNullOrUndefined(parentsUntil(target, 'e-addedrow')) && (target && !target.querySelector('.e-cancel-icon')) &&
+                !isNullOrUndefined(parentsUntil(target, 'e-unboundcell')))))))) || ['insert', 'f2'].indexOf(e.action) > -1))
             || ((filterCell && this.parent.enableHeaderFocus) || ((filterCell || addNewRow) && e.action !== 'tab' && e.action !== 'shiftTab') ||
                 closest(document.activeElement, '#' + this.parent.element.id + '_searchbar') !== null
                 && ['enter', 'leftArrow', 'rightArrow',
@@ -713,7 +713,8 @@ export class FocusStrategy {
         if (this.parent.isReact && !this.parent.isEdit && this.currentInfo.element.classList.contains('e-rowcell')
             && !this.currentInfo.element.parentElement && !(this.parent.allowGrouping && this.parent.groupSettings.columns.length) &&
             this.parent.getRowByIndex(this.prevIndexes.rowIndex)) {
-            const cellElem: HTMLElement = this.parent.getCellFromIndex(this.prevIndexes.rowIndex, this.prevIndexes.cellIndex) as HTMLElement;
+            const cellElem: HTMLElement = this.parent.getCellFromIndex(this.prevIndexes.rowIndex, this.prevIndexes
+                .cellIndex) as HTMLElement;
             this.currentInfo.element = cellElem ? cellElem : this.currentInfo.element;
         }
         removeClass([this.currentInfo.element, this.currentInfo.elementToFocus], ['e-focused', 'e-focus']);
@@ -816,15 +817,15 @@ export class FocusStrategy {
             }
             const isRowTemplate: boolean = !isNullOrUndefined(this.parent.rowTemplate);
             if (frozenRow && ((this.parent.editSettings.mode === 'Batch' && content && (e.name === 'batchDelete' ||  e.name === 'batchAdd' ||
-                e.name === 'batchCancel' || (e.args && (e.args.requestType === 'batchsave' )))) || 
+                e.name === 'batchCancel' || (e.args && (e.args.requestType === 'batchsave' )))) ||
                 (e.args && (e.args.requestType === 'delete' || e.args.requestType === 'save')))) {
-                let matrixcs: number[][] = this.header.matrix.matrix;
+                const matrixcs: number[][] = this.header.matrix.matrix;
                 const hdrLen: number = (<{ rows?: Row<Column>[] }>this.parent.headerModule).rows.length;
                 matrixcs.splice(hdrLen, matrixcs.length - hdrLen);
             }
             const matrix: number[][] = cFocus.matrix.generate(updateRow, cFocus.selector, isRowTemplate);
             cFocus.matrix.generate(rows, cFocus.selector, isRowTemplate);
-            const isScroll = this.parent.enableVirtualization || this.parent.enableInfiniteScrolling;
+            const isScroll: boolean = this.parent.enableVirtualization || this.parent.enableInfiniteScrolling;
             if ((this.parent.editSettings.showAddNewRow && content && this.header && this.header.matrix) &&
                 (!isScroll || (isScroll && this.parent.isAddNewRow))) {
                 const tempMatrix: number[][] = this.header.matrix.matrix;
@@ -833,11 +834,12 @@ export class FocusStrategy {
                     cFocus.matrix.rows : ++cFocus.matrix.rows;
                 if (this.parent.editSettings.newRowPosition === 'Top') {
                     (this.parent.frozenRows || isScroll ?
-                        matrix : cFocus.matrix.matrix).unshift(this.refreshAddNewRowMatrix(tempMatrix[tempMatrix.length - lastRowHeaderIdx]));
+                        matrix : cFocus.matrix.matrix).unshift(this.refreshAddNewRowMatrix(tempMatrix[tempMatrix.length -
+                            lastRowHeaderIdx]));
                 } else {
                     cFocus.matrix.matrix.push(this.refreshAddNewRowMatrix(tempMatrix[tempMatrix.length - lastRowHeaderIdx]));
                 }
-            this.parent.isAddNewRow = false;
+                this.parent.isAddNewRow = false;
             }
             if (!(this.parent.isFrozenGrid() && (e.args && (e.args.requestType === 'sorting'
                 || e.args.requestType === 'batchsave' || e.args.requestType === 'paging'))) ||
@@ -973,7 +975,7 @@ export class FocusStrategy {
             }
         }
         return cellIndex;
-    };
+    }
 
     public filterfocus(): void {
         if (this.parent.filterSettings.type !== 'FilterBar') {
@@ -1268,7 +1270,7 @@ export class ContentFocus implements IFocus {
         const editNextRow: boolean = gObj.editSettings.allowNextRowEdit && (gObj.isEdit || gObj.isLastCellPrimaryKey);
         const visibleIndex: number = gObj.getColumnIndexByField(gObj.getVisibleColumns()[0].field);
         const row: HTMLTableRowElement = this.getTable().rows[parseInt(rowIndex.toString(), 10)];
-        const cell: HTMLElement = gObj.editSettings.showAddNewRow && row.classList.contains('e-addedrow') ? 
+        const cell: HTMLElement = gObj.editSettings.showAddNewRow && row.classList.contains('e-addedrow') ?
             (row.querySelectorAll<HTMLElement>('td:not(.e-editcell)'))[parseInt(cellIndex.toString(), 10)]
             : row.cells[parseInt(cellIndex.toString(), 10)];
         if (action === 'tab' && editNextRow) {
@@ -1328,7 +1330,7 @@ export class ContentFocus implements IFocus {
             isNullOrUndefined(closest(closest(<Element>e.target, '.e-grid'), 'td.e-detailcell')) ? null : target : target;
         target = target && closest(target, 'table').classList.contains(literals.table) ? target : null;
         if (!target) { return false; }
-        let rowIdx: number = (<HTMLTableRowElement>target.parentElement).rowIndex
+        let rowIdx: number = (<HTMLTableRowElement>target.parentElement).rowIndex;
         if (this.parent.editSettings.showAddNewRow && parentsUntil(<Element>target, 'e-addedrow')) {
             rowIdx = (<HTMLTableRowElement>parentsUntil(<Element>target, 'e-addedrow')).rowIndex;
         }
@@ -1356,7 +1358,7 @@ export class ContentFocus implements IFocus {
             return info;
         }
         info.elementToFocus = (!info.element.classList.contains('e-unboundcell') || (this.parent.editSettings.showAddNewRow &&
-            info.element.classList.contains('e-unboundcell') && parentsUntil(info.element,'e-addedrow'))) &&
+            info.element.classList.contains('e-unboundcell') && parentsUntil(info.element, 'e-addedrow'))) &&
             !info.element.classList.contains('e-detailcell') ? this.getFocusable(info.element) : info.element;
         info.elementToFocus = info.element.classList.contains('e-detailcell') && info.element.querySelector('.e-childgrid')
             ? info.element.querySelector('.e-childgrid') : info.elementToFocus;
@@ -1373,8 +1375,8 @@ export class ContentFocus implements IFocus {
         let query: string = 'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])';
         const isTemplate: boolean = !isNullOrUndefined(closest(<HTMLElement>element, '.e-templatecell'));
         if (this.parent.isEdit) {
-            let commandCellQuery: string = this.parent.editSettings.showAddNewRow && parentsUntil(element,'e-addedrow') ?
-                ", button:not(.e-hide)" : '';
+            const commandCellQuery: string = this.parent.editSettings.showAddNewRow && parentsUntil(element, 'e-addedrow') ?
+                ', button:not(.e-hide)' : '';
             query = 'input:not([type="hidden"]), select:not([aria-hidden="true"]), textarea' + commandCellQuery;
         }
         const child: HTMLElement[] = [].slice.call(element.querySelectorAll(query));
@@ -1445,7 +1447,7 @@ export class ContentFocus implements IFocus {
         let isHeaderFocus: boolean = false;
         const row: Element = parentsUntil(document.activeElement, 'e-addedrow') && this.parent.editSettings.showAddNewRow ?
             parentsUntil(document.activeElement, 'e-addedrow') : document.activeElement.parentElement;
-            if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
+        if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
             && !isNullOrUndefined(row) && row.classList.contains(literals.row)) {
             const rowIndex: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
             isHeaderFocus = rowIndex > 0;
@@ -1493,8 +1495,8 @@ export class ContentFocus implements IFocus {
         }
         if (this.parent.editSettings.showAddNewRow && this.parent.editSettings.newRowPosition === 'Top' &&
             !this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling && e && e.action === 'downArrow') {
-                rowIndex++;
-            }
+            rowIndex++;
+        }
         return { isContent: true, isDataCell: isData, indexes: [rowIndex, cellIndex], isSelectable: isSelectable };
     }
 
@@ -1562,7 +1564,7 @@ export class HeaderFocus extends ContentFocus implements IFocus {
             return false;
         }
         if (!target) { return; }
-        let rowIdx: number = (<HTMLTableRowElement>target.parentElement).rowIndex
+        let rowIdx: number = (<HTMLTableRowElement>target.parentElement).rowIndex;
         if (this.parent.editSettings.showAddNewRow && parentsUntil(<Element>target, 'e-addedrow')) {
             rowIdx = (<HTMLTableRowElement>parentsUntil(<Element>target, 'e-addedrow')).rowIndex;
         }

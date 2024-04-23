@@ -3405,6 +3405,168 @@ describe('Ribbon', () => {
                 }, 450);
             }, 450);            
         });
+        it('enable/disable when item is in second tab', (done) => {
+            let template1 = '<button id="btn1" class="tempContent">Button1</button>';
+            let template2 = '<button id="btn2" class="tempContent">Button2</button>';
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut'
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }]  
+                },{
+                    id: "tab2",
+                    header: "tab2",
+                    groups: [{
+                        id: "group2",
+                        header: "group2Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item3",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut'
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                id: "item4",
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }, {
+                                id: "item5",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }, {
+                                id: "item6",
+                                type: RibbonItemType.CheckBox,
+                                checkBoxSettings: {
+                                    label: 'Check1',
+                                    checked: true,
+                                }
+                            }, {
+                                id: "item7",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item8",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }, {
+                                id: "item9",
+                                type: RibbonItemType.Template,
+                                itemTemplate: template1
+                            }, {
+                                id: "item10",
+                                type: RibbonItemType.GroupButton,
+                                groupButtonSettings: {
+                                    items: [{
+                                        iconCss: 'e-icons e-copy',
+                                        content: 'copy',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-paste',
+                                        content: 'paste',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-cut',
+                                        content: 'cut'
+                                    }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);          
+            setTimeout(function () {
+                setTimeout(function () {
+                    var item3 = ribbon.getItem('item3');
+                    item3.disabled = true;
+                    ribbon.updateItem(item3);                  
+                    var item4 = ribbon.getItem('item4');
+                    item4.disabled = true;
+                    ribbon.updateItem(item4);                 
+                    var item5 = ribbon.getItem('item5');
+                    item5.disabled = true;
+                    ribbon.updateItem(item5);                   
+                    var item6 = ribbon.getItem('item6');
+                    item6.disabled = true;
+                    ribbon.updateItem(item6);                 
+                    var item7 = ribbon.getItem('item7');
+                    item7.disabled = true;
+                    ribbon.updateItem(item7);               
+                    var item8 = ribbon.getItem('item8');
+                    item8.disabled = true;
+                    ribbon.updateItem(item8);               
+                    var item9 = ribbon.getItem('item9');
+                    item9.disabled = true;
+                    ribbon.updateItem(item9);      
+                    var item10 = ribbon.getItem('item10');
+                    item10.disabled = true;
+                    ribbon.updateItem(item10);
+                    ribbon.setProperties({ selectedTab: 1 });
+                    //Button
+                    expect(ribbon.element.querySelector('#item3_container').classList.contains('e-disabled')).toBe(true);
+                    //DropDown
+                    expect(ribbon.element.querySelector('#item4_container').classList.contains('e-disabled')).toBe(true);
+                    //SplitButton
+                    expect(ribbon.element.querySelector('#item5_container').classList.contains('e-disabled')).toBe(true);
+                    //CheckBox
+                    expect(ribbon.element.querySelector('#item6_container').classList.contains('e-disabled')).toBe(true);
+                    //ColorPicker
+                    expect(ribbon.element.querySelector('#item7_container').classList.contains('e-disabled')).toBe(true);
+                    //ComboBox
+                    expect(ribbon.element.querySelector('#item8_container').classList.contains('e-disabled')).toBe(true);
+                    //Template
+                    expect(ribbon.element.querySelector('#item9_container').classList.contains('e-disabled')).toBe(true);
+                    //Groupbutton
+                    expect(ribbon.element.querySelector('#item10_container').classList.contains('e-disabled')).toBe(true);
+                    done();
+                }, 450);
+            }, 450);         
+        });
         it('hide/show tab', () => {
             ribbon = new Ribbon({
                 tabs: [{

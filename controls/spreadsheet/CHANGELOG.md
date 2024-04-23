@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.41 (2024-04-23)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I573941` - Issue with "chart is not properly shown when the chart range is pointed to another sheet range while importing a file" has been resolved.
+
 ## 25.1.35 (2024-03-15)
 
 ### Spreadsheet

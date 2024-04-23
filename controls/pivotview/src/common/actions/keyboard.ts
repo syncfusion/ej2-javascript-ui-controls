@@ -224,6 +224,7 @@ export class CommonKeyboardInteraction {
     public destroy(): void {
         if (this.keyboardModule) {
             this.keyboardModule.destroy();
+            this.keyboardModule = null;
         } else {
             return;
         }

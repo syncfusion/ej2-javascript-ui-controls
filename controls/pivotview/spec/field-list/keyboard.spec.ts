@@ -27,146 +27,6 @@ describe('Pivot Rendering', () => {
             return;
         }
     });
-    describe('Testing on keyboard interaction with Field List', () => {
-        let fieldListObj: PivotFieldList;
-        let pivotCommon: PivotCommon;
-        let keyModule: any;
-        let cField: any;
-        interface CommonArgs {
-            preventDefault(): void;
-        }
-        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
-        afterAll(() => {
-            if (fieldListObj) {
-                fieldListObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll((done: Function) => {
-            if (document.getElementById(elem.id)) {
-                remove(document.getElementById(elem.id));
-            }
-            document.body.appendChild(elem);
-            let dataBound: EmitType<Object> = () => { done(); };
-            PivotFieldList.Inject(CalculatedField);
-            fieldListObj = new PivotFieldList(
-                {
-                    dataSourceSettings: {
-                        dataSource: pivot_dataset as IDataSet[],
-                        expandAll: false,
-                        enableSorting: true,
-                        sortSettings: [{ name: 'company', order: 'Descending' }],
-                        filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
-                        { name: 'company', type: 'Exclude', items: ['NIPAZ'] },
-                        { name: 'gender', type: 'Include', items: ['male'] }],
-                        rows: [{ name: 'company' }, { name: 'state' }],
-                        columns: [{ name: 'name' }],
-                        values: [{ name: 'balance' }, { name: 'quantity' }],
-                        filters: [{ name: 'gender' }]
-                    },
-                    allowCalculatedField: true,
-                    renderMode: 'Fixed',
-                    dataBound: dataBound
-                });
-            fieldListObj.appendTo('#PivotFieldList');
-            keyModule = fieldListObj.pivotCommon.keyboardModule;
-            pivotCommon = fieldListObj.pivotCommon;
-            cField = fieldListObj.calculatedFieldModule;
-        });
-        it('Check shiftS key for sort action', () => {
-            let pivotButtons: HTMLElement[] = [].slice.call(fieldListObj.element.querySelectorAll('.e-pivot-button'));
-            expect(pivotButtons.length).toBeGreaterThan(0);
-            keyModule.keyActionHandler({ action: 'shiftS', target: pivotButtons[2], preventDefault: (): void => { /** Null */ } });
-            expect((pivotButtons[2]).querySelector('.e-descend')).toBeTruthy;
-        });
-        it('Check shiftF key for filter action', (done: Function) => {
-            let pivotButtons: HTMLElement[] = [].slice.call(fieldListObj.element.querySelectorAll('.e-pivot-button'));
-            expect(pivotButtons.length).toBeGreaterThan(0);
-            keyModule.keyActionHandler({ action: 'shiftF', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(true);
-                done();
-            }, 1000);
-        });
-        it('Check shiftF key for filter update action', (done: Function) => {
-            let filterDialog: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
-            (filterDialog.querySelector('.e-ok-btn') as HTMLElement).click();
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect(pivotCommon.filterDialog.dialogPopUp).toBeUndefined;
-                done();
-            }, 1000);
-        });
-        it('Check remove action', () => {
-            let pivotButtons: HTMLElement[] = [].slice.call(fieldListObj.element.querySelectorAll('.e-pivot-button'));
-            expect(pivotButtons.length).toBeGreaterThan(0);
-            keyModule.keyActionHandler({ action: 'delete', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
-            let pivotButtonUpdate: HTMLElement[] = [].slice.call(fieldListObj.element.querySelectorAll('.e-pivot-button'));
-            expect(pivotButtonUpdate.length).toEqual(pivotButtons.length - 1);
-        });
-        it('Check enter formula action', (done: Function) => {
-            (document.querySelector('.e-calculated-field') as HTMLElement).click();
-            addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[0] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
-            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
-            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '"Count(_id)"').toBeTruthy();
-                (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '';
-                done();
-            }, 1000);
-        });
-        it('Check enter formula action', (done: Function) => {
-            removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[0] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
-            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
-            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '"Count(product)"').toBeTruthy();
-                done();
-            }, 1000);
-        });
-        it('Check enter formula action', (done: Function) => {
-            (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '10';
-            removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[1] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
-            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
-            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '10"Sum(advance)"').toBeTruthy();
-                done();
-            }, 1000);
-        });
-        it('Check enter formula action', (done: Function) => {
-            (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '10';
-            removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[1] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
-            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
-            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '10"Count(product)"').toBeTruthy();
-                (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '';
-                done();
-            }, 1000);
-        });
-        it('Check menu action', () => {
-            removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[1] as HTMLElement)], ['e-hover', 'e-node-focus']);
-            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
-            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
-            cField.keyActionHandler({ action: 'moveRight', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
-            expect(true).toBeTruthy();
-            cField.closeDialog();
-        });
-    });
     describe('Testing on keyboard interaction with Field List-Popup mode', () => {
         let fieldListObj: PivotFieldList;
         let pivotCommon: PivotCommon;
@@ -658,12 +518,173 @@ describe('Pivot Rendering', () => {
             expect((pivotGridObj.pivotButtonModule.menuOption as any).valueDialog).toBeUndefined;
         });
     });
-
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);
         //Check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+});
+
+describe('Testing', () => {
+
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
+    describe('on keyboard interaction with Field List', () => {
+        let fieldListObj: PivotFieldList;
+        let pivotCommon: PivotCommon;
+        let keyModule: any;
+        let cField: any;
+        interface CommonArgs {
+            preventDefault(): void;
+        }
+        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
+        afterAll(() => {
+            if (fieldListObj) {
+                fieldListObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotFieldList.Inject(CalculatedField);
+            fieldListObj = new PivotFieldList(
+                {
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
+                        expandAll: false,
+                        enableSorting: true,
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                        { name: 'company', type: 'Exclude', items: ['NIPAZ'] },
+                        { name: 'gender', type: 'Include', items: ['male'] }],
+                        rows: [{ name: 'company' }, { name: 'state' }],
+                        columns: [{ name: 'name' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: [{ name: 'gender' }]
+                    },
+                    allowCalculatedField: true,
+                    renderMode: 'Fixed',
+                    dataBound: dataBound
+                });
+            fieldListObj.appendTo('#PivotFieldList');
+            keyModule = fieldListObj.pivotCommon.keyboardModule;
+            pivotCommon = fieldListObj.pivotCommon;
+            cField = fieldListObj.calculatedFieldModule;
+        });
+        it('Check shiftS key for sort action', () => {
+            let pivotButtons: HTMLElement[] = [].slice.call(fieldListObj.element.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            keyModule.keyActionHandler({ action: 'shiftS', target: pivotButtons[2], preventDefault: (): void => { /** Null */ } });
+            expect((pivotButtons[2]).querySelector('.e-descend')).toBeTruthy;
+        });
+        it('Check shiftF key for filter action', (done: Function) => {
+            let pivotButtons: HTMLElement[] = [].slice.call(fieldListObj.element.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            keyModule.keyActionHandler({ action: 'shiftF', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(true);
+                done();
+            }, 1000);
+        });
+        it('Check shiftF key for filter update action', (done: Function) => {
+            let filterDialog: HTMLElement = pivotCommon.filterDialog.dialogPopUp.element;
+            (filterDialog.querySelector('.e-ok-btn') as HTMLElement).click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
+                done();
+            }, 1000);
+        });
+        it('Check remove action', () => {
+            let pivotButtons: HTMLElement[] = [].slice.call(fieldListObj.element.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            keyModule.keyActionHandler({ action: 'delete', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
+            let pivotButtonUpdate: HTMLElement[] = [].slice.call(fieldListObj.element.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtonUpdate.length).toEqual(pivotButtons.length - 1);
+        });
+        it('Check enter formula action', (done: Function) => {
+            (document.querySelector('.e-calculated-field') as HTMLElement).click();
+            addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[0] as HTMLElement)], ['e-hover', 'e-node-focus']);
+            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
+            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
+            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '"Count(_id)"').toBeTruthy();
+                (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '';
+                done();
+            }, 1000);
+        });
+        it('Check enter formula action', (done: Function) => {
+            removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[0] as HTMLElement)], ['e-hover', 'e-node-focus']);
+            addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
+            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
+            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
+            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '"Count(product)"').toBeTruthy();
+                done();
+            }, 1000);
+        });
+        it('Check enter formula action', (done: Function) => {
+            (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '10';
+            removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
+            addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[1] as HTMLElement)], ['e-hover', 'e-node-focus']);
+            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
+            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
+            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '10"Sum(advance)"').toBeTruthy();
+                done();
+            }, 1000);
+        });
+        it('Check enter formula action', (done: Function) => {
+            (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '10';
+            removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[1] as HTMLElement)], ['e-hover', 'e-node-focus']);
+            addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
+            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
+            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
+            cField.keyActionHandler({ action: 'enter', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect((document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value === '10"Count(product)"').toBeTruthy();
+                (document.querySelector('#' + cField.parentID + 'droppable') as HTMLTextAreaElement).value = '';
+                done();
+            }, 1000);
+        });
+        it('Check menu action', () => {
+            removeClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[15] as HTMLElement)], ['e-hover', 'e-node-focus']);
+            addClass([(document.querySelectorAll('.e-pivot-calc-dialog-div .e-list-item')[1] as HTMLElement)], ['e-hover', 'e-node-focus']);
+            const ele: HTMLElement = select('#' + fieldListObj.element.id + 'calculateddialog', document);
+            const cfDialog: Dialog = ele ? getInstance(ele, Dialog) as Dialog : undefined;
+            cField.keyActionHandler({ action: 'moveRight', currentTarget: cfDialog.element, preventDefault: (): void => { /** Null */ } });
+            expect(true).toBeTruthy();
+            cField.closeDialog();
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
         let memory: any = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);

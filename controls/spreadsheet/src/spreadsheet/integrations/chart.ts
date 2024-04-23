@@ -3,7 +3,7 @@
  */
 import { Spreadsheet } from '../base/index';
 import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook, getSheet } from '../../workbook/index';
-import { initiateChart, ChartModel, getRangeIndexes, isNumber, LegendPosition, getSheetIndexFromAddress, DateFormatCheckArgs, checkDateFormat } from '../../workbook/common/index';
+import { initiateChart, ChartModel, getRangeIndexes, isNumber, LegendPosition, getSheetIndexFromAddress, DateFormatCheckArgs, checkDateFormat, refreshChartCellOnInit } from '../../workbook/common/index';
 import { Overlay, Dialog } from '../services/index';
 import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData, addDPRValue, refreshChartCellModel } from '../common/index';
 import { BeforeImageRefreshData, BeforeChartEventArgs, completeAction, clearChartBorder, focusBorder } from '../common/index';
@@ -48,6 +48,7 @@ export class SpreadsheetChart {
         this.parent.on(initiateChart, this.initiateChartHandler, this);
         this.parent.on(refreshChartCellObj, this.refreshChartCellObj, this);
         this.parent.on(refreshChartCellModel, this.refreshChartCellModel, this);
+        this.parent.on(refreshChartCellOnInit, this.refreshChartCellObj, this);
         this.parent.on(updateChart, this.updateChartHandler, this);
         this.parent.on(deleteChart, this.deleteChart, this);
         this.parent.on(clearChartBorder, this.clearBorder, this);
@@ -629,7 +630,7 @@ export class SpreadsheetChart {
         if (argsOpt.triggerEvent && !argsOpt.isRefresh) {
             eventArgs = { type: chart.type, theme: chart.theme, isSeriesInRows: chart.isSeriesInRows, range: chart.range,
                 markerSettings: options.markerSettings, id: chart.id, height: chart.height, width: chart.width, posRange: argsOpt.range,
-                isInitCell: argsOpt.isInitCell, cancel: false };
+                isInitCell: argsOpt.isInitCell, cancel: false, top: chart.top, left:chart.left };
             this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeInsertChart' });
             if (eventArgs.cancel) { return []; }
             chart.type = eventArgs.type;
@@ -1465,6 +1466,7 @@ export class SpreadsheetChart {
         if (!this.parent.isDestroyed) {
             this.parent.off(initiateChart, this.initiateChartHandler);
             this.parent.off(refreshChartCellObj, this.refreshChartCellObj);
+            this.parent.off(refreshChartCellOnInit, this.refreshChartCellModel);
             this.parent.off(refreshChartCellModel, this.refreshChartCellModel);
             this.parent.off(updateChart, this.updateChartHandler);
             this.parent.off(deleteChart, this.deleteChart);

@@ -16,7 +16,7 @@ import { Container } from '../../../src/diagram/core/containers/container';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PhaseModel, LaneModel } from '../../../src/diagram/objects/node-model';
 import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-palette/index'; 
-import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints, CommandHandler, DiagramEventHandler, UserHandleModel, ISelectionChangeEventArgs, ScrollSettingsModel, SnapSettingsModel, LayoutModel, BpmnSequenceFlows, SnapConstraints, SelectorConstraints, IDraggingEventArgs, IHistoryChangeArgs } from '../../../src/diagram/index';
+import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints, CommandHandler, DiagramEventHandler, UserHandleModel, ISelectionChangeEventArgs, ScrollSettingsModel, SnapSettingsModel, LayoutModel, BpmnSequenceFlows, SnapConstraints, SelectorConstraints, IDraggingEventArgs, IHistoryChangeArgs, ZoomOptions } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Annotation } from '../../../src/diagram/objects/annotation';
 import {  ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
@@ -6532,5 +6532,217 @@ describe('Diagram Control', () => {
             expect( diagram.selectedItems.nodes.length).toBe(1);
             done();
         }); 
+    });
+
+    describe('879085: swimlane helper guides wrongly updated when diagram is zoomed', () => {
+        let diagram: Diagram; let undoOffsetX: number; let undoOffsetY: number;
+        let ele: HTMLElement; let redoOffsetX: number; let redoOffsetY: number;
+        let mouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolGuides', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'SwimlaneGuides', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                width: '70%',
+                height: '800px',
+
+            });
+            diagram.appendTo('#SwimlaneGuides');
+
+            palette = new SymbolPalette({
+                width: '25%', height: '500px',
+                palettes: [
+                    {
+                        id: 'swimlaneShapes', expanded: true,
+                        title: 'Swimlane Shapes',
+                        symbols: [
+                            {
+                                id: 'stackCanvas1',
+                                shape: {
+                                    type: 'SwimLane', lanes: [
+                                        {
+                                            id: 'lane1',
+                                            style: { fill: '#f5f5f5' }, height: 60, width: 150,
+                                            header: { width: 50, height: 50, style: { fill: '#C7D4DF', fontSize: 11 } },
+                                        }
+                                    ],
+                                    orientation: 'Horizontal', isLane: true
+                                },
+                                height: 60,
+                                width: 140,
+                                style: { fill: '#f5f5f5' },
+                                offsetX: 70,
+                                offsetY: 30,
+                            }, {
+                                id: 'stackCanvas2',
+                                shape: {
+                                    type: 'SwimLane',
+                                    lanes: [
+                                        {
+                                            id: 'lane1',
+                                            style: { fill: '#f5f5f5' }, height: 150, width: 60,
+                                            header: { width: 50, height: 50, style: { fill: '#C7D4DF', fontSize: 11 } },
+                                        }
+                                    ],
+                                    orientation: 'Vertical', isLane: true
+                                },
+                                height: 140,
+                                width: 60,
+                                style: { fill: '#f5f5f5' },
+                                offsetX: 70,
+                                offsetY: 30,
+                            }, {
+                                id: 'verticalPhase',
+                                shape: {
+                                    type: 'SwimLane',
+                                    phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                                    annotations: [{ text: '' }],
+                                    orientation: 'Vertical', isPhase: true
+                                },
+                                height: 60,
+                                width: 140
+                            }, {
+                                id: 'horizontalPhase',
+                                shape: {
+                                    type: 'SwimLane',
+                                    phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                                    annotations: [{ text: '' }],
+                                    orientation: 'Horizontal', isPhase: true
+                                },
+                                height: 60,
+                                width: 140
+                            }
+                        ]
+                    },
+
+                ], symbolHeight: 50, symbolWidth: 50,
+                symbolPreview: { width: 100, height: 100 },
+                expandMode: 'Multiple',
+            });
+            palette.appendTo('#symbolGuides');
+
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 10, 10);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Zoom the diagram', (done: Function) => {
+            let zoomin: ZoomOptions = { type: 'ZoomIn', zoomFactor: 0.2 };
+            diagram.zoomTo(zoomin);
+            expect(diagram.scroller.currentZoom).toBe(1.2);
+            done();
+        });
+        it('Drag and drop the Horizontal swmilane from palette to Diagram', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['stackCanvas1'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            let ele = document.getElementById("stackCanvas1_container");
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 500, 300, false, false);
+            events.mouseMoveEvent(diagram.element, 500, 305, false, false);
+            events.mouseMoveEvent(diagram.element, 500, 310, false, false);
+            events.mouseUpEvent(diagram.element, 500, 300, false, false);
+            done();
+        });
+
+        it('Drag and drop new Horizontal swmilane from palette to Diagram', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['stackCanvas1'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            let ele = document.getElementById("stackCanvas1_container");
+            let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 555, 360, false, false);
+            events.mouseMoveEvent(diagram.element, 555, 360, false, false);
+            events.mouseMoveEvent(diagram.element, 555, 360, false, false);
+            events.mouseUpEvent(diagram.element, 555, 360, false, false);
+            expect(diagram.nodes.length).toBe(7);
+            diagram.clear();
+            done();
+        });
+        it('Drag and drop the vertical swmilane from palette to Diagram', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['stackCanvas2'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            let ele = document.getElementById("stackCanvas1_container");
+            let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
+
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 600, 300, false, false);
+            events.mouseMoveEvent(diagram.element, 600, 305, false, false);
+            events.mouseMoveEvent(diagram.element, 600, 310, false, false);
+            events.mouseUpEvent(diagram.element, 600, 300, false, false);
+            done();
+        });
+
+        it('Drag and drop new vertical swmilane from palette to Diagram', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['stackCanvas2'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            let ele = document.getElementById("stackCanvas1_container");
+            let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
+
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 660, 400, false, false);
+            events.mouseMoveEvent(diagram.element, 660, 405, false, false);
+            events.mouseMoveEvent(diagram.element, 660, 410, false, false);
+            events.mouseUpEvent(diagram.element, 660, 410, false, false);
+            expect(diagram.nodes.length).toBe(7);
+            done();
+        });
+
     });
 });

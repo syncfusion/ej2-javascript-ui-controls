@@ -1495,6 +1495,7 @@ export class PivotButton implements IAction {
     public destroy(): void {
         if (this.menuOption) {
             this.menuOption.destroy();
+            this.menuOption = null;
         }
         let element: HTMLElement = select('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV, this.parentElement);
         const valueFiedDropDownList: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;

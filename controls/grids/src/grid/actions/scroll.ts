@@ -259,8 +259,8 @@ export class Scroll implements IAction {
                 } else {
                     removeClass([this.parent.element], 'e-left-shadow');
                 }
-                let widthVal =  Math.round((this.parent.enableRtl ? target.scrollWidth + target.scrollLeft : target.scrollWidth - target.scrollLeft) +
-                    (this.parent.height === 'auto' ? 0 : 1));
+                const widthVal: number =  Math.round((this.parent.enableRtl ? target.scrollWidth + target.scrollLeft : target.scrollWidth -
+                    target.scrollLeft) + (this.parent.height === 'auto' ? 0 : 1));
                 if (widthVal === target.offsetWidth && this.parent.getVisibleFrozenRightCount()) {
                     removeClass([this.parent.element], 'e-right-shadow');
                 } else {

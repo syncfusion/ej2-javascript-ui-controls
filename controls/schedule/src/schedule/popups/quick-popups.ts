@@ -74,7 +74,7 @@ export class QuickPopups {
     private renderMorePopup(): void {
         const moreEventPopup: string = `<div class="${cls.MORE_EVENT_POPUP_CLASS}"><div class="${cls.MORE_EVENT_HEADER_CLASS}">` +
             `<div class="${cls.MORE_EVENT_CLOSE_CLASS}" title="${this.l10n.getConstant('close')}" tabindex="0" role="button"></div>` +
-            `<div class="${cls.MORE_EVENT_DATE_HEADER_CLASS}"><div class="${cls.MORE_EVENT_HEADER_DAY_CLASS}"></div>` +
+            `<div class="${cls.MORE_EVENT_DATE_HEADER_CLASS}"><div class="${cls.MORE_EVENT_HEADER_DAY_CLASS}" id="${this.parent.element.id}_more_popup"></div>` +
             `<div class="${cls.MORE_EVENT_HEADER_DATE_CLASS} ${cls.NAVIGATE_CLASS}" tabindex="0" role="link"></div></div></div></div>`;
         const moreEventWrapper: HTMLElement = createElement('div', {
             className: cls.MORE_POPUP_WRAPPER_CLASS + ' e-popup-close',
@@ -98,6 +98,8 @@ export class QuickPopups {
             viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
             zIndex: (this.parent.isAdaptive ? 1002 : 2)
         });
+        this.morePopup.element.setAttribute('role', 'dialog');
+        this.morePopup.element.setAttribute('aria-labelledby', this.parent.element.id + '_more_popup');
         const closeButton: HTMLButtonElement = this.morePopup.element.querySelector('.' + cls.MORE_EVENT_CLOSE_CLASS) as HTMLButtonElement;
         this.renderButton('e-round', cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeButton, this.closeClick);
         EventHandler.add(this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DATE_CLASS), 'click', this.navigationClick, this);

@@ -5717,8 +5717,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 annotationWrapper = this.getWrapper(connector.wrapper, annotation.id) as TextElement;
                 connector.updateAnnotation(
                     annotation as PathAnnotation,
-                    connector.intermediatePoints, connector.wrapper.bounds, annotationWrapper,
-                    (this.diagramActions & DiagramAction.Interactions));
+                    connector.intermediatePoints, connector.wrapper.bounds, annotationWrapper,(this.diagramActions & DiagramAction.Interactions));
             }
         }
         connector.wrapper.measure(new Size(connector.wrapper.width, connector.wrapper.height));
@@ -11457,7 +11456,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 // eslint-disable-next-line max-len
                 this.updateConnectorAnnotation(actualObject);
                 this.updateConnectorPort(actualObject);
-                this.updateConnectorfixedUserHandles(actualObject); 
+                this.updateConnectorfixedUserHandles(actualObject);
                 this.updateObject(actualObject, oldProp, newProp);
             } //work-around to update intersected connector bridging
         }
@@ -12890,7 +12889,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             this.addChildNodes(clonedObject);
                         }
                         if (arg.target && (arg.target instanceof Node) && !isConnector && checkParentAsContainer(this, arg.target)
-                            && canAllowDrop(arg.target)) {
+                            && canAllowDrop(arg.target) && !this.commandHandler.isTargetSubProcess(arg.target)) {
                             addChildToContainer(this, arg.target, clonedObject);
                         } else {
                             // EJ2-62652 - Added below code to empty the segment collection if connector type is bezier

@@ -1174,31 +1174,37 @@ export class FilterDialog {
      * @hidden
      */
     public closeFilterDialog(): void {
+        this.dialogPopUp.close();
+    }
+    private removeFilterDialog(): void {
         if (this.editorSearch && !this.editorSearch.isDestroyed) {
             this.editorSearch.destroy();
+            this.editorSearch = null;
         }
         if (this.allowExcelLikeFilter) {
             if (this.tabObj && !this.tabObj.isDestroyed) {
                 this.tabObj.destroy();
+                this.tabObj = null;
             }
         }
         if (this.dropMenu && !this.dropMenu.isDestroyed) {
             this.dropMenu.destroy();
+            this.dropMenu = null;
         }
         if (this.memberTreeView && !this.memberTreeView.isDestroyed) {
             this.memberTreeView.destroy();
+            this.memberTreeView = null;
         }
         if (this.allMemberSelect && !this.allMemberSelect.isDestroyed) {
             this.allMemberSelect.destroy();
+            this.allMemberSelect = null;
         }
         if (document.getElementById(this.parent.parentID + '_LevelDiv-popup')) {
             remove(document.getElementById(this.parent.parentID + '_LevelDiv-popup'));
         }
-        this.dialogPopUp.close();
-    }
-    private removeFilterDialog(): void {
         if (this.dialogPopUp && !this.dialogPopUp.isDestroyed) {
             this.dialogPopUp.destroy();
+            this.dialogPopUp = null;
             setTimeout(this.setFocus.bind(this));
         }
         if (document.getElementById(this.parent.parentID + '_EditorTreeView')) {

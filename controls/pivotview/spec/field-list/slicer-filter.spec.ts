@@ -89,7 +89,7 @@ describe('Pivot Field List Slicer Appearance', () => {
             (pivotCommon.filterDialog.dialogPopUp.element.querySelector('.e-cancel-btn') as HTMLElement).click();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
                 done();
             }, 1000);
         });
@@ -251,7 +251,7 @@ describe('Pivot Field List Slicer Appearance', () => {
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
             setTimeout(() => {
                 pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
                 expect((pivotButton[pivotButton.length - 1].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual('eyeColor');
                 done();
             }, 1000);
@@ -279,7 +279,7 @@ describe('Pivot Field List Slicer Appearance', () => {
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
             setTimeout(() => {
                 pivotButton = [].slice.call((filterAxisContent).querySelectorAll('.e-pivot-button'));
-                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
                 expect((pivotButton[pivotButton.length - 1].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual('eyeColor (green)');
                 done();
             }, 1000);

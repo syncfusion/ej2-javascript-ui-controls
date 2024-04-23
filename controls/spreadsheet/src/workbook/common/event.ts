@@ -261,3 +261,9 @@ export const addFormatToCustomFormatDlg: string = 'addFormatToCustomFormatDlg';
 export const checkFormulaRef: string = 'checkFormulaRef';
 /** @hidden */
 export const parseFormulaArgument: string = 'parseFormulaArgument';
+/** @hidden */
+export const getChartRowIdxFromClientY: string = 'getChartRowIdxFromClientY';
+/** @hidden */
+export const getChartColIdxFromClientX: string = 'getChartColIdxFromClientX';
+/** @hidden */
+export const refreshChartCellOnInit: string = 'refreshChartCellOnInit';

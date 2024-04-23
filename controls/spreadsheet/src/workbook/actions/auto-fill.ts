@@ -562,7 +562,7 @@ export class WorkbookAutoFill {
                 case 'time':
                     idx = pattern.length;
                     len = (patrn.val as number[]).length;
-                    diff = options.isReverseFill ? -1 : 1;
+                    diff = options.isReverseFill ? -1 : len;
                     if (len === 1) {
                         const oldTimeVal: Date = intToDate(patrn.val[0]);
                         const patrnVal: number = Number(patrn.val[0]);

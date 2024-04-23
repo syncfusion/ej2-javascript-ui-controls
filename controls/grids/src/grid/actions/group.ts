@@ -1055,7 +1055,6 @@ export class Group implements IAction {
             firstContentCellIndex = findCellIndex(focusModule.active.matrix.matrix, firstContentCellIndex, true);
         }
         focusModule.active.matrix.current = firstContentCellIndex;
-        const row: HTMLTableRowElement = focusModule.active.getTable().rows[focusModule.active.matrix.current[0]];
         if (this.parent.editSettings.showAddNewRow) {
             this.parent.notify(events.showAddNewRowFocus, {});
         } else {
@@ -1585,7 +1584,7 @@ export class Group implements IAction {
     }
 
     private updatedRowObjChange(rootParentRowObjects: Row<Column>[], updatedRowObjects: Row<Column>[],
-        groupAggregateTemplate: Object[], isDraggedRow?: boolean): void {
+                                groupAggregateTemplate: Object[], isDraggedRow?: boolean): void {
         const gObj: IGrid = this.parent;
         const rowObjects: Row<Column>[] = gObj.getRowsObject();
         let cache: Object = {};
@@ -1604,7 +1603,7 @@ export class Group implements IAction {
                         updatedRowObject.data['key'] || (parentRowObject.data['key'] instanceof Date &&
                             parentRowObject.data['key'].toString() === updatedRowObject.data['key'].toString())))) {
                     let isParentKeyPresent: boolean = true;
-                    const nextParentObject = rootParentRowObjects[parseInt((i + 1).toString(), 10)];
+                    const nextParentObject: Row<Column> = rootParentRowObjects[parseInt((i + 1).toString(), 10)];
                     if (isDraggedRow && nextParentObject && !nextParentObject.isAggregateRow) {
                         const key: string = nextParentObject.data['key'].toString();
                         const field: string = nextParentObject.data['field'];
@@ -1641,7 +1640,7 @@ export class Group implements IAction {
                     updatedRowObject.isAggregateRow) {
                     for (let l: number = 0; l < groupAggregateTemplate.length; l++) {
                         if (this.evaluateGroupAggregateValueChange(parentRowObject, updatedRowObject,
-                            groupAggregateTemplate[parseInt(l.toString(), 10)])) {
+                                                                   groupAggregateTemplate[parseInt(l.toString(), 10)])) {
                             const index: number = rowObjects.indexOf(parentRowObject);
                             if (index !== -1) {
                                 rowObjects[parseInt(index.toString(), 10)].data = updatedRowObject.data;
@@ -1761,8 +1760,8 @@ export class Group implements IAction {
             editedData[0] && (editedData[0]['dragRowObjects'] as Row<Column>[]) : null;
         const dropParentRowObjects: Row<Column>[] = editedData && editedData.length ?
             editedData[0] && (editedData[0]['dropRowObjects'] as Row<Column>[]) : null;
-        let dropRootKey: String | Date = null;
-        let dragRootKey: String | Date = null;
+        let dropRootKey: string | Date = null;
+        let dragRootKey: string | Date = null;
         if (this.parent.enableVirtualization && this.parent.allowGrouping && this.parent.groupSettings.columns.length &&
             (!isNullOrUndefined(dragParentRowObjects) || !isNullOrUndefined(dropParentRowObjects))) {
             if (dragParentRowObjects) {

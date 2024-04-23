@@ -1169,6 +1169,7 @@ export class Clipboard {
         const rows: RowModel[] = pasteModelArgs.model;
         const table: HTMLTableElement = ele.querySelector('table');
         const isSpreadsheet: boolean = table.classList.contains('e-spreadsheet');
+        let tableStyleObj: CellStyleModel = {}; let rowStyleObj: CellStyleModel = {};
         pasteModelArgs.usedRowIndex = table.rows.length - 1;
         pasteModelArgs.rowCount = table.rows.length;
         if (isSpreadsheet) {
@@ -1184,12 +1185,24 @@ export class Clipboard {
                 }
             }
         }
+        let tableStyles: string[] = [];
+        if (!isNullOrUndefined(table)) {
+            if (!isNullOrUndefined(table.getAttribute('style'))) {
+                tableStyles.push(table.getAttribute('style'));
+                this.generateStyles(tableStyles, tableStyleObj);
+            }
+        }
         const getStyle: Function = this.cellStyle(ele, isSpreadsheet);
         let tr: HTMLTableRowElement; let cells: CellModel[]; let cellStyle: CellStyleModel; let td: HTMLTableCellElement;
         let cellCount: number = 1; let colLen: number; let formatStr: string; let curColIdx: number;
         pasteModelArgs.colCount = 1;
+        let rowStyles: string[] = [];
         for (let rowIdx: number = 0, rowLen: number = pasteModelArgs.usedRowIndex; rowIdx <= rowLen; rowIdx++) {
             tr = table.rows[rowIdx as number];
+            if (!isNullOrUndefined(tr.getAttribute('style'))) {
+                rowStyles.push(tr.getAttribute('style'));
+                this.generateStyles(rowStyles, rowStyleObj);
+            }
             if (!rows[rowIdx as number]) {
                 rows[rowIdx as number] = { cells: [] };
             }
@@ -1203,7 +1216,7 @@ export class Clipboard {
                     colIdx = this.getNewIndex(cells, colIdx);
                 }
                 cells[colIdx as number] = {};
-                cellStyle = getStyle(td);
+                cellStyle = cellStyle = getStyle(td, rowStyleObj, tableStyleObj);
                 td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                 td.textContent = td.textContent.replace(/\s+/g, ' ');
                 if ((cellStyle as { whiteSpace: string }).whiteSpace &&
@@ -1298,7 +1311,7 @@ export class Clipboard {
                 }
             }
         }
-        return (td: Element): CellStyleModel => {
+        return (td: Element, rowStyleObj: CellStyleModel, tableStyleObj: CellStyleModel): CellStyleModel => {
             const cellStyle: CellStyleModel = {};
             let styles: string[];
             if (isSpreadsheet) {
@@ -1329,49 +1342,10 @@ export class Clipboard {
                         styles.push('text-decoration:underline');
                     }
                 });
-                Object.assign(cellStyle, commonStyle);
+                Object.assign(cellStyle, tableStyleObj, rowStyleObj, commonStyle);
             }
             if (styles.length) {
-                let index: number; let value: string; let splitValue: string[]; let splitBorder: string[]; let borderSize: number;
-                // `styleAttr` holds the `CSS` property and `styleValue` holds its corresponding `JS` property in same order, common for border.
-                const styleAttr: string[] = ['font-family', 'vertical-align', 'text-align', 'text-indent', 'color', 'white-space',
-                    'font-weight', 'font-style', 'font-size', 'text-decoration', 'background'];
-                const styleValue: string[] = ['fontFamily', 'verticalAlign', 'textAlign', 'textIndent', 'color', 'whiteSpace', 'fontWeight',
-                    'fontStyle', 'fontSize', 'textDecoration', 'backgroundColor'];
-                const borderAttr: string[] = ['border-bottom', 'border-top', 'border-right', 'border-left', 'border'];
-                const borderValue: string[] = ['borderBottom', 'borderTop', 'borderRight', 'borderLeft', 'border'];
-                styles.forEach((styles: string) => {
-                    styles.split(';').forEach((style: string) => {
-                        value = style.split(':')[0].trim();
-                        index = styleAttr.indexOf(value);
-                        if (index > -1) {
-                            value = style.split(':')[1].trim();
-                            cellStyle[styleValue[index as number]] = value;
-                        } else {
-                            index = borderAttr.indexOf(value);
-                            if (index > -1) {
-                                value = style.split(':')[1].trim();
-                                if (value === 'none') {
-                                    value = undefined;
-                                } else if (value.includes('pt')) {
-                                    splitValue = value.split('pt');
-                                    splitBorder = splitValue[0].split(' ');
-                                    for (let i: number = 0; i < splitBorder.length; i++) {
-                                        borderSize = parseFloat(splitBorder[i as number]);
-                                        if (borderSize) {
-                                            splitBorder.splice(i, 1);
-                                            splitBorder.unshift((borderSize / 0.75).toFixed(2) + 'px');
-                                            splitValue[0] = splitBorder.join(' ');
-                                            break;
-                                        }
-                                    }
-                                    value = splitValue.join('');
-                                }
-                                cellStyle[borderValue[index as number]] = value;
-                            }
-                        }
-                    });
-                });
+                this.generateStyles(styles, cellStyle);
             }
             if (td.querySelector('S')) {
                 cellStyle.textDecoration = cellStyle.textDecoration ? 'underline line-through' : 'line-through';
@@ -1393,6 +1367,51 @@ export class Clipboard {
                 cellStyle.fontWeight = cellStyle.fontWeight > '599' ? 'bold' : 'normal';
             }
             return cellStyle;
+        }
+    }
+
+    private generateStyles(styles: string[], styleObj: CellStyleModel): void {
+        let index: number; let value: string; let splitValue: string[]; let splitBorder: string[]; let borderSize: number;
+        // `styleAttr` holds the `CSS` property and `styleValue` holds its corresponding `JS` property in same order, common for border.
+        const styleAttr: string[] = ['font-family', 'vertical-align', 'text-align', 'text-indent', 'color', 'white-space',
+            'font-weight', 'font-style', 'font-size', 'text-decoration', 'background', 'background-color'];
+        const styleValue: string[] = ['fontFamily', 'verticalAlign', 'textAlign', 'textIndent', 'color', 'whiteSpace', 'fontWeight',
+            'fontStyle', 'fontSize', 'textDecoration', 'backgroundColor', 'backgroundColor'];
+        const borderAttr: string[] = ['border-bottom', 'border-top', 'border-right', 'border-left', 'border'];
+        const borderValue: string[] = ['borderBottom', 'borderTop', 'borderRight', 'borderLeft', 'border'];
+        if (styles && styles.length) {
+            styles.forEach((styles: string) => {
+                styles.split(';').forEach((style: string) => {
+                    value = style.split(':')[0].trim();
+                    index = styleAttr.indexOf(value);
+                    if (index > -1) {
+                        value = style.split(':')[1].trim();
+                        styleObj[styleValue[index as number]] = value;
+                    } else {
+                        index = borderAttr.indexOf(value);
+                        if (index > -1) {
+                            value = style.split(':')[1].trim();
+                            if (value === 'none') {
+                                value = undefined;
+                            } else if (value.includes('pt')) {
+                                splitValue = value.split('pt');
+                                splitBorder = splitValue[0].split(' ');
+                                for (let i: number = 0; i < splitBorder.length; i++) {
+                                    borderSize = parseFloat(splitBorder[i as number]);
+                                    if (borderSize) {
+                                        splitBorder.splice(i, 1);
+                                        splitBorder.unshift((borderSize / 0.75).toFixed(2) + 'px');
+                                        splitValue[0] = splitBorder.join(' ');
+                                        break;
+                                    }
+                                }
+                                value = splitValue.join('');
+                            }
+                            styleObj[borderValue[index as number]] = value;
+                        }
+                    }
+                });
+            });
         }
     }
 

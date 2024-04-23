@@ -16,7 +16,7 @@ import { Diagram } from '../diagram';
 import { Connector } from '../objects/connector';
 import { NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, FreeHandTool } from './tool';
 import { PolygonDrawingTool, PolyLineDrawingTool, FixedUserHandleTool } from './tool';
-import { Native, Node, SwimLane, Lane, Phase, UmlClassAttribute, MethodArguments, UmlClassMethod, UmlEnumerationMember } from '../objects/node';
+import { Native, Node, SwimLane, Lane, Phase, UmlClassAttribute, MethodArguments, UmlClassMethod, UmlEnumerationMember, BpmnShape } from '../objects/node';
 import { ConnectorModel } from '../objects/connector-model';
 import { PointPortModel } from '../objects/port-model';
 import { NodeModel, BpmnShapeModel, BasicShapeModel, SwimLaneModel, LaneModel, PhaseModel, UmlClassAttributeModel, UmlClassMethodModel, UmlClassifierShapeModel, UmlEnumerationMemberModel } from '../objects/node-model';
@@ -811,6 +811,12 @@ export class DiagramEventHandler {
             this.hoverNode = this.eventArgs.target;
             this.lastObjectUnderMouse = this.eventArgs.target;
         }
+        //Bug 881512: Wrapping of the connector annotation at run time not working properly.
+        //To wrap the connector annotation text after the node rotated or dragged.
+        let updateAnnotation = false;
+        if(this.tool instanceof MoveTool || this.tool instanceof RotateTool){
+            updateAnnotation = true;
+        }
         this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseUp);
         if (this.diagram.mode === 'SVG' && canVitualize(this.diagram)) {
             this.updateVirtualization();
@@ -962,6 +968,9 @@ export class DiagramEventHandler {
                 }
                 if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
+                    if(this.commandHandler.isTargetSubProcess(this.diagram.selectedObject.actualObject) && (this.diagram.selectedObject.actualObject as Node).parentId === ''){
+                        this.swapProcessChildInDom(this.diagram.element.id+'_diagramLayer', this.diagram.selectedObject.actualObject);
+                    }
                     this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
                     // EJ2-42605 - Annotation undo redo not working properly if the line routing is enabled committed by sivakumar sekar
                     // committed to remove the diagram actions public method when line routing is enabled
@@ -1010,8 +1019,35 @@ export class DiagramEventHandler {
             this.eventArgs = {};
         }
         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate;
+        if(updateAnnotation){
+            this.updateAnnotation(this.diagram.selectedItems);
+        }
         this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter();// end the corresponding tool
     }
+    // To wrap connector annotation text based on the connector length.
+    private updateAnnotation (selectedItems: SelectorModel){
+        let nodes = selectedItems.nodes;
+        if(nodes.length > 0){
+            for(let i:number = 0; i < nodes.length; i++){
+                let node:NodeModel = nodes[parseInt(i.toString(), 10)];
+                this.diagram.updateConnectorEdges(node as Node);
+            }
+        }
+    };
+
+    // Adding child node of sub process in the diagram layer after the subprocess dropped out from swimlane to diagram.
+    private swapProcessChildInDom(diagramLayerId: string, node: NodeModel): void {
+        var diagramLayer= document.getElementById(diagramLayerId);
+        if((node.shape as BpmnShape).activity.subProcess.processes){
+            for(var i: number =0; i < (node.shape as BpmnShape).activity.subProcess.processes.length;i++){
+                var child = document.getElementById((node.shape as BpmnShape).activity.subProcess.processes[parseInt(i.toString(), 10)]+'_groupElement');
+                if(child){
+                    diagramLayer.appendChild(child);
+                }
+            }
+        }
+    }
+
     /**
      * return the clicked element such as node/connector/port/diagram
     */
@@ -1087,10 +1123,15 @@ export class DiagramEventHandler {
             const id: string = (targetNode as Node).parentId;
             swimlaneNode = this.diagram.nameTable[`${id}`];
         }
+        let orientationSwap = null;
         if (swimlaneNode) {
             shape = (swimlaneNode.shape as SwimLaneModel);
             canInsert = (actualShape.isLane) ? actualShape.orientation === shape.orientation :
                 actualShape.orientation !== shape.orientation;
+            if (actualShape.isLane && actualShape.orientation !== shape.orientation) {
+                canInsert = true;
+                orientationSwap = actualShape.orientation === 'Horizontal' ? 'height' : 'width';
+            }
         }
         if (canInsert && (targetNode as Node)) {
             if (shape && shape.header && (shape as SwimLane).hasHeader && shape.orientation === 'Horizontal') { index = 1; }
@@ -1144,6 +1185,17 @@ export class DiagramEventHandler {
                     }
                     lane.header.width = shape.lanes[parseInt(ind.toString(), 10)].header.width;
                     lane.header.height = shape.lanes[parseInt(ind.toString(), 10)].header.height;
+                }
+                //Bug 879093: Incorrect helperguide for vertical and horizontal swim lanes.
+                //With below code, we swap the height and width property of lane based on orientationSwap value.
+                if (orientationSwap) {
+                    if(orientationSwap === 'height'){
+                        lane.width = lane.height;
+                        delete lane.height;
+                    }else{
+                        lane.height = lane.width;
+                        delete lane.width;
+                    }
                 }
                 this.diagram.addLanes(swimlaneNode, [lane], shape.orientation === 'Horizontal' ? value - index : value);
             }

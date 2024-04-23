@@ -504,6 +504,7 @@ export class NumberFormatting implements IAction {
     public destroy(): void {
         if (this.dialog && !this.dialog.isDestroyed) {
             this.dialog.destroy();
+            this.dialog = null;
         }
         this.removeEventListener();
     }

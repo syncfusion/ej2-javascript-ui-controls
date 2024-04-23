@@ -6,7 +6,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { DataUtil, Query, DataManager, Predicate, Deferred, QueryOptions, ReturnOption } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { ReturnType } from '../base/type';
-import { IFilterArgs, FilterSearchBeginEventArgs, CheckBoxBeforeRenderer } from '../base/interface';
+import { IFilterArgs, FilterSearchBeginEventArgs, CheckBoxBeforeRenderer, IGrid } from '../base/interface';
 import * as events from '../base/constant';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
@@ -360,7 +360,7 @@ export class CheckBoxFilterBase {
         const isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[`${isStringTemplate}`] = true;
         this.renderResponsiveFilter(options);
-        const dialogLabel: string = this.parent.filterSettings && (this.parent.filterSettings as any).type === 'CheckBox' ?
+        const dialogLabel: string = this.parent.filterSettings && (<{type: string}>this.parent.filterSettings).type === 'CheckBox' ?
             this.getLocalizedLabel('CheckBoxFilterDialogARIA') : this.getLocalizedLabel('ExcelFilterDialogARIA');
         this.dlg.setAttribute('aria-label', dialogLabel);
         if (options.isResponsiveFilter) {
@@ -564,8 +564,8 @@ export class CheckBoxFilterBase {
                     });
                 }
             }
-            let addCurrSelection: HTMLElement = this.infiniteRenderMod ? this.sBox.querySelector('.e-add-current') :
-            this.cBox.querySelector('.e-add-current');
+            const addCurrSelection: HTMLElement = this.infiniteRenderMod ? this.sBox.querySelector('.e-add-current') :
+                this.cBox.querySelector('.e-add-current');
             if (addCurrSelection && addCurrSelection.classList.contains('e-check')) {
                 const existingPredicate: PredicateModel[] = this.existingPredicate[this.options.field];
                 if (existingPredicate) {
@@ -608,7 +608,7 @@ export class CheckBoxFilterBase {
                 const pred: PredicateModel = this.infiniteManualSelectMaintainPred[i as number];
                 value = pred.value + '';
                 if (value === '' || isNullOrUndefined(value)) {
-                    let dummyDefaults: { predicate?: string, field?: string, type?: string, uid?: string
+                    const dummyDefaults: { predicate?: string, field?: string, type?: string, uid?: string
                         operator?: string, matchCase?: boolean, ignoreAccent?: boolean
                     } = { predicate: pred.predicate, field: pred.field, type: pred.type, uid: pred.uid, operator: pred.operator,
                         matchCase: pred.matchCase, ignoreAccent: pred.ignoreAccent };
@@ -769,8 +769,7 @@ export class CheckBoxFilterBase {
         this.infiniteManualSelectMaintainPred = [];
         if (this.sInput.value === '') {
             this.infiniteUnloadParentExistPred = this.infiniteRenderMod && this.existingPredicate[this.options.column.field] ?
-            [...this.existingPredicate[this.options.column.field]] : [];
-            this.options.parentTotalDataCount = this.options.parentTotalDataCount;
+                [...this.existingPredicate[this.options.column.field]] : [];
         } else {
             this.infiniteUnloadParentExistPred = [];
         }
@@ -944,9 +943,9 @@ export class CheckBoxFilterBase {
                 .concat(...this.infinitePermenantLocalData), this.options.column.field, true);
             if (this.isForeignColumn(this.options.column as Column)) {
                 this.options.column.dataSource = this.options.column.dataSource instanceof DataManager ?
-                this.options.column.dataSource : new DataManager(this.options.column.dataSource as JSON[]);
+                    this.options.column.dataSource : new DataManager(this.options.column.dataSource as JSON[]);
                 this.options.dataSource.dataSource.json = this.options.dataSource.dataSource.json.map((item: Object, i: number) =>
-                Object.assign({}, item, (this.options.column.dataSource as DataManager).dataSource.json[i as number]));
+                    Object.assign({}, item, (this.options.column.dataSource as DataManager).dataSource.json[i as number]));
             }
         } else if (this.infiniteRenderMod && this.options.isRemote) {
             query.select(this.options.column.field);
@@ -988,7 +987,7 @@ export class CheckBoxFilterBase {
         element.appendChild(listDiv);
         const rect: ClientRect = listDiv.getBoundingClientRect();
         element.removeChild(listDiv);
-        const listHeight = Math.round(rect.height);
+        const listHeight: number = Math.round(rect.height);
         return listHeight;
     }
 
@@ -1005,10 +1004,10 @@ export class CheckBoxFilterBase {
         this.removeMask();
         if (wrapperElem) {
             const computedStyle: CSSStyleDeclaration = getComputedStyle(wrapperElem);
-            const height: number = wrapperElem.children.length ? parseInt(computedStyle.height) :
-            Math.floor(parseInt(computedStyle.height.split('px')[0])) - 5;
+            const height: number = wrapperElem.children.length ? parseInt(computedStyle.height, 10) :
+                Math.floor(parseInt(computedStyle.height.split('px')[0], 10)) - 5;
             const backgroundColor: string = this.isExcel && !wrapperElem.children.length && !this.dlg.classList.contains('e-excelfilter') ?
-            '' : getComputedStyle(this.dlg.querySelector('.e-dlg-content')).backgroundColor;
+                '' : getComputedStyle(this.dlg.querySelector('.e-dlg-content')).backgroundColor;
             maskList.style.cssText = 'width: ' + computedStyle.width + '; min-height: ' + computedStyle.minHeight + '; height: ' +
             height + 'px; margin: ' + computedStyle.margin + '; border-style: ' + computedStyle.borderStyle + '; border-width: '
             + computedStyle.borderWidth + '; border-color: ' + computedStyle.borderColor + '; position: absolute; background-color: ' +
@@ -1068,30 +1067,31 @@ export class CheckBoxFilterBase {
             && this.cBox.children.length === this.parent.filterSettings.itemsCount * 3) {
             this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice(0, this.parent.filterSettings.itemsCount));
             this.infiniteSkipCnt += this.prevInfiniteScrollDirection === 'down' ? this.parent.filterSettings.itemsCount :
-            (this.parent.filterSettings.itemsCount * 3);
-            appendChildren(this.cBox, this.infiniteLoadedElem.slice(this.infiniteSkipCnt, this.parent.filterSettings.itemsCount + this.infiniteSkipCnt));
+                (this.parent.filterSettings.itemsCount * 3);
+            appendChildren(this.cBox, this.infiniteLoadedElem.slice(this.infiniteSkipCnt, this.parent.filterSettings.itemsCount +
+                this.infiniteSkipCnt));
             this.prevInfiniteScrollDirection = 'down';
         }
         else if (target.scrollTop === 0 && !this.infiniteInitialLoad && !this.infiniteSearchValChange && this.infiniteSkipCnt
             && this.infiniteLoadedElem.length && this.infiniteLoadedElem.length > this.parent.filterSettings.itemsCount * 3
             && this.cBox.children.length === this.parent.filterSettings.itemsCount * 3) {
-            this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice((this.parent.filterSettings.itemsCount * 2),
-                this.parent.filterSettings.itemsCount));
+            this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice((this.parent.filterSettings
+                .itemsCount * 2), this.parent.filterSettings.itemsCount));
             this.infiniteSkipCnt -= this.prevInfiniteScrollDirection === 'up' ? this.parent.filterSettings.itemsCount :
-            (this.parent.filterSettings.itemsCount * 3);
-            this.infiniteAppendElements([].slice.call(this.infiniteLoadedElem.slice(this.infiniteSkipCnt,
-                this.infiniteSkipCnt + this.parent.filterSettings.itemsCount)));
+                (this.parent.filterSettings.itemsCount * 3);
+            this.infiniteAppendElements([].slice.call(this.infiniteLoadedElem.slice(this.infiniteSkipCnt, this.infiniteSkipCnt +
+                this.parent.filterSettings.itemsCount)));
             this.cBox.scrollTop = this.infiniteScrollAppendDiff;
             this.prevInfiniteScrollDirection = 'up';
         }
         else if (target.scrollTop === 0 && !this.infiniteInitialLoad && !this.infiniteSearchValChange && this.infiniteSkipCnt
             && this.infiniteLoadedElem.length && this.cBox.children.length < this.parent.filterSettings.itemsCount * 3) {
-            this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice((this.parent.filterSettings.itemsCount * 2),
-                this.infiniteDataCount % this.parent.filterSettings.itemsCount));
+            this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice((this.parent.filterSettings
+                .itemsCount * 2), this.infiniteDataCount % this.parent.filterSettings.itemsCount));
             this.infiniteSkipCnt = (Math.floor(this.infiniteDataCount / this.parent.filterSettings.itemsCount) - 3) *
                 this.parent.filterSettings.itemsCount;
-            this.infiniteAppendElements([].slice.call(this.infiniteLoadedElem.slice(this.infiniteSkipCnt,
-                this.infiniteSkipCnt + this.parent.filterSettings.itemsCount)));
+            this.infiniteAppendElements([].slice.call(this.infiniteLoadedElem.slice(this.infiniteSkipCnt, this.infiniteSkipCnt +
+                this.parent.filterSettings.itemsCount)));
             this.cBox.scrollTop = this.infiniteScrollAppendDiff;
             this.prevInfiniteScrollDirection = 'up';
         }
@@ -1117,7 +1117,8 @@ export class CheckBoxFilterBase {
                 }
             }, 500);
         } else if (!this.infiniteInitialLoad) {
-            createSpinner({ target: this.spinner, cssClass: this.parent.cssClass ? this.parent.cssClass : null }, this.parent.createElement);
+            createSpinner({ target: this.spinner, cssClass: this.parent.cssClass ? this.parent.cssClass : null }, this.parent
+                .createElement);
             showSpinner(this.spinner);
         }
         const fName: string = 'fn';
@@ -1177,7 +1178,7 @@ export class CheckBoxFilterBase {
         }
         if (this.infiniteRenderMod && this.infiniteInitialLoad && !this.options.isRemote) {
             const field: string = this.isForeignColumn(this.options.column as Column) ? this.options.foreignKeyValue :
-            this.options.column.field;
+                this.options.column.field;
             this.options.dataSource.executeQuery(new Query().sortBy(field, DataUtil.fnAscending)).then((e: ReturnOption) => {
                 (this.options.dataSource as DataManager).dataSource.json = e.result as JSON[];
                 this.executeQueryOperations(query, allPromise, runArray);
@@ -1246,9 +1247,14 @@ export class CheckBoxFilterBase {
 
     private queryGenerate(query: Query): void {
         if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
-            const sSettings: SearchSettingsModel = this.parent.searchSettings;
-            const fields: string[] = sSettings.fields.length ? sSettings.fields : this.options.columns.map((f: Column) => f.field);
-            query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
+            if (!isNullOrUndefined((this.parent as IGrid).getDataModule) && (this.parent as IGrid).getDataModule().isRemote() &&
+                (<{ getModuleName?: Function }>(this.parent as IGrid).getDataModule().dataManager.adaptor).getModuleName() === 'ODataV4Adaptor') {
+                (this.parent as IGrid).getDataModule().searchQuery(query);
+            } else {
+                const sSettings: SearchSettingsModel = this.parent.searchSettings;
+                const fields: string[] = sSettings.fields.length ? sSettings.fields : this.options.columns.map((f: Column) => f.field);
+                query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
+            }
         }
         if ((this.options.filteredColumns.length)) {
             const cols: Object[] = [];
@@ -1300,9 +1306,9 @@ export class CheckBoxFilterBase {
 
     private updateResult(): void {
         this.result = {};
-        const predicate: Predicate = this.infiniteRenderMod && this.existingPredicate[this.options.field] ? 
-        this.getPredicateFromCols(this.existingPredicate[this.options.field], this.isExecuteLocal) : 
-        this.getPredicateFromCols(this.options.filteredColumns, this.isExecuteLocal);
+        const predicate: Predicate = this.infiniteRenderMod && this.existingPredicate[this.options.field] ?
+            this.getPredicateFromCols(this.existingPredicate[this.options.field], this.isExecuteLocal) :
+            this.getPredicateFromCols(this.options.filteredColumns, this.isExecuteLocal);
         const query: Query = new Query();
         if (predicate) {
             query.where(predicate);
@@ -1354,7 +1360,7 @@ export class CheckBoxFilterBase {
                         }
                         const result: Object[] = new DataManager(this.infinitePermenantLocalData as JSON[]).executeLocal(query);
                         if (this.options.parentTotalDataCount !== result.length) {
-                            this.options.parentTotalDataCount = result.length
+                            this.options.parentTotalDataCount = result.length;
                         }
                         if (!this.options.parentTotalDataCount && this.infiniteUnloadParentExistPred.length) {
                             this.infiniteUnloadParentExistPred = [];
@@ -1397,10 +1403,13 @@ export class CheckBoxFilterBase {
     /**
      * Method to set the next target element on keyboard navigation using arrow keys.
      *
+     * @param {KeyboardEventArgs} e - Defines the Keyboard event argument
+     * @param {HTMLElement[]} focusableElements - Defines the Focusable elements
+     * @returns {void}
      */
     private focusNextOrPrev(e: KeyboardEventArgs, focusableElements: HTMLElement[]): void {
         const nextIndex: number = (e.key === 'ArrowUp') ? focusableElements.indexOf(document.activeElement as HTMLElement) - 1
-         : focusableElements.indexOf(document.activeElement as HTMLElement) + 1;
+            : focusableElements.indexOf(document.activeElement as HTMLElement) + 1;
         const nextElement: Element = focusableElements[((nextIndex + focusableElements.length) % focusableElements.length)];
 
         // Set focus on the next / previous element
@@ -1415,7 +1424,7 @@ export class CheckBoxFilterBase {
         if ((e.key === 'Tab' && e.shiftKey) || e.key === 'Tab' || ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey)) {
             this.setFocus(parentsUntil(e.target as Element, 'e-ftrchk'));
         }
-        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && (this.parent.filterSettings as any).type === 'CheckBox') {
+        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && (<{type: string}>this.parent.filterSettings).type === 'CheckBox') {
             e.preventDefault();
             const focusableElements: HTMLElement[] = Array.from(this.dlg.querySelectorAll(
                 'input, button, [tabindex]:not([tabindex="-1"])'
@@ -1442,8 +1451,8 @@ export class CheckBoxFilterBase {
             this.infiniteManualSelectMaintainPred = [];
         }
         const cBoxes: Element[] = this.infiniteRenderMod ?
-        this.infiniteLoadedElem.map(arr =>
-            arr.querySelector('.e-frame')) : [].slice.call(this.cBox.querySelectorAll('.e-frame:not(.e-add-current)'));
+            this.infiniteLoadedElem.map((arr: HTMLElement) =>
+                arr.querySelector('.e-frame')) : [].slice.call(this.cBox.querySelectorAll('.e-frame:not(.e-add-current)'));
         for (const cBox of cBoxes) {
             removeAddCboxClasses(cBox, checked);
             setChecked(cBox.previousSibling as HTMLInputElement, checked);
@@ -1502,8 +1511,8 @@ export class CheckBoxFilterBase {
         let className: string[] = [];
         let disabled: boolean = false;
         const elem: Element = this.infiniteRenderMod ? this.sBox.querySelector('.e-selectall') : this.cBox.querySelector('.e-selectall');
-        let selected: number = this.infiniteRenderMod ? this.infiniteLoadedElem.filter(arr => arr.querySelector('.e-check')).length :
-        this.cBox.querySelectorAll('.e-check:not(.e-selectall):not(.e-add-current)').length;
+        let selected: number = this.infiniteRenderMod ? this.infiniteLoadedElem.filter((arr: HTMLElement) => arr.querySelector('.e-check')).length :
+            this.cBox.querySelectorAll('.e-check:not(.e-selectall):not(.e-add-current)').length;
         if (this.cBox.querySelector('.e-add-current')) {
             cnt -= 1;
         }
@@ -1628,9 +1637,9 @@ export class CheckBoxFilterBase {
                     predicateElement.querySelector('.e-frame').classList.add('e-add-current');
                     if (this.infiniteRenderMod) {
                         this.sBox.insertBefore(predicateElement, this.spinner);
-                        let checkBoxListElem: HTMLElement = this.spinner.querySelector('.e-checkboxlist');
-                        let reduceHeight: number = Math.ceil(predicateElement.getBoundingClientRect().height);
-                        checkBoxListElem.style.height = (parseInt(getComputedStyle(checkBoxListElem).height.split('px')[0]) - reduceHeight)
+                        const checkBoxListElem: HTMLElement = this.spinner.querySelector('.e-checkboxlist');
+                        const reduceHeight: number = Math.ceil(predicateElement.getBoundingClientRect().height);
+                        checkBoxListElem.style.height = (parseInt(getComputedStyle(checkBoxListElem).height.split('px')[0], 10) - reduceHeight)
                         + 'px';
                         checkBoxListElem.style.minHeight = checkBoxListElem.style.height;
                     } else {
@@ -1642,9 +1651,9 @@ export class CheckBoxFilterBase {
                 }
             } else if (this.infiniteRenderMod && !isNullOrUndefined(this.sBox.children[2])
                 && (this.sBox.children[2] as HTMLElement).innerText === 'Add current selection to filter') {
-                let checkBoxListElem: HTMLElement = this.spinner.querySelector('.e-checkboxlist');
-                let increaseHeight: number = Math.ceil(this.sBox.children[2].getBoundingClientRect().height);
-                checkBoxListElem.style.height = (parseInt(getComputedStyle(checkBoxListElem).height.split('px')[0]) + increaseHeight)
+                const checkBoxListElem: HTMLElement = this.spinner.querySelector('.e-checkboxlist');
+                const increaseHeight: number = Math.ceil(this.sBox.children[2].getBoundingClientRect().height);
+                checkBoxListElem.style.height = (parseInt(getComputedStyle(checkBoxListElem).height.split('px')[0], 10) + increaseHeight)
                 + 'px';
                 checkBoxListElem.style.minHeight = checkBoxListElem.style.height;
                 remove(this.sBox.children[2]);
@@ -1671,8 +1680,8 @@ export class CheckBoxFilterBase {
                 const checkbox: Element =
                 this.localInfiniteSelectAllClicked ?
                     this.createCheckbox(value as string, this.infiniteLocalSelectAll, getValue('dataObj', data[i as number])) :
-                    this.createCheckbox( value as string,
-                        this.getCheckedState(isColFiltered, this.values[`${uid}`]), getValue('dataObj', data[i as number]));
+                    this.createCheckbox(value as string,
+                                        this.getCheckedState(isColFiltered, this.values[`${uid}`]), getValue('dataObj', data[i as number]));
                 cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
                 if (this.infiniteRenderMod) {
                     (cBoxes.lastChild as HTMLElement).style.height = this.getListHeight(this.cBox) + 'px';
@@ -1783,7 +1792,8 @@ export class CheckBoxFilterBase {
         }
     }
 
-    public static getDistinct(json: Object[], field: string, column?: Column, foreignKeyData?: Object[], checkboxFilter?: CheckBoxFilterBase): Object {
+    public static getDistinct(json: Object[], field: string, column?: Column, foreignKeyData?: Object[],
+                              checkboxFilter?: CheckBoxFilterBase): Object {
         let len: number = json.length;
         const result: Object[] = [];
         let value: string;

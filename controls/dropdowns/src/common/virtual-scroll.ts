@@ -169,9 +169,10 @@ export class VirtualScroll {
                         var query = this.parent.getForQuery(this.parent.value).clone();
                         query = query.skip(0).take(this.parent.itemCount - (this.parent.value.length - this.parent.viewPortInfo.startIndex));
                         this.parent.appendUncheckList = true;
+                        this.parent.setCurrentView = false;
                         this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                         isListUpdated = false;
-                        this.parent.appendUncheckList = false;
+                        this.parent.appendUncheckList = this.parent.dataSource instanceof DataManager ? this.parent.appendUncheckList : false;
                         isListUpdated = false;
                     }
                     else{
@@ -194,9 +195,11 @@ export class VirtualScroll {
                     var query = this.parent.getForQuery(this.parent.value).clone();    
                     query = query.skip(0).take(this.parent.itemCount - (this.parent.value.length-this.parent.viewPortInfo.startIndex));
                     this.parent.appendUncheckList = true;
+                    this.parent.setCurrentView = false;
                     this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                     isListUpdated = false;
-                    this.parent.appendUncheckList = false;
+                    this.parent.appendUncheckList = this.parent.dataSource instanceof DataManager ? this.parent.appendUncheckList : false;
+
                 }
             }
             else {
@@ -207,6 +210,7 @@ export class VirtualScroll {
                 var query = this.parent.getForQuery(this.parent.value).clone();
                 var skipvalue = this.parent.viewPortInfo.startIndex - this.parent.value.length >= 0 ? this.parent.viewPortInfo.startIndex - this.parent.value.length : 0;
                 query = query.skip(skipvalue);
+                this.parent.setCurrentView = false;
                 this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                 isListUpdated = false;
             }
@@ -228,6 +232,7 @@ export class VirtualScroll {
                             else{
                                 query = query.skip(this.parent.viewPortInfo.startIndex);
                             }
+                            this.parent.setCurrentView = false;
                             this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                             isResetListCalled = true;
                             break;
@@ -249,6 +254,7 @@ export class VirtualScroll {
                                 else{
                                     query = query.skip(this.parent.viewPortInfo.startIndex);
                                 }
+                                this.parent.setCurrentView = false;
                                 this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                                 isResetListCalled = true;
                             }
@@ -260,6 +266,7 @@ export class VirtualScroll {
                         currentData.push(alreadyAddedData[0]);
                     }
                 }
+                this.parent.setCurrentView = false;
             }
         }
         if (!isResetListCalled && isListUpdated) {
@@ -327,6 +334,7 @@ export class VirtualScroll {
         if (isStartIndexInitialised && !((this.parent.totalItemCount == queryStartIndex) && (this.parent.totalItemCount == queryEndIndex))) {
             this.parent.virtualItemStartIndex = queryStartIndex;
             this.parent.virtualItemEndIndex = queryEndIndex;
+            this.parent.setCurrentView = true;
             this.generateAndExecuteQueryAsync(query, queryStartIndex, queryEndIndex);
             if (this.component === 'multiselect' && this.parent.hideSelectedItem && this.parent.value && Array.isArray(this.parent.value) && this.parent.value.length > 0) {
                 this.parent.totalItemsCount();
@@ -336,7 +344,9 @@ export class VirtualScroll {
                 this.parent.virtualItemEndIndex = this.parent.viewPortInfo.endIndex;
             }
         }
-        this.setCurrentViewDataAsync();
+        if (!(this.parent.dataSource instanceof DataManager) || (this.parent.dataSource instanceof DataManager && !this.parent.isRequesting)) {
+            this.setCurrentViewDataAsync();
+        }
     }
     private dataProcessAsync(isOpenPopup?: boolean): void {
         this.parent.selectedValueInfo = null;
@@ -363,7 +373,7 @@ export class VirtualScroll {
             }
         }
         await this.dataProcessAsync();
-        if (this.parent.keyboardEvent != null) {
+        if (this.parent.keyboardEvent != null && (!(this.parent.dataSource instanceof DataManager) || (this.parent.dataSource instanceof DataManager && !this.parent.isRequesting))) {
             this.parent.handleVirtualKeyboardActions(this.parent.keyboardEvent, this.parent.pageCount);
         }
         if (!this.parent.customFilterQuery) {

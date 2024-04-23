@@ -1276,120 +1276,114 @@ export class LayerPanel {
     }
 
     public arrangeTiles(type: string, x: number, y: number): void {
+        const element: HTMLElement = document.getElementById(this.mapObject.element.id + '_tile_parent');
+        const element1: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
         let timeOut: number;
         if (!isNullOrUndefined(type) && type !== 'Pan') {
             this.tileAnimation(type, x, y);
             timeOut = animationMode === 'Disable' ? 0 : (this.mapObject.layersCollection[0].animationDuration === 0 &&
                 animationMode === 'Enable') ? 1000 : this.mapObject.layersCollection[0].animationDuration;
+        } else {
+            timeOut = 0;
         }
         if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
             this.renderGoogleMap(this.mapObject.layers[0].key, this.mapObject.staticMapZoom);
         } else {
-            if (type === 'Pan') {
-                this.arrangeTilesLayer(type);
-            } else {
-                setTimeout(() => {
-                    this.arrangeTilesLayer(type);
-                }, timeOut);
-            }
-        }
-    }
-
-    private arrangeTilesLayer(type: string): void {
-        const element: HTMLElement = document.getElementById(this.mapObject.element.id + '_tile_parent');
-        const element1: HTMLElement = document.getElementById(this.mapObject.element.id + '_tiles');
-        if (element) {
-            element.style.zIndex = '1';
-        }
-        if (element1) {
-            element1.style.zIndex = '0';
-        }
-        let animateElement: HTMLElement;
-        if (!document.getElementById(this.mapObject.element.id + '_animated_tiles') && element) {
-            animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
-            element.appendChild(animateElement);
-        } else {
-            if (type !== 'Pan' && element1 && element) {
-                element1.appendChild(element.children[0]);
-                if (!this.mapObject.isAddLayer && !isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
-                    document.getElementById(this.mapObject.element.id + '_animated_tiles').id =
-                        this.mapObject.element.id + '_animated_tiles_old';
+            setTimeout(() => {
+                if (element) {
+                    element.style.zIndex = '1';
                 }
-                animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
-                element.appendChild(animateElement);
-            } else {
-                animateElement = element ? element.children[0] as HTMLElement : null;
-            }
-        }
-        for (let id: number = 0; id < this.tiles.length; id++) {
-            const tile: Tile = this.tiles[id as number];
-            let imgElement: HTMLImageElement = null;
-            const mapId: string = this.mapObject.element.id;
-            if (type === 'Pan') {
-                let child: HTMLElement = document.getElementById(mapId + '_tile_' + id);
-                let isNewTile: boolean = false;
-                if (isNullOrUndefined(child)) {
-                    isNewTile = true;
-                    child = createElement('div', { id: mapId + '_tile_' + id });
-                    imgElement = createElement('img') as HTMLImageElement;
+                if (element1) {
+                    element1.style.zIndex = '0';
+                }
+                let animateElement: HTMLElement;
+                if (!document.getElementById(this.mapObject.element.id + '_animated_tiles') && element) {
+                    animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
+                    element.appendChild(animateElement);
                 } else {
-                    child.style.removeProperty('display');
-                    imgElement = <HTMLImageElement>child.children[0];
-                }
-                if (!isNewTile && imgElement && imgElement.src !== tile.src) {
-                    imgElement.src = tile.src;
-                }
-                child.style.position = 'absolute';
-                child.style.left = tile.left + 'px';
-                child.style.top = tile.top + 'px';
-                child.style.height = tile.height + 'px';
-                child.style.width = tile.width + 'px';
-                if (isNewTile) {
-                    imgElement.setAttribute('height', '256px');
-                    imgElement.setAttribute('width', '256px');
-                    imgElement.setAttribute('src', tile.src);
-                    imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
-                    imgElement.style.setProperty('user-select', 'none');
-                    child.appendChild(imgElement);
-                    animateElement.appendChild(child);
-                }
-            } else {
-                imgElement = createElement('img') as HTMLImageElement;
-                imgElement.setAttribute('height', '256px');
-                imgElement.setAttribute('width', '256px');
-                imgElement.setAttribute('src', tile.src);
-                imgElement.style.setProperty('user-select', 'none');
-                imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
-                const child: HTMLElement = createElement('div', { id: mapId + '_tile_' + id });
-                child.style.position = 'absolute';
-                child.style.left = tile.left + 'px';
-                child.style.top = tile.top + 'px';
-                child.style.height = tile.height + 'px';
-                child.style.width = tile.width + 'px';
-                child.appendChild(imgElement);
-                if (animateElement) {
-                    animateElement.appendChild(child);
-                }
-            }
-            if (id === (this.tiles.length - 1) && document.getElementById(this.mapObject.element.id + '_animated_tiles_old')) {
-                removeElement(this.mapObject.element.id + '_animated_tiles_old');
-            }
-        }
-        if (!isNullOrUndefined(this.mapObject.currentTiles)) {
-            for (let l: number = this.tiles.length; l < animateElement.childElementCount; l++) {
-                let isExistingElement: boolean = false;
-                for (let a: number = 0; a < this.mapObject.currentTiles.childElementCount; a++) {
-                    if (!isExistingElement &&
-                        this.mapObject.currentTiles.children[a as number].id === animateElement.children[l as number].id) {
-                        isExistingElement = true;
+                    if (type !== 'Pan' && element1 && element) {
+                        element1.appendChild(element.children[0]);
+                        if (!this.mapObject.isAddLayer && !isNullOrUndefined(document.getElementById(this.mapObject.element.id + '_animated_tiles'))) {
+                            document.getElementById(this.mapObject.element.id + '_animated_tiles').id =
+                                this.mapObject.element.id + '_animated_tiles_old';
+                        }
+                        animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
+                        element.appendChild(animateElement);
+                    } else {
+                        animateElement = element ? element.children[0] as HTMLElement : null;
                     }
                 }
-                if (isExistingElement) {
-                    (animateElement.children[l as number] as HTMLElement).style.display = 'none';
-                } else {
-                    animateElement.removeChild(animateElement.children[l as number]);
+                for (let id: number = 0; id < this.tiles.length; id++) {
+                    const tile: Tile = this.tiles[id as number];
+                    let imgElement: HTMLImageElement = null;
+                    const mapId: string = this.mapObject.element.id;
+                    if (type === 'Pan') {
+                        let child: HTMLElement = document.getElementById(mapId + '_tile_' + id);
+                        let isNewTile: boolean = false;
+                        if (isNullOrUndefined(child)) {
+                            isNewTile = true;
+                            child = createElement('div', { id: mapId + '_tile_' + id });
+                            imgElement = createElement('img') as HTMLImageElement;
+                        } else {
+                            child.style.removeProperty('display');
+                            imgElement = <HTMLImageElement>child.children[0];
+                        }
+                        if (!isNewTile && imgElement && imgElement.src !== tile.src) {
+                            imgElement.src = tile.src;
+                        }
+                        child.style.position = 'absolute';
+                        child.style.left = tile.left + 'px';
+                        child.style.top = tile.top + 'px';
+                        child.style.height = tile.height + 'px';
+                        child.style.width = tile.width + 'px';
+                        if (isNewTile) {
+                            imgElement.setAttribute('height', '256px');
+                            imgElement.setAttribute('width', '256px');
+                            imgElement.setAttribute('src', tile.src);
+                            imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
+                            imgElement.style.setProperty('user-select', 'none');
+                            child.appendChild(imgElement);
+                            animateElement.appendChild(child);
+                        }
+                    } else {
+                        imgElement = createElement('img') as HTMLImageElement;
+                        imgElement.setAttribute('height', '256px');
+                        imgElement.setAttribute('width', '256px');
+                        imgElement.setAttribute('src', tile.src);
+                        imgElement.style.setProperty('user-select', 'none');
+                        imgElement.setAttribute('alt', this.mapObject.getLocalizedLabel('ImageNotFound'));
+                        const child: HTMLElement = createElement('div', { id: mapId + '_tile_' + id });
+                        child.style.position = 'absolute';
+                        child.style.left = tile.left + 'px';
+                        child.style.top = tile.top + 'px';
+                        child.style.height = tile.height + 'px';
+                        child.style.width = tile.width + 'px';
+                        child.appendChild(imgElement);
+                        if (animateElement) {
+                            animateElement.appendChild(child);
+                        }
+                    }
+                    if (id === (this.tiles.length - 1) && document.getElementById(this.mapObject.element.id + '_animated_tiles_old')) {
+                        removeElement(this.mapObject.element.id + '_animated_tiles_old');
+                    }
                 }
-            }
+                if (!isNullOrUndefined(this.mapObject.currentTiles)) {
+                    for (let l: number = this.tiles.length; l < animateElement.childElementCount; l++) {
+                        let isExistingElement: boolean = false;
+                        for (let a: number = 0; a < this.mapObject.currentTiles.childElementCount; a++) {
+                            if (!isExistingElement &&
+                                this.mapObject.currentTiles.children[a as number].id === animateElement.children[l as number].id) {
+                                isExistingElement = true;
+                            }
+                        }
+                        if (isExistingElement) {
+                            (animateElement.children[l as number] as HTMLElement).style.display = 'none';
+                        } else {
+                            animateElement.removeChild(animateElement.children[l as number]);
+                        }
+                    }
+                }
+            }, timeOut);
         }
     }
 

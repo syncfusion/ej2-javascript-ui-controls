@@ -4,8 +4,8 @@ import { FormValidator } from '@syncfusion/ej2-inputs';
 import { isNullOrUndefined, KeyboardEventArgs, isUndefined } from '@syncfusion/ej2-base';
 import { IGrid, BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs } from '../base/interface';
 import { BatchAddArgs, CellEditArgs, CellSaveArgs, CellFocusArgs, BatchCancelArgs } from '../base/interface';
-import { CellType, freezeTable } from '../base/enum';
-import { parentsUntil, inArray, refreshForeignData, getObject, addRemoveEventListener, getCellFromRow } from '../base/util';
+import { CellType } from '../base/enum';
+import { parentsUntil, refreshForeignData, getObject, addRemoveEventListener, getCellFromRow } from '../base/util';
 import { getCellByColAndRowIndex, addFixedColumnBorder } from '../base/util';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
@@ -179,7 +179,7 @@ export class BatchEdit {
             return;
         }
         let [rowIndex, cellIndex]: number[] = e.container.indexes;
-        let actualIndex: number = e.element.getAttribute('data-colindex') ? parseInt(e.element.getAttribute('data-colindex')) : cellIndex;
+        const actualIndex: number = e.element.getAttribute('data-colindex') ? parseInt(e.element.getAttribute('data-colindex'), 10) : cellIndex;
         if (actualIndex !== cellIndex) {
             cellIndex = actualIndex;
         }
@@ -419,7 +419,6 @@ export class BatchEdit {
 
     /**
      * @param {Row<Column>} row - specifies the row object
-     * @param {freezeTable} newTableName - specifies the table name
      * @returns {void}
      * @hidden
      */
@@ -439,7 +438,7 @@ export class BatchEdit {
         this.removeSelectedData = [];
         const gObj: IGrid = this.parent;
         let index: number = gObj.selectedRowIndex;
-        let selectedRows: Element[] = gObj.getSelectedRows();
+        const selectedRows: Element[] = gObj.getSelectedRows();
         const args: BeforeBatchDeleteArgs = {
             primaryKey: this.parent.getPrimaryKeyFieldNames(),
             rowIndex: index,
@@ -643,7 +642,7 @@ export class BatchEdit {
             validation = isValOnly ? isNullOrUndefined(cols[parseInt(i.toString(), 10)].validationRules) : false;
             // if (!isAdd && this.checkNPCell(cols[parseInt(i.toString(), 10)])) {
             //     return i;
-            // } else 
+            // } else
             if (isAdd && (!cols[parseInt(i.toString(), 10)].template || cols[parseInt(i.toString(), 10)].field)
                 && cols[parseInt(i.toString(), 10)].allowEditing && cols[parseInt(i.toString(), 10)].visible &&
                 !(cols[parseInt(i.toString(), 10)].isIdentity && cols[parseInt(i.toString(), 10)].isPrimaryKey) && !validation) {
@@ -758,25 +757,26 @@ export class BatchEdit {
         const col: Column = gObj.getColumnByField(field);
         const index: number = gObj.getColumnIndexByField(field);
         if (col && !col.isPrimaryKey && col.allowEditing) {
-            let td: Element = this.parent.isSpan ? getCellFromRow(gObj, rowIndex, index) : 
+            const td: Element = this.parent.isSpan ? getCellFromRow(gObj, rowIndex, index) :
                 getCellByColAndRowIndex(this.parent, col, rowIndex, index);
             if (this.parent.isSpan && !td) {
                 return;
             }
             const rowObj: Row<Column> = gObj.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
             if (gObj.isEdit ||
-                (!rowObj.changes && ((!(value instanceof Date) && rowObj.data["" + field] !== value) ||
-                    ((value instanceof Date) && new Date(rowObj.data["" + field]).toString() !== new Date(value).toString()))) ||
-                (rowObj.changes && ((!(value instanceof Date) && rowObj.changes["" + field] !== value) ||
-                    ((value instanceof Date) && new Date(rowObj.changes["" + field]).toString() !== new Date(value).toString())))) {
+                (!rowObj.changes && ((!(value instanceof Date) && rowObj.data['' + field] !== value) ||
+                    ((value instanceof Date) && new Date(rowObj.data['' + field]).toString() !== new Date(value).toString()))) ||
+                (rowObj.changes && ((!(value instanceof Date) && rowObj.changes['' + field] !== value) ||
+                    ((value instanceof Date) && new Date(rowObj.changes['' + field]).toString() !== new Date(value).toString())))) {
                 this.refreshTD(td, col, rowObj, value);
-                const isReactChild = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                     this.parent.parentDetails.parentInstObj.isReact;
                 if (((this.parent.isReact && this.parent.requireTemplateRef) || (isReactChild &&
                     this.parent.parentDetails.parentInstObj.requireTemplateRef)) && col.template) {
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias
                     const thisRef: BatchEdit = this;
                     const newReactTd: Element = this.newReactTd;
-                    thisRef.parent.renderTemplates(function () {
+                    thisRef.parent.renderTemplates(function (): void {
                         thisRef.parent.trigger(events.queryCellInfo, {
                             cell: newReactTd || td, column: col, data: rowObj.changes
                         });
@@ -910,11 +910,6 @@ export class BatchEdit {
             }
         }
         else if (!isSingleInsert && this.isAdded && !gObj.isEdit) {
-            let editRowIdx: number = 0;
-            if (gObj.editSettings.newRowPosition === 'Bottom') {
-                const changes: Object = this.getBatchChanges();
-                editRowIdx = gObj.getCurrentViewRecords().length - changes[literals.deletedRecords].length;
-            }
             for (let i: number = 0; i < insertedRows.length; i++) {
                 if (!gObj.isEdit) {
                     for (let j: number = 0; j < this.validationColObj.length; j++) {

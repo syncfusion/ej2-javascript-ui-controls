@@ -195,7 +195,7 @@ export class DataLabel {
                 location['y'] = ((location['y'] + zoomTransPoint['y']) * scale);
             }
             location['y'] = (this.maps.projectionType === 'Mercator') || layer.geometryType === 'Normal' ? location['y'] : (-location['y']);
-            if (!isNullOrUndefined(this.maps.format) && !isNaN(parseFloat(text))) {
+            if (!isNullOrUndefined(this.maps.format) && !isNaN(Number(text)) && !isNaN(parseFloat(text))) {
                 if (this.maps.useGroupingSeparator) {
                     text = Internalize(this.maps, parseFloat(text));
                     if (!isNullOrUndefined(datasrcObj)) {

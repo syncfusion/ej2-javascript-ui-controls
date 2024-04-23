@@ -30,7 +30,6 @@ export class VirtualScroll {
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
-        this.removeInternalEvents();
         this.addInternalEvents();
     }
 
@@ -315,8 +314,7 @@ export class VirtualScroll {
             }
             this.update(
                 this.parent.element.querySelector('.' + cls.GRID_CLASS + ' .' + cls.CONTENT_CLASS).scrollTop * this.parent.verticalScrollScale,
-                ele.scrollLeft * this.parent.horizontalScrollScale, e, ele, mHdr, mCont
-            );
+                ele.scrollLeft * this.parent.horizontalScrollScale, e, ele, mHdr, mCont);
         };
     }
 
@@ -346,9 +344,7 @@ export class VirtualScroll {
                 clearTimeout(timeOutObj);
                 timeOutObj = setTimeout(() => {
                     left = e.type === 'touchmove' ? eleScrollLeft : left;
-                    this.update(
-                        mCont.parentElement.scrollTop * this.parent.verticalScrollScale, left, e, ele, mHdr, mCont
-                    );
+                    this.update(mCont.parentElement.scrollTop * this.parent.verticalScrollScale, left, e, ele, mHdr, mCont);
                 }, 300);
             }
             if (this.previousValues.left === left) {

@@ -48,6 +48,8 @@ export interface IDropdownlist extends Component<HTMLElement> {
     allowFiltering: boolean;
     isPopupOpen: boolean;
     isTyped: boolean;
+    setCurrentView: boolean;
+    isRequesting: boolean;
     itemCount: number;
     fields: FieldSettingsModel;
     generatedDataObject: GeneratedData;

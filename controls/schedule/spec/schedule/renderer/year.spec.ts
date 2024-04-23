@@ -808,6 +808,57 @@ describe('Schedule year view', () => {
             expect(Element.querySelector(".e-week-header").querySelectorAll('.e-content.e-month > table > thead > tr > th')[6].innerHTML).toEqual('S');
         });
     });
+    describe('Checking aria-label with resource group', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%', height: '555px',
+                selectedDate: new Date(2020, 0, 1),
+                views: [
+                    { option: 'TimelineYear', displayName: 'Horizontal Year'},
+                    { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical', isSelected: true }
+                ],
+                group: {
+                    resources: ['Projects', 'Categories']
+                },
+                resources: [
+                    {
+                        field: 'ProjectId', title: 'Choose Project', name: 'Projects',
+                        dataSource: [
+                            { text: 'PROJECT 1', id: 1 },
+                            { text: 'PROJECT 2', id: 2 },
+                            { text: 'PROJECT 3', id: 3 }
+                        ],
+                        textField: 'text', idField: 'id'
+                    }, {
+                        field: 'TaskId', title: 'Category',
+                        name: 'Categories', allowMultiple: true,
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: 1 },
+                            { text: 'Steven', id: 2, groupId: 2},
+                            { text: 'Robert', id: 3, groupId: 3 },
+                            { text: 'Smith', id: 4, groupId: 1},
+                            { text: 'Micheal', id: 5, groupId: 2 },
+                            { text: 'Root', id: 6, groupId: 3 }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId'
+                    }
+                ]
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking aria-label in vertical orientation', () => {
+            expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('aria-label')).toEqual('Wednesday, January 1, 2020 at 12:00:00 AM GMT Ends At Saturday, February 1, 2020 at 12:00:00 AM GMT');
+        });
+        it('Checking aria-label in horizontal orientation', () => {
+            (schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[0] as HTMLElement).click();
+            expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('aria-label')).toEqual('Wednesday, January 1, 2020 at 12:00:00 AM GMT Ends At Saturday, February 1, 2020 at 12:00:00 AM GMT');
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();

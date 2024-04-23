@@ -556,9 +556,9 @@ export class EventWindow {
         const resourceInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
         resourceDiv.appendChild(resourceInput);
         const resourceTemplate: Function = function(data: any): string {
-            return `<div class="e-resource-template"><div class="e-resource-color" style="background-color:${
+            return SanitizeHtmlHelper.sanitize(`<div class="e-resource-template"><div class="e-resource-color" style="background-color:${
                 data[resourceData.colorField]}"></div><div class="e-resource-text">${
-                data[resourceData.textField]}</div></div>`;
+                data[resourceData.textField]}</div></div>`);
         };
         initializeCSPTemplate(resourceTemplate, resourceData);
         if (resourceData.allowMultiple) {

@@ -77,6 +77,7 @@ export class ErrorDialog {
     private removeErrorDialog(): void {
         if (this.errorPopUp && !this.errorPopUp.isDestroyed) {
             this.errorPopUp.destroy();
+            this.errorPopUp = null;
         }
         if (document.getElementById(this.parent.parentID + '_ErrorDialog')) {
             remove(document.getElementById(this.parent.parentID + '_ErrorDialog'));

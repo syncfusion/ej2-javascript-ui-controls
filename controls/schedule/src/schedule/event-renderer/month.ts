@@ -676,8 +676,7 @@ export class MonthEvent extends EventBase {
             attrs: {
                 'role': 'button',
                 'tabindex': '0',
-                'aria-label': this.parent.globalize.formatNumber(count) + '&nbsp;'
-                    + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more')),
+                'aria-label': this.parent.globalize.formatNumber(count) + ' ' + this.parent.localeObj.getConstant('moreEvents'),
                 'data-count': count.toString(),
                 'data-start-date': startDate.getTime().toString(),
                 'data-end-date': endDate.getTime().toString()

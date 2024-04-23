@@ -406,7 +406,7 @@ export class ColumnChooser implements IAction {
                         'e-flat e-cc e-cc-cnbtn' + ' ' + this.parent.cssClass : 'e-flat e-cc e-cc-cnbtn',
                     content: this.l10n.getConstant('CancelButton')
                 }
-            }]
+            }];
         }
         const isStringTemplate: string = 'isStringTemplate';
         this.dlgObj[`${isStringTemplate}`] = true;
@@ -494,9 +494,9 @@ export class ColumnChooser implements IAction {
     private renderResponsiveColumnChooserDiv(args: { action?: string }): void {
         if (args.action === 'open') {
             this.openColumnChooser();
-        } else if(args.action === 'clear') {
+        } else if (args.action === 'clear') {
             this.clearBtnClick();
-        } else if(args.action === 'confirm') {
+        } else if (args.action === 'confirm') {
             this.confirmDlgBtnClick(true);
         }
     }
@@ -632,7 +632,7 @@ export class ColumnChooser implements IAction {
         if (this.searchBoxObj) {
             EventHandler.remove(this.searchBoxObj.searchBox, 'keyup', this.columnChooserManualSearch);
             this.searchBoxObj.unWireEvent();
-        }   
+        }
     }
 
     private checkBoxClickHandler(e: MouseEvent): void {

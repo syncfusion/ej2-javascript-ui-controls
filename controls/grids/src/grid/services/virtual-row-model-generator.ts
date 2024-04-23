@@ -17,6 +17,7 @@ import * as literals from '../base/string-literals';
 export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     private model: PageSettingsModel;
+    public recordsCount: number;
     public rowModelGenerator: IModelGenerator<Column>;
     public parent: IGrid;
     public cOffsets: { [x: number]: number } = {};
@@ -38,6 +39,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         let result: Row<Column>[] = [];
         if (e.requestType === 'virtualscroll') {
             const rows: Row<Column>[] = this.parent.getRowsObject();
+            // eslint-disable-next-line prefer-spread
             result.push.apply(result, this.rowModelGenerator.refreshRows(rows));
             if (this.parent.infiniteScrollSettings.enableCache) {
                 const currentRowStartIndex: number = this.parent.frozenRows && this.parent.pageSettings.currentPage === 1 ? 0
@@ -50,6 +52,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 result = newResult;
             }
         } else {
+            // eslint-disable-next-line prefer-spread
             result.push.apply(result, this.rowModelGenerator.generateRows(data, e));
         }
         return result;
@@ -94,6 +97,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                     virtualInfo: info, startIndex: startIdx
                 });
                 if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
+                    this.recordsCount = (<{records?: Object[]}>data).records.length;
                     this.parent.vRows = rows;
                     this.parent.vcRows = rows;
                     this.parent.notify(events.refreshVirtualMaxPage, {});
@@ -121,10 +125,12 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                     this.updateGroupRow(this.cache[values[parseInt(i.toString(), 10)]], values[parseInt(i.toString(), 10)]);
             }
             if (!e.renderMovableContent && !e.renderFrozenRightContent && this.cache[values[parseInt(i.toString(), 10)]]) {
+                // eslint-disable-next-line prefer-spread
                 result.push.apply(result, this.cache[values[parseInt(i.toString(), 10)]]);
-                let DataRecord: any = [];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const DataRecord: any = [];
                 if (this.parent.enableVirtualization && this.parent.groupSettings.columns.length) {
-                    result.forEach((data) => {
+                    result.forEach((data: Row<Column>) => {
                         if (!DataRecord.includes(data)) {
                             DataRecord.push(data);
                         }
@@ -200,7 +206,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     public getColumnIndexes(content: HTMLElement =
     (<HTMLElement>this.parent.getHeaderContent().querySelector('.' + literals.headerContent))): number[] {
         const indexes: number[] = []; let sLeft: number = content.scrollLeft | 0;
-        let keys: string[] = Object.keys(this.cOffsets); const cWidth: number = content.getBoundingClientRect().width;
+        const keys: string[] = Object.keys(this.cOffsets); const cWidth: number = content.getBoundingClientRect().width;
         sLeft = Math.min(this.cOffsets[keys.length - 1] - cWidth, sLeft);
         const calWidth: number = Browser.isDevice ? 2 * cWidth : cWidth / 2;
         const left: number = sLeft + cWidth + (sLeft === 0 ? calWidth : 0);

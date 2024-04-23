@@ -146,7 +146,7 @@ export class ResponsiveDialogRenderer implements IAction {
                 'div',
                 { className: (isColumnChooser ? 'e-maincolumnchooserdiv ' : '') + 'e-mainfilterdiv e-default-filter',
                     id: (isColumnChooser ? 'columchooser' : col.uid) + '-main-filter' }
-        );
+            );
             return this.filterParent;
         } else {
             this.customColumnDiv = gObj.createElement('div', { className: 'columndiv columnmenudiv', styles: 'width: 100%' });
@@ -322,11 +322,11 @@ export class ResponsiveDialogRenderer implements IAction {
                 this.isCustomDialog = false;
                 if (gObj.filterModule) {
                     gObj.filterModule.responsiveDialogRenderer.showResponsiveDialog(column);
-                } 
+                }
             }
             e.preventDefault();
         }
-        if (this.action !== ResponsiveDialogAction.isFilter) { return; } 
+        if (this.action !== ResponsiveDialogAction.isFilter) { return; }
         if (gObj.filterSettings.type !== 'FilterBar') {
             if (target.classList.contains('e-responsivecoldiv') || target.parentElement.classList.contains('e-responsivecoldiv')) {
                 let field: string = target.getAttribute('data-e-mappingname');

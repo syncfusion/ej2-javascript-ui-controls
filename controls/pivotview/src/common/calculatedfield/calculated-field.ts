@@ -2301,13 +2301,13 @@ export class CalculatedField implements IAction {
         if (this.keyboardEvents) {
             this.keyboardEvents = null;
         }
-        let element: HTMLElement = select('#' + this.parentID + 'calculateddialog', document);
-        if (element) { /* dialog */
-            (getInstance(element, Dialog) as Dialog).destroy();
-        }
-        element = select('#' + this.parentID + 'ddlelement', document);
+        let element: HTMLElement = select('#' + this.parentID + 'ddlelement', document);
         if (element) { /* inputObj */
             (getInstance(element, MaskedTextBox) as MaskedTextBox).destroy();
+        }
+        element = select('#' + this.parentID + 'calculateddialog', document);
+        if (element) { /* dialog */
+            (getInstance(element, Dialog) as Dialog).destroy();
         }
         element = select('#' + this.parentID + 'CalcContextmenu', document);
         if (element) { /* menuObj */

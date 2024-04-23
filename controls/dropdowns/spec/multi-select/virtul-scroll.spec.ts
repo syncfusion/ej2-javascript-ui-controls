@@ -85,8 +85,8 @@ describe('MultiSelect_Virtualization', () => {
         it('virtualization Down key pressed ', (done) => {
             multiObj.showPopup();
             expect(multiObj.isPopupOpen()).toBe(true);
-            expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-            expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+            expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+            expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
             expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
             let li: Element[] = multiObj.list.querySelectorAll('li:not(.e-virtual-list)');
             expect(li[0].classList.contains('e-item-focus')).toBe(true);
@@ -103,8 +103,8 @@ describe('MultiSelect_Virtualization', () => {
                     multiObj.onKeyDown(keyEventArgs);
                 }
                 setTimeout(function () {
-                    expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                    expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                     done();
                     }, 850)
             }, 100)
@@ -116,19 +116,19 @@ describe('MultiSelect_Virtualization', () => {
         it('virtualization Up key pressed ', () => {
             let li: Element[] = multiObj.list.querySelectorAll('li:not(.e-virtual-list)');
             //multiObj.setSelection(li[3]);
-            expect(li[5].classList.contains('e-item-focus')).toBe(true);
+            expect(li[7].classList.contains('e-item-focus')).toBe(true);
             keyEventArgs.keyCode = 38;
+            multiObj.onKeyDown(keyEventArgs);
+            expect(li[6].classList.contains('e-item-focus')).toBe(true);
+            multiObj.onKeyDown(keyEventArgs);
+            expect(li[5].classList.contains('e-item-focus')).toBe(true);
             multiObj.onKeyDown(keyEventArgs);
             expect(li[4].classList.contains('e-item-focus')).toBe(true);
             multiObj.onKeyDown(keyEventArgs);
             expect(li[3].classList.contains('e-item-focus')).toBe(true);
-            multiObj.onKeyDown(keyEventArgs);
-            expect(li[2].classList.contains('e-item-focus')).toBe(true);
-            multiObj.onKeyDown(keyEventArgs);
-            expect(li[1].classList.contains('e-item-focus')).toBe(true);
             multiObj.dataBind();
             multiObj.onKeyDown(keyEventArgs);
-            expect(li[0].classList.contains('e-item-focus')).toBe(true);
+            expect(li[2].classList.contains('e-item-focus')).toBe(true);
         });
         /**
          * HomeKey
@@ -164,19 +164,19 @@ describe('MultiSelect_Virtualization', () => {
                 expect((li[0] as Element).classList.contains('e-item-focus')).toBe(true);
                 keyEventArgs.keyCode = 34;
                 multiObj.onKeyDown(keyEventArgs);
-                expect((li[9] as Element).classList.contains('e-item-focus')).toBe(true);
+                expect((li[6] as Element).classList.contains('e-item-focus')).toBe(true);
                 keyEventArgs.keyCode = 34;
                 multiObj.onKeyDown(keyEventArgs);
-                expect((li[9] as Element).classList.contains('e-item-focus')).toBe(true);
+                expect((li[12] as Element).classList.contains('e-item-focus')).toBe(true);
                 keyEventArgs.keyCode = 34;
                 multiObj.onKeyDown(keyEventArgs);
-                expect((li[9] as Element).classList.contains('e-item-focus')).toBe(true);
+                expect((li[18] as Element).classList.contains('e-item-focus')).toBe(true);
                 keyEventArgs.keyCode = 33;
                 multiObj.onKeyDown(keyEventArgs);
-                expect((li[3] as Element).classList.contains('e-item-focus')).toBe(true);
+                expect((li[12] as Element).classList.contains('e-item-focus')).toBe(true);
                 keyEventArgs.keyCode = 33;
                 multiObj.onKeyDown(keyEventArgs);
-                expect((li[0] as Element).classList.contains('e-item-focus')).toBe(true);
+                expect((li[6] as Element).classList.contains('e-item-focus')).toBe(true);
                 done();
             }, 450);
         });
@@ -217,7 +217,7 @@ describe('MultiSelect_Virtualization', () => {
                 (<any>multiObj).keyUp(keyEventArgs);
                 //expect((<any>multiObj).liCollections.length).toBe(17);
                 //expect((<any>multiObj).liCollections[10].innerText).toBe("Item 30");
-                mouseEventArgs.target = (<any>multiObj).liCollections[11];
+                mouseEventArgs.target = (<any>multiObj).liCollections[16];
                 mouseEventArgs.type = 'click';
                 (<any>multiObj).onMouseClick(mouseEventArgs);
                 expect((<any>multiObj).value && (<any>multiObj).value.length).not.toBeNull();
@@ -314,7 +314,7 @@ describe('MultiSelect_Virtualization', () => {
             it('filter a suggestion list', () => {
                 multiObj.showPopup();
                 //expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                 expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Group A');
                 (<any>multiObj).inputElement.value  = "Item 2";
                 //open action validation

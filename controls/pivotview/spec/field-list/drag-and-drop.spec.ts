@@ -243,7 +243,7 @@ describe('Pivot Field List Rendering', () => {
             expect((li[14]).querySelector('e-check')).toBeTruthy;
             setTimeout(() => {
                 pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
                 expect(pivotButton.length).toEqual(4);
                 expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('advance');
                 done();
@@ -304,7 +304,7 @@ describe('Pivot Field List Rendering', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
                 expect(pivotButton.length).toEqual(5);
                 expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('total');
                 done();
@@ -437,7 +437,7 @@ describe('Pivot Field List Rendering', () => {
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
             setTimeout(() => {
                 pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
                 expect(pivotButton.length).toEqual(2);
                 done();
             }, 1000);
@@ -462,7 +462,7 @@ describe('Pivot Field List Rendering', () => {
             mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
             pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-            expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+            expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
             expect(pivotButton.length).toEqual(2);
         });
         it('drag/drop pivot button from axis field to same button', () => {
@@ -485,7 +485,7 @@ describe('Pivot Field List Rendering', () => {
             mouseUp.srcElement = mouseUp.target = mouseUp.toElement = dragElement;
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
             pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-            expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+            expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
             expect(pivotButton.length).toEqual(2);
         });
         it('drag/drop pivot button from axis field to button position', (done: Function) => {

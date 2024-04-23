@@ -30,7 +30,8 @@ export class ServiceLocator {
         return <T>this.services[`${name}`];
     }
 
-    public registerAdaptiveService(type: Filter | Sort | ColumnChooser | ColumnMenu, isAdaptiveUI: boolean, action: ResponsiveDialogAction): void {
+    public registerAdaptiveService(type: Filter | Sort | ColumnChooser | ColumnMenu, isAdaptiveUI: boolean,
+                                   action: ResponsiveDialogAction): void {
         if (isAdaptiveUI) {
             type.responsiveDialogRenderer = new ResponsiveDialogRenderer(type.parent, type.serviceLocator);
             type.responsiveDialogRenderer.action = action;

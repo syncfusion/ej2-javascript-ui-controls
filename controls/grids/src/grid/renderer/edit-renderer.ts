@@ -71,7 +71,7 @@ export class EditRender {
         const form: Element = gObj.editSettings.mode === 'Dialog' ?
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) : gObj.editSettings.showAddNewRow &&
             gObj.element.querySelector('.e-editedrow') ? gObj.element.querySelector('.e-editedrow').getElementsByClassName('e-gridform')[0]
-            : gObj.element.getElementsByClassName('e-gridform')[0];
+                : gObj.element.getElementsByClassName('e-gridform')[0];
         const cols: Column[] = gObj.editSettings.mode !== 'Batch' ? gObj.getColumns() as Column[] : [gObj.getColumnByField(args.columnName)];
         for (const col of cols) {
             if (this.parent.editSettings.template && !isNullOrUndefined(col.field)) {

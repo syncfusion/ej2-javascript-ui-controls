@@ -188,9 +188,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             }
         }
         if (elementDesc) {
-            const titleElem: HTMLElement = (this.parent.createElement('span', { id: 'headerTitle-'+ column.uid , innerHTML: elementDesc, attrs: { style: 'display:none' } }));
+            const titleElem: HTMLElement = (this.parent.createElement('span', { id: 'headerTitle-' + column.uid , innerHTML: elementDesc, attrs: { style: 'display:none' } }));
             node.appendChild(titleElem);
-            node.setAttribute('aria-describedby',titleElem.id);
+            node.setAttribute('aria-describedby', titleElem.id);
         }
         node.setAttribute('aria-rowspan', (!isNullOrUndefined(cell.rowSpan) ? cell.rowSpan : 1).toString());
         node.setAttribute('aria-colspan', '1');

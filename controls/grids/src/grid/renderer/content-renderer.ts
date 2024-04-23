@@ -338,15 +338,17 @@ export class ContentRender implements IRenderer {
         this.setGroupCache(modelData, args);
         this.parent.notify(events.setInfiniteCache, { isInfiniteScroll: isInfiniteScroll, modelData: modelData, args: args });
         const isFrozenLeft: boolean = false;
-        /* eslint-disable */
-        if (!(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache) && (this.parent as any).registeredTemplate
-            && (this.parent as any).registeredTemplate.template && !args.isFrozen && !isFrozenLeft) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const registeredTemplates: any = (this.parent as any).registeredTemplate;
+        if (!(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache) && registeredTemplates
+            && registeredTemplates.template && !args.isFrozen && !isFrozenLeft) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const templatetoclear: any = [];
-            for (let i: number = 0; i < (this.parent as any).registeredTemplate.template.length; i++) {
-                for (let j: number = 0; j < (this.parent as any).registeredTemplate.template[i].rootNodes.length; j++) {
-                    if (isNullOrUndefined((this.parent as any).registeredTemplate.template[i].rootNodes[j].parentNode)) {
-                        templatetoclear.push((this.parent as any).registeredTemplate.template[i]);
-                        /* eslint-enable */
+            for (let i: number = 0; i < registeredTemplates.template.length; i++) {
+                for (let j: number = 0; j < registeredTemplates.template[parseInt(i.toString(), 10)].rootNodes.length; j++) {
+                    if (isNullOrUndefined(registeredTemplates.template[parseInt(i.toString(), 10)]
+                        .rootNodes[parseInt(j.toString(), 10)].parentNode)) {
+                        templatetoclear.push(registeredTemplates.template[parseInt(i.toString(), 10)]);
                     }
                 }
             }
@@ -613,7 +615,6 @@ export class ContentRender implements IRenderer {
                     this.useGroupCache = false;
                     this.appendContent(this.tbody, frag as DocumentFragment, args);
                 }
-                
                 if (this.parent.editSettings.showAddNewRow && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
                     const newRow: Element = this.parent.element.querySelector('.e-addrow-removed');
                     if (newRow) {
@@ -631,7 +632,7 @@ export class ContentRender implements IRenderer {
                     }
                     if (startAdd || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) &&
                         ['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder']
-                            .some(function (value) { return args.requestType === value; }))) {
+                            .some(function (value: string): boolean { return args.requestType === value; }))) {
                         this.parent.notify(events.showAddNewRowFocus, {});
                     }
                 }
@@ -932,7 +933,6 @@ export class ContentRender implements IRenderer {
             this.parent.notify(events.partialRefresh, { rows: contentrows, args: args });
             if (this.parent.editSettings.showAddNewRow && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
                 this.parent.notify(events.showAddNewRowFocus, {});
-                
             }
         }
     }

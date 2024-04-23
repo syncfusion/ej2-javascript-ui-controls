@@ -344,35 +344,35 @@ export class NumericContainer implements IRender {
         }
         attributes(this.first, {
             'index': '1',
-            'title': this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+            'title': this.pagerModule.getLocalizedLabel('firstPageTooltip')
         });
         attributes(this.pagerElement.querySelector('.e-mfirst'), {
             'index': '1',
-            'title': this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+            'title': this.pagerModule.getLocalizedLabel('firstPageTooltip')
         });
         attributes(this.last, {
             'index': pagerObj.totalPages.toString(),
-            'title': this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+            'title': this.pagerModule.getLocalizedLabel('lastPageTooltip')
         });
         attributes(this.pagerElement.querySelector('.e-mlast'), {
             'index': pagerObj.totalPages.toString(),
-            'title': this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+            'title': this.pagerModule.getLocalizedLabel('lastPageTooltip')
         });
         attributes(this.prev, {
             'index': (pagerObj.currentPage - 1).toString(),
-            'title': this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+            'title': this.pagerModule.getLocalizedLabel('previousPageTooltip')
         });
         attributes(this.pagerElement.querySelector('.e-mprev'), {
             'index': (pagerObj.currentPage - 1).toString(),
-            'title': this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+            'title': this.pagerModule.getLocalizedLabel('previousPageTooltip')
         });
         attributes(this.next, {
             'index': (pagerObj.currentPage + 1).toString(),
-            'title': this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+            'title': this.pagerModule.getLocalizedLabel('nextPageTooltip')
         });
         attributes(this.pagerElement.querySelector('.e-mnext'), {
             'index': (pagerObj.currentPage + 1).toString(),
-            'title': this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+            'title': this.pagerModule.getLocalizedLabel('nextPageTooltip')
         });
         const ppIndex: number = (this.pagerModule.isPagerResized && numItems.length)
             ? isLastSet

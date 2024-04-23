@@ -166,8 +166,8 @@ export class PivotEngine {
 
     /**
      * It is used to clear properties.
-     * @param {isExport} fn - It indicates whether exporting or not.
      *
+     * @param {boolean} isExport - It indicates whether it is triggered after the export or not.
      * @returns {void}
      * @hidden
      */
@@ -989,16 +989,6 @@ export class PivotEngine {
             (cEndValue === startValue) ? startValue.toString() : startValue.toString() + '-' + cEndValue.toString() :
             startValue.toString() + '-' + endValue.toString();
         return fieldName;
-    }
-    private frameData(data: IDataSet): IDataSet {
-        const fields: string[] = Object.keys(data);
-        let keyPos: number = 0; // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const framedSet: any = {};
-        while (keyPos < fields.length) {
-            framedSet[fields[keyPos as number]] = undefined;
-            keyPos++;
-        }
-        return framedSet;
     }
     private getRange(group: IGroupSettings, cValue: number): boolean {
         let isRangeAvail: boolean;

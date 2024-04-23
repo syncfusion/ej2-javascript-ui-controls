@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-dropdowns/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-dropdowns)
-
 # JavaScript DropDown Controls
 
 Superset of HTML select box contains specific features such as data binding, grouping, sorting, filtering, and templates.

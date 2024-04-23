@@ -230,12 +230,18 @@ export class PdfExport {
             else {
                 yPosition = this.drawPosition['yPosition'];
             }
-            let layoutFormat: PdfGridLayoutFormat = new PdfGridLayoutFormat();
-            layoutFormat.layout = PdfLayoutType.Paginate;
-            layoutFormat.break = PdfLayoutBreakType.FitPage;
-            //Set pagination bounds of PDF grid
-            layoutFormat.paginateBounds = new RectangleF(0,0,pdfPage.getClientSize().width,pdfPage.getClientSize().height);
-            const result: PdfLayoutResult = pdfGrid.draw(pdfPage, xPosition, yPosition, layoutFormat);
+            let result: PdfLayoutResult;
+            if (isMultipleExport) {
+                const layoutFormat: PdfGridLayoutFormat = new PdfGridLayoutFormat();
+                layoutFormat.layout = PdfLayoutType.Paginate;
+                layoutFormat.break = PdfLayoutBreakType.FitPage;
+                //Set pagination bounds of PDF grid
+                layoutFormat.paginateBounds = new RectangleF(0, 0, pdfPage.getClientSize().width, pdfPage.getClientSize().height);
+                result = pdfGrid.draw(pdfPage, xPosition, yPosition, layoutFormat);
+            }
+            else {
+                result = pdfGrid.draw(pdfPage, xPosition, yPosition);
+            }
             this.drawHeader(pdfExportProperties);
             if (!isMultipleExport) {
                 // save the PDF

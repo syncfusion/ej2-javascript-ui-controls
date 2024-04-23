@@ -295,6 +295,7 @@ export interface FilterSettingsModel {
      * If `enableInfiniteScrolling` set to true, then the data will be loaded in Checkbox filter `Popup` content, when the scrollbar reaches the end.
      * This helps to load large dataset in Checkbox filter `Popup` content.
      * {% codeBlock src='grid/enableInfiniteScrolling/index.md' %}{% endcodeBlock %}
+     *
      * @default false
      */
     enableInfiniteScrolling?: boolean;
@@ -1208,6 +1209,7 @@ export interface GridModel extends ComponentModel{
     /**
      * The empty record template that renders customized element or text or image instead of displaying the empty record message in the grid.
      * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+     *
      * @default null
      * @aspType string
      */
@@ -1306,7 +1308,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Defines the id of the grids that needs to be exported
-     * 
+     *
      * @default null
      */
     exportGrids?: string[];

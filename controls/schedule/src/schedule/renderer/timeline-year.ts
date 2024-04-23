@@ -353,11 +353,14 @@ export class TimelineYear extends Year {
                     groupIndex = this.colLevels.slice(-1)[0][parseInt(month.toString(), 10)].groupIndex;
                     classList.push(cls.WORKDAY_CLASS);
                 }
+                const startDateText: string = this.parent.globalize.formatDate(date, { type: 'dateTime', skeleton: 'full', calendar: this.parent.getCalendarMode() });
+                const endDateText: string = this.parent.globalize.formatDate(this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime())), { type: 'dateTime', skeleton: 'full', calendar: this.parent.getCalendarMode() });
                 const td: HTMLElement = createElement('td', {
                     className: cls.WORK_CELLS_CLASS,
                     attrs: {
                         'aria-selected': 'false',
-                        'data-date': date.getTime().toString()
+                        'data-date': date.getTime().toString(),
+                        'aria-label': startDateText + ' ' + this.parent.localeObj.getConstant('endAt') + ' ' + endDateText
                     }
                 });
                 addClass([td], classList);

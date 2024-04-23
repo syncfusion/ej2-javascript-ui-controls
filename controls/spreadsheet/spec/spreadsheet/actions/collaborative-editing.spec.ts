@@ -839,7 +839,7 @@ describe('Collaborative Editing ->', () => {
             helper.switchRibbonTab(1);
             helper.click('#spreadsheet_undo');
             setTimeout(() => {
-                expect(JSON.stringify(getCell(5, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","markerSettings":{"visible":false,"isFilled":true},"isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480,"top":148,"left":192}');
+                expect(JSON.stringify(getCell(7, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","markerSettings":{"visible":false,"isFilled":true},"isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480,"top":148,"left":192}');
                 expect(getCell(5, 3, sheets2[1]).chart).toBeUndefined();
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);

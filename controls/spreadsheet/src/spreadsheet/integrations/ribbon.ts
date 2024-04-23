@@ -413,7 +413,16 @@ export class Ribbon {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             if (this.ribbon.items[args.selectingIndex] && this.ribbon.items[args.selectingIndex].header.text ===
                 l10n.getConstant('Insert')) {
-                this.createChartDdb(document.getElementById(this.parent.element.id + '_chart-btn'), true);
+                const ribbonContent: TlbItemModel[] = this.ribbon.items[args.selectingIndex].content;
+                for (let i: number = ribbonContent.length - 1; i >= 0; i--) {
+                    if (ribbonContent[i as number].id === this.parent.element.id + '_chart') {
+                        const chartBtn: HTMLElement = ribbonContent[i as number].template as HTMLElement;
+                        if (chartBtn && !chartBtn.classList.contains('e-dropdown-btn')) {
+                            this.createChartDdb(document.getElementById(this.parent.element.id + '_chart-btn'), true);
+                        }
+                        break;
+                    }
+                }
             }
             if (this.ribbon.items[args.selectedIndex] && this.ribbon.items[args.selectedIndex].header.text ===
                 l10n.getConstant('Insert')) {

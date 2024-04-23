@@ -161,7 +161,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     private wireExEvents(): void {
         if (!Browser.isDevice) {
-        EventHandler.add(this.dlg, 'mouseover', this.hoverHandler, this);
+            EventHandler.add(this.dlg, 'mouseover', this.hoverHandler, this);
         }
         EventHandler.add(this.dlg, 'click', this.clickExHandler, this);
         EventHandler.add(this.dlg, 'keyup', this.keyUp, this);
@@ -193,7 +193,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     private focusNextOrPrevElement(e: KeyboardEventArgs, focusableElements: HTMLElement[], focusClassName: string): void {
         const nextIndex: number = (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) ? focusableElements.indexOf(document.activeElement as HTMLElement) - 1
-         : focusableElements.indexOf(document.activeElement as HTMLElement) + 1;
+            : focusableElements.indexOf(document.activeElement as HTMLElement) + 1;
         const nextElement: Element = focusableElements[((nextIndex + focusableElements.length) % focusableElements.length)];
 
         // Set focus on the next / previous element
@@ -209,7 +209,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         if ((e.key === 'Tab' && e.shiftKey) || e.key === 'Tab') {
             const focusClass: string = (e.target as HTMLElement).classList.contains('e-chk-hidden') ? 'e-chkfocus' : 'e-menufocus';
             const target: Element = (e.target as HTMLElement).classList.contains('e-menu-item')
-             ? parentsUntil((e.target as HTMLElement), 'e-menu-item') : parentsUntil((e.target as HTMLElement), 'e-ftrchk');
+                ? parentsUntil((e.target as HTMLElement), 'e-menu-item') : parentsUntil((e.target as HTMLElement), 'e-ftrchk');
             this.excelSetFocus(target, focusClass);
         }
         else if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey) {
@@ -471,7 +471,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 for (let i: number = 0; i < rows.length; i++) {
                     const valInput: HTMLInputElement = rows[i as number].children[1].querySelector('.e-control');
                     const dropDownList: DropDownList = rows[i as number]
-                    .querySelector('.e-dropdownlist.e-control')['ej2_instances'][0] as DropDownList;
+                        .querySelector('.e-dropdownlist.e-control')['ej2_instances'][0] as DropDownList;
                     if (dropDownList.value === 'isempty' || dropDownList.value === 'isnotempty' ||
                     dropDownList.value === 'isnull' || dropDownList.value === 'isnotnull') {
                         valInput['ej2_instances'][0]['enabled'] = false;

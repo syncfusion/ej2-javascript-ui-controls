@@ -565,6 +565,7 @@ export interface UIStateArgs {
     isCustomMonth?: boolean;
     isPreventTimezone?: boolean;
     isPreventEventRefresh?: boolean;
+    scheduleHeight?: number;
 }
 
 /**

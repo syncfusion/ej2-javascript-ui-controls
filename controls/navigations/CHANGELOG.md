@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## 25.1.40 (2024-04-16)
+## 25.1.41 (2024-04-23)
 
 ### TreeView
 
 #### Bug Fixes
 
 - `#I572876` - The issue with "The checkbox state are not read by the screen reader in the TreeView component with edge browser" has been resolved.
+
+## 25.1.40 (2024-04-16)
 
 ### Stepper
 

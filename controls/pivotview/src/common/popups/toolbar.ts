@@ -1789,57 +1789,68 @@ export class Toolbar {
     public destroy(): void {
         this.removeEventListener();
         let element: HTMLElement = select('#' + this.parent.element.id + '_ConfirmDialog', document);
-        const confirmPopUp: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        let confirmPopUp: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
         if (confirmPopUp && !confirmPopUp.isDestroyed) {
             confirmPopUp.destroy();
+            confirmPopUp = null;
         }
         element = select('#' + this.parent.element.id + 'report-dialog', document);
-        const dialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        let dialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
         if (dialog && !dialog.isDestroyed) {
             dialog.destroy();
+            dialog = null;
         }
         element = select('#' + this.parent.element.id + 'mdx-dialog', document);
-        const mdxDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        let mdxDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
         if (mdxDialog && !mdxDialog.isDestroyed) {
             mdxDialog.destroy();
+            mdxDialog = null;
         }
         element = select('#' + this.parent.element.id + 'chart_menu', document);
-        const chartMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
+        let chartMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
         if (chartMenu && !chartMenu.isDestroyed) {
             chartMenu.destroy();
+            chartMenu = null;
         }
         element = select('#' + this.parent.element.id + '_ChartTypeDialog', document);
-        const chartTypesDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        let chartTypesDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
         if (chartTypesDialog && !chartTypesDialog.isDestroyed) {
             chartTypesDialog.destroy();
+            chartTypesDialog = null;
         }
         element = select('#' + this.parent.element.id + 'export_menu', document);
-        const exportMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
+        let exportMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
         if (exportMenu && !exportMenu.isDestroyed) {
             exportMenu.destroy();
+            exportMenu = null;
         }
         element = select('#' + this.parent.element.id + 'subtotal_menu', document);
-        const subTotalMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
+        let subTotalMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
         if (subTotalMenu && !subTotalMenu.isDestroyed) {
             subTotalMenu.destroy();
+            subTotalMenu = null;
         }
         element = select('#' + this.parent.element.id + 'grandtotal_menu', document);
-        const grandTotalMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
+        let grandTotalMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
         if (grandTotalMenu && !grandTotalMenu.isDestroyed) {
             grandTotalMenu.destroy();
+            grandTotalMenu = null;
         }
         element = select('#' + this.parent.element.id + 'formatting_menu', document);
-        const formattingMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
+        let formattingMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
         if (formattingMenu && !formattingMenu.isDestroyed) {
             formattingMenu.destroy();
+            formattingMenu = null;
         }
         element = select('#' + this.parent.element.id + '_reportlist', document);
-        const reportList: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
+        let reportList: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
         if (reportList && !reportList.isDestroyed) {
             reportList.destroy();
+            reportList = null;
         }
         if (this.toolbar && !this.toolbar.isDestroyed) {
             this.toolbar.destroy();
+            this.toolbar = null;
         }
         element = select('#' + this.parent.element.id + 'pivot-toolbar', document);
         if (element) {

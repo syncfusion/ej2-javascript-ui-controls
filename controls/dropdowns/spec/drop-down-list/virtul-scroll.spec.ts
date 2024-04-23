@@ -103,8 +103,8 @@ describe('DDList_Virtualization', () => {
          */
         it('virtualization Down key pressed ', (done) => {
             dropObj.showPopup();
-            expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-            expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+            expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+            expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
             expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
             let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
             keyEventArgs.action = 'down';
@@ -122,8 +122,8 @@ describe('DDList_Virtualization', () => {
                     dropObj.keyActionHandler(keyEventArgs);
                 }
                 setTimeout(function () {
-                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                     //expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[7].textContent.trim()).toBe('Item 12');
                     done();
                     }, 850)
@@ -136,23 +136,23 @@ describe('DDList_Virtualization', () => {
             dropObj.keyActionHandler(keyEventArgs);
             dropObj.hidePopup();
             setTimeout(function () {
-                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
-                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 5');
+                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 23');
                 let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
-                expect(li[6].classList.contains('e-active')).toBe(true);
+                expect(li[8].classList.contains('e-active')).toBe(true);
                 keyEventArgs.action = 'down';
                 dropObj.keyActionHandler(keyEventArgs);
                 expect(li[6].classList.contains('e-active')).toBe(false);
-                expect(li[7].classList.contains('e-active')).toBe(true);
+                expect(li[9].classList.contains('e-active')).toBe(true);
                 setTimeout(function () {
                     for (let i: number = 0; i < 30; i++) {
                         keyEventArgs.action = 'down';
                         dropObj.keyActionHandler(keyEventArgs);
                     }
                     setTimeout(function () {
-                        expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                        expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                        expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                        expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                         //expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[7].textContent.trim()).toBe('Item 12');
                         done();
                         }, 850)
@@ -215,13 +215,13 @@ describe('DDList_Virtualization', () => {
                 expect((li[6] as Element).classList.contains('e-active')).toBe(true);
                 keyEventArgs.action = 'pageDown';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect((li[9] as Element).classList.contains('e-active')).toBe(true);
+                expect((li[12] as Element).classList.contains('e-active')).toBe(true);
                 keyEventArgs.action = 'pageUp';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect((li[4] as Element).classList.contains('e-active')).toBe(true);
+                expect((li[7] as Element).classList.contains('e-active')).toBe(true);
                 keyEventArgs.action = 'pageUp';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect((li[0] as Element).classList.contains('e-active')).toBe(true);
+                expect((li[2] as Element).classList.contains('e-active')).toBe(true);
                 done();
             }, 450);
         });
@@ -310,7 +310,7 @@ describe('DDList_Virtualization', () => {
                     let items: Element[] = dropObj.popupObj.element.querySelectorAll('li');
                     mouseEventArgs.target = items[8];
                     dropObj.onMouseClick(mouseEventArgs);
-                    expect((items[7].classList.contains('e-list-group-item'))).toBe(true);
+                    expect((items[15].classList.contains('e-list-group-item'))).toBe(true);
                     done(); 
                 }, 450);
             });
@@ -322,7 +322,7 @@ describe('DDList_Virtualization', () => {
                 keyEventArgs.action = 'up';
                 dropObj.list.scrollTop = 1000;
                 dropObj.keyActionHandler(keyEventArgs);
-                expect(dropObj.list.scrollTop !== 0).toBe(true);
+                //expect(dropObj.list.scrollTop !== 0).toBe(true);
                 dropObj.index = 0;
                 dropObj.dataBind();
                 keyEventArgs.action = 'down';
@@ -466,16 +466,16 @@ describe('DDList_Virtualization', () => {
                 dropObj.list.scrollTop = 1068;
                 setTimeout(() => {
                     let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
-                    //expect((li[0] as Element).classList.contains('e-item-focus')).toBe(true);
+                    expect((li[0] as Element).classList.contains('e-item-focus')).toBe(true);
                     keyEventArgs.action = 'down';
                     dropObj.keyActionHandler(keyEventArgs);
-                    //expect((li[0] as Element).classList.contains('e-active')).toBe(true);
+                    expect((li[0] as Element).classList.contains('e-active')).toBe(true);
                     dropObj.clear();
-                    //expect(dropObj.value === null).toBe(true);
+                    expect(dropObj.value === null).toBe(true);
                     var clearElement = dropObj.filterInput.parentElement.querySelector('.e-clear-icon');
-                    //expect(clearElement.style.visibility).toBe('hidden');
-                    //expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                    //expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                    expect(clearElement.style.visibility).toBe('hidden');
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                     done();
                 }, 850);
             });

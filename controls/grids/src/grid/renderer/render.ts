@@ -126,8 +126,8 @@ export class Render {
                     this.parent.filterSettings.columns = this.parent.filterModule.checkboxPrevFilterObject;
                 }
                 if (args.requestType === 'grouping') {
-                    // Remove the dropped column name from groupsettings.columns if args.cancel is true                
-                    const index = gObj.groupSettings.columns.indexOf((args as GroupEventArgs).columnName);
+                    // Remove the dropped column name from groupsettings.columns if args.cancel is true
+                    const index: number = gObj.groupSettings.columns.indexOf((args as GroupEventArgs).columnName);
                     if (index !== -1) {
                         gObj.setProperties({ groupSettings: { Columns: gObj.groupSettings.columns.splice(index, 1) } }, true);
                         gObj.setProperties({ sortSettings: { Columns: gObj.sortSettings.columns.splice(index, 1) } }, true);
@@ -375,24 +375,24 @@ export class Render {
         if (gObj.detailTemplate || gObj.childGrid) {
             ++spanCount;
         }
-        const className = gObj.editSettings.showAddNewRow && gObj.editSettings.newRowPosition === 'Bottom' ?
+        const className: string = gObj.editSettings.showAddNewRow && gObj.editSettings.newRowPosition === 'Bottom' ?
             'e-emptyrow e-show-added-row' : 'e-emptyrow';
         const tr: Element = this.parent.createElement('tr', { className: className, attrs: { role: 'row' } });
-        var td: HTMLElement;
+        let td: HTMLElement;
         if (gObj.emptyRecordTemplate) {
             const emptyRecordTemplateID: string = gObj.element.id + 'emptyRecordTemplate';
-            td = this.parent.createElement('td', 
-                { attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + gObj.groupSettings.columns.length).toString() }});
-                if (gObj.isVue) {
-                    td.appendChild(gObj.getEmptyRecordTemplate()(gObj.dataSource, gObj, 'emptyRecordTemplate', emptyRecordTemplateID,
-                    undefined, undefined, undefined, this.parent['root'])[1]);
-                } else {
-                    td.appendChild(gObj.getEmptyRecordTemplate()(gObj.dataSource, gObj, 'emptyRecordTemplate', emptyRecordTemplateID,
-                    undefined, undefined, undefined, this.parent['root'])[0]);
-                }
-                if (gObj.isReact) {
-                    this.parent.renderTemplates();
-                }
+            td = this.parent.createElement('td', { attrs: { colspan: (gObj.getVisibleColumns().length +
+                spanCount + gObj.groupSettings.columns.length).toString() }});
+            if (gObj.isVue) {
+                td.appendChild(gObj.getEmptyRecordTemplate()(gObj.dataSource, gObj, 'emptyRecordTemplate', emptyRecordTemplateID,
+                                                             undefined, undefined, undefined, this.parent['root'])[1]);
+            } else {
+                td.appendChild(gObj.getEmptyRecordTemplate()(gObj.dataSource, gObj, 'emptyRecordTemplate', emptyRecordTemplateID,
+                                                             undefined, undefined, undefined, this.parent['root'])[0]);
+            }
+            if (gObj.isReact) {
+                this.parent.renderTemplates();
+            }
         } else {
             td = this.parent.createElement('td', {
                 innerHTML: this.l10n.getConstant('EmptyRecord'),
@@ -410,6 +410,9 @@ export class Render {
         tbody.appendChild(tr);
         this.contentRenderer.renderEmpty(<HTMLElement>tbody);
         if (isTrigger) {
+            if (!this.parent.isInitialLoad) {
+                this.parent.focusModule.setFirstFocusableTabIndex();
+            }
             this.parent.trigger(events.dataBound, {});
             this.parent.notify(
                 events.onEmpty,

@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PathPortModel, PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, accessibilityElement, ConnectorConstraints, NodeConstraints, PortVisibility, PortConstraints, ControlPointsVisibility } from '../../../src/diagram/enum/enum';
+import { Segments, accessibilityElement, ConnectorConstraints, NodeConstraints, PortVisibility, PortConstraints, ControlPointsVisibility, AnnotationConstraints } from '../../../src/diagram/enum/enum';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
@@ -2344,6 +2344,102 @@ describe('Diagram Control', () => {
             expect(diagram.connectors[0].targetID == "node2" &&
                 diagram.connectors[0].targetPortID == "port4").toBe(true);
             expect(count > 0).toBe(true);
+            done();
+        });
+    });
+
+    describe('881512-Wrapping of the connector annotation at run time not working properly.', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let count: number = 0;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramConnectorWrap' });
+            document.body.appendChild(ele);
+           
+            let connectors: ConnectorModel[] = [
+                {
+                id: 'connector1', sourcePoint: { x: 280, y: 300 }, targetPoint: { x: 400, y: 300 }, annotations: [ {content: 'This is very longlonglong text',style: {
+                    textWrapping: 'Wrap',
+                    fontSize: 8,
+                    color: 'Black',
+                  },
+                  verticalAlignment: 'Top',
+                  horizontalAlignment: 'Center',
+                  constraints: AnnotationConstraints.ReadOnly,
+                  type: 'Path',}]
+                },
+                {
+                    id: 'connector2', sourceID:'node1', targetID:'node2', annotations: [ {content: 'This is very longlonglong text',style: {
+                        textWrapping: 'Wrap',
+                        fontSize: 8,
+                        color: 'Black',
+                      },
+                      verticalAlignment: 'Top',
+                      horizontalAlignment: 'Center',
+                      constraints: AnnotationConstraints.ReadOnly,
+                      type: 'Path',}]
+                },
+            ];
+            let nodes: NodeModel[] = [
+                {
+                id: 'node1', width: 70, height: 50, offsetX: 100, offsetY: 100, annotations: [ { content: 'Node1'}]
+                },
+                {
+                    id: 'node2', width: 70, height: 50, offsetX: 270, offsetY: 100, annotations: [ { content: 'Node2'}]
+                },
+            ];
+            diagram = new Diagram({
+
+                width: '1000px', height: '500px', nodes: nodes, connectors: connectors,
+
+            });
+            diagram.appendTo('#diagramConnectorWrap');
+
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Changing node offset dynamically and checking connector annotation size', function (done: Function) {
+            let connector = diagram.nameTable['connector2'];
+            let preTextBounds = connector.wrapper.children[3].bounds;
+            let node = diagram.nodes[0];
+            node.offsetX = 130;
+            diagram.dataBind();
+            let curTextBounds = connector.wrapper.children[3].bounds;
+            expect(preTextBounds.width !== curTextBounds.width && curTextBounds.width < preTextBounds.width).toBe(true);
+            done();
+        });
+        it('Changing connector source point dynamically and checking connector annotation size', function (done: Function) {
+            let connector = diagram.nameTable['connector1'];
+            let preTextBounds = connector.wrapper.children[3].bounds;
+            connector.sourcePoint= { x:320,y:300};
+            diagram.dataBind();
+            let curTextBounds = connector.wrapper.children[3].bounds;
+            expect(preTextBounds.width !== curTextBounds.width && curTextBounds.width < preTextBounds.width).toBe(true);
+            done();
+        });
+        it('Changing node offset using mouse events and checking connector annotation size', function (done: Function) {
+            let connector = diagram.nameTable['connector2'];
+            let preTextBounds = connector.wrapper.children[3].bounds;
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nodes[1];
+            mouseEvents.clickEvent(diagramCanvas, node.offsetX, node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas, node.offsetX, node.offsetY);
+            mouseEvents.mouseDownEvent(diagramCanvas, node.offsetX, node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas, node.offsetX + 30, node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas, node.offsetX + 80, node.offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas, node.offsetX + 120, node.offsetY);
+            mouseEvents.mouseUpEvent(diagramCanvas, node.offsetX + 120, node.offsetY);
+            let curTextBounds = connector.wrapper.children[3].bounds;
+            expect(preTextBounds.width !== curTextBounds.width && curTextBounds.width > preTextBounds.width).toBe(true);
             done();
         });
     });

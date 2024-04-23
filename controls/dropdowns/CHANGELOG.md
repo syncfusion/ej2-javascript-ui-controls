@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 25.1.41 (2024-04-23)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I571383` - Resolved issue where removing a long text tag in a multi-select drop down was also removing a short text tag.
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I566450` - Issue with "The disabled itemTemplate item is not move properly for listbox toolbar action" has been resolved.
+
+## 25.1.40 (2024-04-16)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I565976` - Issue with "The getSortedList data not update correctly while removeItem method after drag and drop action in listbox" has been resolved.
+
 ## 25.1.39 (2024-04-09)
 
 ### AutoComplete

@@ -434,7 +434,7 @@ export class SfdtReader {
                     var emailText = blocks[i][inlinesProperty[this.keywordIndex]][j][textProperty[this.keywordIndex]];
                     var url = emailText.substring(12, emailText.length - 2);
                     var nameData = blocks[i][inlinesProperty[this.keywordIndex]][j][textProperty[this.keywordIndex]];
-                    if(emailText && emailText.indexOf('@') !== -1){
+                    if (emailText && emailText.indexOf('@') !== -1 && emailText.indexOf('.com') === -1) {
                         text = [{
                             Name: nameData,
                             Value: url,

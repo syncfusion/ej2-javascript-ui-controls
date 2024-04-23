@@ -1209,6 +1209,7 @@ export class ListBox extends DropDownBase {
         if (this.listData.length === 0) {
             this.l10nUpdate();
         }
+        if (this.listData.length !== this.sortedData.length) { this.sortedData = this.listData; }
         this.value = [];
         this.updateToolBarState();
     }
@@ -1923,12 +1924,6 @@ export class ListBox extends DropDownBase {
                 tListBox.ulElement.removeChild(noRecElem);
             }
         }
-        if (isRefresh) {
-            const noRecElem: Element = fListBox.ulElement.childNodes[0] as Element;
-            if (noRecElem) {
-                fListBox.ulElement.removeChild(noRecElem);
-            }
-        }
         if (fListBox.listData.length > 0) {
             // eslint-disable-next-line prefer-spread
             flistboxarray = Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number);
@@ -1967,6 +1962,7 @@ export class ListBox extends DropDownBase {
             tListBox.liCollections = tliCollections.concat(fliCollections);
         }
         fListBox.value = [];
+        (listData as sortedType[]) = (listData as sortedType[]).filter((data: sortedType) => (data !== undefined));
         (listData as sortedType[]) = (listData as sortedType[])
             .filter((data: sortedType) => (data as { isHeader: boolean }).isHeader !== true);
         const sortedData: dataType[] = listData.filter(function(val: dataType): dataType {

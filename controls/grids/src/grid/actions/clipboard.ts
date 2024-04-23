@@ -69,7 +69,7 @@ export class Clipboard implements IAction {
     private pasteHandler(e: KeyboardEvent): void {
         const grid: IGrid = this.parent;
         const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
-        const selectedRowCellIndexes = this.parent.getSelectedRowCellIndexes();
+        const selectedRowCellIndexes: ISelectedCell[] = this.parent.getSelectedRowCellIndexes();
         if (e.keyCode === 67 && isMacLike && e.metaKey && !grid.isEdit) {
             this.copy();
         }
@@ -215,7 +215,8 @@ export class Clipboard implements IAction {
                     if (withHeader) {
                         const headers: HTMLElement[] = [];
                         for (let i: number = 0; i < obj.colIndexes.length; i++) {
-                            const colHeader: HTMLElement = this.parent.getColumnHeaderByIndex(obj.colIndexes[parseInt(i.toString(), 10)]) as HTMLElement;
+                            const colHeader: HTMLElement = this.parent
+                                .getColumnHeaderByIndex(obj.colIndexes[parseInt(i.toString(), 10)]) as HTMLElement;
                             if (!colHeader.classList.contains('e-hide')) {
                                 headers.push(colHeader);
                             }

@@ -842,7 +842,7 @@ export class Filter implements IAction {
             isResponsiveFilter: this.parent.enableAdaptiveUI,
             operator: this.actualPredicate[col.field] && type === 'Menu' ? this.actualPredicate[col.field][0].operator : 'equal',
             parentTotalDataCount: gObj.getDataModule().isRemote() && gObj.allowPaging ? gObj.pagerModule.pagerObj.totalRecordsCount :
-            gObj.getDataModule().isRemote() ? gObj.totalDataRecordsCount : (gObj.getFilteredRecords() as Object[]).length,
+                gObj.getDataModule().isRemote() ? gObj.totalDataRecordsCount : (gObj.getFilteredRecords() as Object[]).length,
             parentCurrentViewDataCount: gObj.currentViewData.length,
             parentFilteredLocalRecords: !gObj.getDataModule().isRemote() ? (gObj.getFilteredRecords() as Object[]) : []
         };
@@ -993,7 +993,8 @@ export class Filter implements IAction {
                 this.filterStatusMsg = '';
                 for (let index: number = 0; index < columns.length; index++) {
                     column = gObj.grabColumnByUidFromAllCols(columns[parseInt(index.toString(), 10)].uid)
-                    || gObj.grabColumnByFieldFromAllCols(columns[parseInt(index.toString(), 10)].field, columns[parseInt(index.toString(), 10)].isForeignKey);
+                    || gObj.grabColumnByFieldFromAllCols(columns[parseInt(index.toString(), 10)]
+                        .field, columns[parseInt(index.toString(), 10)].isForeignKey);
                     if (index) {
                         this.filterStatusMsg += ' && ';
                     }

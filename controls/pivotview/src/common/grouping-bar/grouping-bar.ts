@@ -586,6 +586,7 @@ export class GroupingBar implements IAction {
         this.removeEventListener();
         if (this.parent.pivotButtonModule) {
             this.parent.pivotButtonModule.destroy();
+            this.parent.pivotButtonModule = null;
         }
         if (this.groupingTable && this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.gridPanel != null && !this.gridPanel.isDestroyed) {
             this.gridPanel.destroy();

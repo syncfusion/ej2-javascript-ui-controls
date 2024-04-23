@@ -5,7 +5,7 @@ import { DatePicker, DateTimePicker, PopupEventArgs, MaskedDateTime } from '@syn
 import { isEditable, getObject, getCustomDateFormat } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
 import { Edit } from '../actions/edit';
-DatePicker.Inject(MaskedDateTime)
+DatePicker.Inject(MaskedDateTime);
 
 /**
  * `DatePickerEditCell` is used to handle datepicker cell type editing.

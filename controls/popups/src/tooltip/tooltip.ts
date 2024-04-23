@@ -981,7 +981,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
                 element: ctrlObj.tooltipEle, isInteracted: !isNullOrUndefined(e)
             };
-            if (ctrlObj.needTemplateReposition() && !ctrlObj.mouseTrail) {
+            if (ctrlObj.needTemplateReposition() && !ctrlObj.mouseTrail && (showAnimation.effect == 'None' ||
+                ((this as any).isReact && typeof ctrlObj.content != 'string'))) {
                 ctrlObj.tooltipEle.style.display = 'none';
             }
             const observeCallback: Function = (observedArgs: TooltipEventArgs) => {
@@ -1229,7 +1230,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 EventHandler.add(checkForTooltipElement, 'mouseleave', this.tooltipElementMouseOut, this);
             } else {
                 this.hideTooltip(this.animation.close, e, this.findTarget());
-                if (this.closeDelay === 0) { this.clear(); }
+                if (this.closeDelay === 0 && this.animation.close.effect == 'None') { this.clear(); }
             }
         } else {
             this.hideTooltip(this.animation.close, e, this.findTarget());

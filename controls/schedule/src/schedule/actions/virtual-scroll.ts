@@ -20,6 +20,7 @@ export class VirtualScroll {
     private focusedEle: Element;
     private isResourceCell: boolean;
     public isHorizontalScroll: boolean;
+    public isRemoteRefresh: boolean;
     private startIndex: number = 0;
 
     constructor(parent: Schedule) {
@@ -104,6 +105,28 @@ export class VirtualScroll {
         }
     }
 
+    public refreshLayout(): void {
+        const initialHeight: number = this.parent.uiStateValues.scheduleHeight;
+        this.parent.uiStateValues.scheduleHeight = this.parent.element.offsetHeight;
+        const preRenderedLength: number = this.renderedLength;
+        if (this.parent.uiStateValues.scheduleHeight !== initialHeight) {
+            if (preRenderedLength < this.getRenderedCount()) {
+                this.isRemoteRefresh = true;
+            }
+            const resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS) as HTMLElement;
+            const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+            const eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
+            let firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
+            const endIndex = (firstTDIndex + this.renderedLength);
+            firstTDIndex = (endIndex > this.parent.resourceBase.expandedResources.length) ?
+                (this.parent.resourceBase.expandedResources.length - this.renderedLength) : firstTDIndex;
+            this.parent.resourceBase.renderedResources = this.parent.resourceBase.expandedResources.slice(firstTDIndex, endIndex);
+            if (this.parent.resourceBase.renderedResources.length > 0) {
+                this.updateContent(resWrap, conWrap, eventWrap, this.parent.resourceBase.renderedResources);
+            }
+        }
+    }
+
     private renderEvents(): void {
         this.setTabIndex();
         const dynamicData: Record<string, any>[] = this.triggerScrollEvent(events.virtualScrollStop);
@@ -138,7 +161,9 @@ export class VirtualScroll {
             const eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
             const timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
             const conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
-            addClass([conWrap], 'e-transition');
+            if (!this.parent.rowAutoHeight) {
+                addClass([conWrap, resWrap], 'e-transition');
+            }
             this.renderedLength = resWrap.querySelector('tbody').children.length;
             const firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
             const scrollHeight: number = this.parent.rowAutoHeight ?

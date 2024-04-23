@@ -65,7 +65,7 @@ export class ColumnMenu implements IAction {
     }
 
     private wireEvents(): void {
-        if (!this.parent.enableAdaptiveUI) { 
+        if (!this.parent.enableAdaptiveUI) {
             const elements: HTMLElement[] = this.getColumnMenuHandlers();
             for (let i: number = 0; i < elements.length; i++) {
                 EventHandler.add(elements[parseInt(i.toString(), 10)], 'mousedown', this.columnMenuHandlerDown, this);
@@ -74,11 +74,11 @@ export class ColumnMenu implements IAction {
     }
 
     private unwireEvents(): void {
-        if (!this.parent.enableAdaptiveUI) { 
+        if (!this.parent.enableAdaptiveUI) {
             const elements: HTMLElement[] = this.getColumnMenuHandlers();
             for (let i: number = 0; i < elements.length; i++) {
                 EventHandler.remove(elements[parseInt(i.toString(), 10)], 'mousedown', this.columnMenuHandlerDown);
-            } 
+            }
         }
     }
 

@@ -1058,7 +1058,7 @@ export class MoveTool extends ToolBase {
                 } else {
                     this.commandHandler.triggerEvent(DiagramEvent.drop, arg);
                 }
-                if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget)) {
+                if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget) && !this.commandHandler.isTargetSubProcess(this.currentTarget)) {
                     const nodes: NodeModel[] = (args.source instanceof Selector) ? args.source.nodes : [args.source as NodeModel];
                     let isEndGroup: boolean = false;
                     let temp: boolean;

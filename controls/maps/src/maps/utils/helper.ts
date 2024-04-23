@@ -2051,8 +2051,8 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string, geome
     sum = 0.5 * sum;
     // eslint-disable-next-line @typescript-eslint/tslint/config
     const pointValue: number = points.some(point => point.x < 5 && point.y < 5) && geometryType === 'Normal' ? 6 : 4;
-    xSum = (1 / (pointValue * sum)) * xSum;
-    ySum = (1 / (pointValue * sum)) * ySum;
+    xSum = sum !== 0 ? (1 / (pointValue * sum)) * xSum : 0;
+    ySum = sum !== 0 ? (1 / (pointValue * sum)) * ySum : 0;
 
     /* Code for finding nearest points in polygon related to midPoint*/
     let rightMinPoint: MapLocation = { x: 0, y: 0 };

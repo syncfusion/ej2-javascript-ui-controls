@@ -1934,6 +1934,60 @@ describe('Chart ->', () => {
                 done()
             })
         });
+        describe('EJ2-879106', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Chart button is duplicated while disabling and enabling the toolbar items after inserting a chart', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('selectRange', ['D1:E5']);
+                helper.switchRibbonTab(2);
+                helper.getElement('#' + helper.id + '_chart-btn').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+                helper.getElement('#line').click();
+                spreadsheet.hideToolbarItems('Insert', [0, 1, 2, 3], true);
+                spreadsheet.hideToolbarItems('Formulas', [0], true);
+                spreadsheet.hideToolbarItems(
+                    'Home',
+                    [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                    ],
+                    true
+                );
+                spreadsheet.enableRibbonTabs(['Data', 'Formulas', 'Insert'], false);
+                spreadsheet.enableRibbonTabs(['Home', 'View'], true);
+                spreadsheet.allowEditing = false;
+                spreadsheet.enableContextMenu = false;
+                done();
+            });
+            it('Check whether chart dropdown button is duplicated or not', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.hideToolbarItems('Data', [0, 1, 2], true);
+                spreadsheet.hideToolbarItems('Data', [3], false);
+                spreadsheet.hideToolbarItems('Insert', [0, 1, 2, 3], false);
+                spreadsheet.hideToolbarItems('Formulas', [0], false);
+                spreadsheet.hideToolbarItems(
+                    'Home',
+                    [
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                        20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+                    ],
+                    false
+                );
+                spreadsheet.enableRibbonTabs(['Data', 'Formulas', 'Insert'], true);
+                spreadsheet.allowEditing = true;
+                spreadsheet.enableContextMenu = true;
+                helper.switchRibbonTab(2);
+                expect(document.querySelectorAll('.e-chart-icon').length).toBe(1);
+                done();
+            });
+        });
     });
     describe('Provide support for inserting a line chart with/without marker options in the spreadsheet', () => {
         beforeAll((done: Function) => {
@@ -2349,6 +2403,28 @@ describe('Chart ->', () => {
                         });
                     });
                 });
+            });
+        });
+    });
+    describe('EJ2-879107 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] , rows: [{ index: 1, cells: [{ index: 6, chart: [{ type: 'Pie', range: 'A1:E8', top: 80, left: 20 }] }] }],
+                columns: [{ width: 80 }, { width: 75 }, { width: 75 }, { width: 75 }, { width: 75 }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Handle Chart model when position top and left is given ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[1].cells[6].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[4].cells[0].chart.length).toBe(1);
+            setTimeout(() => {
+                helper.invoke('insertChart', [[{ type: 'Column', range: 'H5:H10', top: 100, left: 50 }]]);
+                expect(spreadsheet.sheets[0].rows[4].cells[7].chart).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[5].cells[0].chart.length).toBe(1);
+                done();
             });
         });
     });

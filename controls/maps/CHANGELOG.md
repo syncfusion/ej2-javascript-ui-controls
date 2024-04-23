@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+## 25.1.41 (2024-04-23)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I576422` - Script errors will no longer occur when rendering data labels with "Normal" geometry type maps, and the data labels will be rendered properly with the provided labels without trimming.
+- `#I566503` - The flickering in the tile images of the online maps will no longer occur while panning.
+
 ## 25.1.40 (2024-04-16)
 
 ### Maps

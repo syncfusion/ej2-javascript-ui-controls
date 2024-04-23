@@ -379,7 +379,7 @@ export class ComboBox extends DropDownList {
             if (this.enableVirtualization && this.value) {
                 const fields: string = (this.fields.value) ? this.fields.value : '';
                 let currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
-                if (this.dataSource instanceof DataManager && this.virtualGroupDataSource) {
+                if (this.dataSource instanceof DataManager) {
                     const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
                         this.virtualGroupDataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', currentValue)));
                     if (getItem && getItem.length > 0) {

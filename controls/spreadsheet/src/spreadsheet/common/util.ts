@@ -1576,8 +1576,11 @@ export function updateAction(
         if (isRedo === false) {
             spreadsheet.notify(deleteChart, { id: eventArgs.id, range: eventArgs.range, isUndoRedo: true });
         } else {
-            const chartOptions: ChartModel[] = [{ type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings, isSeriesInRows: eventArgs.isSeriesInRows,
-                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width }];
+            const chartOptions: ChartModel[] = [{
+                type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings, isSeriesInRows: eventArgs.isSeriesInRows,
+                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width, top: eventArgs.top,
+                left: eventArgs.left
+            }];
             spreadsheet.notify(
                 setChart, { chart: chartOptions, isUndoRedo: false, range: eventArgs.posRange });
         }

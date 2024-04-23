@@ -382,7 +382,7 @@ export class Column {
      * @hidden
      * Defines the commands column template as string or HTML element ID which is used to add
      * customized command buttons in each cells of the column.
-     * 
+     *
      * @aspType string
      */
     public commandsTemplate: string | Function;

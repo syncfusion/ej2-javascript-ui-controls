@@ -185,7 +185,7 @@ export class Data implements IDataProcessor {
                 query.page(gObj.pageSettings.currentPage, gObj.allowPaging && gObj.pagerModule as Page &&
                     (((gObj.pagerModule as Page).pagerObj as Pager).isAllPage && !gObj.isManualRefresh) &&
                         (!this.dataManager.dataSource.offline && !(this.dataManager.adaptor instanceof RemoteSaveAdaptor)) ?
-                            null : gObj.pageSettings.pageSize);
+                    null : gObj.pageSettings.pageSize);
             }
         }
         return query;
@@ -256,7 +256,14 @@ export class Data implements IDataProcessor {
         return query;
     }
 
-    protected searchQuery(query: Query, fcolumn?: Column, isForeignKey?: boolean): Query {
+    /**
+     * @param {Query} query - specifies the query
+     * @param {Column} fcolumn - specifies the forein key column model
+     * @param {boolean} isForeignKey - Confirms whether the column is a foreign key or not
+     * @returns {Query} - returns the query
+     * @hidden
+     */
+    public searchQuery(query: Query, fcolumn?: Column, isForeignKey?: boolean): Query {
         const sSettings: SearchSettingsModel = this.parent.searchSettings;
         let fields: string[] = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
         let predicateList: Predicate[] = [];
@@ -316,7 +323,8 @@ export class Data implements IDataProcessor {
             if (defaultFltrCols.length) {
                 for (let i: number = 0, len: number = defaultFltrCols.length; i < len; i++) {
                     defaultFltrCols[parseInt(i.toString(), 10)].uid = defaultFltrCols[parseInt(i.toString(), 10)].uid ||
-                        this.parent.grabColumnByFieldFromAllCols(defaultFltrCols[parseInt(i.toString(), 10)].field, defaultFltrCols[parseInt(i.toString(), 10)].isForeignKey).uid;
+                        this.parent.grabColumnByFieldFromAllCols(defaultFltrCols[parseInt(i.toString(), 10)]
+                            .field, defaultFltrCols[parseInt(i.toString(), 10)].isForeignKey).uid;
                 }
                 const excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(defaultFltrCols);
                 for (const prop of Object.keys(excelPredicate)) {

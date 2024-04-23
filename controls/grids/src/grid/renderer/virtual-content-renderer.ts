@@ -406,9 +406,6 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.parent.groupSettings.columns.length) {
             if (!isGroupAdaptive(this.parent) && info.direction === 'up') {
                 const blk: number = this.offsets[this.getTotalBlocks()] - this.prevHeight;
-                if (!this.parent.groupSettings.enableLazyLoading) {
-                    this.preventEvent = true;
-                }
                 const sTop: number = this.content.scrollTop;
                 this.content.scrollTop = sTop + blk;
             }
@@ -581,8 +578,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             virtualHeight = 0;
         }
         const lastPage: number = Math.ceil(this.getTotalBlocks() / 2);
-        let placeHolderBottom: number = Math.round(this.virtualEle.placeholder.getBoundingClientRect().bottom);
-        let wrapperBottom: number = Math.round(this.virtualEle.wrapper.getBoundingClientRect().bottom);
+        const placeHolderBottom: number = Math.round(this.virtualEle.placeholder.getBoundingClientRect().bottom);
+        const wrapperBottom: number = Math.round(this.virtualEle.wrapper.getBoundingClientRect().bottom);
         if ((this.currentInfo.page === lastPage || this.currentInfo.page + 1 === lastPage) && this.currentInfo.direction === 'down' &&
             placeHolderBottom > wrapperBottom && !this.diff) {
             this.diff = placeHolderBottom - wrapperBottom;
@@ -1224,7 +1221,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let row: Element;
         if (isGroupAdaptive(this.parent)) {
             if (!isNullOrUndefined(index) && this.parent.enableVirtualization && this.parent.groupSettings.columns.length) {
-                for (var i = 0; i < this.parent.getDataRows().length; i++) {
+                for (let i: number = 0; i < this.parent.getDataRows().length; i++) {
                     if (this.parent.getDataRows()[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex) === index.toString()) {
                         row = this.parent.getDataRows()[parseInt(i.toString(), 10)];
                     }
@@ -1258,8 +1255,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.parent.pageSettings.pageSize % 2 !== 0) {
             startIdx += Math.floor((startIdx / this.getBlockSize()) / 2);
         }
-        let rowCollection: Element[] = this.parent.getDataRows();
-        rowCollection = rowCollection;
+        const rowCollection: Element[] = this.parent.getDataRows();
         let collection: Element[] | Object[] = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
         if (isRowObject && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
             startIdx = parseInt(this.parent.getRows()[0].getAttribute(literals.dataRowIndex), 10);
@@ -1383,7 +1379,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private selectVirtualRow(args: { selectedIndex: number, isAvailable: boolean }): void {
-        args.isAvailable = args.selectedIndex < this.count;
+        const count: number = isGroupAdaptive(this.parent) ? this.vgenerator.recordsCount : this.count;
+        args.isAvailable = args.selectedIndex < count;
         if (args.isAvailable && !this.isContextMenuOpen && this.activeKey !== 'upArrow'
             && this.activeKey !== 'downArrow' && !this.isSelection && !this.requestTypes.some((value: string) => value === this.requestType)
             && !this.parent.selectionModule.isInteracted) {
@@ -1392,7 +1389,16 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             if (!selectedRow || !this.isRowInView(selectedRow)) {
                 this.isSelection = true;
                 this.selectedRowIndex = args.selectedIndex;
-                const scrollTop: number = (args.selectedIndex + 1) * rowHeight;
+                let scrollTop: number = (args.selectedIndex + 1) * rowHeight;
+                if (isGroupAdaptive(this.parent)) {
+                    const selectedRowObjectIndex: number = this.parent.vcRows
+                        .findIndex((row: Row<Column>) => row.index === args.selectedIndex);
+                    scrollTop = selectedRowObjectIndex * rowHeight;
+                } else if (this.parent.getDataModule().isRemote() && this.parent.groupSettings.columns.length) {
+                    const page: number = Math.ceil((args.selectedIndex + 1) / this.parent.pageSettings.pageSize);
+                    const blockIndexes: number[] = this.vgenerator.getBlockIndexes(page);
+                    scrollTop = this.offsets[blockIndexes[0]];
+                }
                 if (!isNullOrUndefined(scrollTop)) {
                     const direction: ScrollDirection = this.content.scrollTop < scrollTop ? 'down' : 'up';
                     this.selectRowIndex = args.selectedIndex;
@@ -1435,6 +1441,7 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
         this.virtualEle.content = <HTMLElement>this.getPanel().querySelector('.' + literals.headerContent);
         this.virtualEle.content.style.position = 'relative';
         this.virtualEle.renderWrapper();
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (!(this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) && this.parent.enableColumnVirtualization) ?
             this.virtualEle.renderPlaceHolder() : this.virtualEle.renderPlaceHolder('absolute');
     }
@@ -1559,7 +1566,7 @@ export class VirtualElementHandler {
     }
 
     public setWrapperWidth(width: string, full?: boolean): void {
-        if (width && width.indexOf('%') === -1 && !(this.content.getBoundingClientRect().width < parseInt(width))) {
+        if (width && width.indexOf('%') === -1 && !(this.content.getBoundingClientRect().width < parseInt(width, 10))) {
             width = undefined;
             full = true;
         }
@@ -1568,7 +1575,7 @@ export class VirtualElementHandler {
 
     public setVirtualHeight(height?: number, width?: string): void {
         this.placeholder.style.height = !isNullOrUndefined(height) ? `${height}px` : '0px';
-        if (width && width.indexOf('%') === -1 && !(this.content.getBoundingClientRect().width < parseInt(width))) {
+        if (width && width.indexOf('%') === -1 && !(this.content.getBoundingClientRect().width < parseInt(width, 10))) {
             width = '100%';
         }
         this.placeholder.style.width = width;

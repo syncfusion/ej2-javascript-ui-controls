@@ -1751,7 +1751,7 @@ export function frozenDirection(column: Column): string {
  */
 export function addFixedColumnBorder(row: Element): void {
     if (row.querySelector('.e-fixedfreeze')) {
-        let cells: HTMLElement[] = [].slice.call(row.querySelectorAll(
+        const cells: HTMLElement[] = [].slice.call(row.querySelectorAll(
             '.e-filterbarcell:not(.e-hide),.e-summarycell:not(.e-hide),.e-headercell:not(.e-hide),.e-rowcell:not(.e-hide)'));
         for (let j: number = 0; j < cells.length; j++) {
             if ((cells[parseInt(j.toString(), 10)] as Element).classList.contains('e-fixedfreeze') && (!(cells[j - 1]) ||
@@ -1837,7 +1837,7 @@ export function resetColandRowSpanStickyPosition(gObj: IGrid, column: Column, no
  * @hidden
  */
 export function getCellFromRow(gObj: IGrid, rowIndex: number, colIndex: number): Element {
-    let row: HTMLTableRowElement = <HTMLTableRowElement>(gObj.getRowByIndex(rowIndex));
+    const row: HTMLTableRowElement = <HTMLTableRowElement>(gObj.getRowByIndex(rowIndex));
     for (let i: number = 0; i < row.cells.length; i++) {
         if (row.cells[parseInt(i.toString(), 10)].getAttribute('data-colindex') === colIndex.toString()) {
             return row.cells[parseInt(i.toString(), 10)];

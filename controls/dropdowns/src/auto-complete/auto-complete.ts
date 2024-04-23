@@ -267,7 +267,7 @@ export class AutoComplete extends ComboBox {
             const dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object }[]).typeof;
             if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
                 filterQuery.where('', filterType, queryString, this.ignoreCase, this.ignoreAccent);
-            } else if ((!this.enableVirtualization) || (this.enableVirtualization && (!(this.dataSource instanceof DataManager) || (this.dataSource instanceof DataManager && this.virtualGroupDataSource)))) {
+            } else {
                 const mapping: string = !isNullOrUndefined(this.fields.value) ? this.fields.value : '';
                 filterQuery.where(mapping, filterType, queryString, this.ignoreCase, this.ignoreAccent);
             }
@@ -283,7 +283,7 @@ export class AutoComplete extends ComboBox {
             }
             filterQuery.take(this.suggestionCount);
         }
-        if (this.enableVirtualization && (!(this.dataSource instanceof DataManager) || (this.dataSource instanceof DataManager && this.virtualGroupDataSource))) {
+        if (this.enableVirtualization) {
             let queryTakeValue = 0;
             let querySkipValue = 0;
             var takeValue = this.getTakeValue();
@@ -332,14 +332,6 @@ export class AutoComplete extends ComboBox {
                 filterQuery.take(takeValue);
             }
             filterQuery.requiresCount();
-        }
-        else if(this.enableVirtualization && (this.dataSource instanceof DataManager && !this.virtualGroupDataSource)) {
-            for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
-                if (filterQuery.queries[queryElements as number].fn === 'onSkip' || filterQuery.queries[queryElements as number].fn === 'onTake') {
-                    filterQuery.queries.splice(queryElements,1);
-                    --queryElements;
-                }
-            }
         }
         return filterQuery;
     }

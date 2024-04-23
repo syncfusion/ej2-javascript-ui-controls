@@ -363,7 +363,8 @@ export class DiagramRenderer {
             data = 'M 10 -10 L 0 0 Z M -10 -10 L 0 0 Z M 0 0 L 0 ' + (d) + ' Z M 0  ' + (d) +
                 ' L -10  ' + (d + 10) + ' Z L 10  ' + (d + 10) + ' Z';
             if (position.x >= element.offsetX) {
-                x += width;
+                //879085- swimlane helper guides not rendered properly when zoomed
+                x += width * transform.scale;
             }
         } else {
             if (isUml) {
@@ -387,7 +388,8 @@ export class DiagramRenderer {
             } else {
                 if (isSwimlane) {
                     if (position.y >= element.offsetY) {
-                        y += height;
+                        //879085- swimlane helper guides not rendered properly when zoomed
+                        y += height * transform.scale;
                     }
                 }
                 const d: number = width * transform.scale;

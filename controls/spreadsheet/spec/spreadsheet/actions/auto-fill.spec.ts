@@ -1768,6 +1768,50 @@ describe('Auto fill ->', () => {
                 done();
             });
         });
+        describe('EJ2-878274 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [
+                        {
+                            rows: [
+                                { cells: [{ index: 5, value: "12:00:00 PM" }, { index: 6, value: "1:00:00 PM" }, { index: 7, value: "2:00:00 PM" }] }, { cells: [] }, { cells: [] }, { cells: [] }, { cells: [{ value: '12:00:00 PM' }] }, { cells: [{ value: '1:00:00 PM' }] }, { cells: [{ value: '2:00:00 PM' }] }
+                            ]
+                        }
+                    ]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Autofill support is not working properly with time format values using up direction', (done: Function) => {
+                helper.invoke('autoFill', ['A4:A2', 'A7:A5', 'Up', 'FillSeries']);
+                expect(helper.invoke('getCell', [3, 0]).textContent).toBe('11:00:00 AM');
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('10:00:00 AM');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('9:00:00 AM');
+                done();
+            });
+            it('Autofill support is not working properly with time format values using down direction', (done: Function) => {
+                helper.invoke('autoFill', ['A8:A10', 'A5:A7', 'Down', 'FillSeries']);
+                expect(helper.invoke('getCell', [7, 0]).textContent).toBe('3:00:00 PM');
+                expect(helper.invoke('getCell', [8, 0]).textContent).toBe('4:00:00 PM');
+                expect(helper.invoke('getCell', [9, 0]).textContent).toBe('5:00:00 PM');
+                done();
+            });
+            it('Autofill support is not working properly with time format values using right direction', (done: Function) => {
+                helper.invoke('autoFill', ['I1:K1', 'F1:H1', 'Right', 'FillSeries']);
+                expect(helper.invoke('getCell', [0, 8]).textContent).toBe('3:00:00 PM');
+                expect(helper.invoke('getCell', [0, 9]).textContent).toBe('4:00:00 PM');
+                expect(helper.invoke('getCell', [0, 10]).textContent).toBe('5:00:00 PM');
+                done();
+            });
+            it('Autofill support is not working properly with time format values using left direction', (done: Function) => {
+                helper.invoke('autoFill', ['E1:C1', 'H1:F1', 'Left', 'FillSeries']);
+                expect(helper.invoke('getCell', [0, 4]).textContent).toBe('11:00:00 AM');
+                expect(helper.invoke('getCell', [0, 3]).textContent).toBe('10:00:00 AM');
+                expect(helper.invoke('getCell', [0, 2]).textContent).toBe('9:00:00 AM');
+                done();
+            });
+        });
     });
     describe('EJ2-66414', () => {
         beforeAll((done: Function) => {

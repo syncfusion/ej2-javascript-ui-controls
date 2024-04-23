@@ -535,7 +535,7 @@ export class Selection implements IAction {
                 selectedRow.removeAttribute('aria-selected');
                 this.addRemoveClassesForRow(selectedRow, false, null, 'e-selectionbackground', 'e-active');
                 this.rowDeselect(events.rowDeselected, [rowIndex], [rowObj.data], [selectedRow],
-                        [rowObj.foreignKeyData], target, undefined, undefined, undefined);
+                                 [rowObj.foreignKeyData], target, undefined, undefined, undefined);
                 this.isInteracted = false;
                 this.isMultiSelection = false;
                 this.isAddRowsToSelection = false;
@@ -842,6 +842,7 @@ export class Selection implements IAction {
 
     private rowDeselect(
         type: string, rowIndex: number[], data: Object, row: Element[],
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         foreignKeyData: Object[], target: Element, mRow?: Element[], rowDeselectCallBack?: Function, frozenRightRow?: Element[]): void {
         if ((this.selectionSettings.persistSelection && (this.isRowClicked || this.checkSelectAllClicked || (this.focus['activeKey'] &&
             this.focus.currentInfo.element.classList.contains('e-gridchkbox') && this.focus['activeKey'] === 'space'))) ||
@@ -1442,85 +1443,92 @@ export class Selection implements IAction {
     private setScrollPosition(scrollElement: Element, direction: string, mouseEvent?: MouseEvent | TouchEvent): void {
         let rowIndex: number = -1; let columnIndex: number = -1;
         if (this.endAFCell || this.prevECIdxs) {
-            rowIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('index')) : this.prevECIdxs.rowIndex;
-            columnIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('data-colindex')) : this.prevECIdxs.cellIndex;
+            rowIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('index'), 10) : this.prevECIdxs.rowIndex;
+            columnIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('data-colindex'), 10) : this.prevECIdxs.cellIndex;
         }
         switch (direction) {
-            case 'up':
-                if (mouseEvent && closest(mouseEvent.target as Element, '.e-headercontent'))
-                    return;
-                if (this.isAutoFillSel && this.startAFCell && this.selectedRowCellIndexes.length &&
+        case 'up':
+            if (mouseEvent && closest(mouseEvent.target as Element, '.e-headercontent')) {return; }
+            if (this.isAutoFillSel && this.startAFCell && this.selectedRowCellIndexes.length &&
                     ((this.selectedRowCellIndexes.length === 1 && this.startAFCell !== this.startCell) ||
                         (this.selectedRowCellIndexes.length > 1 && this.startAFCell.getBoundingClientRect().top > 0))) {
-                    rowIndex = parseInt(this.startAFCell.getAttribute('index'));
-                }
-                rowIndex -= 1;
-                if (this.parent.frozenRows)
-                    rowIndex += this.parent.frozenRows + 1;
-                rowIndex < 1 ? scrollElement.scrollTop = 0 : scrollElement.scrollTop -= (this.parent.getRowByIndex(rowIndex) as HTMLElement).offsetHeight;
-                break;
-            case 'down':
+                rowIndex = parseInt(this.startAFCell.getAttribute('index'), 10);
+            }
+            rowIndex -= 1;
+            if (this.parent.frozenRows) {rowIndex += this.parent.frozenRows + 1; }
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            rowIndex < 1 ? scrollElement.scrollTop = 0 : scrollElement.scrollTop -= (this.parent.getRowByIndex(rowIndex) as HTMLElement)
+                .offsetHeight;
+            break;
+        case 'down':
+            if (this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
+                rowIndex = parseInt(this.startAFCell.getAttribute('index'), 10);
+            }
+            if (rowIndex < this.parent.getRows().length - 1) {
+                rowIndex += 1;
                 if (this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
-                    rowIndex = parseInt(this.startAFCell.getAttribute('index'));
+                    this.startAFCell = this.parent.getCellFromIndex(rowIndex, this.selectedRowCellIndexes[0].cellIndexes[0]);
                 }
-                if (rowIndex < this.parent.getRows().length - 1) {
-                    rowIndex += 1;
-                    if (this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
-                        this.startAFCell = this.parent.getCellFromIndex(rowIndex, this.selectedRowCellIndexes[0].cellIndexes[0]);
-                    }
-                    scrollElement.scrollTop += (this.parent.getRowByIndex(rowIndex) as HTMLElement).offsetHeight;
-                } else {
-                    scrollElement.scrollTop = scrollElement.scrollHeight;
-                }
-                break;
-            case 'left':
-                if (columnIndex > 0 && rowIndex > -1) {
-                    if (this.isAutoFillSel && this.startAFCell && this.selectedRowCellIndexes.length &&
+                scrollElement.scrollTop += (this.parent.getRowByIndex(rowIndex) as HTMLElement).offsetHeight;
+            } else {
+                scrollElement.scrollTop = scrollElement.scrollHeight;
+            }
+            break;
+        case 'left':
+            if (columnIndex > 0 && rowIndex > -1) {
+                if (this.isAutoFillSel && this.startAFCell && this.selectedRowCellIndexes.length &&
                         ((this.selectedRowCellIndexes[0].cellIndexes.length > 0 && this.startAFCell !== this.startCell) ||
                             (this.selectedRowCellIndexes[0].cellIndexes.length > 1 &&
-                                ((!this.parent.enableRtl && this.startAFCell.getBoundingClientRect().left > 0) ||
-                                    (this.parent.enableRtl && this.startAFCell.getBoundingClientRect().left < this.parent.element.offsetWidth))))) {
-                        columnIndex = parseInt(this.startAFCell.getAttribute('data-colindex'));
-                    }
-                    const nextElement: HTMLElement = this.findNextCell(scrollElement, direction, columnIndex, rowIndex);
-                    columnIndex = nextElement ? parseInt(nextElement.getAttribute('data-colindex')) : -1;
-                    if (this.parent.enableRtl && nextElement) {
-                        columnIndex < 1 ? scrollElement.scrollLeft = scrollElement.scrollWidth :
-                            scrollElement.scrollLeft += nextElement.offsetWidth;
-                    } else if (nextElement) {
-                        columnIndex < 1 ? scrollElement.scrollLeft = 0 : scrollElement.scrollLeft -= nextElement.offsetWidth;
-                    }
+                                ((!this.parent.enableRtl && this.startAFCell.getBoundingClientRect().left > 0) || (this.parent.enableRtl &&
+                                    this.startAFCell.getBoundingClientRect().left < this.parent.element.offsetWidth))))) {
+                    columnIndex = parseInt(this.startAFCell.getAttribute('data-colindex'), 10);
                 }
-                break;
-            case 'right':
-                if (this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
-                    columnIndex = parseInt(this.startAFCell.getAttribute('data-colindex'));
-                }
-                const currentElement: HTMLElement = this.parent.getCellFromIndex(rowIndex, columnIndex) as HTMLElement;
                 const nextElement: HTMLElement = this.findNextCell(scrollElement, direction, columnIndex, rowIndex);
-                if (nextElement && this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
-                    this.startAFCell = this.parent.getCellFromIndex(this.selectedRowCellIndexes[0].rowIndex, parseInt(nextElement.getAttribute('data-colindex')));
-                }
-                columnIndex = nextElement ? parseInt(nextElement.getAttribute('data-colindex')) : -1;
+                columnIndex = nextElement ? parseInt(nextElement.getAttribute('data-colindex'), 10) : -1;
                 if (this.parent.enableRtl && nextElement) {
-                    columnIndex < this.parent.columns.length - 1 ? scrollElement.scrollLeft -= currentElement.offsetWidth :
-                        scrollElement.scrollLeft = -scrollElement.scrollWidth;
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                    columnIndex < 1 ? scrollElement.scrollLeft = scrollElement.scrollWidth :
+                        scrollElement.scrollLeft += nextElement.offsetWidth;
                 } else if (nextElement) {
-                    columnIndex < this.parent.columns.length - 1 ? scrollElement.scrollLeft += currentElement.offsetWidth :
-                        scrollElement.scrollLeft = scrollElement.scrollWidth;
+                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                    columnIndex < 1 ? scrollElement.scrollLeft = 0 : scrollElement.scrollLeft -= nextElement.offsetWidth;
                 }
-                if (this.isAutoFillSel && (columnIndex === this.parent.columns.length - 1 || columnIndex === -1) &&
+            }
+            break;
+        case 'right':
+            if (this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
+                columnIndex = parseInt(this.startAFCell.getAttribute('data-colindex'), 10);
+            }
+            // eslint-disable-next-line no-case-declarations
+            const currentElement: HTMLElement = this.parent.getCellFromIndex(rowIndex, columnIndex) as HTMLElement;
+            // eslint-disable-next-line no-case-declarations
+            const nextElement: HTMLElement = this.findNextCell(scrollElement, direction, columnIndex, rowIndex);
+            if (nextElement && this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
+                this.startAFCell = this.parent.getCellFromIndex(this.selectedRowCellIndexes[0].rowIndex, parseInt(nextElement.getAttribute('data-colindex'), 10));
+            }
+            columnIndex = nextElement ? parseInt(nextElement.getAttribute('data-colindex'), 10) : -1;
+            if (this.parent.enableRtl && nextElement) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                columnIndex < this.parent.columns.length - 1 ? scrollElement.scrollLeft -= currentElement.offsetWidth :
+                    scrollElement.scrollLeft = -scrollElement.scrollWidth;
+            } else if (nextElement) {
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                columnIndex < this.parent.columns.length - 1 ? scrollElement.scrollLeft += currentElement.offsetWidth :
+                    scrollElement.scrollLeft = scrollElement.scrollWidth;
+            }
+            if (this.isAutoFillSel && (columnIndex === this.parent.columns.length - 1 || columnIndex === -1) &&
                     this.startAFCell && this.endAFCell) {
-                    this.positionAFBorders();
-                    scrollElement.scrollLeft = this.parent.enableRtl ? -scrollElement.scrollWidth : scrollElement.scrollWidth
-                }
-                break;
+                this.positionAFBorders();
+                scrollElement.scrollLeft = this.parent.enableRtl ? -scrollElement.scrollWidth : scrollElement.scrollWidth;
+            }
+            break;
         }
         if (rowIndex > -1 && rowIndex < this.parent.getRows().length && columnIndex > -1) {
-            let mouseEvent: any = { target: this.parent.getCellFromIndex(rowIndex, columnIndex) };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const mouseEvent: any = { target: this.parent.getCellFromIndex(rowIndex, columnIndex) };
             if (this.isAutoFillSel && mouseEvent.target.classList.contains('e-cellselectionbackground') &&
-                ((direction === 'down' && parseInt(mouseEvent.target.getAttribute('index')) === this.parent.getRows().length - 1) ||
-                    (direction === 'right' && parseInt(mouseEvent.target.getAttribute('data-colindex')) === this.parent.columns.length - 1))) {
+                ((direction === 'down' && parseInt(mouseEvent.target.getAttribute('index'), 10) === this.parent.getRows().length - 1) ||
+                    (direction === 'right' && parseInt(mouseEvent.target.getAttribute('data-colindex'), 10) === this.parent.columns.length - 1))) {
                 return;
             }
             this.endAFCell = mouseEvent.target;
@@ -1560,11 +1568,11 @@ export class Selection implements IAction {
 
 
     private setFrozenBorders(parentEle: Element, border: HTMLElement, bdrStr: string): void {
-        let width: string[] = border.style.borderWidth.toString().split(' ');
+        const width: string[] = border.style.borderWidth.toString().split(' ');
         const strCell: string[] = ['', 'e-leftfreeze', 'e-unfreeze', 'e-leftfreeze', 'e-unfreeze', 'e-rightfreeze', 'e-rightfreeze'];
-        let cells: HTMLElement[]  = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground' + '.' + strCell[`${bdrStr}`])).
-                    filter((ele: HTMLElement) => ele.style.display === '');
-        let fixedCells: HTMLElement[] = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground.e-fixedfreeze')).
+        const cells: HTMLElement[]  = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground' + '.' + strCell[`${bdrStr}`])).
+            filter((ele: HTMLElement) => ele.style.display === '');
+        const fixedCells: HTMLElement[] = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground.e-fixedfreeze')).
             filter((ele: HTMLElement) => ele.style.display === '');
         const isRtl: boolean = this.parent.enableRtl;
         if (cells.length) {
@@ -1578,8 +1586,8 @@ export class Selection implements IAction {
                     cells[parseInt(i.toString(), 10)].classList.add('e-xlsel-top-border');
                 }
                 if (cells[parseInt(i.toString(), 10)].getAttribute('data-colindex') === firstColIdx && (width.length === 1 ||
-                    (width.length === 3 && parseInt(width[1], 10) === 2 ) || (width.length === 4 && (((!isRtl && parseInt(width[3], 10) === 2)) ||
-                    (isRtl && parseInt(width[1], 10) === 2))))) {
+                    (width.length === 3 && parseInt(width[1], 10) === 2 ) || (width.length === 4 && (((!isRtl &&
+                    parseInt(width[3], 10) === 2)) || (isRtl && parseInt(width[1], 10) === 2))))) {
                     cells[parseInt(i.toString(), 10)].classList.add(isRtl ? 'e-xlsel-right-border' : 'e-xlsel-left-border');
                 }
                 if (cells[parseInt(i.toString(), 10)].getAttribute('index') === lastRowIdx && (width.length === 1 ||
@@ -1587,8 +1595,8 @@ export class Selection implements IAction {
                     cells[parseInt(i.toString(), 10)].classList.add('e-xlsel-bottom-border');
                 }
                 if (cells[parseInt(i.toString(), 10)].getAttribute('data-colindex') === lastColIdx && (width.length === 1 ||
-                    (width.length === 3 && parseInt(width[1], 10) === 2 ) || (width.length === 4 && ((!isRtl && parseInt(width[1], 10) === 2)) ||
-                    (isRtl && parseInt(width[3], 10) === 2)))) {
+                    (width.length === 3 && parseInt(width[1], 10) === 2 ) || (width.length === 4 && ((!isRtl &&
+                    parseInt(width[1], 10) === 2)) || (isRtl && parseInt(width[3], 10) === 2)))) {
                     cells[parseInt(i.toString(), 10)].classList.add(isRtl ? 'e-xlsel-left-border' : 'e-xlsel-right-border');
                 }
             }
@@ -1611,11 +1619,11 @@ export class Selection implements IAction {
                     && parentsUntil(parentEle, 'e-headercontent')) || !parentsUntil(parentEle, 'e-headercontent'))) {
                     fixedCells[parseInt(i.toString(), 10)].classList.add('e-xlsel-bottom-border');
                 }
-                let preCell: Element = fixedCells[parseInt(i.toString(), 10)].parentElement.children[parseInt(colIdx, 10) - 1];
+                const preCell: Element = fixedCells[parseInt(i.toString(), 10)].parentElement.children[parseInt(colIdx, 10) - 1];
                 if (colIdx === firstColIdx && (!preCell || (preCell && !preCell.classList.contains('e-cellselectionbackground')))) {
                     fixedCells[parseInt(i.toString(), 10)].classList.add(isRtl ? 'e-xlsel-right-border' : 'e-xlsel-left-border');
                 }
-                let nextCell: Element = fixedCells[parseInt(i.toString(), 10)].parentElement.children[parseInt(colIdx, 10) + 1];
+                const nextCell: Element = fixedCells[parseInt(i.toString(), 10)].parentElement.children[parseInt(colIdx, 10) + 1];
                 if (colIdx === lastColIdx && (!nextCell || (nextCell && !nextCell.classList.contains('e-cellselectionbackground')))) {
                     fixedCells[parseInt(i.toString(), 10)].classList.add(isRtl ? 'e-xlsel-left-border' : 'e-xlsel-right-border');
                 }
@@ -1681,7 +1689,7 @@ export class Selection implements IAction {
         if (cells.length && this.parent.isFrozenGrid()) {
             const strCell: string[] = ['', 'e-leftfreeze', 'e-unfreeze', 'e-leftfreeze', 'e-unfreeze', 'e-rightfreeze', 'e-rightfreeze'];
             cells = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground' + '.' + strCell[`${bdrStr}`] + ':not(.e-hide)')).
-                    filter((ele: HTMLElement) => ele.style.display === '');
+                filter((ele: HTMLElement) => ele.style.display === '');
         }
         if (cells.length) {
             const isFrozen: boolean = this.parent.isFrozenGrid();
@@ -1946,7 +1954,7 @@ export class Selection implements IAction {
         }
     }
 
-    private showHideBorders(display: string, freeze?: Boolean): void {
+    private showHideBorders(display: string, freeze?: boolean): void {
         if (this.bdrElement) {
             this.bdrElement.style.display = display;
             if (this.parent.isFrozenGrid()) {
@@ -2040,6 +2048,7 @@ export class Selection implements IAction {
 
             this.bdrAFLeft.style.width = totalWidth <= parseInt(this.bdrAFLeft.style.right, 10) ? '0px' : '2px';
             const borderAFRightValue: number = parentRect.right - stOff.right - firstCellLeft + scrolloffSet - 1;
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             borderAFRightValue > 0 ? this.bdrAFRight.style.right = borderAFRightValue + 'px' : this.bdrAFRight.style.right = '0px';
             this.bdrAFTop.style.left = endOff.left - parentRect.left - 0.5 + 'px';
             this.bdrAFTop.style.width = parseInt(this.bdrAFLeft.style.right, 10) - parseInt(this.bdrAFRight.style.right, 10)
@@ -2772,10 +2781,10 @@ export class Selection implements IAction {
                 const selectedStateKeys: string[] = Object.keys(this.selectedRowState);
                 const unSelectedRowStateKeys: string[] = Object.keys(this.unSelectedRowState);
                 if (!this.isCheckboxReset) {
-                    var rowData = (this.parent.groupSettings.columns.length && this.parent.isPersistSelection) ?
+                    const rowData: Object[] = (this.parent.groupSettings.columns.length && this.parent.isPersistSelection) ?
                         this.parent.currentViewData['records'] : this.parent.currentViewData;
                     for (const data of rowData) {
-                        if(!isNullOrUndefined(data[this.primaryKey])) {
+                        if (!isNullOrUndefined(data[this.primaryKey])) {
                             const key: string = data[this.primaryKey].toString();
                             if (selectedStateKeys.indexOf(key) === -1 && unSelectedRowStateKeys.indexOf(key) === -1) {
                                 this.selectedRowState[data[this.primaryKey]] = true;
@@ -2797,8 +2806,8 @@ export class Selection implements IAction {
     }
 
     private getAvailableSelectedData(): object[] {
-        let filteredSearchedSelectedData = new DataManager(this.persistSelectedData).executeLocal(
-                this.parent.getDataModule().generateQuery(true));
+        let filteredSearchedSelectedData: Object[] = new DataManager(this.persistSelectedData).executeLocal(
+            this.parent.getDataModule().generateQuery(true));
         if (this.parent.groupSettings.columns.length && filteredSearchedSelectedData &&
             (<{ records?: Object[] }>filteredSearchedSelectedData).records) {
             filteredSearchedSelectedData = (<{ records?: Object[] }>filteredSearchedSelectedData).records.slice();
@@ -3023,7 +3032,7 @@ export class Selection implements IAction {
         }
         this.isCheckboxReset = false;
         if (stateStr === 'Intermediate') {
-            if(!this.chkField && !this.parent.isPersistSelection) {
+            if (!this.chkField && !this.parent.isPersistSelection) {
                 state = this.getCurrentBatchRecordChanges().some((data: Object) =>
                     this.getPkValue(this.primaryKey, data) in this.selectedRowState);
             }
@@ -3031,6 +3040,7 @@ export class Selection implements IAction {
                 && (<{ result: object[] }>this.parent.dataSource).result)) && this.parent.isPersistSelection) {
                 for (let i: number = 0; i < this.getCurrentBatchRecordChanges().length; i++) {
                     if (!isNullOrUndefined(this.getPkValue(this.primaryKey, this.getCurrentBatchRecordChanges()[`${i}`]))) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         if ((Object.keys(this.selectedRowState) as any).includes((this.getPkValue(this.primaryKey, this.getCurrentBatchRecordChanges()[`${i}`])).toString())) {
                             state = true;
                         } else {
@@ -3190,7 +3200,7 @@ export class Selection implements IAction {
                     return this.isSelectAllRowCount(count);
                 }
             } else {
-                const data: any = (this.parent.groupSettings.columns.length) ? this.getData()['records'] : this.getData();
+                const data: object[] = (this.parent.groupSettings.columns.length) ? this.getData()['records'] : this.getData();
                 for (let i: number = 0; i < data.length; i++) {
                     const pKey: string = this.getPkValue(this.primaryKey, data[parseInt(i.toString(), 10)]);
                     if (!this.selectedRowState[`${pKey}`]) {
@@ -3248,7 +3258,7 @@ export class Selection implements IAction {
                 removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
                 setChecked(input, false);
                 input.indeterminate = false;
-                var getRecord = this.parent.getDataModule().isRemote() ? [] :
+                const getRecord: object[] = this.parent.getDataModule().isRemote() ? [] :
                     (this.parent.groupSettings.columns.length) ? this.getData()['records'] : this.getData();
                 if ((checkToSelectAll && isFiltered && (this.parent.getDataModule().isRemote() ||
                     (!isNullOrUndefined(this.parent.dataSource) && (<{ result: object[] }>this.parent.dataSource).result) ||
@@ -3263,8 +3273,8 @@ export class Selection implements IAction {
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) &&
                         getRecord.length && checkedLen === getRecord.length) || ((this.parent.getDataModule().isRemote()
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) &&
-                        !this.isPartialSelection && ((checkedLen === this.parent.totalDataRecordsCount) || ((this.isSelectAllRowCount(checkedLen)
-                        || checkedLen === this.totalRecordsCount) && !this.parent.isPersistSelection))) ||
+                        !this.isPartialSelection && ((checkedLen === this.parent.totalDataRecordsCount) || ((this.
+                        isSelectAllRowCount(checkedLen) || checkedLen === this.totalRecordsCount) && !this.parent.isPersistSelection))) ||
                         (this.isPartialSelection && (this.isHdrSelectAllClicked || this.isSelectAllRowCount(checkedLen)))))
                         || (checkedLen === this.totalRecordsCount && this.totalRecordsCount && !this.isPartialSelection &&
                             !this.parent.allowPaging && !this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling)))) {
@@ -3566,7 +3576,7 @@ export class Selection implements IAction {
                 let hdrLength: number = this.parent.getHeaderTable().querySelector('thead').childElementCount;
                 if (this.parent.editSettings.showAddNewRow && this.parent.editSettings.newRowPosition === 'Top' &&
                     e.keyArgs.action === 'upArrow') {
-                        hdrLength++;
+                    hdrLength++;
                 }
                 rowIndex -= hdrLength;
                 prev.rowIndex = !isNullOrUndefined(prev.rowIndex) ? prev.rowIndex - hdrLength : null;
@@ -3628,7 +3638,7 @@ export class Selection implements IAction {
             break;
         case 'escape':
             this.clearSelection();
-            if(this.parent.clipboardModule) {
+            if (this.parent.clipboardModule) {
                 window.navigator['clipboard'].writeText('');
             }
             break;
@@ -4158,7 +4168,7 @@ export class Selection implements IAction {
                                 addRemoveActiveClasses([cells[parseInt(i.toString(), 10)]], true, 'e-columnselection');
                             }
                         }
-                    } else if(!isNullOrUndefined(rows[parseInt(j.toString(), 10)].childNodes[parseInt(startIndex.toString(), 10)])) {
+                    } else if (!isNullOrUndefined(rows[parseInt(j.toString(), 10)].childNodes[parseInt(startIndex.toString(), 10)])) {
                         addRemoveActiveClasses([rows[parseInt(j.toString(), 10)].childNodes[parseInt(startIndex.toString(), 10)] as Element], true, 'e-columnselection');
                     }
                 }

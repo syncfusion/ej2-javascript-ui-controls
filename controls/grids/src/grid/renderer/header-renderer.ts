@@ -602,7 +602,7 @@ export class HeaderRender implements IRenderer {
             remove(table);
             if (this.parent.editSettings.showAddNewRow && !this.parent.isAddNewRow && table.querySelector('.e-addedrow') &&
                 (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
-                (table.querySelector('.e-addedrow')).classList.add('e-addrow-removed')
+                (table.querySelector('.e-addedrow')).classList.add('e-addrow-removed');
                 this.parent.isAddNewRow = true;
             }
             table.removeChild(table.firstChild);

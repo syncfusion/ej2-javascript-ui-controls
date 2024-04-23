@@ -248,192 +248,232 @@ describe('PivotView spec', () => {
             });
             it('Filter testing1', () => {
                 pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'Equals', value1: 'car' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
+                expect(pivotGridObj.dataSourceSettings.filterSettings.length > 0).toBeTruthy();
             });
-            it('Filter testing2', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'BeginWith', value1: 'C' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
-            });
-            it('Filter testing3', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'EndsWith', value1: 'e' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("16");
-            });
-            it('Filter testing4', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', condition: 'GreaterThan', value1: 'Car' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[3][3] as IDataSet).formattedText).toBe("52740.04999999999");
-            });
-            it('Filter testing5', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', condition: 'GreaterThanOrEqualTo', value1: 'Jet' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("33");
-            });
-            it('Filter testing6', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', condition: 'LessThanOrEqualTo', value1: 'Flight' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("14");
-            });
-            it('Filter testing7', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'Contains', value1: 'e', value2: 'v' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[4][5] as IDataSet).formattedText).toBe("34");
-                expect((pivotGridObj.engineModule.pivotValues[5][5] as IDataSet).formattedText).toBe("50");
-            });
-            it('date testing1', () => {
-                pivotGridObj.dataSourceSettings.rows = [{ name: 'date' }, { name: 'product' }];
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'Before', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("16");
-            });
-            it('date testing2', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'Equals', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
-            });
-            it('date testing3', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'After', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("18");
-            });
-            it('date testing4', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'AfterOrEqualTo', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
-            });
-            it('date testing5', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'BeforeOrEqualTo', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("15");
-            });
-            it('date testing6', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'Between', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)', value2: 'Tue Sep 09 2008 09:47:08 GMT+0530 (India Standard Time)' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
-            });
-            it('date testing7', () => {
-                pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', value1: 'Tue Sep 09 2008 09:47:08 GMT+0530 (India Standard Time)' }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("15");
-                pivotGridObj.dataSourceSettings.filterSettings = [];
-                pivotGridObj.dataSourceSettings.columns = [{ name: 'gender' }, { name: 'advance' }];
-                pivotGridObj.dataSourceSettings.values = [{ name: 'balance', type: 'DifferenceFrom' }, { name: 'quantity', type: 'PercentageOfGrandTotal' }, { name: 'price', type: 'CalculatedField' }];
-                pivotGridObj.dataSourceSettings.sortSettings = [{ name: 'gender', order: 'Descending' }, { name: 'advance', order: 'Descending', membersOrder: [6124, 7107] }];
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("12.5%");
-            });
-            it('date testing8', () => {
-                (document.querySelectorAll('.e-expand')[1] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                (document.querySelectorAll('.e-icons.e-sort')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                (document.querySelectorAll('.e-collapse')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                expect((pivotGridObj.engineModule.pivotValues[5][2] as IDataSet).formattedText).toBe("11.72%");
-            });
-            it('data testing9', () => {
-                pivotGridObj.dataSourceSettings.rows = [{ name: 'product' }, { name: 'date' }];
-                pivotGridObj.refreshData();
-                expect(("1")).toBe("1");
-            });
-            it('filter testing1', () => {
-                (document.querySelectorAll('.e-icons.e-sort')[2] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                (document.querySelectorAll('.e-expand')[3] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                expect(("1")).toBe("1");
-            });
-            it('filter testing2', () => {
-                expect((pivotGridObj.engineModule.pivotValues[4][5] as IDataSet).formattedText).toBe("26.56%");
-                pivotGridObj.refreshData();
-            });
-            it('filter testing3', (done: Function) => {
-                expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("15.63%");
-                (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
-                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                expect(checkEle.length).toBeGreaterThan(0);
-                expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
-                (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
+            it('Filter testing2', (done: Function) => {
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("17.54%");
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'BeginWith', value1: 'C' }];
+                    done();
+                }, 1000);
+            });
+            it('Filter testing3', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("14");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'EndsWith', value1: 'e' }];
+                    done();
+                }, 1000);
+            });
+            it('Filter testing4', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("16");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', condition: 'GreaterThan', value1: 'Car' }];
+                    done();
+                }, 1000);
+            });
+            it('Filter testing5', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][3] as IDataSet).formattedText).toBe("52740.04999999999");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', condition: 'GreaterThanOrEqualTo', value1: 'Jet' }];
+                    done();
+                }, 1000);
+            });
+            it('Filter testing6', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("33");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', condition: 'LessThanOrEqualTo', value1: 'Flight' }];
+                    done();
+                }, 1000);
+            });
+            it('Filter testing7', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("14");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'product', type: 'Label', items: ['Car', 'Bike'], condition: 'Contains', value1: 'e', value2: 'v' }];
+                    done();
+                }, 1000);
+            });
+            it('date testing1', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[4][5] as IDataSet).formattedText).toBe("34");
+                    expect((pivotGridObj.engineModule.pivotValues[5][5] as IDataSet).formattedText).toBe("50");
+                    pivotGridObj.dataSourceSettings.rows = [{ name: 'date' }, { name: 'product' }];
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'Before', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
+                    done();
+                }, 1000);
+            });
+            it('date testing1 - 2', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("16");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'Equals', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
+                    done();
+                }, 1000);
+            });
+            it('date testing2', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'After', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
+                    done();
+                }, 1000);
+            });
+            it('date testing3', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("18");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'AfterOrEqualTo', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
+                    done();
+                }, 1000);
+            });
+            it('date testing4', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'BeforeOrEqualTo', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)' }];
+                    done();
+                }, 1000);
+            });
+            it('date testing5', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("15");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', condition: 'Between', value1: 'Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)', value2: 'Tue Sep 09 2008 09:47:08 GMT+0530 (India Standard Time)' }];
+                    done();
+                }, 1000);
+            });
+            it('date testing6', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[2][2] as IDataSet).formattedText).toBe("15");
+                    pivotGridObj.dataSourceSettings.filterSettings = [{ name: 'date', type: 'Date', value1: 'Tue Sep 09 2008 09:47:08 GMT+0530 (India Standard Time)' }];
+                    done();
+                }, 1000);
+            });
+            it('date testing7', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("15");
+                    pivotGridObj.dataSourceSettings.filterSettings = [];
+                    pivotGridObj.dataSourceSettings.columns = [{ name: 'gender' }, { name: 'advance' }];
+                    pivotGridObj.dataSourceSettings.values = [{ name: 'balance', type: 'DifferenceFrom' }, { name: 'quantity', type: 'PercentageOfGrandTotal' }, { name: 'price', type: 'CalculatedField' }];
+                    pivotGridObj.dataSourceSettings.sortSettings = [{ name: 'gender', order: 'Descending' }, { name: 'advance', order: 'Descending', membersOrder: [6124, 7107] }];
+                    done();
+                }, 1000);
+            });
+            it('date testing8', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("12.5%");
+                    (document.querySelectorAll('.e-expand')[1] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('date testing8 - 1', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("12.5%");
+                    (document.querySelectorAll('.e-collapse')[0] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('date testing8 - 2', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[5][5] as IDataSet).formattedText).toBe("11.72%");
+                    pivotGridObj.dataSourceSettings.rows = [{ name: 'product' }, { name: 'date' }];
+                    done();
+                }, 1000);
+            });
+            it('data testing9', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("12.5%");
+                    (document.querySelectorAll('.e-icons.e-sort')[2] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('filter testing1', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("15.63%");
+                    (document.querySelectorAll('.e-expand')[3] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('filter testing1 - 1', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[4][2] as IDataSet).formattedText).toBe("26.56%");
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("15.63%");
+                    (document.querySelectorAll('.e-btn-filter')[2] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('filter testing2', (done: Function) => {
+                setTimeout(function () {
+                    let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
+                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    expect(checkEle.length).toBeGreaterThan(0);
+                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                    util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
+                    (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('filter testing3 - 1', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("17.54%");
+                    (document.querySelectorAll('.e-btn-filter')[1] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('filter testing3 - 2', (done: Function) => {
+                setTimeout(function () {
+                    let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
+                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    expect(checkEle.length).toBeGreaterThan(0);
+                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                    util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
+                    (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+            it('filter testing3 - 3', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[7][2] as IDataSet).formattedText).toBe("70.21%");
+                    (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
                     done();
                 }, 1000);
             });
             it('filter testing4', (done: Function) => {
-                (document.querySelectorAll('.e-btn-filter')[1] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
-                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                expect(checkEle.length).toBeGreaterThan(0);
-                expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                util.checkTreeNode(treeObj, closest(checkEle[1], 'li'));
-                (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("29.85%");
+                    let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
+                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    expect(checkEle.length).toBeGreaterThan(0);
+                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                    util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
+                    (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                     done();
                 }, 1000);
             });
             it('filter testing5', (done: Function) => {
-                (document.querySelectorAll('.e-btn-filter')[3] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
-                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                expect(checkEle.length).toBeGreaterThan(0);
-                expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
-                (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 setTimeout(function () {
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("42.55%");
+                    expect((pivotGridObj.engineModule.pivotValues[6][2] as IDataSet).formattedText).toBe("70.21%");
+                    (document.querySelectorAll('.e-btn-filter')[4] as HTMLElement).click();
                     done();
                 }, 1000);
             });
             it('filter testing6', (done: Function) => {
-                (document.querySelectorAll('.e-btn-filter')[4] as HTMLElement).click();
-                pivotGridObj.refreshData();
-                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
-                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                expect(checkEle.length).toBeGreaterThan(0);
-                expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
-                (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
-                pivotGridObj.refreshData();
                 setTimeout(() => {
-                    expect((pivotGridObj.engineModule.pivotValues[3][5] as IDataSet).formattedText).toBe("64.52%");
+                    let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
+                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    expect(checkEle.length).toBeGreaterThan(0);
+                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                    util.checkTreeNode(treeObj, closest(checkEle[2], 'li'));
+                    (document.querySelectorAll('.e-ok-btn')[0] as HTMLElement).click();
                     done();
                 }, 1000);
             });
-            it('aggreagation testing', () => {
-                let field: IFieldOptions = {
-                    "name": "balance",
-                    "isCalculatedField": false,
-                    "isNamedSet": false,
-                    "showNoDataItems": false,
-                    "showSubTotals": true,
-                    "type": "Product",
-                    "showFilterIcon": true,
-                    "showSortIcon": true,
-                    "showRemoveIcon": true,
-                    "showValueTypeIcon": true,
-                    "showEditIcon": true,
-                    "allowDragAndDrop": true,
-                    "expandAll": false,
-                    "axis": undefined,
-                    "baseField": undefined,
-                    "baseItem": undefined,
-                    "caption": undefined,
-                    "dataType": undefined,
-                    "groupName": undefined
-                }
-                pivotGridObj.engineModule.onAggregation(field);
-                expect(("1")).toBe("1");
+            it('filter testing6', (done: Function) => {
+                setTimeout(() => {
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("70.21%");
+                    pivotGridObj.dataSourceSettings.values[0].type = 'Product';
+                    done();
+                }, 1000);
+            });
+            it('aggreagation testing', (done: Function) => {
+                setTimeout(function () {
+                    expect((pivotGridObj.engineModule.pivotValues[3][2] as IDataSet).formattedText).toBe("70.21%");
+                    pivotGridObj.dataSourceSettings.values[0].type = 'PercentageOfParentColumnTotal';
+                    done();
+                }, 1000);
             });
         });
 

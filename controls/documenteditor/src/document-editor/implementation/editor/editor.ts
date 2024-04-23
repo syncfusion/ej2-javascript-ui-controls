@@ -4607,6 +4607,9 @@ export class Editor {
         }
         let fieldEnd: FieldElementBox = new FieldElementBox(1);
         element.push(fieldEnd);
+        fieldBegin.fieldSeparator = fieldEnd.fieldSeparator = fieldSeparator;
+        fieldBegin.fieldEnd = fieldSeparator.fieldEnd = fieldEnd;
+        fieldSeparator.fieldBegin = fieldEnd.fieldBegin = fieldBegin;
         this.insertElement(element);
         //let paragraph: ParagraphWidget = selection.start.paragraph;
         fieldEnd.linkFieldCharacter(this.documentHelper);
@@ -16794,7 +16797,9 @@ export class Editor {
                 let revision: Revision = this.retrieveRevisionInOder(elementBox);
                 let index: number = this.owner.revisions.changes.indexOf(revision);
                 if (!isNullOrUndefined(this.owner.editorHistoryModule) && !isNullOrUndefined(this.owner.editorHistoryModule.currentBaseHistoryInfo) && !isSkipRecordRevision) {
-                    this.owner.editorHistoryModule.currentBaseHistoryInfo.recordInsertRevisionDeletetion(elementBox);
+                    let startValue: number = isNullOrUndefined(elementIndex) ? indexInInline : 0;
+                    let endValue: number = isNullOrUndefined(elementIndex) ? ((endOffset === 1) ? 1 : (endOffset - indexInInline)) : elementBox.length;
+                    this.owner.editorHistoryModule.currentBaseHistoryInfo.recordInsertRevisionDeletetion(elementBox, startValue, endValue);
                 }
                 if (revision.revisionType === 'Insertion') {
                     if (this.isRevisionMatched(elementBox, undefined)) {
@@ -19420,16 +19425,16 @@ export class Editor {
                     }
                 }
             }
-            if (!isNullOrUndefined(isShading) && !this.isCellFormatApplied && !isNullOrUndefined(format.borders)) {
-                for (let i: number = 0; i < table.childWidgets.length; i++) {
-                    const rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-                    rowWidget.rowFormat.borders.copyFormat(format.borders);
-                    for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
-                        const cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
-                        cellWidget.cellFormat.borders.copyFormat(format.borders);
-                    }
-                }
-            }
+            // if (!isNullOrUndefined(isShading) && !this.isCellFormatApplied && !isNullOrUndefined(format.borders)) {
+            //     for (let i: number = 0; i < table.childWidgets.length; i++) {
+            //         const rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            //         rowWidget.rowFormat.borders.copyFormat(format.borders);
+            //         for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
+            //             const cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+            //             cellWidget.cellFormat.borders.copyFormat(format.borders);
+            //         }
+            //     }
+            // }
             this.applyTableFormat(table, undefined, format);
             this.reLayout(this.selection, false);
         }
@@ -20965,6 +20970,9 @@ export class Editor {
         const fieldEnd: FieldElementBox = new FieldElementBox(1);
         fieldEnd.characterFormat.copyFormat(format);
         element.push(fieldEnd);
+        fieldBegin.fieldSeparator = fieldEnd.fieldSeparator = fieldSeparator;
+        fieldBegin.fieldEnd = fieldSeparator.fieldEnd = fieldEnd;
+        fieldSeparator.fieldBegin = fieldEnd.fieldBegin = fieldBegin;
         const bookmarkEnd: BookmarkElementBox = new BookmarkElementBox(1);
         bookmarkEnd.characterFormat.copyFormat(format);
         bookmarkEnd.name = fieldBegin.formFieldData.name;
@@ -21139,6 +21147,9 @@ export class Editor {
             lastElement = bookmarkEnd;
             element.push(bookmarkEnd);
         }
+        fieldBegin.fieldSeparator = fieldEnd.fieldSeparator = fieldSeparator;
+        fieldBegin.fieldEnd = fieldSeparator.fieldEnd = fieldEnd;
+        fieldSeparator.fieldBegin = fieldEnd.fieldBegin = fieldBegin;
         this.documentHelper.layout.isInsertFormField = true;
         this.insertElement(element);
         this.documentHelper.layout.isInsertFormField = false;      

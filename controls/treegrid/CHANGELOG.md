@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 25.1.41 (2024-04-23)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I578431` - Last page index issue in virtualization when adding new record after scrolling issue has been fixed.
+- `#I570787` - Fixed issue with Excel exporting in remote data with custom datasource.
+- `#I575019` - Resolved white space issue on scrolling to the bottom when virtualization enabled with `frozenColumns`.
+- `#I575021` - Resolved bottom scrolling issue when virtualization enabled with `frozenColumns` and column template.
+- `#I571916` - Resolved exception while showing tooltip when the `treeColumnIndex` greater than overall columns.
+
 ## 25.1.39 (2024-04-09)
 
 ### Tree Grid

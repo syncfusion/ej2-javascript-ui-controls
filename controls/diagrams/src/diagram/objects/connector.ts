@@ -1928,7 +1928,9 @@ export class Connector extends NodeBase implements IElement {
         //let getPointloop: SegmentInfo;
         //let align: Alignment; let hAlign: string;
         const pivotPoint: PointModel = { x: 0, y: 0 };
-        if (!(textElement instanceof DiagramHtmlElement || DiagramElement) && (!canRefresh)) {
+        //Bug 881512: Wrapping of the connector annotation at run time not working properly.
+        //To refresh the annotation at run time while moving connector end points or while moving nodes connected with connector.
+        if ((textElement instanceof TextElement) && (!canRefresh)) {
             (textElement as TextElement).refreshTextElement();
         }
         textElement.width = (annotation.width || bounds.width);

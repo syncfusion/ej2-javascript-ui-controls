@@ -4179,7 +4179,7 @@ export class CommandHandler {
             const value: boolean = node.container.orientation === 'Vertical';
             const isVertical: boolean = node.container === 'Stack' ? value : !value;
             if (node.container.type === 'Grid' && (target as Node).isLane &&
-                ((!this.diagram.currentSymbol &&
+                ((
                     ((node.shape as SwimLaneModel).orientation === 'Horizontal' && (target as Node).rowIndex !== source.rowIndex) ||
                     ((node.shape as SwimLaneModel).orientation === 'Vertical' && (target as Node).columnIndex !== source.columnIndex))
                     || (this.diagram.currentSymbol &&
@@ -6853,6 +6853,17 @@ Remove terinal segment in initial
      */
     public isParentAsContainer(node: NodeModel, isChild?: boolean): boolean {
         return checkParentAsContainer(this.diagram, node, isChild);
+    }
+    /** 
+     * @returns { boolean }     isParentAsContainer method .\
+     * @param {NodeModel} node - provide the target Node value.
+     * @private
+    */
+    public isTargetSubProcess(node: NodeModel): boolean {
+        if(node && node.shape && node.shape.type === 'Bpmn' && (node.shape as BpmnShape).activity && (node.shape as BpmnShape).activity.activity === "SubProcess"){
+            return true;
+        }
+        return false;
     }
 
 

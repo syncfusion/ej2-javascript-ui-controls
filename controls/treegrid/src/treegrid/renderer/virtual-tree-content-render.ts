@@ -493,6 +493,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.previousInfo = viewInfo;
             this.parent.setColumnIndexesInView(this.parent.enableColumnVirtualization ? viewInfo.columnIndexes : []);
             const page: number = viewInfo.loadNext && !viewInfo.loadSelf ? viewInfo.nextInfo.page : viewInfo.page;
+            if (downScroll && this.endIndex === this.totalRecords && viewInfo.loadNext) {
+                viewInfo.loadNext = false;
+            }
             this.parent.setProperties({ pageSettings: { currentPage: page } }, true);
             this.requestType = 'virtualscroll';
             if (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left') {

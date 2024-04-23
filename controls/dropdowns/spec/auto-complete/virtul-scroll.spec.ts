@@ -83,8 +83,8 @@ describe('Autocomplete_Virtualization', () => {
          */
        it('virtualization Down key pressed ', (done) => {
             dropObj.showPopup();
-            expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-            expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+            expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+            expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
             expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
             let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
             keyEventArgs.type = 'keydown';
@@ -105,8 +105,8 @@ describe('Autocomplete_Virtualization', () => {
                     dropObj.keyActionHandler(keyEventArgs);
                 }
                 setTimeout(function () {
-                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                     //expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[7].textContent.trim()).toBe('Item 12');
                     done();
                     }, 650)
@@ -152,13 +152,13 @@ describe('Autocomplete_Virtualization', () => {
                 expect((li[6] as Element).classList.contains('e-item-focus')).toBe(true);
                 keyEventArgs.action = 'pageDown';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect((li[9] as Element).classList.contains('e-item-focus')).toBe(true);
+                expect((li[12] as Element).classList.contains('e-item-focus')).toBe(true);
                 keyEventArgs.action = 'pageUp';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect((li[4] as Element).classList.contains('e-item-focus')).toBe(true);
+                expect((li[7] as Element).classList.contains('e-item-focus')).toBe(true);
                 keyEventArgs.action = 'pageUp';
-                dropObj.keyActionHandler(keyEventArgs);
-                expect((li[0] as Element).classList.contains('e-item-focus')).toBe(true);
+                dropObj.keyActionHandler(keyEventArgs); 
+                expect((li[2] as Element).classList.contains('e-item-focus')).toBe(true);
                 done();
             }, 450);
         });
@@ -216,7 +216,7 @@ describe('Autocomplete_Virtualization', () => {
                         //expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 40');
                         keyEventArgs.action = 'down';
                         dropObj.keyActionHandler(keyEventArgs);
-                        expect((li[1] as Element).classList.contains('e-active')).toBe(true);
+                        expect((li[2] as Element).classList.contains('e-active')).toBe(true);
                         done();
                     }, 850);
                    
@@ -244,8 +244,8 @@ describe('Autocomplete_Virtualization', () => {
                 dropObj.sortOrder = 'Ascending';
                 dropObj.dataBind();
                 dropObj.showPopup();
-                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                 expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
                 dropObj.filterInput.value = "Item 2";
                 dropObj.onInput()
@@ -294,7 +294,7 @@ describe('Autocomplete_Virtualization', () => {
                     setTimeout(() => {
                         let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
                         expect((li[0] as Element).classList.contains('e-item-focus')).toBe(true);
-                        expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 40');
+                        expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 20');
                         keyEventArgs.action = 'down';
                         dropObj.keyActionHandler(keyEventArgs);
                         expect((li[1] as Element).classList.contains('e-active')).toBe(true);
@@ -364,8 +364,8 @@ describe('Autocomplete_Virtualization', () => {
                     dropObj.clearAll();
                     var clearElement = dropObj.filterInput.parentElement.querySelector('.e-clear-icon');
                     expect(dropObj.value === null).toBe(true);
-                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                     expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
                     done();
                 }, 650);

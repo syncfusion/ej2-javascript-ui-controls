@@ -264,10 +264,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     private isCheckBoxSelection: boolean = false;
     protected totalItemCount: number = 0;
     protected dataCount: number = 0;
+    protected remoteDataCount: number = -1;
     protected isRemoteDataUpdated: boolean = false;
     protected virtualGroupDataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     protected isIncrementalRequest: boolean = false;
-    protected itemCount: number = 10;
+    protected itemCount: number = 30;
     protected initialRemoteRender: boolean;
     protected virtualListHeight: number = 0;
     protected virtualItemCount: number;
@@ -306,7 +307,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected appendUncheckList: boolean = false;
     protected getInitialData: boolean = false;
     protected preventPopupOpen: boolean = true;
-    protected customFilterQuery: Query = new Query();
+    protected setCurrentView: boolean;
+    protected customFilterQuery: Query;
     protected virtualSelectAllData: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     protected firstItem: string | number | boolean | object;
     protected virtualListInfo: VirtualInfo = {
@@ -799,10 +801,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected getFilteringSkeletonCount(): void {
-        const difference: number = this.dataCount - this.viewPortInfo.endIndex;
         const currentSkeletonCount: number = this.skeletonCount;
         this.getSkeletonCount(true);
-        this.skeletonCount = this.dataCount > this.itemCount * 2 ? this.skeletonCount : difference > this.skeletonCount ? this.skeletonCount : difference > 0 ? difference : 0;
+        this.skeletonCount = this.dataCount > this.itemCount * 2 ? this.skeletonCount : 0;
         let skeletonUpdated = true;
         if((this.getModuleName() === 'autocomplete' || this.getModuleName() === 'multiselect') && (this.totalItemCount < (this.itemCount * 2))){
             this.skeletonCount = 0;
@@ -838,10 +839,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected getSkeletonCount(retainSkeleton?: boolean): void {
         this.virtualListHeight = this.listContainerHeight != null ? parseInt(this.listContainerHeight, 10) : this.virtualListHeight;
         const actualCount: number = this.virtualListHeight > 0 ? Math.floor(this.virtualListHeight / this.listItemHeight) : 0;
-        this.skeletonCount = actualCount * 2 < this.itemCount ? this.itemCount : actualCount * 2;
+        this.skeletonCount = actualCount * 4 < this.itemCount ? this.itemCount : actualCount * 4;
         this.itemCount = retainSkeleton ? this.itemCount : this.skeletonCount;
         this.virtualItemCount = this.itemCount;
-        this.skeletonCount = Math.floor(this.skeletonCount / 2) + 2;
+        this.skeletonCount = Math.floor(this.skeletonCount / 2);
     }
 
     protected GetVirtualTrackHeight(): string {
@@ -1072,41 +1073,53 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 if (!eventArgs.cancel) {
                     this.isRequesting = true;
                     this.showSpinner();
-                    if (dataSource instanceof DataManager && !this.virtualGroupDataSource) {
+                    if (dataSource instanceof DataManager) {
                         this.isRequested = true;
+                        let isWhereExist: boolean = false;
                         if (this.isDataFetched) {
                             this.emptyDataRequest(fields);
                             return;
                         }
                         (eventArgs.data as DataManager).executeQuery(this.getQuery(eventArgs.query as Query)).then((e: Object) => {
                             this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
-                            this.trigger('actionComplete', e, (e: Object) => {
-                                if(!this.virtualGroupDataSource && this.isVirtualizationEnabled) {
-                                    this.isRemoteDataUpdated = true;
-                                    if((this.getModuleName() === 'combobox' && !this.initialRemoteRender && this.isAllowFiltering && this.isVirtualizationEnabled && (e as ResultData).result)) {
-                                        (e as ResultData).result = ((e as ResultData).result as any).result;
+                            let isReOrder = true;
+                            if (!this.virtualSelectAll) {
+                                let newQuery: Query = this.getQuery(eventArgs.query as Query);
+                                for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
+                                    if (newQuery.queries[queryElements as number].fn === 'onWhere') {
+                                        isWhereExist = true;
                                     }
-                                    if ((e as ResultData).result.length > 0) {
-                                        let dataSource = (e as ResultData).result;
-                                        if(this.isVirtualizationEnabled && this.fields.groupBy) {
-                                            let data = <{ [key: string]: Object }[]>new DataManager(<any[]>dataSource).executeLocal(new Query().group(this.fields.groupBy));
-                                            this.virtualGroupDataSource = (data as any).records;
-                                        }
-                                        else{
-                                            this.virtualGroupDataSource = dataSource;
-                                            this.hideSpinner();
-                                            this.isRequested = false;
-                                            this.isRequesting = false;
-                                            this.setListData(dataSource, fields, query, event);
-                                            return;
-                                        }
-                                    }
-                                    this.hideSpinner();
-                                    this.isRequested = false;
-                                    this.isRequesting = false;
-                                    this.updatePopupState();
-                                    return;
                                 }
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                if (this.isVirtualizationEnabled && ((e as any).count != 0 && (e as any).count < (this.itemCount * 2))) {
+                                    if (newQuery) {
+                                        for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
+                                            if (newQuery.queries[queryElements as number].fn === 'onTake') {
+                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                newQuery.queries[queryElements as number].e.nos = (e as any).count;
+                                            }
+                                            if (this.getModuleName() === 'multiselect' && (newQuery.queries[queryElements as number].e.condition == 'or' || newQuery.queries[queryElements as number].e.operator == 'equal')) {
+                                                isReOrder = false;
+                                            }
+                                        }
+                                    }
+                                }
+                                else {
+                                    this.isVirtualTrackHeight = false;
+                                    if (newQuery) {
+                                        for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
+                                            if (this.getModuleName() === 'multiselect' && ((newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.condition == 'or') || (newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.operator == 'equal'))) {
+                                                isReOrder = false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if(isReOrder){
+                                // eslint-disable @typescript-eslint/no-explicit-any
+                                 this.dataCount = this.totalItemCount = (e as any).count;
+                            }
+                            this.trigger('actionComplete', e, (e: Object) => {
                                 if (!(e as { [key: string]: object }).cancel) {
                                     this.isRequesting = false;
                                     const listItems: { [key: string]: Object }[] = (e as ResultData).result;
@@ -1114,12 +1127,16 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                         ulElement = this.renderItems(listItems, fields);
                                         return;
                                     }
-                                    if (listItems.length === 0) {
+                                    if ((!this.isVirtualizationEnabled && listItems.length === 0) || (this.isVirtualizationEnabled && listItems.length === 0 && !isWhereExist)) {
                                         this.isDataFetched = true;
+                                    }
+                                    if(!isWhereExist){
+                                        this.remoteDataCount = (e as any).count;
                                     }
                                     this.dataCount = (e as any).count;
                                     this.totalItemCount = (e as any).count;
                                     ulElement = this.renderItems(listItems, fields);
+                                    this.appendUncheckList = false;
                                     this.onActionComplete(ulElement, listItems, e);
                                     if (this.groupTemplate) {
                                         this.renderGroupTemplate(ulElement);
@@ -1131,6 +1148,17 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                         this.getInitialData = false;
                                         this.preventPopupOpen = false;
                                         return;
+                                    }
+                                    if(this.isVirtualizationEnabled && this.setCurrentView) {
+                                        this.notify("setCurrentViewDataAsync", {
+                                            module: "VirtualScroll",
+                                        });
+                                    }
+                                    if(this.keyboardEvent != null){
+                                        this.handleVirtualKeyboardActions(this.keyboardEvent, this.pageCount);
+                                    }
+                                    if (this.isVirtualizationEnabled) {
+                                        this.getFilteringSkeletonCount();
                                     }
                                 }
                             });
@@ -1168,7 +1196,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     }
                                     if (isReOrder) {
                                         listItems = <{ [key: string]: Object }[]>(newQuery).executeLocal(dataManager);
-                                        this.isVirtualTrackHeight = true;
+                                        this.isVirtualTrackHeight = (!(this.dataSource instanceof DataManager) && !this.isCustomDataUpdated) ? true : false;
                                     }
                                 }
                             }
@@ -1183,7 +1211,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                 }
                             }
                         }
-                        if(isReOrder){
+                        if(isReOrder && (!(this.dataSource instanceof DataManager) && !this.isCustomDataUpdated)){
                             // eslint-disable @typescript-eslint/no-explicit-any
                              this.dataCount = this.totalItemCount = this.virtualSelectAll ? (listItems as any).length : (listItems as any).count;
                         }
@@ -1219,6 +1247,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 }
             });
         }
+    }
+    protected handleVirtualKeyboardActions(e: KeyboardEventArgs, pageCount: number): void {
+        // Used this method in component side.
     }
     protected updatePopupState(): void {
         // Used this method in component side.
@@ -1349,6 +1380,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 if (ulElement.children[i as number].classList.contains('e-list-group-item')) {
                     if (isNullOrUndefined(ulElement.children[i as number].innerHTML) || ulElement.children[i as number].innerHTML == "") {
                         addClass([ulElement.children[i as number]], HIDE_GROUPLIST) }
+                }
+                if ((ulElement.children[0] as HTMLElement).classList.contains('e-hide-group-header')) {
+                    setStyleAttribute(ulElement.children[1] as HTMLElement, { zIndex: 11 });
                 }
             }
         }
@@ -1513,19 +1547,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         for (let i: number = topIndex; i > -1; i--) {
             const index: number = this.isVirtualizationEnabled ? i + virtualListCount : i;
             if (this.isVirtualizationEnabled) {
-                const groupListLength: number = this.list.querySelectorAll('.e-list-group-item').length;
-                let loadedGroupList: number = 0;
                 if (isCount) {
                     count++;
                 }
                 if (this.fixedHeaderElement && this.updateGroupHeader(index, liCollections, target)) {
-                    loadedGroupList++;
-                    if (count >= this.getPageCount()) {
-                        break;
-                    }
-                    if (groupListLength <= loadedGroupList) {
-                        break;
-                    }
+                    break;
                 }
                 if (isDownkey) {
                     if ((!isNullOrUndefined(liCollections[index as number]) && liCollections[index as number].classList.contains(dropDownBaseClasses.selected) && this.getModuleName() !== 'autocomplete') || (!isNullOrUndefined(liCollections[index as number]) && liCollections[index as number].classList.contains(dropDownBaseClasses.focus) && this.getModuleName() === 'autocomplete')) {

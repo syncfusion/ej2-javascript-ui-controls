@@ -102,7 +102,7 @@ export class DetailRow {
             } else if (gObj.getDetailTemplate() || gObj.childGrid) {
                 const rowId: string = getUid('grid-row');
                 const detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId, role: 'row'} });
-                const detailCell: Element = this.parent.createElement('th', { className: 'e-detailcell', attrs: {'scope': 'col', role:'columnheader'} });
+                const detailCell: Element = this.parent.createElement('th', { className: 'e-detailcell', attrs: {'scope': 'col', role: 'columnheader'} });
                 let colSpan: number = this.parent.getVisibleColumns().length;
                 if (this.parent.allowRowDragAndDrop) {
                     colSpan++;

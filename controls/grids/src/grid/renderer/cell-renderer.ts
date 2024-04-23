@@ -157,7 +157,8 @@ export class CellRenderer implements ICellRenderer<Column> {
         } else {
             const node: Element = this.refreshCell(cell, data, attributes, isEdit);
             td.innerHTML = '';
-            const arialabelText = node.getAttribute('aria-label');
+            const arialabelText: string = node.getAttribute('aria-label');
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             arialabelText ? td.setAttribute('aria-label', arialabelText) : null;
             const elements: Element[] = [].slice.call(node.childNodes);
             for (const elem of elements) {

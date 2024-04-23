@@ -91,6 +91,7 @@ export class HeaderRenderer {
             });
             this.toolbarObj.root = this.parent.root ? this.parent.root : this.parent;
             this.toolbarObj.appendTo(this.parent.element.querySelector('.' + cls.HEADER_TOOLBAR) as HTMLElement);
+            this.toolbarObj.element.setAttribute('aria-label', 'Scheduler');
             const prevNavEle: HTMLElement = this.toolbarObj.element.querySelector('.e-prev') as HTMLElement;
             if (prevNavEle) {
                 (prevNavEle.firstElementChild as Element).setAttribute('title', this.l10n.getConstant('previous'));

@@ -94,6 +94,7 @@ export class Render {
             }
             throw Error('Inject required modules');
         }
+        this.parent.uiStateValues.scheduleHeight = this.parent.element.offsetHeight;
         this.parent.activeView.viewIndex = this.parent.viewIndex;
         this.updateLabelText(viewName);
         this.parent.activeView.addEventListener();

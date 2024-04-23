@@ -2281,6 +2281,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             && document.activeElement.classList.contains(cls.SUBJECT_CLASS))) {
             return;
         }
+        if (this.virtualScrollModule && this.activeView.isTimelineView()) {
+            this.virtualScrollModule.refreshLayout();
+        }
         if (this.activeViewOptions.timeScale.enable && this.activeView) {
             this.activeView.highlightCurrentTime();
         }
@@ -2292,7 +2295,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             && !this.activeViewOptions.timeScale.enable) || this.activeView.isTimelineView()) {
             this.activeView.resetColWidth();
             this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties(), isPreventScrollUpdate: true });
-            this.refreshEvents(false);
+            let isRemoteRefresh: boolean = false;
+            if (this.activeViewOptions.enableLazyLoading && this.virtualScrollModule && this.virtualScrollModule.isRemoteRefresh) {
+                isRemoteRefresh = this.virtualScrollModule.isRemoteRefresh;
+                this.virtualScrollModule.isRemoteRefresh = false;
+            }
+            this.refreshEvents(isRemoteRefresh);
         } else {
             this.notify(events.contentReady, {});
         }

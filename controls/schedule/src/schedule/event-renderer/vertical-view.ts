@@ -632,11 +632,12 @@ export class VerticalEvent extends EventBase {
     }
 
     public getTopValue(date: Date, day: number, resource: number): number {
-        const startEndHours: { [key: string]: Date } =
-            util.getStartEndHours(util.resetTime(this.dateRender[parseInt(resource.toString(), 10)][parseInt(day.toString(), 10)]),
-                                  this.startHour, this.endHour);
+        const viewDate: Date = util.resetTime(this.dateRender[parseInt(resource.toString(), 10)][parseInt(day.toString(), 10)]);
+        const startEndHours: { [key: string]: Date } = util.getStartEndHours(viewDate, this.startHour, this.endHour);
         const startHour: Date = startEndHours.startHour;
-        const diffInMinutes: number = ((date.getHours() - startHour.getHours()) * 60) + (date.getMinutes() - startHour.getMinutes());
+        const adjustedStartHour: number = util.isDaylightSavingTime(viewDate) && (startHour.getHours() !== this.startHour.getHours()) ?
+            this.startHour.getHours() : startHour.getHours();
+        const diffInMinutes: number = ((date.getHours() - adjustedStartHour) * 60) + (date.getMinutes() - startHour.getMinutes());
         return (this.parent.activeViewOptions.timeScale.enable) ? ((diffInMinutes * this.cellHeight * this.slotCount) / this.interval) : 0;
     }
 
