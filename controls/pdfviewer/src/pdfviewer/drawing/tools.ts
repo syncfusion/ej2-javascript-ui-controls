@@ -1993,13 +1993,19 @@ export class PolygonDrawingTool extends ToolBase {
      * @returns {void}
      */
     public mouseUp(args: MouseEventArgs, isDoubleClineck?: boolean, isMouseLeave?: boolean): void {
+        let needToDrawPolygon: boolean = false;
         super.mouseMove(args);
         // eslint-disable-next-line
         let currentSelector: any;
         if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
             currentSelector = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
         }
-        if (this.drawingObject) {
+        if (this.drawingObject && this.drawingObject.vertexPoints.length === 2 && isDoubleClineck && isMouseLeave) {
+            this.commandHandler.remove(this.drawingObject);
+            needToDrawPolygon = true;
+            this.endAction();
+        }
+        if (this.drawingObject && !needToDrawPolygon) {
             // eslint-disable-next-line max-len
             const bounds: Rect = new Rect(this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1].x - 20, this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1].y - 20, 40, 40);
             const point: PointModel = { x: this.drawingObject.vertexPoints[0].x, y: this.drawingObject.vertexPoints[0].y };

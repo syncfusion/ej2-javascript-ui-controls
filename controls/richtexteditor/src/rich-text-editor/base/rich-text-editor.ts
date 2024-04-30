@@ -2225,6 +2225,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             clearInterval(this.timeInterval);
             this.timeInterval = null;
         }
+        const tooltipElements: NodeListOf<Element> = document.querySelectorAll('[data-rte-id="' + this.getID() + '"]');
+        for (let i: number = 0; i < tooltipElements.length; i++) {
+            const tooltipEle: Element = tooltipElements[i as number] as Element;
+            if (this.getID() === tooltipEle.getAttribute('data-rte-id') as string) {
+                detach(tooltipEle);
+            }
+        }
         if (this.element.offsetParent === null) {
             if (!isNOU(this.toolbarModule)) { this.toolbarModule.destroy(); }
             this.notify(events.moduleDestroy, {});

@@ -1,7 +1,7 @@
 import { Component, Observer, L10n, KeyboardEventArgs, EmitType } from '@syncfusion/ej2-base';
 import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
 import { ItemModel as DropDownItemModel, DropDownButton } from '@syncfusion/ej2-splitbuttons';
-import { ToolbarType, RenderType, UploadRequest } from './enum';
+import { ToolbarType, RenderType, ImageInputSource } from './enum';
 import { Toolbar } from '../actions/toolbar';
 import { UndoRedoManager } from '../../editor-manager/plugin/undo';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -1201,9 +1201,9 @@ export interface ImageSuccessEventArgs {
      */
     element?: HTMLElement
     /**
-     * Specify the request type of the event.
+     * Specify the detected image source of the event.
      */
-    requestType?: UploadRequest
+    detectImageSource?: ImageInputSource
 }
 
 /**

@@ -1641,7 +1641,7 @@ export class TextMarkupAnnotation {
                         multiPageCollection.push(deletedAnnotation);
                         // eslint-disable-next-line max-len
                         this.pdfViewer.fireAnnotationRemove(this.selectTextMarkupCurrentPage, annotationId, deletedAnnotation.textMarkupAnnotationType as AnnotationType, annotationBounds, deletedAnnotation.textMarkupContent, deletedAnnotation.textMarkupStartIndex, deletedAnnotation.textMarkupEndIndex, multiPageCollection);
-                    } else {
+                    } else if (!isNullOrUndefined(deletedAnnotation)) {
                         // eslint-disable-next-line max-len
                         this.pdfViewer.fireAnnotationRemove(this.selectTextMarkupCurrentPage, annotationId, deletedAnnotation.textMarkupAnnotationType as AnnotationType, annotationBounds, deletedAnnotation.textMarkupContent, deletedAnnotation.textMarkupStartIndex, deletedAnnotation.textMarkupEndIndex);
                     }

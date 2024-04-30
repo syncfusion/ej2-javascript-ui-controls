@@ -70,54 +70,54 @@ describe('Gantt delete support', () => {
             ganttObj.editModule.deleteRecord(records);
             expect(getValue('TaskID', ganttObj.flatData[ganttObj.flatData.length - 3])).toBe(37);
         });
-        // it('Select a row and delete through toolbar', (done: Function) => {
-        //     ganttObj.dataSource = JSON.parse(JSON.stringify(projectData1));
-        //     ganttObj.dataBound = () => {
-        //         ganttObj.selectionModule.selectRow(ganttObj.flatData.length - 2);
-        //         let deleteElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
-        //         triggerMouseEvent(deleteElement, 'click');
-        //         // Click cancel button
-        //         let cancelElement: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_deleteConfirmDialog div.e-footer-content button')[1] as HTMLElement;
-        //         triggerMouseEvent(cancelElement, 'click');
-        //         triggerMouseEvent(deleteElement, 'click');
-        //         // Click OK button
-        //         let okElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog div.e-footer-content button') as HTMLElement;
-        //         triggerMouseEvent(okElement, 'click');
-        //         expect(getValue('TaskID', ganttObj.flatData[ganttObj.flatData.length - 1])).toBe(39);
-        //         done();
-        //     }
-        //     ganttObj.refresh();
-        // }, 3000);
-        // it('Select a cell in a row and delete through toolbar', () => {
-        //     ganttObj.selectionSettings.mode = 'Cell';
-        //     ganttObj.dataBind();
-        //     let rowElement: NodeListOf<Element> = ganttObj.element.querySelectorAll('#' + 'treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr') as NodeListOf<Element>;
-        //     let td: HTMLElement = rowElement[3].children[1] as HTMLElement;
-        //     triggerMouseEvent(td, 'click');
-        //     let deleteElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
-        //     triggerMouseEvent(deleteElement, 'click');
-        //     // Click OK button
-        //     let okElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog div.e-footer-content button') as HTMLElement;
-        //     triggerMouseEvent(okElement, 'click');
-        //     expect(getValue('TaskID', ganttObj.flatData[ganttObj.flatData.length - 1])).toBe(39);
-        // });
-        // it('args cancel true in actionBegin event', (done: Function) => {
-        //     ganttObj.dataSource = JSON.parse(JSON.stringify(projectData1));
-        //     ganttObj.actionBegin = (args: IActionBeginEventArgs) => {
-        //         if (args.requestType === 'beforeDelete') {
-        //             args.cancel = true;
-        //         }
-        //     };
-        //     ganttObj.dataBound = () => {
-        //         ganttObj.editModule.deleteRecord(39);
-        //         expect(getValue('TaskID', ganttObj.flatData[ganttObj.flatData.length - 1])).toBe(39);
-        //         done();
-        //     };
-        //     ganttObj.refresh();
-        // }, 3000);
+        it('Select a row and delete through toolbar', (done: Function) => {
+            ganttObj.dataSource = JSON.parse(JSON.stringify(projectData1));
+            ganttObj.dataBound = () => {
+                ganttObj.selectionModule.selectRow(ganttObj.flatData.length - 2);
+                let deleteElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
+                triggerMouseEvent(deleteElement, 'click');
+                // Click cancel button
+                let cancelElement: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_deleteConfirmDialog div.e-footer-content button')[1] as HTMLElement;
+                triggerMouseEvent(cancelElement, 'click');
+                triggerMouseEvent(deleteElement, 'click');
+                // Click OK button
+                let okElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog div.e-footer-content button') as HTMLElement;
+                triggerMouseEvent(okElement, 'click');
+                expect(getValue('TaskID', ganttObj.flatData[ganttObj.flatData.length - 1])).toBe(39);
+                done();
+            }
+            ganttObj.refresh();
+        }, 1000);
+        it('Select a cell in a row and delete through toolbar', () => {
+            ganttObj.selectionSettings.mode = 'Cell';
+            ganttObj.dataBind();
+            let rowElement: NodeListOf<Element> = ganttObj.element.querySelectorAll('#' + 'treeGrid' + ganttObj.element.id + '_gridcontrol_content_table tr') as NodeListOf<Element>;
+            let td: HTMLElement = rowElement[3].children[1] as HTMLElement;
+            triggerMouseEvent(td, 'click');
+            let deleteElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_delete') as HTMLElement;
+            triggerMouseEvent(deleteElement, 'click');
+            // Click OK button
+            let okElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog div.e-footer-content button') as HTMLElement;
+            triggerMouseEvent(okElement, 'click');
+            expect(getValue('TaskID', ganttObj.flatData[ganttObj.flatData.length - 1])).toBe(39);
+        });
+        it('args cancel true in actionBegin event', (done: Function) => {
+            ganttObj.dataSource = JSON.parse(JSON.stringify(projectData1));
+            ganttObj.actionBegin = (args: IActionBeginEventArgs) => {
+                if (args.requestType === 'beforeDelete') {
+                    args.cancel = true;
+                }
+            };
+            ganttObj.dataBound = () => {
+                ganttObj.editModule.deleteRecord(39);
+                expect(getValue('TaskID', ganttObj.flatData[ganttObj.flatData.length - 1])).toBe(39);
+                done();
+            };
+            ganttObj.refresh();
+        }, 1000);
     });
     
-             describe('Selection maintaining after Gantt delete action', () => {
+    describe('Selection maintaining after Gantt delete action', () => {
         Gantt.Inject(Edit, Toolbar, Selection);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
@@ -159,5 +159,4 @@ describe('Gantt delete support', () => {
             expect(ganttObj.selectedRowIndex).toBe(5);
         });
     });
-
 });

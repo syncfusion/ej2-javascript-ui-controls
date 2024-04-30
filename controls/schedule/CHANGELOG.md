@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.42 (2024-04-30)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I583674` - An issue where the text for today button was not displayed in the toolbar has been fixed.
+
 ## 25.1.41 (2024-04-23)
 
 ### Schedule

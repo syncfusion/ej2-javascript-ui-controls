@@ -3932,6 +3932,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             let textValues: string = this.text != null && this.text != "" ? this.text + ',' + temp : temp;
                             data += temp + delimiterChar + ' ';
                             text.push(textValues);
+                            hiddenElementContent += `<option selected value="${valueItem}">${index}</option>`;
                             break;
                         }
                         else{

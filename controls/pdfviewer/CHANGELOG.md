@@ -2,7 +2,31 @@
 
 ## [Unreleased]
 
+## 25.1.42 (2024-04-30)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I580966` - Now, the script error will not occur after deleting the stamp annotation with customized annotation selector settings.
+- `#I582426` - Now, the old JSON data will be imported in PDF Viewer without any issues.
+- `#I576350` - Now, the customer-provided document will be downloaded without any issues or script errors.
+- `#I576386` - Now, the script error will not occur after removing the `selectorLineDashArray` property.
+
 ## 25.1.41 (2024-04-23)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I578038` - Now, the script error will not occur after resizing the annotations for ink, stamp and signature annotations.
+- `#I558650` - Now, the customer document will get loaded without any issue or script error.
+- `#I559996` - Now, the freeText annotations are updating properly with editAnnotation method.
+- `#I573798` - Now, the form fields are properly preserved in the provided document when saving it.
+- `#I574104` - Now, the cursor position change when pressing the left and right arrow keys in the text box fields.
+- `#I572302` - Now, the form field validation event was not triggered when the Form Designer module was removed.
+
+## 25.1.40 (2024-04-16)
 
 ### PDF Viewer
 

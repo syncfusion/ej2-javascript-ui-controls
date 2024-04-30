@@ -4300,6 +4300,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.addHistoryEntry(entry);
             this.endGroupAction();
         }
+        //880811- Adding child to group node using addChildToGroup method is not working properly.
+        let element: Node | Connector = this.nameTable[child as string] ? this.nameTable[child as string] : child;
+        let childElementToMove: HTMLElement = document.getElementById(element.id + '_groupElement');
+        let targetGroupElement: HTMLElement = document.getElementById(group.id + '_groupElement');
+        if (targetGroupElement && childElementToMove) {
+            targetGroupElement.appendChild(childElementToMove);
+        }
         this.protectPropertyChange(propChange);
         this.enableServerDataBinding(severDataBind);
         this.updateSelector();
@@ -4334,6 +4341,27 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 };
                 this.addHistoryEntry(entry);
                 this.endGroupAction();
+            }
+            //880811 - diagram elements not updated properly while grouping nodes at runtime
+            let element: Node | Connector = this.nameTable[child as string] ? this.nameTable[child as string] : child;
+            let elementZindex: number = element.zIndex;
+            let layerNum: number = this.layers.indexOf(this.commandHandler.getObjectLayer(element.id));
+            let insertBeforeObj = this.layers[parseInt(layerNum.toString(), 10)].objects[elementZindex + 1];
+            let insertBeforeElement: HTMLElement = document.getElementById(insertBeforeObj + '_groupElement');
+            let childElementToMove: HTMLElement = document.getElementById(element.id + '_groupElement');
+            let targetGroupElement: HTMLElement = document.getElementById(group.id + '_groupElement');
+            if (targetGroupElement && childElementToMove) {
+                if (insertBeforeObj && insertBeforeElement) {
+                    if (targetGroupElement.contains(insertBeforeElement)) {
+                        targetGroupElement.insertBefore(childElementToMove, insertBeforeElement);
+                    } else if (targetGroupElement.parentNode.contains(insertBeforeElement) && insertBeforeElement.parentElement === targetGroupElement.parentElement) {
+                        targetGroupElement.parentNode.insertBefore(childElementToMove, insertBeforeElement);
+                    }else {
+                        targetGroupElement.parentNode.appendChild(childElementToMove);
+                    }
+                } else {
+                    targetGroupElement.parentNode.appendChild(childElementToMove);
+                }
             }
             this.protectPropertyChange(propChange);
             this.enableServerDataBinding(severDataBind);
@@ -8674,6 +8702,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private refreshElements(view: View): void {
+        let isOverView = false;
         if (!this.isDestroyed) {
             this.clearCanvas(view);
 
@@ -8682,6 +8711,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     view.scroller.currentZoom, 0, 0, view.scroller.currentZoom, 0, 0);
                 (view.diagramLayer as HTMLCanvasElement).getContext('2d').scale(1.5, 1.5);
             } else {
+                isOverView = true;
                 const element: HTMLElement = document.getElementById(view.element.id + '_nativeLayer');
                 if (element.children.length > 0) {
                     view.updateView(view);
@@ -8690,7 +8720,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const htmlLayer: HTMLElement = getHTMLLayer(view.element.id);
             //const bounds: Rect = this.spatialSearch.getPageBounds();
 
-            this.renderDiagramElements(view.diagramLayer, view.diagramRenderer, htmlLayer);
+            this.renderDiagramElements(view.diagramLayer, view.diagramRenderer, htmlLayer,undefined,undefined,isOverView);
             for (let i: number = 0; i < this.basicElements.length; i++) {
                 const element: DiagramElement = this.basicElements[parseInt(i.toString(), 10)];
                 element.measure(new Size(element.width, element.height));
@@ -8940,6 +8970,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         transformValue = {
                             tx: this.scroller.transform.tx,
                             ty: this.scroller.transform.ty,
+                            scale: this.scroller.transform.scale
+                        };
+                    }
+                    // Bug 880945: Overview is not updated properly with 4k monitor.
+                    //To render the overview elements based on the pageBounds.
+                    if(isOverView){
+                        transformValue = {
+                            tx: (-pageBounds.x) / this.scroller.currentZoom,
+                            ty: (-pageBounds.y) / this.scroller.currentZoom,
                             scale: this.scroller.transform.scale
                         };
                     }

@@ -467,7 +467,7 @@ export class Layout {
      * @private
      *  
      */
-    public reLayoutMultiColumn(section: BodyWidget, isFirstBlock: boolean): void {
+    public reLayoutMultiColumn(section: BodyWidget, isFirstBlock: boolean, blockIndex: number): void {
         this.isInitialLoad = true;
         section = section.getSplitWidgets()[0] as BodyWidget;
         this.combineMultiColumnForRelayout(section);
@@ -533,7 +533,7 @@ export class Layout {
         }
         this.addBodyWidget(this.viewer.clientActiveArea, section);
         this.clearBlockWidget(section.childWidgets, true, true, true);
-        this.reLayoutMultiColumBlock(section, nextSection);
+        this.reLayoutMultiColumnBlock(section, nextSection, blockIndex);
         this.isInitialLoad = false;
         let splitSections: Widget[] = section.getSplitWidgets();
         let lastSection: BodyWidget = splitSections[splitSections.length - 1] as BodyWidget;
@@ -586,7 +586,7 @@ export class Layout {
         }
         this.documentHelper.removeEmptyPages();
     }
-    private reLayoutMultiColumBlock(section: BodyWidget, nextSection: BodyWidget): void {
+    private reLayoutMultiColumnBlock(section: BodyWidget, nextSection: BodyWidget, blockIndex: number): void {
         let block: BlockWidget = section.firstChild as BlockWidget;
         let nextBlock: BlockWidget;
         do {
@@ -596,7 +596,7 @@ export class Layout {
             }
             if (!isNullOrUndefined(block)) {
                 this.viewer.updateClientAreaForBlock(block, true, undefined, true);
-                nextBlock = this.layoutBlock(block, 0);
+                nextBlock = this.layoutBlock(block, 0, block.index < blockIndex ? true : false);
                 this.viewer.updateClientAreaForBlock(block, false);
                 block = nextBlock;
             }
@@ -735,7 +735,12 @@ export class Layout {
                     this.clearTableWidget(block, true, true, true);
                 }
                 this.viewer.updateClientAreaForBlock(block, true);
-                this.layoutBlock(block as BlockWidget, 0);
+                let isUpdatedList: boolean = false;
+                if (block instanceof ParagraphWidget && !isNullOrUndefined(block.paragraphFormat) 
+                    && block.paragraphFormat.listFormat.listId !== -1) {
+                    isUpdatedList = block.paragraphFormat.listFormat.listLevelNumber === 0 ? true : false;
+                }
+                this.layoutBlock(block as BlockWidget, 0, isUpdatedList);
                 this.viewer.updateClientAreaForBlock(block, false);
             }
             if (nonEqualBody.columnIndex === nonEqualBody.sectionFormat.numberOfColumns - 1 || (!isNullOrUndefined(nonEqualBody.nextRenderedWidget) && nonEqualBody.sectionIndex !== (nonEqualBody.nextRenderedWidget as BodyWidget).sectionIndex)) {
@@ -769,6 +774,18 @@ export class Layout {
         } return height;
     }
 
+    private getBookmarkMargin(lineWidget: LineWidget): number {
+        let height: number = 0;
+        for (let i: number = 0; i < lineWidget.children.length; i++) {
+            let element: ElementBox = lineWidget.children[i];
+            if (!isNullOrUndefined(element.margin) && element instanceof BookmarkElementBox) {
+                height = element.margin.top + element.margin.bottom;
+                break;
+            }
+        }
+        return height;
+    }
+
     private getCountOrLine(section: BodyWidget, lineToBeSplit?: number, isSplit?: boolean, getHeight?: boolean): LineCountInfo {
         let totalNoOflines: number = 0;
         let line: LineWidget;
@@ -786,7 +803,7 @@ export class Layout {
                         let lineWidget: LineWidget = block.childWidgets[j] as LineWidget;
                         lineMargin = 0;
                         if (!isNullOrUndefined(lineWidget.margin)) {
-                            lineMargin = lineWidget.margin.top + lineWidget.margin.bottom;
+                            lineMargin = lineWidget.margin.top + lineWidget.margin.bottom + this.getBookmarkMargin(lineWidget);
                         }
                         if (!isSplit) {
                             totalNoOflines++;
@@ -9700,7 +9717,7 @@ export class Layout {
                     block.bodyWidget.y = this.viewer.clientActiveArea.y;
                 }
                 isFirstBlock = block === block.bodyWidget.firstChild;
-                this.reLayoutMultiColumn(block.bodyWidget, isFirstBlock);
+                this.reLayoutMultiColumn(block.bodyWidget, isFirstBlock, block.index);
                 if (isNullOrUndefined(this.documentHelper.blockToShift)) {
                     return;
                 }
@@ -9723,7 +9740,7 @@ export class Layout {
                         nextBlock.bodyWidget.y = this.viewer.clientActiveArea.y;
                     }
                     isFirstBlock = nextBlock === nextBlock.bodyWidget.firstChild;
-                    this.reLayoutMultiColumn(nextBlock.bodyWidget, isFirstBlock);
+                    this.reLayoutMultiColumn(nextBlock.bodyWidget, isFirstBlock, nextBlock.index);
                     if (isNullOrUndefined(this.documentHelper.blockToShift)) {
                         return;
                     }
@@ -12549,8 +12566,7 @@ export class Layout {
                                 + (HelperMethods.convertPointToPixel(sectionFormat.pageWidth - sectionFormat.rightMargin - sectionFormat.leftMargin) - tableTotalWidth) / 2;
                         }
                     }
-
-                    if (Math.round(position.horizontalPosition) > 0) {
+                    if (Math.round(position.horizontalPosition) > 0 || (position.horizontalOrigin === 'Margin' && position.horizontalAlignment === 'Left')) {
                         this.viewer.clientActiveArea.x += HelperMethods.convertPointToPixel(position.horizontalPosition);
                     }
                 } else if (table.isInsideTable) {

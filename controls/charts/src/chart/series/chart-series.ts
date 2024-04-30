@@ -2078,7 +2078,7 @@ export class Series extends SeriesBase {
      * @private
      */
     public refreshAxisLabel(): void {
-        if (this.xAxis.valueType !== 'Category') {
+        if (this.xAxis.valueType.indexOf('Category') == -1) {
             return null;
         }
         this.xAxis.labels = [];

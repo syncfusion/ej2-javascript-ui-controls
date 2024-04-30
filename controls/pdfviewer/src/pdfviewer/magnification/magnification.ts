@@ -1227,7 +1227,7 @@ export class Magnification {
                     event.preventDefault();
                     this.pdfViewerBase.updateScrollTop(0);
                 }
-                else if(this.focusOnViewerContainer()){
+                else if (this.focusOnViewerContainer() && this.formElementcheck()) {
                     event.preventDefault();
                     this.upwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
                 }
@@ -1248,7 +1248,7 @@ export class Magnification {
                     event.preventDefault();
                     this.pdfViewerBase.updateScrollTop(this.pdfViewerBase.pageCount - 1);
                 }
-                else if(this.focusOnViewerContainer()){
+                else if (this.focusOnViewerContainer() && this.formElementcheck()) {
                     event.preventDefault();
                     this.downwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
                 }
@@ -1279,6 +1279,10 @@ export class Magnification {
             default:
                 break;
         }
+    }
+    private formElementcheck(): boolean {
+        const target = event.target as HTMLElement;
+        return (target.offsetParent && target.offsetParent.classList.length > 0 && !target.offsetParent.classList.contains('foreign-object'));
     }
     private focusOnViewerContainer():boolean{
         let activeElement:Element= document.activeElement;

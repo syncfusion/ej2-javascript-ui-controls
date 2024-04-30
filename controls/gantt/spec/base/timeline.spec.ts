@@ -2,15 +2,15 @@
  * Gantt base spec
  */
 import { createElement, remove, extend } from '@syncfusion/ej2-base';
-import { Gantt, Toolbar, Edit } from '../../src/index';
-import { defaultGanttData, zoomData, zoomData1 } from './data-source.spec';
+import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, IQueryTaskbarInfoEventArgs } from '../../src/index';
+import { customZoomingLevels, customZoomingLevels1, defaultGanttData, editingData18, editingResources, editingResources1, manualData, projectNewData23, tempData1, tempData2, tempData3, tempData4, tempData5, tempData6, zoomData, zoomData1, zoomInData, zoomingData1 } from './data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import * as cls from '../../src/gantt/base/css-constants';
+Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 
 describe('Gantt-Timeline', () => {
 
     describe('Gantt base module', () => {
-        Gantt.Inject(Toolbar, Edit);
         let ganttObj: Gantt;
 
         beforeAll((done: Function) => {
@@ -33,12 +33,6 @@ describe('Gantt-Timeline', () => {
                 projectEndDate: new Date('03/24/2018'),
             }, done);
         });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
-
         //None
         it('Default Mode', (done: Function) => {
             ganttObj.timelineSettings.topTier.unit = "None";
@@ -153,7 +147,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 6000);
+        });
         it('Timeline in Minutes Mode only', function (done: Function) {
             ganttObj.projectStartDate = "02/02/2018";
             ganttObj.projectEndDate = "02/05/2018";
@@ -172,7 +166,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 6000);
+        });
 
         //Tiers
         // Year Mode
@@ -193,7 +187,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 1000);
+        });
         it('Year in both tier', (done: Function) => {
             ganttObj.timelineSettings.topTier.unit = "Year";
             ganttObj.timelineSettings.bottomTier.unit = "Year";
@@ -374,7 +368,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 1000);
+        });
         it('Month in both tier with invalid bottomtier count', (done: Function) => {
             ganttObj.timelineSettings.topTier.unit = "Month";
             ganttObj.timelineSettings.bottomTier.unit = "Month";
@@ -738,7 +732,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 1000);
+        });
         it('Hour in both mode', (done: Function) => {
             ganttObj.timelineSettings.topTier.unit = "Hour";
             ganttObj.timelineSettings.bottomTier.unit = "Hour";
@@ -772,7 +766,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 6000);
+        });
         it('Custom Formatting the timeline', () => {
             ganttObj.timelineSettings.timelineViewMode = "Month";
             ganttObj.timelineSettings.topTier.unit = "Month";
@@ -796,7 +790,7 @@ describe('Gantt-Timeline', () => {
             ganttObj.refresh();
             let element: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(1) > thead > tr > th.e-timeline-top-header-cell > div') as HTMLElement;
             expect(element.textContent).toBe("Q1");
-        }, 3000);
+        });
 
         it('Zooming action with Top tier only', (done: Function) => {
             ganttObj.timelineSettings.topTier.unit = "Month";
@@ -812,7 +806,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('Zooming action with Bottom tier only', (done: Function) => {
             ganttObj.timelineSettings.topTier.unit = "None";
@@ -828,7 +822,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('check zoomout button with last zoomout level', (done: Function) => {
             ganttObj.projectEndDate = new Date('03/24/2028');
@@ -844,7 +838,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('check zoomin button with last zoomin level', (done: Function) => {
             ganttObj.projectEndDate = new Date('02/24/2018');
@@ -858,7 +852,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('check zooming level collections length', (done: Function) => {
             ganttObj.projectEndDate = new Date('02/24/2018');
@@ -874,7 +868,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('zoomtofit action when Gantt chart width is zero', (done: Function) => {
             ganttObj.timelineSettings.topTier.unit = "Year";
@@ -888,7 +882,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('check zooming actions with custom zooming levels', (done: Function) => {
             ganttObj.zoomingLevels = [{
@@ -907,7 +901,7 @@ describe('Gantt-Timeline', () => {
             done();
             ganttObj.zoomingLevels = ganttObj.getZoomingLevels();
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('check zooming actions with custom zooming levels', (done: Function) => {
             ganttObj.timelineSettings.topTier.unit = "Month";
@@ -931,7 +925,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('check the current zooming level when the bottom tire count in between the zooming levels', (done: Function) => {
             ganttObj.zoomingLevels = ganttObj.getZoomingLevels();
@@ -945,7 +939,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('Zoom to fit when perDay width below the last zoomin level width', (done: Function) => {
             ganttObj.dataSource = zoomData;
@@ -957,7 +951,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('Zoom to fit when perDay width exceed the last zoomout level width', (done: Function) => {
             ganttObj.dataSource = zoomData1;
@@ -970,13 +964,13 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('To check disable state of zoomin icon when mismatching the count value', (done: Function) => {
             ganttObj.dataSource = defaultGanttData;
             ganttObj.splitterSettings.position = '50%';
             ganttObj.dataBound = () => {
-                ganttObj.zoomingLevels[1].bottomTier.count=14;
+                ganttObj.zoomingLevels[1].bottomTier.count = 14;
                 ganttObj.zoomIn();
                 expect(ganttObj.currentZoomingLevel.level).toBe(7);
                 expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("2/24/2018");
@@ -984,7 +978,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        });
 
         it('Aria-label testing', (done: Function) => {
             ganttObj.projectStartDate = "01/28/2018";
@@ -994,23 +988,29 @@ describe('Gantt-Timeline', () => {
             ganttObj.timelineSettings.bottomTier.unit = "None";
             ganttObj.timelineSettings.topTier.count = 1;
             ganttObj.timelineSettings.bottomTier.count = 1;
-            ganttObj.timelineSettings.topTier.formatter = null;                     
+            ganttObj.timelineSettings.topTier.formatter = null;
             ganttObj.dataBound = () => {
-                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(1) > thead > tr > th').getAttribute('aria-label').indexOf('Timeline cell 1/27/2018')> -1).toBeTruthy();
-                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(2) > thead > tr > th:nth-child(3)').getAttribute('aria-label').indexOf('Timeline cell 1/29/2018')> -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(1) > thead > tr > th').getAttribute('aria-label').indexOf('Timeline cell 1/27/2018') > -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(2) > thead > tr > th:nth-child(3)').getAttribute('aria-label').indexOf('Timeline cell 1/29/2018') > -1).toBeTruthy();
                 done();
             }
             ganttObj.refresh();
         });
         it('Checking bottom tier weekStartDay after zooming action', () => {
-            ganttObj.timelineSettings.weekStartDay=1;
+            ganttObj.timelineSettings.weekStartDay = 1;
             ganttObj.zoomIn();
-            ganttObj.actionComplete = (args: any):void => {
-                if(args.requestType === "ZoomIn"){
-                expect(ganttObj.timelineSettings.weekStartDay).toBe(1);
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "ZoomIn") {
+                    expect(ganttObj.timelineSettings.weekStartDay).toBe(1);
                 }
             }
         });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+
     });
     describe('Project End Date', () => {
         let ganttObj: Gantt;
@@ -1018,204 +1018,40 @@ describe('Gantt-Timeline', () => {
             ganttObj = createGantt(
                 {
                     dataSource: defaultGanttData,
-                taskFields: {
-                    id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    endDate: 'EndDate',
-                    duration: 'Duration',
-                    progress: 'Progress',
-                    child: 'Children',
-                },
-                splitterSettings: {
-                    position: '30%'
-                },
-                toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
-                projectStartDate: new Date('01/28/2018'),
-                projectEndDate: new Date('02/07/2018')
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'Children',
+                    },
+                    splitterSettings: {
+                        position: '30%'
+                    },
+                    toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
+                    projectStartDate: new Date('01/28/2018'),
+                    projectEndDate: new Date('02/07/2018')
                 }, done);
         });
         it('Render project end date as in sample', () => {
             expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("2/7/2018");
-        });  
+        });
         afterAll(() => {
-            destroyGantt(ganttObj);
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 2000);
-        });
-    });
-describe('Render top Tier alone in Zoom to fit', () => {
-        let ganttObj: Gantt;
-        let customZoomingLevels: any[] = [
-            {
-              level: 0,
-              timelineUnitSize: 99,
-              timelineViewMode: 'Year',
-              bottomTier: {
-                unit: 'Month',
-                count: 3,
-                formatter: (date: Date) => {
-                  const month = date.getMonth();
-                  if (month >= 0 && month <= 2) {
-                    return 'CQ1';
-                  } else if (month >= 3 && month <= 5) {
-                    return 'CQ2';
-                  } else if (month >= 6 && month <= 3) {
-                    return 'CQ3';
-                  } else {
-                    return 'CQ4';
-                  }
-                },
-              },
-              topTier: {
-                unit: 'Year',
-                count: 1,
-                formatter: (date: Date) => {
-                  return date.getFullYear().toString();
-                },
-              },
-            },
-            {
-              level: 1,
-              timelineUnitSize: 99,
-              timelineViewMode: 'Year',
-              bottomTier: {
-                unit: 'Month',
-                count: 1,
-                formatter: (date: Date) => {
-                  // return date.toDateString().match(this.datePattern)[2];
-                },
-              },
-              topTier: {
-                unit: 'Month',
-                count: 3,
-                formatter: (date: Date) => {
-                  const month = date.getMonth();
-                  const year = date.getFullYear();
-                  if (month >= 0 && month <= 2) {
-                    return 'CQ1 ' + year;
-                  } else if (month >= 3 && month <= 5) {
-                    return 'CQ2 ' + year;
-                  } else if (month >= 6 && month <= 3) {
-                    return 'CQ3 ' + year;
-                  } else {
-                    return 'CQ4 ' + year;
-                  }
-                },
-              },
-            },
-            {
-              level: 2,
-              timelineUnitSize: 99,
-              timelineViewMode: 'Month',
-              bottomTier: {
-                unit: 'Week',
-                count: 1,
-                formatter: (date: Date) => {
-                  //const match = date.toDateString().match(this.datePattern);
-                  // return `${match[2]} ${match[3]}`;
-                },
-              },
-              topTier: {
-                unit: 'Month',
-                count: 1,
-                formatter: (date: Date) => {
-                  // const match = date.toDateString().match(this.datePattern);
-                  //return `${match[2]}, ${match[4]}`;
-                },
-              },
-            },
-            {
-              level: 3,
-              topTier: {
-                unit: 'Week',
-                count: 1,
-                formatter: (date: Date) => {
-                  // const match = date.toDateString().match(this.datePattern);
-                  // return `${match[2]} ${match[3]}, ${match[4]}`;
-                },
-              },
-              bottomTier: {
-                unit: 'Day',
-                count: 1,
-                formatter: (date: Date) => {
-                  // const match = date.toDateString().match(this.datePattern);
-                  //  return `${match[1]}`;
-                },
-              },
-              timelineUnitSize: 99,
-              timelineViewMode: 'Week',
-              weekStartDay: 0,
-              updateTimescaleView: true,
-            },
-          ];
-          let zoomingData: Object[] = [
-            {
-                TaskID: 1,
-                TaskName: 'Product concept',
-                StartDate: new Date('04/02/2019'),
-                EndDate: new Date('04/21/2019'),
-                subtasks: [
-                    { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
-                    { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
-                    {
-                        TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 2,
-                        Predecessor: '2', Progress: 30
-                    },
-                ]
-            },
-            {
-                TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4',
-                Indicators: [
-                    {
-                        'date': new Date('04/10/2019'),
-                        'name': '#briefing',
-                        'title': 'Product concept breifing',
-                    }
-                ]
-            },
-            {
-                TaskID: 6,
-                TaskName: 'Market research',
-                StartDate: new Date('04/02/2019'),
-                EndDate: new Date('04/21/2019'),
-                subtasks: [
-                    {
-                        TaskID: 7,
-                        TaskName: 'Demand analysis',
-                        StartDate: new Date('04/04/2019'),
-                        EndDate: new Date('04/21/2019'),
-                        subtasks: [
-                            {
-                                TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4,
-                                Predecessor: '5', Progress: 30
-                            },
-                            { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '5' }
-                        ]
-                    },
-                    {
-                        TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'), Duration: 4,
-                        Predecessor: '7, 8', Progress: 30
-                    },
-                    { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '9' },
-                    {
-                        TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 1, Predecessor: '10',
-                        Indicators: [
-                            {
-                                'date': new Date('04/20/2019'),
-                                'name': '#meeting',
-                                'title': '1st board of directors meeting',
-                            }
-                        ]
-                    }
-                ]
+            if (ganttObj) {
+                destroyGantt(ganttObj);
             }
-        ]
+        });
+
+    });
+    describe('Render top Tier alone in Zoom to fit', () => {
+        let ganttObj: Gantt;
+
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
-                    dataSource: zoomingData,
+                    dataSource: zoomingData1,
                     taskFields: {
                         id: 'TaskID',
                         name: 'TaskName',
@@ -1226,8 +1062,8 @@ describe('Render top Tier alone in Zoom to fit', () => {
                         dependency: 'Predecessor',
                         child: 'subtasks',
                     },
-                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
-                    'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
                     allowResizing: true,
                     readOnly: false,
                     taskbarHeight: 20,
@@ -1242,114 +1078,61 @@ describe('Render top Tier alone in Zoom to fit', () => {
                 }, done);
         });
         it('perform zoomToFit', () => {
-            ganttObj.actionBegin= (args) => {
+            ganttObj.actionBegin = (args) => {
                 let a = extend([], [], customZoomingLevels, true);
                 if ((args.requestType == 'beforeZoomToProject')) {
                     ganttObj.timelineModule.customTimelineSettings = a[0];
                     ganttObj.timelineModule.customTimelineSettings.bottomTier.unit = 'None';
-                  }
+                }
             }
-            ganttObj.actionComplete= (args) => {
+            ganttObj.actionComplete = (args) => {
                 if (args.requestType == 'AfterZoomToProject') {
-                   expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe('None');
+                    expect(ganttObj.timelineModule.customTimelineSettings.bottomTier.unit).toBe('None');
                 }
             }
             ganttObj.dataBind();
             ganttObj.fitToProject();
-        });  
-        afterAll(() => {
-            destroyGantt(ganttObj);
         });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+
     });
     describe('Check Zooming levels API', () => {
         let ganttObj: Gantt;
-        let customZoomingLevels: any[] = [
-            {
-              level: 0,
-              timelineUnitSize: 99,
-              timelineViewMode: 'Year',
-              bottomTier: {
-                unit: 'Month',
-                count: 3,
-                formatter: (date: Date) => {
-                  const month = date.getMonth();
-                  if (month >= 0 && month <= 2) {
-                    return 'CQ1';
-                  } else if (month >= 3 && month <= 5) {
-                    return 'CQ2';
-                  } else if (month >= 6 && month <= 3) {
-                    return 'CQ3';
-                  } else {
-                    return 'CQ4';
-                  }
-                },
-              },
-              topTier: {
-                unit: 'Year',
-                count: 1,
-                formatter: (date: Date) => {
-                  return date.getFullYear().toString();
-                },
-              },
-            },
-            {
-              level: 1,
-              timelineUnitSize: 99,
-              timelineViewMode: 'Year',
-              bottomTier: {
-                unit: 'Month',
-                count: 1,
-                formatter: (date: Date) => {
-                  // return date.toDateString().match(this.datePattern)[2];
-                },
-              },
-              topTier: {
-                unit: 'Month',
-                count: 3,
-                formatter: (date: Date) => {
-                  const month = date.getMonth();
-                  const year = date.getFullYear();
-                  if (month >= 0 && month <= 2) {
-                    return 'CQ1 ' + year;
-                  } else if (month >= 3 && month <= 5) {
-                    return 'CQ2 ' + year;
-                  } else if (month >= 6 && month <= 3) {
-                    return 'CQ3 ' + year;
-                  } else {
-                    return 'CQ4 ' + year;
-                  }
-                },
-              },
-            }
-          ];
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
                     dataSource: defaultGanttData,
-                    zoomingLevels: customZoomingLevels,
-                taskFields: {
-                    id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    endDate: 'EndDate',
-                    duration: 'Duration',
-                    progress: 'Progress',
-                    child: 'Children',
-                },
-                splitterSettings: {
-                    position: '30%'
-                },
-                toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
-                projectStartDate: new Date('01/28/2018'),
-                projectEndDate: new Date('02/07/2018')
+                    zoomingLevels: customZoomingLevels1,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'Children',
+                    },
+                    splitterSettings: {
+                        position: '30%'
+                    },
+                    toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
+                    projectStartDate: new Date('01/28/2018'),
+                    projectEndDate: new Date('02/07/2018')
                 }, done);
         });
         it('Zooming levels API', () => {
             expect(ganttObj.zoomingLevels.length).toBe(2);
-        });  
-        afterAll(() => {
-            destroyGantt(ganttObj);
         });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+
     });
     describe('Check timeline dates', () => {
         let ganttObj: Gantt;
@@ -1414,38 +1197,15 @@ describe('Render top Tier alone in Zoom to fit', () => {
             triggerMouseEvent(dragElement, 'mouseup');
         });
         afterAll(() => {
-            destroyGantt(ganttObj);
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 2000);
-        });
+
     });
     describe('Zoming in Manual TaskMode', () => {
         let ganttObj: Gantt;
-        let manualData = [
-            {
-                taskID: '100010-ABCDEFGH??!',
-                taskName: 'Project Schedule',
-                startDate: new Date('02/04/2019'),
-                endDate: new Date('03/10/2019'),
-            },
-            {
-                taskID: 'ABCDEFGH?!200001',
-                taskName: 'Planning',
-                startDate: new Date('02/04/2019'),
-                endDate: new Date('02/10/2019'),
-                parentID: '100010-ABCDEFGH??!',
-            },
-            {
-                taskID: '3',
-                taskName: 'Plan timeline',
-                startDate: new Date('02/04/2019'),
-                endDate: new Date('02/10/2019'),
-                duration: 6,
-                progress: '60',
-                parentID: 'ABCDEFGH?!200001',
-            },
-        ];
+
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
@@ -1576,298 +1336,144 @@ describe('Render top Tier alone in Zoom to fit', () => {
             ganttObj.zoomIn();
         });
         afterAll(() => {
-            destroyGantt(ganttObj);
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
+
     });
     describe('Fit to project issue', () => {
         let ganttObj: Gantt;
-        let tempData1: object[] = [
-            {
-              TaskID: 1,
-              TaskName: 'Project Initiation',
-              StartDate: new Date('04/02/2019'),
-              EndDate: new Date('04/21/2019'),
-            },
-            {
-              TaskID: 2,
-              TaskName: 'Identify Site location',
-              StartDate: new Date('04/02/2019'),
-              Duration: 4,
-              Progress: 50,
-            },
-          ];
-         let tempData2: Object[] = [
-            {
-              TaskID: 1,
-              TaskName: 'Project Initiation',
-              StartDate: new Date('04/02/2019'),
-              EndDate: new Date('04/21/2019'),
-            },
-            {
-              TaskID: 2,
-              TaskName: 'Identify Site location',
-              StartDate: new Date('04/02/2019'),
-              Duration: 4,
-              Progress: 50,
-            },
-            {
-              TaskID: 3,
-              TaskName: 'Perform Soil test',
-              StartDate: new Date('04/02/2013'),
-              Duration: 4,
-              Progress: 50,
-            },
-            {
-              TaskID: 4,
-              TaskName: 'Soil test approval',
-              StartDate: new Date('04/02/2017'),
-              Duration: 4,
-              Progress: 50,
-            },
-          ]; 
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
                     dataSource: tempData1,
                     taskFields: {
                         id: 'TaskID',
-                      name: 'TaskName',
-                      startDate: 'StartDate',
-                      endDate: 'EndDate',
-                      duration: 'Duration',
-                      progress: 'Progress',
-                      dependency: 'Predecessor',
-                      child: 'subtasks',
-                },
-                allowUnscheduledTasks:true,
-                treeColumnIndex:0,
-                splitterSettings :{
-                    columnIndex: 2
-                },
-                created:()=>{
-                    if (ganttObj) {
-                      ganttObj.fitToProject();
-                    }
-                  },
-                labelSettings:{
-                    leftLabel: 'TaskName',
-                    taskLabel: 'Progress',
-              
-                },
-            }, done);
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                    },
+                    allowUnscheduledTasks: true,
+                    treeColumnIndex: 0,
+                    splitterSettings: {
+                        columnIndex: 2
+                    },
+                    created: () => {
+                        if (ganttObj) {
+                            ganttObj.fitToProject();
+                        }
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress',
+
+                    },
+                }, done);
         });
         it('check fit to project works properly', () => {
-            ganttObj.dataSource=[];
-            ganttObj.dataSource= tempData2;
+            ganttObj.dataSource = [];
+            ganttObj.dataSource = tempData2;
             ganttObj.fitToProject();
             ganttObj.dataBind();
             expect(ganttObj.getFormatedDate(ganttObj.cloneProjectStartDate, 'MM/dd/yyyy')).toEqual('04/02/2013');
-        });  
-        afterAll(() => {
-            destroyGantt(ganttObj);
         });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+
     });
-    let zoomInData: Object[] =[
-        {
-          TaskID: 1,
-          TaskName: 'New Task 1',
-          StartDate: new Date('06/16/2023'),
-          EndDate: new Date('06/16/2023'),
-          Progress: 59,
-          Duration: 1,
-        },
-        {
-          TaskID: 2,
-          TaskName: 'New Task 2',
-          StartDate: new Date('05/22/2023'),
-          EndDate: new Date('05/22/2023'),
-          Progress: 45,
-          Duration: 1,
-          Predecessor: 1
-        },
-        {
-          TaskID: 3,
-          TaskName: 'New Task 3',
-          StartDate: new Date('05/23/2023'),
-          EndDate: new Date('05/23/2023'),
-          Duration: 0,
-        },
-        {
-          TaskID: 4,
-          TaskName: 'New Task 4',
-          StartDate: new Date('05/22/2023'),
-          EndDate: new Date('05/22/2023'),
-          Progress: 38,
-          Duration: 1,
-        },
-        {
-          TaskID: 5,
-          TaskName: 'New Task 5',
-          StartDate: new Date('05/22/2023'),
-          EndDate: new Date('05/22/2023'),
-          Progress: 68,
-          Duration: 1,
-          Predecessor: 4,
-        },
-        {
-          TaskID: 6,
-          TaskName: 'New Task 6',
-          StartDate: new Date('05/22/2023'),
-          EndDate: new Date('05/22/2023'),
-          Progress: 57,
-          Duration: 1,
-          Predecessor: 5,
-        },
-        {
-          TaskID: 7,
-          TaskName: 'New Task 7',
-          StartDate: new Date('05/22/2023'),
-          EndDate: new Date('05/22/2023'),
-          Progress: 0,
-          Duration: 1,
-        },
-      ];
+
     describe('Bug-833033-Cannot see a Dragged Task after Zoom In', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
-                dataSource: zoomInData,
-                taskFields: {
-                    id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    endDate: 'EndDate',
-                    duration: 'Duration',
-                    progress: 'Progress',
-                },
-                splitterSettings: {
-                    position: '30%'
-                },
-                toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
+                    dataSource: zoomInData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                    },
+                    splitterSettings: {
+                        position: '30%'
+                    },
+                    toolbar: ['ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan'],
                 }, done);
         });
         it('Check project end date rendered in sample after ZoomIn action', () => {
             ganttObj.zoomIn();
-            ganttObj.actionComplete = (args: any):void => {
-                if(args.requestType === "ZoomIn"){
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "ZoomIn") {
                     expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineRoundOffEndDate, 'M/d/yyyy')).toBe("6/24/2023");
                 }
             }
-        }); 
-        afterAll(() => {
-            destroyGantt(ganttObj);
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 2000);
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
     });
-  describe('Fit to project display wrong timeline', () => {
+    describe('Fit to project display wrong timeline', () => {
         let ganttObj: Gantt;
-        let tempData1: object[] = [
-            {
-                TaskID: 1,
-                TaskName: 'Project Initiation',
-                StartDate: new Date('04/02/2024'),
-                EndDate: new Date('04/21/2024'),
-            },
-            {
-                TaskID: 2,
-                TaskName: 'Identify Site location',
-                StartDate: new Date('04/02/2024'),
-                Duration: 4,
-                Progress: 50,
-            },
-          ];
-         let tempData2: Object[] = [
-            {
-                TaskID: 1,
-                TaskName: 'Project Initiation',
-                StartDate: new Date('04/02/2019'),
-                EndDate: new Date('04/21/2019'),
-            },
-            {
-                TaskID: 2,
-                TaskName: 'Identify Site location',
-                Duration: 4,
-                Progress: 50,
-            },
-            {
-                TaskID: 3,
-                TaskName: 'Perform Soil test',
-                StartDate: new Date('04/02/2019'),
-                Duration: 4,
-                Progress: 50,
-            },
-            {
-                TaskID: 4,
-                TaskName: 'Soil test approval',
-                StartDate: new Date('04/02/2019'),
-                Duration: 4,
-                Progress: 50,
-            },
-          ]; 
+
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
-                    dataSource: tempData1,
+                    dataSource: tempData3,
                     taskFields: {
                         id: 'TaskID',
-                      name: 'TaskName',
-                      startDate: 'StartDate',
-                      endDate: 'EndDate',
-                      duration: 'Duration',
-                      progress: 'Progress',
-                      dependency: 'Predecessor',
-                      child: 'subtasks',
-                },
-                allowUnscheduledTasks:true,
-                treeColumnIndex:0,
-                splitterSettings :{
-                    columnIndex: 2
-                },
-                labelSettings:{
-                    leftLabel: 'TaskName',
-                    taskLabel: 'Progress',
-              
-                },
-                
-            }, done);
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks',
+                    },
+                    allowUnscheduledTasks: true,
+                    treeColumnIndex: 0,
+                    splitterSettings: {
+                        columnIndex: 2
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress',
+
+                    },
+
+                }, done);
         });
         it('check timeline renders properly', () => {
             ganttObj.fitToProject();
-            ganttObj.dataSource=[];
-            ganttObj.dataSource= tempData2;
+            ganttObj.dataSource = [];
+            ganttObj.dataSource = tempData4;
             ganttObj.fitToProject();
             ganttObj.dataBind();
             expect(ganttObj.getFormatedDate(ganttObj.cloneProjectEndDate, 'MM/dd/yyyy')).toEqual('04/19/2019');
-        });  
-        afterAll(() => {
-            destroyGantt(ganttObj);
         });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+
     });
     describe('Bug-841056:console error occurs while using segment data', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt({
-                dataSource: [
-                    {
-                        TaskID: 1,
-                        TaskName: 'Product Concept',
-                        StartDate: '2019-04-02',
-                        EndDate: '2019-04-25',
-                        Segments: [
-                            {
-                              StartDate: '2019-04-02',
-                              EndDate: '2019-04-16'
-                            },
-                            {
-                              StartDate: '2019-04-17',
-                              EndDate: '2019-04-25'
-                            }
-                          ]
-                    }
-                ],
+                dataSource: tempData5,
                 taskFields: {
                     id: 'TaskID',
                     name: 'TaskName',
@@ -1882,27 +1488,27 @@ describe('Render top Tier alone in Zoom to fit', () => {
                 },
                 timelineSettings: {
                     topTier: {
-                      unit: 'Week',
-                      format: 'MMM dd, y',
+                        unit: 'Week',
+                        format: 'MMM dd, y',
                     },
                     bottomTier: {
-                      unit: 'Day',
+                        unit: 'Day',
                     },
                 },
                 projectStartDate: new Date('04/01/2019'),
                 projectEndDate: new Date('05/30/2019'),
             }, done);
         });
+        it('Checking 1st segments startdate and enddate', () => {
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[0].startDate, 'MM/dd/yyyy HH:mm')).toEqual('04/02/2019 08:00');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[0].endDate, 'MM/dd/yyyy HH:mm')).toEqual('04/16/2019 17:00');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[1].endDate, 'MM/dd/yyyy HH:mm')).toEqual('04/25/2019 17:00');
+        });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
         });
-        it('Checking 1st segments startdate and enddate', () => {
-            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[0].startDate,'MM/dd/yyyy HH:mm')).toEqual('04/02/2019 08:00');
-            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[0].endDate,'MM/dd/yyyy HH:mm')).toEqual('04/16/2019 17:00');
-            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[1].endDate,'MM/dd/yyyy HH:mm')).toEqual('04/25/2019 17:00');
-          });
     });
     describe('Bug:839954-Vertical scroll and taskbar is not fully visible in yearly mode', () => {
         let ganttObj: Gantt;
@@ -1913,62 +1519,47 @@ describe('Render top Tier alone in Zoom to fit', () => {
                 StartDate: new Date('04/02/2019'),
                 EndDate: new Date('04/21/2019'),
             },
-          ];
+        ];
         beforeAll((done: Function) => {
             ganttObj = createGantt(
                 {
                     dataSource: tempData,
                     taskFields: {
                         id: 'TaskID',
-                      name: 'TaskName',
-                      startDate: 'StartDate',
-                      endDate: 'EndDate',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
                     },
-                splitterSettings :{
-                    columnIndex: 2
-                },
-                timelineSettings: {
-                    topTier: {
-                      format: 'yyyy',
-                      unit: 'Year',
+                    splitterSettings: {
+                        columnIndex: 2
                     },
-                    bottomTier: {
-                      format: 'MMM `yy',
-                      unit: 'None',
-                      count: 1,
+                    timelineSettings: {
+                        topTier: {
+                            format: 'yyyy',
+                            unit: 'Year',
+                        },
+                        bottomTier: {
+                            format: 'MMM `yy',
+                            unit: 'None',
+                            count: 1,
+                        },
                     },
-                },
-            }, done);
+                }, done);
         });
         it('Checking scrollbar height in singletier mode', () => {
             expect(ganttObj.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height).toBe('calc(100% - 46px)');
-        });  
+        });
         afterAll(() => {
-            destroyGantt(ganttObj);
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
     });
     describe('Bug-841056:console error occurs while using segment data', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt({
-                dataSource: [
-                    {
-                        TaskID: 1,
-                        TaskName: 'Product Concept',
-                        StartDate: '2019-04-02',
-                        EndDate: '2019-04-25',
-                        Segments: [
-                            {
-                              StartDate: '2019-04-02',
-                              EndDate: '2019-04-16'
-                            },
-                            {
-                              StartDate: '2019-04-17',
-                              EndDate: '2019-04-25'
-                            }
-                          ]
-                    }
-                ],
+                dataSource: tempData6,
                 taskFields: {
                     id: 'TaskID',
                     name: 'TaskName',
@@ -1983,133 +1574,96 @@ describe('Render top Tier alone in Zoom to fit', () => {
                 },
                 timelineSettings: {
                     topTier: {
-                      unit: 'Week',
-                      format: 'MMM dd, y',
+                        unit: 'Week',
+                        format: 'MMM dd, y',
                     },
                     bottomTier: {
-                      unit: 'Day',
+                        unit: 'Day',
                     },
                 },
                 projectStartDate: new Date('04/01/2019'),
                 projectEndDate: new Date('05/30/2019'),
             }, done);
         });
+        it('Checking 1st segments startdate and enddate', () => {
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[0].startDate, 'MM/dd/yyyy HH:mm')).toEqual('04/02/2019 08:00');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[0].endDate, 'MM/dd/yyyy HH:mm')).toEqual('04/16/2019 17:00');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[1].endDate, 'MM/dd/yyyy HH:mm')).toEqual('04/25/2019 17:00');
+        });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
         });
-        it('Checking 1st segments startdate and enddate', () => {
-            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[0].startDate,'MM/dd/yyyy HH:mm')).toEqual('04/02/2019 08:00');
-            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[0].endDate,'MM/dd/yyyy HH:mm')).toEqual('04/16/2019 17:00');
-            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[1].endDate,'MM/dd/yyyy HH:mm')).toEqual('04/25/2019 17:00');
-          });
     });
     describe('CR-855831:Timeline render in advance the project start date while resizing taskbar', () => {
         let ganttObj: Gantt;
-        var projectNewData = [
+        let projectNewData: Object[] = [
             { TaskID: 1, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 10 },
         ];
         beforeAll((done: Function) => {
             ganttObj = createGantt({
-            dataSource: projectNewData,
-            taskFields: {
-                id: 'TaskID',
-                name: 'TaskName',
-                startDate: 'StartDate',
-                duration: 'Duration'
-            },
-            editSettings: {
-                allowAdding: true,
-                allowEditing: true,
-                allowDeleting: true,
-                allowTaskbarEditing: true,
-                showDeleteConfirmDialog: true
-            },
-            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
-                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
-            allowExcelExport: true,
-            allowPdfExport: true,
-            allowSelection: true,
-            allowRowDragAndDrop: true,
-            gridLines: "Both",
-            highlightWeekends: true,
-            timelineSettings: {
-                showTooltip: true,
-                topTier: {
-                    unit: 'Week',
-                    format: 'dd/MM/yyyy'
+                dataSource: projectNewData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration'
                 },
-                bottomTier: {
-                    unit: 'Day',
-                    count: 1
-                }
-            },
-            allowResizing: true,
-            readOnly: false,
-            height: '550px',
-            allowUnscheduledTasks: true,
-            projectStartDate: new Date('04/05/2019'),
-            projectEndDate: new Date('05/30/2019')
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                allowResizing: true,
+                readOnly: false,
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('04/05/2019'),
+                projectEndDate: new Date('05/30/2019')
             }, done);
         });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         it('Taskbar Right resizing', () => {
-            ganttObj.dataBind();
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
             triggerMouseEvent(dragElement, 'mousedown');
             triggerMouseEvent(dragElement, 'mousemove', -20, 0);
             triggerMouseEvent(dragElement, 'mouseup');
             expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe('04/05/2019');
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/02/2019');
-        }); 
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
     });
-     describe('870027: Zooming action', () => {
+    describe('870027: Zooming action', () => {
         let ganttObj: Gantt;
-        var editingData = [
-            {
-                TaskID: 1,
-                TaskName: 'Project initiation',
-                StartDate: new Date('04/02/2019'),
-                EndDate: new Date('04/21/2019'),
-                subtasks: [
-                    {
-                        TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('01/01/2019'), Duration: 0,
-                        Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
-                    },
-                    {
-                        TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2',
-                        resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
-                            'From an engineer or company specializing in soil testing'
-                    },
-                    { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3', Progress: 30 },
-                ]
-            },
-        ];
-        var editingResources = [
-            { resourceId: 1, resourceName: 'Martin Tamer' },
-            { resourceId: 2, resourceName: 'Rose Fuller' },
-            { resourceId: 3, resourceName: 'Margaret Buchanan' },
-            { resourceId: 4, resourceName: 'Fuller King' },
-            { resourceId: 5, resourceName: 'Davolio Fuller' },
-            { resourceId: 6, resourceName: 'Van Jack' },
-            { resourceId: 7, resourceName: 'Fuller Buchanan' },
-            { resourceId: 8, resourceName: 'Jack Davolio' },
-            { resourceId: 9, resourceName: 'Tamer Vinet' },
-            { resourceId: 10, resourceName: 'Vinet Fuller' },
-            { resourceId: 11, resourceName: 'Bergs Anton' },
-            { resourceId: 12, resourceName: 'Construction Supervisor' }
-        ];
+
         beforeAll((done: Function) => {
             ganttObj = createGantt({
-                dataSource: editingData,
+                dataSource: editingData18,
                 allowSorting: true,
                 allowReordering: true,
                 enableContextMenu: true,
@@ -2150,7 +1704,7 @@ describe('Render top Tier alone in Zoom to fit', () => {
                     'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
                 allowExcelExport: true,
                 allowPdfExport: true,
-                dateFormat:"MMM dd, y",
+                dateFormat: "MMM dd, y",
 
                 allowSelection: true,
                 selectedRowIndex: 1,
@@ -2172,11 +1726,12 @@ describe('Render top Tier alone in Zoom to fit', () => {
                         count: 1,
                     },
                 },
-                searchSettings: { fields: ['TaskName', 'Duration']
+                searchSettings: {
+                    fields: ['TaskName', 'Duration']
                 },
                 allowResizing: true,
                 readOnly: false,
-                resources: editingResources,
+                resources: editingResources1,
                 resourceFields: {
                     id: 'resourceId',
                     name: 'resourceName',
@@ -2186,53 +1741,31 @@ describe('Render top Tier alone in Zoom to fit', () => {
                 height: '550px',
                 allowUnscheduledTasks: true,
                 projectStartDate: new Date('01/01/2019'),
-            projectEndDate: new Date('01/01/2022'),
+                projectEndDate: new Date('01/01/2022'),
             }, done);
+        });
+
+        it('perform ZoomTofit and zoomout', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "ZoomOut") {
+                    expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe('1/1/2019');
+                }
+            }
+            ganttObj.fitToProject();
+            ganttObj.zoomOut();
         });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
-        it('perform ZoomTofit and zoomout', () => {
-            ganttObj.actionComplete = (args: any):void => {
-                if(args.requestType === "ZoomOut"){
-                expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe('1/1/2019');
-                }
-            }
-            ganttObj.dataBind();
-            ganttObj.fitToProject();
-            ganttObj.zoomOut();
-        }); 
     });
     describe('CR-871590: top and bottom tier shows null when using custom zooming levels ', () => {
         let ganttObj: Gantt;
-        let projectNewData  : Object[]= [
-            {
-                TaskID: 1,
-                TaskName: 'Project initiation',
-                StartDate: new Date('04/02/2019'),
-                EndDate: new Date('04/21/2019'),
-                subtasks: [
-                    {
-                        TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 0,
-                        Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
-                    },
-                    {
-                        TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2',
-                        resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
-                            'From an engineer or company specializing in soil testing'
-                    },
-                    { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3', Progress: 30 },
-                ]
-            },
-        ];
+
         beforeAll((done: Function) => {
             ganttObj = createGantt({
-                dataSource: projectNewData,
+                dataSource: projectNewData23,
                 allowSorting: true,
                 taskFields: {
                     id: 'TaskID',
@@ -2265,76 +1798,100 @@ describe('Render top Tier alone in Zoom to fit', () => {
                 },
             }, done);
         });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
         it('top and bottom tier shows null when using custom zooming levels ', () => {
-            ganttObj.zoomingLevels =[
+            ganttObj.zoomingLevels = [
                 {
-                    topTier: { unit: 'Year',
-                    format: 'yyyy',
-                    count: 1, },
-                    bottomTier: { unit: 'Month',
-                    count: 3, }, 
+                    topTier: {
+                        unit: 'Year',
+                        format: 'yyyy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Month',
+                        count: 3,
+                    },
                     timelineUnitSize: 99,
                     level: 0,
                     timelineViewMode: 'Year',
                 },
                 {
-                    topTier: { unit: 'Year',
-                    format: 'yyyy',
-                    count: 1, },
-                    bottomTier: { unit: 'Month',
-                    format: 'MMM yyyy',
-                    count: 1 }, timelineUnitSize: 99,
+                    topTier: {
+                        unit: 'Year',
+                        format: 'yyyy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Month',
+                        format: 'MMM yyyy',
+                        count: 1
+                    }, timelineUnitSize: 99,
                     level: 1,
                     timelineViewMode: 'Year',
                 },
                 {
-                    topTier: { unit: 'Month',
-                    format: 'MMM, yy',
-                    count: 1, },
-                    bottomTier: { unit: 'Week',
-                    format: 'dd',
-                    count: 1, }, timelineUnitSize: 33,
+                    topTier: {
+                        unit: 'Month',
+                        format: 'MMM, yy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Week',
+                        format: 'dd',
+                        count: 1,
+                    }, timelineUnitSize: 33,
                     level: 2,
                     timelineViewMode: 'Month',
                 },
                 {
-                    topTier: { unit: 'Month',
-                    format: 'MMM, yyyy',
-                    count: 1, },
-                    bottomTier: { unit: 'Week',
-                    format: 'dd MMM',
-                    count: 1, }, timelineUnitSize: 66,
+                    topTier: {
+                        unit: 'Month',
+                        format: 'MMM, yyyy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Week',
+                        format: 'dd MMM',
+                        count: 1,
+                    }, timelineUnitSize: 66,
                     level: 3,
                     timelineViewMode: 'Month',
                 },
                 {
-                    topTier: { unit: 'Month',
-                    format: 'MMM, yyyy',
-                    count: 1, },
-                    bottomTier: { unit: 'Week',
-                    format: 'dd MMM',
-                    count: 1, }, timelineUnitSize: 99,
+                    topTier: {
+                        unit: 'Month',
+                        format: 'MMM, yyyy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Week',
+                        format: 'dd MMM',
+                        count: 1,
+                    }, timelineUnitSize: 99,
                     level: 4,
                     timelineViewMode: 'Month',
                 },
                 {
-                    topTier: { unit: 'Week',
-                    format: 'MMM dd, yyyy',
-                    count: 1, },
-                    bottomTier: { unit: 'Day',
-                    format: 'd',
-                    count: 1, }, timelineUnitSize: 33,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, yyyy',
+                        count: 1,
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        format: 'd',
+                        count: 1,
+                    }, timelineUnitSize: 33,
                     level: 5,
                     timelineViewMode: 'Week',
                 },
             ];
             ganttObj.zoomIn();
             expect(ganttObj.currentZoomingLevel.level).toBe(5);
-        }); 
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
     });
 });

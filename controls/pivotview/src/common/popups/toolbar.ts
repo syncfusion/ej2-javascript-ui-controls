@@ -627,9 +627,9 @@ export class Toolbar {
             this.action = 'Rename';
             let isExist: boolean = false;
             this.renameText = reportInput.value;
-            const reportList: DropDownList = getInstance(select('#' + this.parent.element.id + '_reportlist', this.parent.element), DropDownList) as DropDownList;
-            for (let i: number = 0; i < (reportList.dataSource as string[]).length; i++) {
-                if (reportInput.value === (reportList.dataSource as string[])[i as number]) {
+            const reports: FetchReportArgs = this.fetchReports();
+            for (let i: number = 0; i < reports.reportName.length; i++) {
+                if (reportInput.value === reports.reportName[i as number]) {
                     isExist = true;
                     break;
                 }
@@ -816,8 +816,10 @@ export class Toolbar {
                 dialog.hide();
             }
         } else if (this.action === 'Save') {
-            const reportList: DropDownList = getInstance(select('#' + this.parent.element.id + '_reportlist', this.parent.element), DropDownList) as DropDownList;
-            this.currentReport = reportList.value as string;
+            if (select('#' + this.parent.element.id + '_reportlist', this.parent.element)) {
+                const reportList: DropDownList = getInstance(select('#' + this.parent.element.id + '_reportlist', this.parent.element), DropDownList) as DropDownList;
+                this.currentReport = reportList.value as string;
+            }
             dialog.hide();
         } else if (this.action === 'Rename') {
             dialog.hide();
@@ -1091,13 +1093,13 @@ export class Toolbar {
             formattingMenu.isStringTemplate = true;
             formattingMenu.appendTo('#' + this.parent.element.id + 'formatting_menu');
         }
+        const saveArgs: SaveReportArgs = {
+            report: this.parent.getPersistData(),
+            reportName: this.parent.localeObj.getConstant('defaultReport')
+        };
+        this.currentReport = this.parent.localeObj.getConstant('defaultReport');
+        this.parent.trigger(events.saveReport, saveArgs);
         if (select('#' + this.parent.element.id + '_reportlist', this.parent.element)) {
-            const saveArgs: SaveReportArgs = {
-                report: this.parent.getPersistData(),
-                reportName: this.parent.localeObj.getConstant('defaultReport')
-            };
-            this.currentReport = this.parent.localeObj.getConstant('defaultReport');
-            this.parent.trigger(events.saveReport, saveArgs);
             const reports: FetchReportArgs = this.fetchReports();
             const reportList: DropDownList = new DropDownList({
                 dataSource: reports.reportName,
@@ -1306,18 +1308,20 @@ export class Toolbar {
         }
     }
     private updateReportList(): void {
-        const reports: FetchReportArgs = this.fetchReports();
-        const reportList: DropDownList = getInstance(select('#' + this.parent.element.id + '_reportlist', this.parent.element), DropDownList) as DropDownList;
-        reportList.dataSource = reports.reportName;
-        if (this.currentReport === '' && reportList.dataSource.length > 0) {
-            reportList.value = reportList.dataSource[reportList.dataSource.length - 1];
-            reportList.text = reportList.dataSource[reportList.dataSource.length - 1];
-            this.currentReport = reportList.dataSource[reportList.dataSource.length - 1];
-        } else {
-            reportList.value = this.currentReport;
-            reportList.text = this.currentReport;
+        if (select('#' + this.parent.element.id + '_reportlist', this.parent.element)) {
+            const reports: FetchReportArgs = this.fetchReports();
+            const reportList: DropDownList = getInstance(select('#' + this.parent.element.id + '_reportlist', this.parent.element), DropDownList) as DropDownList;
+            reportList.dataSource = reports.reportName;
+            if (this.currentReport === '' && reportList.dataSource.length > 0) {
+                reportList.value = reportList.dataSource[reportList.dataSource.length - 1];
+                reportList.text = reportList.dataSource[reportList.dataSource.length - 1];
+                this.currentReport = reportList.dataSource[reportList.dataSource.length - 1];
+            } else {
+                reportList.value = this.currentReport;
+                reportList.text = this.currentReport;
+            }
+            reportList.refresh();
         }
-        reportList.refresh();
     }
     private menuItemClick(args: ClickEventArgs): void {
         let exportArgs: BeforeExportEventArgs = {};

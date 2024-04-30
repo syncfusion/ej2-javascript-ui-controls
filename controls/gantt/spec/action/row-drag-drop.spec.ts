@@ -56,11 +56,7 @@ describe('Gantt Drag and Drop support', () => {
                 destroyGantt(ganttObj_self);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 1000);
-        });
        it('Drag and drop parent record to another parent record', function () {
-            ganttObj_self.dataBind();
             ganttObj_self.reorderRows([1], 6, 'child');
             expect(parseInt(ganttObj_self.flatData[6].ganttProperties.parentId)).toBe(7);
             expect(ganttObj_self.flatData[6][ganttObj_self.taskFields.parentID]).toBe(7);
@@ -68,14 +64,12 @@ describe('Gantt Drag and Drop support', () => {
             expect(ganttObj_self.flatData[6].taskData[ganttObj_self.taskFields.parentID]).toBe(7);
         });
         it('Drag and drop child to child above', function () {
-            ganttObj_self.dataBind();
             ganttObj_self.reorderRows([2], 4, 'above');
             expect(parseInt(ganttObj_self.flatData[3].ganttProperties.parentId)).toBe(7);
             expect(ganttObj_self.flatData[3][ganttObj_self.taskFields.parentID]).toBe(7);
             expect(ganttObj_self.flatData[3].taskData[ganttObj_self.taskFields.parentID]).toBe(7);   
         });
         it('Drag and drop child to child below', function () {
-            ganttObj_self.dataBind();
             ganttObj_self.reorderRows([3], 4, 'below');
             expect(parseInt(ganttObj_self.flatData[4].ganttProperties.parentId)).toBe(7);
             expect(ganttObj_self.flatData[4][ganttObj_self.taskFields.parentID]).toBe(7);
@@ -132,7 +126,6 @@ describe('Gantt Drag and Drop support', () => {
             }
         });
         it('Drag and drop child to child below', function () {
-            ganttObj_self.dataBind();
             expect(ganttObj_self.flatData[3].index).toBe(3);
             ganttObj_self.reorderRows([3], 4, 'below');
             expect(ganttObj_self.flatData[4].index).toBe(4);
@@ -205,9 +198,7 @@ describe('Gantt Drag and Drop support', () => {
                 destroyGantt(ganttObj_resource);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 1000);
-        });
+
         // it('Drag and drop', () => {
         //     ganttObj_resource.reorderRows([1], 4, 'above');
         //     expect(parseInt(ganttObj_resource.flatData[3].parentItem.taskId)).toBe(2689);
@@ -359,9 +350,6 @@ describe('Gantt Drag and Drop support', () => {
                 destroyGantt(ganttObj_resource);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 1000);
-        });
         it('Drag and drop', () => {
             ganttObj_resource.reorderRows([2], 8, 'child');
             setTimeout(() => {
@@ -412,9 +400,6 @@ describe('Gantt Drag and Drop support', () => {
             if (ganttObj_self) {
                 destroyGantt(ganttObj_self);
             }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 1000);
         });
        it('Expand/collapse', function ()  {
            ganttObj_self.collapseByID(5);
@@ -477,9 +462,6 @@ describe('Gantt Drag and Drop support', () => {
             if (ganttObj_self) {
                 destroyGantt(ganttObj_self);
             }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 1000);
         });
        it('Drag and drop after Expand/Collapse', function ()  {
            ganttObj_self.collapseByID(6);
@@ -544,9 +526,6 @@ describe('Gantt Drag and Drop support', () => {
             if (ganttObj_self) {
                 destroyGantt(ganttObj_self);
             }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 1000);
         });
        it('Update childrecords in parent item', function ()  {
            ganttObj_self.collapseByID(6);
@@ -624,9 +603,6 @@ describe('Gantt Drag and Drop support', () => {
                 destroyGantt(ganttObj_self);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 1000);
-        });
         it('Perform indent', function () {
             ganttObj_self.selectRow(3);
             let indentRecord: HTMLElement = ganttObj_self.element.querySelector('#' + ganttObj_self.element.id + '_indent') as HTMLElement;
@@ -677,9 +653,6 @@ describe('Gantt Drag and Drop support', () => {
             if (ganttObj_self) {
                 destroyGantt(ganttObj_self);
             }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 1000);
         });
         it('Drag and drop', function () {
             ganttObj_self.reorderRows([3],0,'below')
@@ -740,7 +713,6 @@ describe('Gantt Drag and Drop support', () => {
                 expect(ganttObj.dataSource[0].subtasks[0].subtasks.length).toBe(6);
               }
            };
-          ganttObj.dataBind();
           ganttObj.reorderRows([10], 3, 'below');
        });
     });
@@ -1020,9 +992,6 @@ describe('RowDrag and drop and enableVirtualization', () => {
             destroyGantt(ganttObj_self);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-    });
     it('Drag and drop', function () {
         ganttObj_self.reorderRows([3],0,'below')
         expect(ganttObj_self.dataSource[1].TaskID).toBe(4);
@@ -1166,9 +1135,6 @@ describe('Outdent Record to be in first Index of modified records', () => {
             destroyGantt(ganttObj_self);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-    });
     it('Perform outdent', function () {
        ganttObj_self.actionComplete= (args) : void => {
         if(args.requestType == 'outdented') {
@@ -1296,16 +1262,12 @@ describe('Drag drop records for critical path', () => {
             destroyGantt(ganttObj_self);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-    });
     it('Drag drop to child position', function () {
         ganttObj_self.actionComplete= (args) : void => {
         if(args.requestType == 'refresh') {
             expect(ganttObj_self.criticalPathModule.criticalTasks.length).toBe(3);
         }
        }
-        ganttObj_self.dataBind();
         ganttObj_self.reorderRows([1],3,'child');
     });
 });
@@ -1484,16 +1446,12 @@ describe('Check datasource position after Drag drop in resource view', () => {
             destroyGantt(ganttObj_self);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-    });
     it('Check datasource position', function () {
         ganttObj_self.actionComplete= (args) : void => {
         if(args.requestType == 'save') {
             expect(ganttObj_self.dataSource['subtasks'][2].TaskID).toBe(4);
         }
        }
-        ganttObj_self.dataBind();
         ganttObj_self.reorderRows([3],6,'below');
     });
 });
@@ -1631,9 +1589,6 @@ describe('Predecessor not updated after row drag drop', () => {
             destroyGantt(ganttObj_self);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-    });
     it('reorder rows', function () {
         ganttObj_self.actionComplete = (args): void => {
             if (args.requestType == 'save') {
@@ -1642,5 +1597,80 @@ describe('Predecessor not updated after row drag drop', () => {
         }
         ganttObj_self.dataBind();
         ganttObj_self.reorderRows([2], 5, 'child');
+    });
+});
+describe('row drag and drop in resource view', () => {
+    let ganttObj_self: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj_self = createGantt(
+            {
+                dataSource: normalResourceData,
+                resources: resourceCollection,
+                allowRowDragAndDrop: true,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                    { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }],
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                allowResizing: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '450px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj_self) {
+            destroyGantt(ganttObj_self);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('Drag and drop in resource view', function () {
+        ganttObj_self.dataBind();
+        ganttObj_self.reorderRows([1], 6, 'child');
     });
 });

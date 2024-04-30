@@ -401,7 +401,9 @@ export class TaskbarEdit extends DateProcessor {
                 }
                 this.initPublicProp();
             } else {
-                this.showHideTaskBarEditingElements(element, this.editElement);
+                if (!isNullOrUndefined(element)) {
+                    this.showHideTaskBarEditingElements(element, this.editElement);
+                }
             }
         }
     }
@@ -2711,10 +2713,10 @@ export class TaskbarEdit extends DateProcessor {
         }
         args.isValidLink = !isValidLink && args.isValidLink ? false : args.isValidLink;
         if (args.isValidLink) {
-            if (!this.editTooltip.toolTipObj && !this.parent.isAdaptive) {
+            if (!isNullOrUndefined(this.editTooltip.toolTipObj) && !this.parent.isAdaptive) {
                 this.editTooltip.showHideTaskbarEditTooltip(true, this.segmentIndex);
             }
-            if (this.editTooltip.toolTipObj) {
+            if (!isNullOrUndefined(this.editTooltip.toolTipObj)) {
                 this.parent.connectorLineModule.tooltipTable.innerHTML = this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(
                     this.parent.editModule.taskbarEditModule.taskBarEditRecord.ganttProperties.taskName,
                     this.parent.editModule.taskbarEditModule.fromPredecessorText, '', ''

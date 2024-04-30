@@ -555,57 +555,35 @@ export class Lists {
         let listsNodes: Node[] = this.domNode.blockNodes(true);
         if (e.enterAction === 'BR') {
             this.setSelectionBRConfig();
-            const allSelectedNode: Node[] = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument);
-            const selectedNodes: Node[] = this.parent.nodeSelection.getSelectionNodes(allSelectedNode);
-            const currentFormatNodes: Node[] = [];
-            if (selectedNodes.length === 0) {
-                selectedNodes.push(listsNodes[0]);
-            }
-            for (let i: number = 0; i < selectedNodes.length; i++) {
-                let currentNode: Node = selectedNodes[i as number];
-                let previousCurrentNode: Node;
-                while (!this.parent.domNode.isBlockNode(currentNode as Element) && currentNode !== this.parent.editableElement) {
-                    previousCurrentNode = currentNode;
-                    currentNode = currentNode.parentElement;
+            const selectedNodes: Node[] = this.parent.domNode.blockNodes();
+            if (selectedNodes.length > 1) {
+                let i: number = 0;
+                let currentAlignmentNode: HTMLElement = selectedNodes[0] as HTMLElement;
+                while (!isNOU(currentAlignmentNode)) {
+                    if (currentAlignmentNode.nodeName === 'BR') {
+                        const nextNode: Node = currentAlignmentNode.nextSibling;
+                        detach(currentAlignmentNode);
+                        currentAlignmentNode = nextNode as HTMLElement;
+                    }
+                    if (!isNOU(currentAlignmentNode)) {
+                        selectedNodes[i as number] = currentAlignmentNode.nodeName === 'LI' || this.parent.domNode.isBlockNode(currentAlignmentNode) ?
+                            currentAlignmentNode : this.gatherElementsAround(currentAlignmentNode as HTMLElement);
+                        const currentSelectNode: Node = selectedNodes[i as number].nodeName === 'LI' ? selectedNodes[i as number].parentElement : selectedNodes[i as number];
+                        const currentElementCheckNode: HTMLElement = currentAlignmentNode.nodeName === '#text' ? currentAlignmentNode.parentElement : currentAlignmentNode;
+                        currentAlignmentNode = !isNOU(currentElementCheckNode.querySelector('.e-editor-select-end')) ||
+                            !isNOU(closest(currentAlignmentNode, '.e-editor-select-end')) ?
+                            null : currentSelectNode.nextSibling as HTMLElement;
+                        if (currentAlignmentNode === null && !isNOU(currentSelectNode.nextSibling) && currentSelectNode.nextSibling.nodeName === 'BR') {
+                            detach(currentSelectNode.nextSibling);
+                        }
+                    }
+                    i++;
                 }
-                if (this.parent.domNode.isBlockNode(currentNode as Element) && currentNode === this.parent.editableElement) {
-                    currentFormatNodes.push(previousCurrentNode);
-                }
-            }
-            for (let i: number = 0; i < currentFormatNodes.length; i++) {
-                if (!this.parent.domNode.isBlockNode(currentFormatNodes[i as number] as Element)) {
-                    let currentNode: Node = currentFormatNodes[i as number];
-                    let previousNode: Node = currentNode;
-                    while (currentNode === this.parent.editableElement) {
-                        previousNode = currentNode;
-                        currentNode = currentNode.parentElement;
-                    }
-                    let tempElem: HTMLElement;
-                    if (this.parent.domNode.isBlockNode(previousNode.parentElement) &&
-                    previousNode.parentElement === this.parent.editableElement) {
-                        tempElem = createElement('p');
-                        previousNode.parentElement.insertBefore(tempElem, previousNode);
-                        tempElem.appendChild(previousNode);
-                    } else {
-                        tempElem = previousNode as HTMLElement;
-                    }
-                    let preNode: Node = tempElem.previousSibling;
-                    while (!isNOU(preNode) && preNode.nodeName !== 'BR' &&
-                    !this.parent.domNode.isBlockNode(preNode as Element)) {
-                        tempElem.firstChild.parentElement.insertBefore(preNode, tempElem.firstChild);
-                        preNode = tempElem.previousSibling;
-                    }
-                    if (!isNOU(preNode) && preNode.nodeName === 'BR') {
-                        detach(preNode);
-                    }
-                    let postNode: Node = tempElem.nextSibling;
-                    while (!isNOU(postNode) && postNode.nodeName !== 'BR' &&
-                    !this.parent.domNode.isBlockNode(postNode as Element)) {
-                        tempElem.appendChild(postNode);
-                        postNode = tempElem.nextSibling;
-                    }
-                    if (!isNOU(postNode) && postNode.nodeName === 'BR') {
-                        detach(postNode);
+            } else {
+                if (!this.parent.domNode.isBlockNode(selectedNodes[0] as HTMLElement)) {
+                    selectedNodes[0] = this.gatherElementsAround(selectedNodes[0] as HTMLElement);
+                    if (!isNOU(selectedNodes[0].nextSibling) && (selectedNodes[0].nextSibling.nodeName === 'BR')) {
+                        detach(selectedNodes[0].nextSibling);
                     }
                 }
             }
@@ -710,6 +688,16 @@ export class Lists {
             }
         }
         this.cleanNode();
+        if (e.enterAction === 'BR') {
+            const spansToRemove: NodeListOf<Element> = document.querySelectorAll('span#removeSpan');
+            spansToRemove.forEach((span: Element) => {
+                const fragment: DocumentFragment = document.createDocumentFragment();
+                while (span.firstChild) {
+                    fragment.appendChild(span.firstChild);
+                }
+                span.parentNode.replaceChild(fragment, span);
+            });
+        }
         (this.parent.editableElement as HTMLElement).focus();
         if (isIDevice()) {
             setEditFrameFocus(this.parent.editableElement, selector);
@@ -915,6 +903,12 @@ export class Lists {
                         if (e.enterAction !== 'BR') {
                             this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
                         }
+                        else {
+                            const wrapperSpan: string = '<span class=e-rte-wrap-inner id=removeSpan></span>';
+                            const br: HTMLElement = document.createElement('br');
+                            this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapperSpan));
+                            element.appendChild(br);
+                        }
                     } else if (this.domNode.contents(element)[0].nodeType === 3) {
                         const replace: string = this.domNode.createTagString(
                             CONSTANT.DEFAULT_TAG, parentNode, this.parent.domNode.encode(this.domNode.contents(element)[0].textContent));
@@ -926,8 +920,18 @@ export class Lists {
                         this.domNode.replaceWith(this.domNode.contents(element)[0] as Element, replace);
                     } else {
                         const childNode: Element = element.firstChild as Element;
+                        if (childNode) {
+                            const attributes: NamedNodeMap = element.parentElement.attributes;
+                            if (attributes.length > 0) {
+                                for (let d: number = 0; d < attributes.length; d++) {
+                                    const e: Attr = attributes[d as number];
+                                    const existingValue: string = childNode.getAttribute(e.nodeName);
+                                    const parentValue: string = (element.parentElement).getAttribute(e.nodeName);
+                                    childNode.setAttribute(e.nodeName, existingValue ? parentValue + ' ' + existingValue : parentValue);
+                                }
+                            }
+                        }
                         className = childNode.getAttribute('class');
-                        attributes(childNode, this.domNode.rawAttributes(parentNode));
                         if (className && childNode.getAttribute('class')) {
                             attributes(childNode, { 'class': className + ' ' + childNode.getAttribute('class') });
                         }
@@ -971,4 +975,45 @@ export class Lists {
         return this.domNode.parseHTMLFragment('<span class="e-rte-list-close-' + type.toLowerCase() + '"></span>');
     }
 
+    private gatherElementsAround(node: HTMLElement): HTMLElement {
+        const pWrap: HTMLElement = document.createElement('p');
+        // Insert the new div before the current node
+        let currentNode: HTMLElement | null = node.previousSibling as HTMLElement;
+        const classNode: Element = node.parentNode as Element;
+        if (classNode.className === 'e-editor-select-start') {
+            node.parentNode.parentNode.insertBefore(pWrap, node.parentNode);
+        }
+        else if (node.parentNode) {
+            node.parentNode.insertBefore(pWrap, node);
+        }
+        // Gather text and inline elements before the currentNode
+        let i: number = 0;
+        while (currentNode !== null && currentNode.nodeName !== 'BR' &&
+        !this.parent.domNode.isBlockNode(currentNode as HTMLElement)) {
+            const prevSibling: HTMLElement = currentNode.previousSibling as HTMLElement;
+            if (currentNode.nodeType === 3 || currentNode.nodeType === 1) {
+                if (i === 0) {
+                    pWrap.appendChild(currentNode);
+                } else {
+                    pWrap.insertBefore(currentNode, pWrap.firstChild);
+                }
+            }
+            currentNode = prevSibling;
+            i++;
+        }
+        // Add the current node to the new p
+        pWrap.appendChild(node);
+        // Gather text and inline elements after the currentNode
+        currentNode = pWrap.nextSibling as HTMLElement ? pWrap.nextSibling as HTMLElement : pWrap.parentElement.nextSibling as HTMLElement;
+        while (currentNode !== null && currentNode.nodeName !== 'BR' &&
+        !this.parent.domNode.isBlockNode(currentNode as HTMLElement)) {
+            const nextSibling: HTMLElement | null = currentNode.nextSibling as HTMLElement ?
+                currentNode.nextSibling as HTMLElement : currentNode.parentElement.nextSibling as HTMLElement;
+            if (currentNode.nodeType === 3 || currentNode.nodeType === 1) {
+                pWrap.appendChild(currentNode);
+            }
+            currentNode = nextSibling;
+        }
+        return pWrap;
+    }
 }

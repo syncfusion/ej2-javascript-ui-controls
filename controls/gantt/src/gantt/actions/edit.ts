@@ -16,7 +16,7 @@ import { Dialog } from '@syncfusion/ej2-popups';
 import { NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 import { MultiSelect, CheckBoxSelection, DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ConnectorLineEdit } from './connector-line-edit';
-import { ITreeData } from '@syncfusion/ej2-treegrid';
+import { ITreeData,TreeGrid, Edit as TreeGridEdit } from '@syncfusion/ej2-treegrid';
 import { CriticalPath } from '..';
 
 
@@ -94,6 +94,9 @@ export class Edit {
         this.parent.treeGrid.editSettings.allowDeleting = this.parent.editSettings.allowDeleting;
         this.parent.treeGrid.editSettings.showDeleteConfirmDialog = this.parent.editSettings.showDeleteConfirmDialog;
         this.parent.treeGrid.editSettings.allowNextRowEdit = this.parent.editSettings.allowNextRowEdit;
+        if (this.parent.editSettings.mode === 'Dialog') {
+            TreeGrid.Inject(TreeGridEdit);
+        }
         this.updateDefaultColumnEditors();
     }
 
@@ -1376,7 +1379,7 @@ export class Edit {
         const eventArgs: IActionBeginEventArgs = {};
         if (this.parent.timelineSettings.updateTimescaleView) {
             const tempArray: IGanttData[] = this.parent.editedRecords;
-            this.parent.timelineModule.updateTimeLineOnEditing([tempArray], args.action);
+            this.parent.timelineModule.updateTimeLineOnEditing([tempArray], args);
         }
         if (this.parent.viewType === 'ResourceView') {
             if (args.action === 'TaskbarEditing' || args.action === 'DrawConnectorLine') {
@@ -2325,6 +2328,11 @@ export class Edit {
                         }
                         deleteCrud.then(() => {
                             const changedRecords: string = 'changedRecords';
+                            for (let i: number = updatedData[changedRecords as string].length - 1; i >= 0; i--) {
+                                if (updatedData['deletedRecords' as string].some((record: any) => record[this.parent.taskFields.id] === updatedData[changedRecords as string][i as number].taskId)) {
+                                    updatedData[changedRecords as string].splice(i as number, 1);
+                                }
+                            }
                             const updateCrud: Promise<Object> =
                                 data.update(this.parent.taskFields.id, updatedData[changedRecords as string], null, query) as Promise<Object>;
                             updateCrud.then(() => this.deleteSuccess(args))
@@ -3644,7 +3652,7 @@ export class Edit {
                 tempArray.push.apply(tempArray, args.modifiedRecords);
             } else {
                 tempArray = (args.data as IGanttData[]).length > 0 ? extend([],[],args.data as IGanttData[],true) as IGanttData[] : [args.data as IGanttData];            }
-            this.parent.timelineModule.updateTimeLineOnEditing([tempArray], args.action);
+            this.parent.timelineModule.updateTimeLineOnEditing([tempArray], args);
         }
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');

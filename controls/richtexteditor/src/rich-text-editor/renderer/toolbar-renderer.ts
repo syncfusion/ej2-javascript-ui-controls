@@ -183,6 +183,7 @@ export class ToolbarRenderer implements IRenderer {
                 openDelay: 400,
                 opensOn: 'Hover',
                 beforeRender: this.tooltipBeforeRender.bind(this),
+                beforeOpen: this.tooltipBeforeOpen.bind(this),
                 cssClass: this.parent.getCssClass(),
                 windowCollision: true,
                 position: 'BottomCenter'
@@ -675,6 +676,12 @@ export class ToolbarRenderer implements IRenderer {
         colorPicker.createElement = this.parent.createElement;
         colorPicker.appendTo(document.getElementById(args.target) as HTMLElement);
         return colorPicker;
+    }
+
+    public tooltipBeforeOpen(args: TooltipEventArgs): void {
+        if (args.element) {
+            args.element.setAttribute('data-rte-id', this.parent.getID());
+        }
     }
 
     /**

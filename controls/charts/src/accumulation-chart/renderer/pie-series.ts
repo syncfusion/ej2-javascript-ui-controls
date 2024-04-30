@@ -157,7 +157,7 @@ export class PieSeries extends PieBase {
         const path: string = this.getPathArc(
             this.center,
             startAngle % 360, (startAngle + degree) % 360,
-            this.isRadiusMapped ? stringToNumber(point.sliceRadius, this.seriesRadius) : this.radius,
+            this.isRadiusMapped ? stringToNumber(point.sliceRadius, this.size / 2) : this.radius,
             this.innerRadius
         );
         //const path: string = this.getPathArc(this.center, startAngle % 360, (startAngle + degree) % 360, this.radius, this.innerRadius);

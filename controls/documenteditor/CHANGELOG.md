@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 25.1.42 (2024-04-30)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I575385` - Resolved the multi column line split issue when opening attached document.
+- `#I576161` - Resolved the hyperlink preservation issue in pane.
+- `#I576442` - Resolved the table not properly aligned issue.
+- `#I576647` - Resolved list numbering change issue, while editing the content.
+- `#I580085` - Resolved the Combo box focus issue in document editor.
+- `#I561167` - Resolved hyperlink style issue while reject the changes.
+
 ## 25.1.41 (2024-04-23)
 
 ### DocumentEditor

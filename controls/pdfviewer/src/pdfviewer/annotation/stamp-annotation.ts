@@ -1235,7 +1235,7 @@ export class StampAnnotation {
      */
     // eslint-disable-next-line
     public updateSessionStorage(annotation: any, id: any, type: String): any {
-        if (id != null) {
+        if (id != null && annotation.annotations) {
             for (let p: number = 0; p < annotation.annotations.length; p++) {
                 if (annotation.annotations[p].id === id) {
                     annotation = annotation.annotations[p];

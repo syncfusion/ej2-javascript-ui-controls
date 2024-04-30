@@ -184,4 +184,36 @@ describe('Track changes hyperlink reject validation', () => {
         expect(container.selection.characterFormat.fontColor).toBe('#0563c1');
     });
 });
-
+describe('Track changes hyperlink inserting validation', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableRtl: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes hyperlink inserting validation', () => {
+        console.log('Track changes hyperlink inserting validation');
+        container.enableTrackChanges = true;
+        container.editor.insertText("Google");  
+        container.selection.select('0;0;0', '0;0;6');
+        container.editor.insertHyperlink('https://www.syncfusion.com/', container.selection.text, container.selection.text);
+        var count = container.revisions.changes.length;
+        expect(count).toBe(1);
+    });
+});

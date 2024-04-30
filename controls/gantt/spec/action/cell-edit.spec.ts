@@ -3,8 +3,8 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Gantt taskbaredit spec
  */
-import { Gantt, Edit, Toolbar } from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1 } from '../base/data-source.spec';
+import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -15,7 +15,7 @@ interface EJ2Instance extends HTMLElement {
      ej2_instances: Object[];
  }
  
-Gantt.Inject(Edit, Toolbar);
+ Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 describe('Gantt Edit module', () => {
     describe('Gantt editing action', () => {
         let ganttObj: Gantt;
@@ -78,23 +78,18 @@ describe('Gantt Edit module', () => {
                     ],
                 }, done);
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
         });
         it('Editing task id', () => {
-            ganttObj.dataBind();
             let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(1)') as HTMLElement;
             triggerMouseEvent(taskName, 'dblclick');
             let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskId') as HTMLElement;
             expect(input).toBe(null);
         });
         it('Editing task name', () => {
-            ganttObj.dataBind();
             let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(taskName, 'dblclick');
             let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
@@ -103,9 +98,8 @@ describe('Gantt Edit module', () => {
             triggerMouseEvent(element, 'click');
             expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
         });
-
+    
         it('Editing start date column', () => {
-            ganttObj.dataBind();
             let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
             triggerMouseEvent(startDate, 'dblclick');
             let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate')as any).ej2_instances[0];
@@ -114,9 +108,8 @@ describe('Gantt Edit module', () => {
             triggerMouseEvent(element, 'click');
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/4/2019');
         });
-
+    
         it('Editing end date column', () => {
-            ganttObj.dataBind();
             //checking work values for task which have no resource while before enddate editing
             expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/08/2019');
@@ -136,7 +129,6 @@ describe('Gantt Edit module', () => {
             expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
         });
         it('Editing duration column', () => {
-            ganttObj.dataBind();
             //checking work values for task which have no resource while before duration editing
             expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(5);
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/10/2019');
@@ -154,8 +146,75 @@ describe('Gantt Edit module', () => {
             expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo).toBe(null);
             expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
         });
+    });
+    
+    describe('Gantt editing action', () => {
+        let ganttObj: Gantt;
+        let interval: number;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: cellEditData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        notes: 'Notes',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                        resourceInfo: 'Resource',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    resourceIDMapping: 'resourceId',
+                    resourceNameMapping: 'resourceName',
+                    resources: resourcesData,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    renderBaseline: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowNextRowEdit: true
+                    },
+                    editDialogFields: [
+                        { type: 'General' },
+                        { type: 'Dependency' },
+                        { type: 'Resources' },
+                        { type: 'Notes' },
+                    ],
+                    splitterSettings: {
+                        columnIndex: 9
+                    },
+                    allowUnscheduledTasks: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    columns: [
+                        { field: 'TaskID', width: 60 },
+                        { field: 'TaskName', editType: 'stringedit', width: 100 },
+                        { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Duration', width: 100 },
+                        { field: 'Predecessor', width: 100 },
+                        { field: 'Progress', width: 100 },
+                        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Resource', width: 100 },
+                        { field: 'Notes', width: 100 },
+                        { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+                    ],
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
         it('Editing predecesssor column', (done: Function) => {
-            ganttObj.dataBind();
             let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(6)') as HTMLElement;
             triggerMouseEvent(dependency, 'dblclick');
             let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
@@ -166,7 +225,6 @@ describe('Gantt Edit module', () => {
             done();
         });
         it('Editing progress column', () => {
-              ganttObj.dataBind();
               let progress: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(7)') as HTMLElement;
               triggerMouseEvent(progress, 'dblclick');
               let input = (<HTMLInputElement>document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolProgress') as any).ej2_instances[0];
@@ -177,13 +235,11 @@ describe('Gantt Edit module', () => {
               expect(ganttObj.currentViewData[1].ganttProperties.progress).toBe(40);
          });
          it('Editing parent progress column', () => {
-            ganttObj.dataBind();
             let progress: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(7)') as HTMLElement;
             triggerMouseEvent(progress, 'dblclick');
             expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0).toBe(false)
          });
         it('Editing baseline start date column', () => {
-            ganttObj.dataBind();
             let baselineStartDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(8)') as HTMLElement;
             triggerMouseEvent(baselineStartDate, 'dblclick');
             let dateElement: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolBaselineStartDate') as HTMLElement;
@@ -196,7 +252,6 @@ describe('Gantt Edit module', () => {
             }
         });
         it('Editing baseline end date column', () => {
-            ganttObj.dataBind();
             let baselineEndDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(9)') as HTMLElement;
             triggerMouseEvent(baselineEndDate, 'dblclick');
             let dateElement: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolBaselineEndDate') as HTMLElement;
@@ -209,10 +264,9 @@ describe('Gantt Edit module', () => {
             }
         });
         it('Editing resource column', () => {
-            ganttObj.dataBind();
             //checking work values for task which have no resource before adding resource
-            expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(4);
-            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/17/2019');
+            expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/16/2019');
             expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
             expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo).toBe(null);
             let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(10)') as HTMLElement;
@@ -227,167 +281,360 @@ describe('Gantt Edit module', () => {
                 //checking work values for task after adding resource
                 expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe('Resource 1');
                 expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-                expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(4);
-                expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/17/2019');
-                expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(32);
+                expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
+                expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/16/2019');
+                expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
             }
         });
-         it('Initial checking resource column without unit mapping', () => {
-             ganttObj.dataBind();
-             expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
-             expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-             expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
-         });
-         it('Initial work,workunit,tasktype value checking without unit and work mapping', () => {
-             ganttObj.dataBind();
-             //Task with resource
-             expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
-             expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-             expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
-             expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(48);
-             expect(ganttObj.currentViewData[2].ganttProperties.workUnit).toBe('hour');
-             expect(ganttObj.currentViewData[2].ganttProperties.taskType).toBe('FixedUnit');
-             //Task without resource
-             expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo).toBe(null);
-             expect(ganttObj.currentViewData[5].ganttProperties.work).toBe(0);
-             expect(ganttObj.currentViewData[5].ganttProperties.workUnit).toBe('hour');
-             expect(ganttObj.currentViewData[5].ganttProperties.taskType).toBe('FixedUnit');
-             //Parent Task without resource
-             expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo).toBe(null);
-             expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(80);
-             expect(ganttObj.currentViewData[0].ganttProperties.workUnit).toBe('hour');
-             expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
-         });
-        it('Editing resource column without unit mapping by adding new resource', () => {
-            ganttObj.dataBind();
-            let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(10)') as HTMLElement;
-            triggerMouseEvent(resource, 'dblclick');
-            let ddlElement: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolResource') as HTMLElement;
-            if (ddlElement) {
-                let input: any = ddlElement.ej2_instances[0];
-                input.value = [1]; // add new resource
-                input.dataBind();
-                let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
-                triggerMouseEvent(element, 'click');
-                expect(ganttObj.currentViewData[5].ganttProperties.resourceNames).toBe('Resource 1');
-                expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+    });
+    
+    describe('Gantt editing action', () => {
+        let ganttObj: Gantt;
+        let interval: number;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: cellEditData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        notes: 'Notes',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                        resourceInfo: 'Resource',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    resourceIDMapping: 'resourceId',
+                    resourceNameMapping: 'resourceName',
+                    resources: resourcesData,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    renderBaseline: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowNextRowEdit: true
+                    },
+                    editDialogFields: [
+                        { type: 'General' },
+                        { type: 'Dependency' },
+                        { type: 'Resources' },
+                        { type: 'Notes' },
+                    ],
+                    splitterSettings: {
+                        columnIndex: 9
+                    },
+                    allowUnscheduledTasks: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    columns: [
+                        { field: 'TaskID', width: 60 },
+                        { field: 'TaskName', editType: 'stringedit', width: 100 },
+                        { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Duration', width: 100 },
+                        { field: 'Predecessor', width: 100 },
+                        { field: 'Progress', width: 100 },
+                        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Resource', width: 100 },
+                        { field: 'Notes', width: 100 },
+                        { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+                    ],
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
             }
         });
-        it('Editing resource column without unit mapping by adding another resource', () => {
-            ganttObj.dataBind();
-            expect(ganttObj.currentViewData[3].ganttProperties.resourceNames).toBe('Resource 4');
-            expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-            let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(10)') as HTMLElement;
-            triggerMouseEvent(resource, 'dblclick');
-            let ddlElement: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolResource') as HTMLElement;
-            if (ddlElement) {
-                let input: any = ddlElement.ej2_instances[0];
-                input.value.push(1);
-                input.dataBind();
-                let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
-                triggerMouseEvent(element, 'click');
-                expect(ganttObj.currentViewData[3].ganttProperties.resourceNames).toBe('Resource 4,Resource 1');
-                expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-                expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo[1]['unit']).toBe(100);
-            }
+        it('Initial checking resource column without unit mapping', () => {
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
         });
-	it('Editing parent task resource column by adding a resource', () => {
-            ganttObj.dataBind();
+        it('Initial work,workunit,tasktype value checking without unit and work mapping', () => {
+            //Task with resource
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
+            expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(48);
+            expect(ganttObj.currentViewData[2].ganttProperties.workUnit).toBe('hour');
+            expect(ganttObj.currentViewData[2].ganttProperties.taskType).toBe('FixedUnit');
+            //Task without resource
+            expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo).toBe(null);
+            expect(ganttObj.currentViewData[5].ganttProperties.work).toBe(0);
+            expect(ganttObj.currentViewData[5].ganttProperties.workUnit).toBe('hour');
+            expect(ganttObj.currentViewData[5].ganttProperties.taskType).toBe('FixedUnit');
+            //Parent Task without resource
             expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo).toBe(null);
-            let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(10)') as HTMLElement;
-            triggerMouseEvent(resource, 'dblclick');
-            let ddlElement: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolResource') as HTMLElement;
-            if (ddlElement) {
-                let input: any = ddlElement.ej2_instances[0];
-                input.value = [1];
-                input.dataBind();
-                let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
-                triggerMouseEvent(element, 'click');
-                expect(ganttObj.currentViewData[0].ganttProperties.resourceNames).toBe('Resource 1');
-                expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+            expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(48);
+            expect(ganttObj.currentViewData[0].ganttProperties.workUnit).toBe('hour');
+            expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
+        });
+       it('Editing resource column without unit mapping by adding new resource', () => {
+           let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(10)') as HTMLElement;
+           triggerMouseEvent(resource, 'dblclick');
+           let ddlElement: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolResource') as HTMLElement;
+           if (ddlElement) {
+               let input: any = ddlElement.ej2_instances[0];
+               input.value = [1]; // add new resource
+               input.dataBind();
+               let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+               triggerMouseEvent(element, 'click');
+               expect(ganttObj.currentViewData[5].ganttProperties.resourceNames).toBe('Resource 1');
+               expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+           }
+       });
+       it('Editing resource column without unit mapping by adding another resource', () => {
+           expect(ganttObj.currentViewData[3].ganttProperties.resourceNames).toBe('Resource 4');
+           expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+           let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(10)') as HTMLElement;
+           triggerMouseEvent(resource, 'dblclick');
+           let ddlElement: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolResource') as HTMLElement;
+           if (ddlElement) {
+               let input: any = ddlElement.ej2_instances[0];
+               input.value.push(1);
+               input.dataBind();
+               let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+               triggerMouseEvent(element, 'click');
+               expect(ganttObj.currentViewData[3].ganttProperties.resourceNames).toBe('Resource 4,Resource 1');
+               expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+               expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo[1]['unit']).toBe(100);
+           }
+       });
+    it('Editing parent task resource column by adding a resource', () => {
+           expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo).toBe(null);
+           let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(10)') as HTMLElement;
+           triggerMouseEvent(resource, 'dblclick');
+           let ddlElement: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolResource') as HTMLElement;
+           if (ddlElement) {
+               let input: any = ddlElement.ej2_instances[0];
+               input.value = [1];
+               input.dataBind();
+               let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+               triggerMouseEvent(element, 'click');
+               expect(ganttObj.currentViewData[0].ganttProperties.resourceNames).toBe('Resource 1');
+               expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+           }
+       });
+    });
+    
+    describe('Gantt editing action', () => {
+        let ganttObj: Gantt;
+        let interval: number;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: cellEditData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        notes: 'Notes',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                        resourceInfo: 'Resource',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    resourceIDMapping: 'resourceId',
+                    resourceNameMapping: 'resourceName',
+                    resources: resourcesData,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    renderBaseline: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowNextRowEdit: true
+                    },
+                    editDialogFields: [
+                        { type: 'General' },
+                        { type: 'Dependency' },
+                        { type: 'Resources' },
+                        { type: 'Notes' },
+                    ],
+                    splitterSettings: {
+                        columnIndex: 9
+                    },
+                    allowUnscheduledTasks: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    columns: [
+                        { field: 'TaskID', width: 60 },
+                        { field: 'TaskName', editType: 'stringedit', width: 100 },
+                        { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Duration', width: 100 },
+                        { field: 'Predecessor', width: 100 },
+                        { field: 'Progress', width: 100 },
+                        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Resource', width: 100 },
+                        { field: 'Notes', width: 100 },
+                        { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+                    ],
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
             }
         });
-         it('Editing duration column without resource unit and work mapping', () => {
-             ganttObj.dataBind();
-             //checking work values for task which have resource while before duration editing
-             expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(3);
-             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/04/2019');
-             expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(48);
-             expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
-             expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-             expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
-             let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
-             triggerMouseEvent(duration, 'dblclick');
-             let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
-             input.value = '4 days';
-             let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
-             triggerMouseEvent(element, 'click');
-             //checking work values for task which have no resource while after duration editing
+        it('Editing duration column without resource unit and work mapping', () => {
+            //checking work values for task which have resource while before duration editing
+            expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(3);
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/04/2019');
+            expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(48);
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
+            let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
+            triggerMouseEvent(duration, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+            input.value = '4 days';
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+            //checking work values for task which have no resource while after duration editing
+            expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(4);
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/05/2019');
+            expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(64);
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+            expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
+        });
+         it('Editing endDate column without resource unit and work mapping', () => {
+             //checking work values for task which have resource while before enddate editing
              expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(4);
              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/05/2019');
              expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(64);
              expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
              expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
              expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
-         });
-          it('Editing endDate column without resource unit and work mapping', () => {
-              ganttObj.dataBind();
-              //checking work values for task which have resource while before enddate editing
-              expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(4);
-              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/05/2019');
-              expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(64);
-              expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
-              expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-              expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
-              let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(4)') as HTMLElement;
-              triggerMouseEvent(endDate, 'dblclick');
-              let input: any = (<EJ2Instance>document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolEndDate')).ej2_instances[0];
-              input.value = new Date('04/08/2019');
-              input.dataBind();
-              let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
-              triggerMouseEvent(element, 'click');
-              //checking work values for task which have resource while after enddate editing
-              expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(5);
-              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/08/2019');
-              expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(80);
-              expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
-              expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
-              expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
-           });
-          it('Editing custom column', () => {
-            ganttObj.dataBind();
-            let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(12)') as HTMLElement;
-            triggerMouseEvent(customColumn, 'dblclick');
-            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolCustomcol') as HTMLElement;
-            input.value = 'updated';
-            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(12)') as HTMLElement;
-            triggerMouseEvent(element, 'click');
-            expect(ganttObj.currentViewData[1]['Customcol']).toBe('updated');
-            expect(ganttObj.dataSource[0].subtasks[0]["Customcol"]).toBe('updated');
+             let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(4)') as HTMLElement;
+             triggerMouseEvent(endDate, 'dblclick');
+             let input: any = (<EJ2Instance>document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolEndDate')).ej2_instances[0];
+             input.value = new Date('04/08/2019');
+             input.dataBind();
+             let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+             triggerMouseEvent(element, 'click');
+             //checking work values for task which have resource while after enddate editing
+             expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(5);
+             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/08/2019');
+             expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(80);
+             expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
+             expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
+             expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
           });
-         it('Editing parent task name with expand/collapse actions', () => {
-            ganttObj.dataBind();
-            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
-            triggerMouseEvent(taskName, 'dblclick');
-            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
-            triggerMouseEvent(element, 'click');
-            expect(ganttObj.currentViewData[0].expanded).toBe(true);
+         it('Editing custom column', () => {
+           let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(12)') as HTMLElement;
+           triggerMouseEvent(customColumn, 'dblclick');
+           let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolCustomcol') as HTMLElement;
+           input.value = 'updated';
+           let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(12)') as HTMLElement;
+           triggerMouseEvent(element, 'click');
+           expect(ganttObj.currentViewData[1]['Customcol']).toBe('updated');
+           expect(ganttObj.dataSource[0].subtasks[0]["Customcol"]).toBe('updated');
          });
-         it('Editing parent task name with enter key', () => {
-            ganttObj.dataBind();
-            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
-            triggerMouseEvent(taskName, 'dblclick');
-            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
-            input.value = 'TaskName updated';
-            let args1: any = { action: 'saveRequest', preventDefault: preventDefault };
-            ganttObj.keyboardModule.keyAction(args1);
-            expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe('TaskName updated');
-            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
-            triggerMouseEvent(element, 'click');
-            expect(ganttObj.currentViewData[0].expanded).toBe(true);
-         });
-         it('Editing parent taskbar', () => {
-            ganttObj.dataBind();
+        it('Editing parent task name with expand/collapse actions', () => {
+           let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+           triggerMouseEvent(taskName, 'dblclick');
+           let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
+           triggerMouseEvent(element, 'click');
+           expect(ganttObj.currentViewData[0].expanded).toBe(true);
+        });
+        it('Editing parent task name with enter key', () => {
+           let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+           triggerMouseEvent(taskName, 'dblclick');
+           let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+           input.value = 'TaskName updated';
+           let args1: any = { action: 'saveRequest', preventDefault: preventDefault };
+           ganttObj.keyboardModule.keyAction(args1);
+           expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe('TaskName updated');
+           let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(1) > div > span') as HTMLElement;
+           triggerMouseEvent(element, 'click');
+           expect(ganttObj.currentViewData[0].expanded).toBe(true);
+        });
+    });
+    
+    describe('Gantt editing action', () => {
+        let ganttObj: Gantt;
+        let interval: number;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: cellEditData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        notes: 'Notes',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                        resourceInfo: 'Resource',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    resourceIDMapping: 'resourceId',
+                    resourceNameMapping: 'resourceName',
+                    resources: resourcesData,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    renderBaseline: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowNextRowEdit: true
+                    },
+                    editDialogFields: [
+                        { type: 'General' },
+                        { type: 'Dependency' },
+                        { type: 'Resources' },
+                        { type: 'Notes' },
+                    ],
+                    splitterSettings: {
+                        columnIndex: 9
+                    },
+                    allowUnscheduledTasks: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    columns: [
+                        { field: 'TaskID', width: 60 },
+                        { field: 'TaskName', editType: 'stringedit', width: 100 },
+                        { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Duration', width: 100 },
+                        { field: 'Predecessor', width: 100 },
+                        { field: 'Progress', width: 100 },
+                        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Resource', width: 100 },
+                        { field: 'Notes', width: 100 },
+                        { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+                    ],
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Editing parent taskbar', () => {
             let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr.e-row.e-gridrowindex0level0 > td:nth-child(5)') as HTMLElement;
             triggerMouseEvent(duration, 'dblclick');
             let durationInput: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
@@ -406,7 +653,6 @@ describe('Gantt Edit module', () => {
             expect(endDateInput).toBe(null);
          });
          it('Unscheduled start task - start date editing', () => {
-              ganttObj.dataBind();
               let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(3)') as HTMLElement;
               triggerMouseEvent(startDate, 'dblclick');
               let input: any = (document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolStartDate') as any).ej2_instances[0];
@@ -416,7 +662,6 @@ describe('Gantt Edit module', () => {
               expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/3/2019');
          });
          it('Unscheduled start task - end date editing', () => {
-             ganttObj.dataBind();            
              let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(4)') as HTMLElement;
              triggerMouseEvent(endDate, 'dblclick');
              let input: any = (document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolEndDate') as any).ej2_instances[0];
@@ -426,7 +671,6 @@ describe('Gantt Edit module', () => {
              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.endDate, 'M/d/yyyy')).toBe('4/10/2019');
          });
          it('Unscheduled start task - duration editing', () => {
-             ganttObj.dataBind();
              let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(4)') as HTMLElement;
              triggerMouseEvent(endDate, 'dblclick');
              let input: any = (document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolEndDate') as any).ej2_instances[0];
@@ -441,7 +685,6 @@ describe('Gantt Edit module', () => {
              expect(ganttObj.currentViewData[4].ganttProperties.duration).toBe(4);
          });
          it('Unscheduled end task - end date editing', () => {
-             ganttObj.dataBind();
              let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(4)') as HTMLElement;
              triggerMouseEvent(endDate, 'dblclick');
              let input: any = (document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolEndDate') as any).ej2_instances[0];
@@ -451,7 +694,6 @@ describe('Gantt Edit module', () => {
              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[5].ganttProperties.endDate, 'M/d/yyyy')).toBe('4/3/2019');
          });
          it('Unscheduled end task - start date editing', () => {
-             ganttObj.dataBind();
              let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(3)') as HTMLElement;
              triggerMouseEvent(startDate, 'dblclick');
              let input: any = (document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolStartDate') as any).ej2_instances[0];
@@ -461,7 +703,6 @@ describe('Gantt Edit module', () => {
              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[5].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/1/2019');
          });
          it('Unscheduled end task - duration editing', () => {
-             ganttObj.dataBind();
              let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(3)') as HTMLElement;
              triggerMouseEvent(startDate, 'dblclick');
              let input: any = (document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolStartDate') as any).ej2_instances[0];
@@ -476,7 +717,6 @@ describe('Gantt Edit module', () => {
              expect(ganttObj.currentViewData[5].ganttProperties.duration).toBe(4);
          });
          it('Unscheduled duration task - duration editing', () => {
-             ganttObj.dataBind();
              let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(7) > td:nth-child(5)') as HTMLElement;
              triggerMouseEvent(duration, 'dblclick');
              let durationInput: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
@@ -486,7 +726,6 @@ describe('Gantt Edit module', () => {
              expect(ganttObj.currentViewData[6].ganttProperties.duration).toBe(4);
          });
          it('Unscheduled duration task - start date editing', () => {
-             ganttObj.dataBind();
              let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(7) > td:nth-child(3)') as HTMLElement;
              triggerMouseEvent(startDate, 'dblclick');
              let input: any = (document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolStartDate') as any).ej2_instances[0];
@@ -496,7 +735,6 @@ describe('Gantt Edit module', () => {
              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[6].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/1/2019');
          });
          it('Unscheduled duration task - end date editing', () => {
-             ganttObj.dataBind();
              let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(7) > td:nth-child(3)') as HTMLElement;
              triggerMouseEvent(startDate, 'dblclick');
              let input: any = (document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolStartDate') as any).ej2_instances[0];
@@ -510,19 +748,84 @@ describe('Gantt Edit module', () => {
              triggerMouseEvent(element, 'click');
              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[6].ganttProperties.endDate, 'M/d/yyyy')).toBe('4/3/2019');
          });
+    });
+    
+    describe('Gantt editing action', () => {
+        let ganttObj: Gantt;
+        let interval: number;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: cellEditData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        notes: 'Notes',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                        resourceInfo: 'Resource',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    resourceIDMapping: 'resourceId',
+                    resourceNameMapping: 'resourceName',
+                    resources: resourcesData,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                    renderBaseline: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowNextRowEdit: true
+                    },
+                    editDialogFields: [
+                        { type: 'General' },
+                        { type: 'Dependency' },
+                        { type: 'Resources' },
+                        { type: 'Notes' },
+                    ],
+                    splitterSettings: {
+                        columnIndex: 9
+                    },
+                    allowUnscheduledTasks: true,
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    columns: [
+                        { field: 'TaskID', width: 60 },
+                        { field: 'TaskName', editType: 'stringedit', width: 100 },
+                        { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Duration', width: 100 },
+                        { field: 'Predecessor', width: 100 },
+                        { field: 'Progress', width: 100 },
+                        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                        { field: 'Resource', width: 100 },
+                        { field: 'Notes', width: 100 },
+                        { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+                    ],
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
         it('Milestone task - duration editing', () => {
-            ganttObj.dataBind();
             let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(5)') as HTMLElement;
             triggerMouseEvent(duration, 'dblclick');
             let durationInput: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
             durationInput.value = '5 days';
-            ganttObj.dataBind();
             let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(element, 'click');
             expect(ganttObj.currentViewData[3].ganttProperties.duration).toBe(5);
         });
         it('Milestone task - start date editing', () => {
-            ganttObj.dataBind();
             let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(5)') as HTMLElement;
             triggerMouseEvent(duration, 'dblclick');
             let durationInput: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
@@ -537,7 +840,6 @@ describe('Gantt Edit module', () => {
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/1/2019');
         });
         it('Milestone task - end date editing', () => {
-            ganttObj.dataBind();
             let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(5)') as HTMLElement;
             triggerMouseEvent(duration, 'dblclick');
             let durationInput: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
@@ -552,7 +854,6 @@ describe('Gantt Edit module', () => {
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.endDate, 'M/d/yyyy')).toBe('4/5/2019');
         });
         it('Editing duration column - null duration', () => {
-            ganttObj.dataBind();
             let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
             triggerMouseEvent(duration, 'dblclick');
             let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
@@ -562,7 +863,6 @@ describe('Gantt Edit module', () => {
             expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(null);
         });
         it('Editing dependency column', () => {
-            ganttObj.dataBind();
             let dependency1: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
             triggerMouseEvent(dependency1, 'dblclick');
             let input1: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
@@ -587,7 +887,7 @@ describe('Gantt Edit module', () => {
             expect(ganttObj.currentViewData[2].ganttProperties.predecessorsName).toBe('');
             expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe('2FF+3 days');
             expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('3SF');
-            expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toBe('4SS+50 minutes');
+            expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toBe('4SS-480 minutes');
         });
         it('Editing task name with dialog close arguments', () => {
             ganttObj.actionBegin = function (args: any): void {
@@ -595,7 +895,6 @@ describe('Gantt Edit module', () => {
                     args.dialogModel.animationSettings = { 'effect': 'none' };
                 }
             };
-            ganttObj.dataBind();
             let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(taskName, 'dblclick');
             let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
@@ -604,11 +903,10 @@ describe('Gantt Edit module', () => {
             triggerMouseEvent(element, 'click');
             expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
         });
-        it('Editing notes column-Dialog', (done) => {
-            ganttObj.dataBind();
+        it('Editing notes column-Dialog', (done: Function) => {
             let notes: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(11)') as HTMLElement;
             triggerMouseEvent(notes, 'dblclick');
-            setTimeout(done, 1000);
+            setTimeout(done, 500);
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType == "openEditDialog") {
                     let element: any = document.getElementById(ganttObj.element.id + 'NotesTabContainer') as HTMLElement;
@@ -619,6 +917,7 @@ describe('Gantt Edit module', () => {
                         triggerMouseEvent(save, 'click');
                         expect(ganttObj.currentViewData[1].ganttProperties.notes).toBe('updated');
                     }
+                    done();
                 }
             };
         });
@@ -636,7 +935,6 @@ describe('Gantt Edit module', () => {
             }
         });
         it('Editing with tab navigation', () => {
-            ganttObj.dataBind();
             let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(taskName, 'dblclick');
             let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
@@ -647,16 +945,6 @@ describe('Gantt Edit module', () => {
             expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
             ganttObj.treeGrid.grid.endEdit();
         });
-        // it('Editing with tab navigation - next row', () => {
-        //     ganttObj.dataBind();
-        //     let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(12)') as HTMLElement;
-        //     triggerMouseEvent(customColumn, 'dblclick');
-        //     let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
-        //     ganttObj.keyboardModule.keyAction(args);
-        //     let args1: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(1)') as HTMLElement };
-        //     ganttObj.keyboardModule.keyAction(args1);
-        //     expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
-        // });
     });
     describe('Gantt editing action validation', () => {
         let ganttObj: Gantt;
@@ -719,22 +1007,19 @@ describe('Gantt Edit module', () => {
                     ],
                 }, done);
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
         });
-        it('Editing task name Validation', () => {
+        it('Editing task name Validation', (done: Function) => {
             let actionBeginFired = false;
             ganttObj.endEdit = (args) => {
                 if (args.action === 'CellEditing') {
-                    actionBeginFired = true
+                    actionBeginFired = true;
+                    done();
                 }
             }
-            ganttObj.dataBind();
             let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(taskName, 'dblclick');
             let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
@@ -780,9 +1065,6 @@ describe('Gantt Edit module', () => {
                     }
                 }, done);
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
@@ -827,9 +1109,6 @@ describe('Gantt Edit module', () => {
                     toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
             'PrevTimeSpan', 'NextTimeSpan'],
                 }, done);
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
         });
         afterAll(() => {
             if (ganttObj) {
@@ -938,9 +1217,6 @@ describe('Gantt Edit module', () => {
                     ],
                 }, done);
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
@@ -1020,17 +1296,12 @@ describe('Resource with unit', () => {
             destroyGantt(ganttObj);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 500);
-    });
     it('Resource column - Initial', () => {
-        ganttObj.dataBind();
         expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[40%],Resource 1');
         expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0][ganttObj.resourceFields.unit]).toBe(40);
         expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1][ganttObj.resourceFields.unit]).toBe(100);//unit value not set for resource1 in datasource,hence set as 100
     });
     it('Initial work,workunit,tasktype value checking without work mapping', () => {
-        ganttObj.dataBind();
         //Task with resource
         expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[40%],Resource 1');
         expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0][ganttObj.resourceFields.unit]).toBe(40);
@@ -1050,7 +1321,6 @@ describe('Resource with unit', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
     });
     it('Resource added newly', () => {
-        ganttObj.dataBind();
         expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe(undefined);
         let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(10)') as HTMLElement;
         triggerMouseEvent(resource, 'dblclick');
@@ -1066,7 +1336,6 @@ describe('Resource with unit', () => {
         }
     });
     it('Resource added with old resource', () => {
-        ganttObj.dataBind();
         let resource: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(10)') as HTMLElement;
         expect(ganttObj.currentViewData[4].ganttProperties.resourceNames).toBe('Resource 3[40%]');
         expect(ganttObj.currentViewData[4].ganttProperties.resourceInfo[0][ganttObj.resourceFields.unit]).toBe(40);
@@ -1153,11 +1422,7 @@ describe('Work', () => {
             destroyGantt(ganttObj);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 500);
-    });
     it('Initial work,workunit,tasktype value checking with work mapping', () => {
-        ganttObj.dataBind();
         //Task without resource
         expect(ganttObj.currentViewData[1].ganttProperties.resourceInfo).toBe(null);
         expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(40.45);
@@ -1178,7 +1443,6 @@ describe('Work', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
     });
     it('Editing Work column with fixed work', () => {
-         ganttObj.dataBind();
          expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[41.67%],Resource 1[41.67%]');
          expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0][ganttObj.resourceFields.unit]).toBe(41.67);
          expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1][ganttObj.resourceFields.unit]).toBe(41.67);
@@ -1200,7 +1464,6 @@ describe('Work', () => {
          }
      });
      it('Editing task type column to fixed duration', () => {
-         ganttObj.dataBind();
          expect(ganttObj.currentViewData[3].ganttProperties.resourceNames).toBe('Resource 4');
          expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo[0][ganttObj.resourceFields.unit]).toBe(100);
          expect(ganttObj.currentViewData[3].ganttProperties.work).toBe(80);
@@ -1285,10 +1548,6 @@ describe('Schedule mode', () => {
             destroyGantt(ganttObj);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-        // ganttObj.openEditDialog(3);
-    });
     it('Changing taskmode of a task to manual', () => {
         expect(ganttObj.currentViewData[1].ganttProperties.isAutoSchedule).toBe(true);
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(7)') as HTMLElement;
@@ -1360,9 +1619,6 @@ describe('adding task type in taskFields', () => {
             destroyGantt(ganttObj);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-    });
     it('task type on load time', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
         expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedUnit');
@@ -1413,10 +1669,6 @@ describe('work mapping with tasktype', () => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
-    });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-        // ganttObj.openEditDialog(3);
     });
     it('task type with work mapping on load time', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
@@ -1492,9 +1744,6 @@ describe('taskType with resourceUnit mapping', () => {
             destroyGantt(ganttObj);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-    });
     it('task type with work mapping and unit mapping on load time', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
         expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedWork');
@@ -1539,7 +1788,7 @@ describe('taskType with resourceUnit mapping', () => {
         triggerMouseEvent(saveButton, 'click');
         expect(ganttObj.currentViewData[0]['TaskID']).toBe(10);
     });
-    
+});
     describe('Update notes tab', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
@@ -1603,15 +1852,16 @@ describe('taskType with resourceUnit mapping', () => {
             }
         });
         beforeEach((done) => {
-            setTimeout(done, 1000);
+            setTimeout(done, 500);
             ganttObj.openAddDialog();
             let notesTab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
             notesTab.selectedItem = 3;
         });
-        it('Add Notes using add dialog', () => {
+        it('Add Notes using add dialog', (done: Function) => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === 'add') {
                     expect(ganttObj.currentViewData[0].ganttProperties.notes).toBe('<p>Updated</p>');
+                    done();
                 }
             };
             let notesTab: RichTextEditor = (document.getElementById(ganttObj.element.id + 'NotesTabContainer') as any).ej2_instances[0]
@@ -1673,11 +1923,7 @@ describe('taskType with resourceUnit mapping', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done) => {
-            setTimeout(done, 1000);
-        });
         it('update taskID using updateTaskId method', () => {
-            // let gantt: any = (document.getElementsByClassName('e-gantt')[0] as any).ej2_instances[0];
             ganttObj.updateTaskId(2,40);
             expect(ganttObj.currentViewData[1]['TaskID']).toBe('40');
         });
@@ -1804,19 +2050,15 @@ describe('taskType with resourceUnit mapping', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done) => {
-            setTimeout(done, 1000);
+        it('Tab navigation to next row', () => {
+            let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(7)') as HTMLElement;
+            triggerMouseEvent(customColumn, 'dblclick');
+            let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            ganttObj.keyboardModule.keyAction(args);
+            let args1: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
+            ganttObj.keyboardModule.keyAction(args1);
+            expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
         });
-        // it('Tab navigation to next row', () => {
-        //     ganttObj.dataBind();
-        //     let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(7)') as HTMLElement;
-        //     triggerMouseEvent(customColumn, 'dblclick');
-        //     let args: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
-        //     ganttObj.keyboardModule.keyAction(args);
-        //     let args1: any = { action: 'tab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
-        //     ganttObj.keyboardModule.keyAction(args1);
-        //     expect(ganttObj.treeGrid.grid.isEdit).toBe(true);
-        // });
     });
     describe('Milestone date cell edit', () => {
         let ganttObj: Gantt;
@@ -1872,11 +2114,7 @@ describe('taskType with resourceUnit mapping', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done) => {
-            setTimeout(done, 1000);
-        });
         it('Cell edit milestone', () => {
-            ganttObj.dataBind();
             let customColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(3)') as HTMLElement;
             triggerMouseEvent(customColumn, 'dblclick');
             let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate')as any).ej2_instances[0];
@@ -1886,7 +2124,6 @@ describe('taskType with resourceUnit mapping', () => {
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.startDate,'M/d/yyyy')).toBe('2/8/2017');
         });
     });
-});
 describe('Gantt editing action', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
@@ -1946,16 +2183,12 @@ describe('Gantt editing action', () => {
                 ],
             }, done);
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 500);
-    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
     });
     it('Editing task name and save in chart side', () => {
-        ganttObj.dataBind();
         let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(taskName, 'dblclick');
         let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
@@ -2025,16 +2258,12 @@ describe('Gantt parent record editing action', () => {
                 ],
             }, done);
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 500);
-    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
     });
     it('Editing start date', () => {
-        ganttObj.dataBind();
         let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
         triggerMouseEvent(startDate, 'dblclick');
         let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate')as any).ej2_instances[0];
@@ -2165,7 +2394,6 @@ describe('Assign datasource after initial load', () => {
                 expect(args.modifiedRecords.length).toBe(2);
             }
         }
-        ganttObj.dataBind();
         let name: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
 	if(name) {
         triggerMouseEvent(name, 'dblclick');
@@ -2253,9 +2481,6 @@ describe('Edit template for start date column', () => {
                     { field: 'Customcol', headerText: 'Custom Column', width: 100 }
                 ],
             }, done);
-    });
-    beforeEach((done: Function) => {
-        setTimeout(done, 500);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -2414,27 +2639,29 @@ describe('Edit for start date column to be null', () => {
   projectEndDate: new Date('05/18/2019'),
             }, done);
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 500);
-    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
     });
-    it('Editing Start date', () => {
+    it('Editing Start date', (done: Function) => {
         ganttObj.actionComplete = (args: any): void => {
             if(args.requestType === 'save') {
                 expect(args.data.ganttProperties.startDate).toBe(null);
+                done();
             }
         }
-        ganttObj.dataBind();
         let name: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(8) > td:nth-child(5)') as HTMLElement;
         triggerMouseEvent(name, 'dblclick');
         let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate')as any).ej2_instances[0];
         input.value = null;
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
+    });
+    it('Editing taskname for parent task', () => {
+        ganttObj.dataBind();
+        let name: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(5)') as HTMLElement;
+        triggerMouseEvent(name, 'dblclick');
     });
 });
 describe('CR:866697-The taskbar render validation not working properly', () => {
@@ -2595,9 +2822,6 @@ describe('Checking predecessor update while updating duration', () => {
             destroyGantt(ganttObj);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 500);
-    });
     it('updating duration', () => {
         let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
         triggerMouseEvent(duration, 'dblclick');
@@ -2606,5 +2830,689 @@ describe('Checking predecessor update while updating duration', () => {
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[7].ganttProperties.startDate, 'M/d/yyyy')).toBe(ganttObj.getFormatedDate(ganttObj.currentViewData[8].ganttProperties.startDate, 'M/d/yyyy'));
+    });
+});
+describe('coverageImp - parent record  editing', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coverageData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    endDate: 'EndDate',
+                    startDate: 'StartDate',
+                    manual: 'isManual',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    notes: 'Notes',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                },
+                allowParentDependency: false,
+                splitterSettings: {
+                    columnIndex: 6
+                },
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                renderBaseline: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowNextRowEdit: true
+                },
+                taskMode: 'Custom',
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', editType: 'stringedit', width: 100 },
+                    { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'Duration', width: 100 },
+                    { field: 'Predecessor', width: 100 },
+                    { field: 'Progress', width: 100 },
+                    { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'Resource', width: 100 },
+                    { field: 'Notes', width: 100 },
+                    { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+                ],
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Editing parent taskbar', () => {
+        ganttObj.dataBind();
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(5)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let dependencyInput: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
+        expect(dependencyInput).toBe(null);
+        let progress: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(7)') as HTMLElement;
+        triggerMouseEvent(progress, 'dblclick');
+        let progressInput: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolProgress') as HTMLElement;
+        // expect(progressInput).toBe(null);
+        let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(endDate, 'dblclick');
+        let endDateInput: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolEndDate') as HTMLElement;
+        expect(endDateInput).toBe(null);
+    });
+});
+describe('Gantt editing action', () => {
+    let ganttObj: Gantt;;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: cellEditData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowNextRowEdit: true,
+                    mode: 'Dialog'
+                },
+                readOnly: true,
+                editDialogFields: [
+                    { type: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                ],
+                allowUnscheduledTasks: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', editType: 'stringedit', width: 100 },
+                    { field: 'StartDate', editType: 'datepickeredit', width: 100 }
+                ],
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Editing task name', () => {
+        ganttObj.dataBind();
+        let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(taskName, 'dblclick');
+        expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('Child Task 1');
+    });
+});
+describe('Gantt editing field as null', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: cellEditData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                splitterSettings: {
+                    position: '70%'
+                },
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                renderBaseline: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowNextRowEdit: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', editType: 'stringedit', width: 100 },
+                    { field: 'StartDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'EndDate', editType: 'datepickeredit', width: 100 },
+                    { field: 'Duration', width: 100 }
+                ],
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+
+    it('Editing feild as empty', () => {
+        ganttObj.dataBind();
+        let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(startDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate') as any).ej2_instances[0];
+        input.value = null;
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/2/2019');
+    });
+
+    it('Editing end date column', () => {
+        ganttObj.dataBind();
+        let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(endDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolEndDate') as any).ej2_instances[0];
+        input.value = '';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+    });
+    it('Editing duration column', () => {
+        ganttObj.dataBind();
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(5)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = null;
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
+    });
+    it('Editing duration column', () => {
+        ganttObj.dataBind();
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(5)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = -3;
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
+    });
+});
+describe('Gantt editing action with work', () => {
+    let ganttObj: Gantt;;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourcesDatas,
+                resources: resourceResources,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks',
+                    type: 'taskType'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'taskType', headerText: 'Task Type', width: '110' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                allowResizing: true,
+                allowFiltering: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Editing work', () => {
+        ganttObj.dataBind();
+        let work: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(work, 'dblclick');
+        let input = <HTMLInputElement>document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolwork');
+        if (input) {
+            input.value = '10';
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+            expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(10);
+        }
+    });
+    it('Editing task type', () => {
+        ganttObj.dataBind();
+        let taskType: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(taskType, 'dblclick');
+        let taskInput: any = document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontroltaskType') as HTMLElement;
+        if (taskInput) {
+            let input: any = taskInput.ej2_instances[0];
+            input.value = 'FixedDuration';
+            input.dataBind();
+            let taskType: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskType, 'dblclick');
+            expect(ganttObj.currentViewData[3].ganttProperties.taskType).toBe('FixedDuration');
+        }
+    });
+});
+describe('Gantt editing in split task', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasksData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                enableVirtualization: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "70%",
+                    // columnIndex: 4
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                height: '550px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('03/04/2019')
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Editing end date column', () => {
+        ganttObj.dataBind();
+        let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)') as HTMLElement;
+        triggerMouseEvent(endDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolEndDate') as any).ej2_instances[0];
+        input.value = new Date('02/04/2019');
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/4/2019');
+    });
+    it('Editing duration column', () => {
+        ganttObj.dataBind();
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = 5;
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(5);
+    });
+    it('Editing progress column', () => {
+        ganttObj.dataBind();
+        let progress: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(7)') as HTMLElement;
+        triggerMouseEvent(progress, 'dblclick');
+        let input = (<HTMLInputElement>document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolProgress') as any).ej2_instances[0];
+        input.value = '105';
+        let record: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(record, 'click');
+        expect(ganttObj.currentViewData[2].ganttProperties.progress).toBe(100);
+    });
+    it('Editing progress', () => {
+        ganttObj.dataBind();
+        let progress: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(7)') as HTMLElement;
+        triggerMouseEvent(progress, 'dblclick');
+        let input = (<HTMLInputElement>document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolProgress') as any).ej2_instances[0];
+        input.value = '90';
+        let record: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(record, 'click');
+        expect(ganttObj.currentViewData[2].ganttProperties.progress).toBe(90);
+    });
+});
+describe('Gantt startdate editing for milestone', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "2", Progress: 30 },
+                        ]
+                    }
+                ],
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    endDate: 'EndDate',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                allowParentDependency: false,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'EndDate', headerText: 'End Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Editing end date column', () => {
+        ganttObj.dataBind();
+        let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(endDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolEndDate') as any).ej2_instances[0];
+        input.value = new Date('04/02/2019');
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/2/2019');
+    });
+});
+describe('Gantt enddate editing in manual task', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+                allowSorting: true,
+                enableContextMenu: true,
+                height: '450px',
+                allowSelection: true,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                columns: [
+                    { field: 'TaskID', visible: true },
+                    { field: 'TaskName' },
+                    { field: 'isManual' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
+                ],
+                validateManualTasksOnLinking: true,
+                treeColumnIndex: 1,
+                allowReordering: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: '${Progress}%'
+                },
+                projectStartDate: new Date('02/20/2017'),
+                projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Editing progress column', () => {
+        ganttObj.dataBind();
+        let progress: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(progress, 'dblclick');
+        let input = (<HTMLInputElement>document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolProgress') as any).ej2_instances[0];
+        input.value = '105';
+        let record: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(record, 'click');
+        expect(ganttObj.currentViewData[2].ganttProperties.progress).toBe(100);
+    });
+});
+describe('Gantt resuoce in resource view', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourcesDatas,
+                resources: resourceResources,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resources' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 4
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                readOnly: false,
+                allowRowDragAndDrop: true,
+                allowResizing: true,
+                allowFiltering: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Editing resource column', () => {
+        ganttObj.dataBind();
+        let progress: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(progress, 'dblclick');
+        let input = (<HTMLInputElement>document.getElementById('treeGrid' + ganttObj.element.id + '_gridcontrolresources') as any).ej2_instances[0];
+        input.value = 'Rose Fuller';
+        let record: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(record, 'click');
+        expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe('Martin Tamer[75%]');
     });
 });

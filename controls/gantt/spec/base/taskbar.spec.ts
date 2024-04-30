@@ -2,10 +2,11 @@
  * Gantt taskbar spec
  */
 import { createElement } from '@syncfusion/ej2-base';
-import { Gantt, IQueryTaskbarInfoEventArgs } from '../../src/index';
+import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, IQueryTaskbarInfoEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { baselineData, resourceData, projectData } from './data-source.spec';
+import { baselineData, resourceData, projectData, projectNewData18, projectNewData19, projectNewData20, splitData, projectNewData21, taskModeData4, taskModeData5, projectNewData22 } from './data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
+Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 describe('Gantt taskbar rendering', () => {
     describe('Gantt taskbar rendering actions', () => {
         let ganttObj: Gantt;
@@ -86,12 +87,7 @@ describe('Gantt taskbar rendering', () => {
                     resources: resourceData,
                 }, done);
         });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
-        it('Testing QueryTaskbarInfo event', (done: Function) => {
+        it('Testing QueryTaskbarInfo event', () => {
             ganttObj.queryTaskbarInfo = function (args: IQueryTaskbarInfoEventArgs) {
                 if (args.taskbarType === 'Milestone') {
                     args.milestoneColor = "green";
@@ -123,133 +119,62 @@ describe('Gantt taskbar rendering', () => {
                 expect((ganttObj.element.querySelector('.' + cls.traceMilestone) as HTMLElement).style.backgroundColor).toBe("green");
                 expect((ganttObj.element.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor).toBe("green");
                 expect((ganttObj.element.querySelector('.' + cls.baselineMilestoneContainer) as HTMLElement).style.backgroundColor).toBe("yellow");
-                done();
-            }
-            ganttObj.refresh();
+            } 
         });
-        it('Testing with taskbarheight and rowheight', (done: Function) => {
+        it('Testing with taskbarheight and rowheight', () => {
             ganttObj.taskbarHeight = 50;
             ganttObj.rowHeight = 40;
             ganttObj.baselineColor = '';
             ganttObj.dataBound = () => {
                 expect((ganttObj.element.querySelector('.' + cls.chartRow) as HTMLElement).offsetHeight).toBe(40);
                 expect((ganttObj.element.querySelector('.' + cls.taskBarMainContainer) as HTMLElement).offsetHeight).toBe(18);
-                done();
             }
-            ganttObj.refresh();
         });
         it('Render gantt without base line', () => {
             ganttObj.renderBaseline = false;
-            ganttObj.dataBound = (done: Function) => {
+            ganttObj.dataBound = () => {
                 expect(ganttObj.element.querySelector('.' + cls.baselineBar)).toBe(null);
             }
-            ganttObj.refresh();
 
         });
-        it('Left/Right label with task property', (done: Function) => {
-            ganttObj.queryTaskbarInfo = null;
-            ganttObj.renderBaseline = true;
-            ganttObj.taskbarHeight = 40;
-            ganttObj.rowHeight = 50;
-            ganttObj.baselineColor = 'blue';
-            ganttObj.labelSettings.leftLabel = 'Progress';
-            ganttObj.labelSettings.rightLabel = 'resourceInfo';
-            ganttObj.labelSettings.taskLabel = 'TaskId';
-            ganttObj.dataBound = () => {
-                expect((ganttObj.element.querySelector('.' + cls.chartRow) as HTMLElement).offsetHeight).toBe(50);
-                expect((ganttObj.element.querySelector('.' + cls.taskBarMainContainer) as HTMLElement).offsetHeight).toBe(40);
-                expect((ganttObj.element.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor).toBe("blue");
-                expect((ganttObj.element.querySelector('.' + cls.baselineMilestoneContainer) as HTMLElement).style.backgroundColor).toBe("blue");
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('80');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Robert King');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('2');
-                done();
-            }
-            ganttObj.refresh();
-        });
-        it('Left/Right label with string template', (done: Function) => {
-            ganttObj.labelSettings.leftLabel = '<div>${TaskName}</div>';
-            ganttObj.labelSettings.rightLabel = '<div>${TaskId}</div>';
-            ganttObj.dataBound = () => {
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('Child task 1');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('2');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('2');
-                done();
-            }
-            ganttObj.refresh();
-        });
-        it('Left/Right label with invalid task property', (done: Function) => {
-            ganttObj.labelSettings.leftLabel = 'Custom';
-            ganttObj.labelSettings.rightLabel = 'Custom';
-            ganttObj.labelSettings.taskLabel = 'Custom';
-            ganttObj.dataBound = () => {
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('Custom');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Custom');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('Custom');
-                done();
-            }
-            ganttObj.refresh();
-        });
-        it('Left/Right label with template ID', (done: Function) => {
-            ganttObj.labelSettings.leftLabel = '#lefttasklabelTS';
-            ganttObj.labelSettings.rightLabel = '#righttasklabelTS';
-            ganttObj.dataBound = () => {
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('Progress - 80%');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Task Name- Child task 1');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('Custom');
-                done();
-            }
-            ganttObj.refresh();
-        });
-        it('Parent taskbar with template ID', (done: Function) => {
+       
+        it('Parent taskbar with template ID', () => {
             ganttObj.parentTaskbarTemplate = '#demoParentTaskTemplate';
             ganttObj.dataBound = () => {
                 expect(ganttObj.element.querySelector('.' + cls.taskLabel).textContent).toBe('ParentTemplate');
-                done();
             }
-            ganttObj.refresh();
         });
-        it('Child taskbar with template ID', (done: Function) => {
+        it('Child taskbar with template ID', () => {
             ganttObj.taskbarTemplate = '#demoChildTaskTemplate';
             ganttObj.dataBound = () => {
                 expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('ChildTemplate');
-                done();
             }
-            ganttObj.refresh();
         });
-        it('Milestone with template ID', (done: Function) => {
+        it('Milestone with template ID', () => {
             ganttObj.milestoneTemplate = '#milestoneTemplate';
             ganttObj.dataBound = () => {
                 expect((ganttObj.element.querySelector('.' + cls.traceMilestone).children[0] as HTMLElement).style.backgroundColor).toBe("gray");
-                done();
             }
-            ganttObj.refresh();
         });
-        it('Milestone with direct string template', (done: Function) => {
+        it('Milestone with direct string template', () => {
             ganttObj.milestoneTemplate = '<div class="' + cls.traceMilestone + '"><div style="width:30px;height:30px;background:Yellow;"><div><div></div></div>';
             ganttObj.dataBound = () => {
                 expect((ganttObj.element.querySelector('.' + cls.traceMilestone).children[0] as HTMLElement).style.backgroundColor).toBe("yellow");
-                done();
             }
-            ganttObj.refresh();
         });
-        it('Testing with Parent taskbar and taskbar template', (done: Function) => {
+        it('Testing with Parent taskbar and taskbar template', () => {
             ganttObj.parentTaskbarTemplate = '#demoParentTaskTemplateCustom';
             ganttObj.taskbarTemplate = '#demoChildTaskTemplateCustom';
             ganttObj.dataBound = () => {
                 expect(ganttObj.element.querySelector('.' + cls.taskLabel).textContent).toBe('ParentTemplate-custom');
                 expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('ChildTemplate-custom');
-                done();
             }
-            ganttObj.refresh();
         });
-        it('Testing with Expand status', (done: Function) => {
+        it('Testing with Expand status', () => {
             ganttObj.taskFields.expandState = 'Expand';
             ganttObj.dataBound = () => {
                 expect((ganttObj.element.querySelector('.gridrowtaskId4level2') as HTMLElement).style.display).toBe("none");
-                done();
             }
-            ganttObj.refresh();
 
         });
         it('Testing with task start with project start date', (done: Function) => {
@@ -278,29 +203,134 @@ describe('Gantt taskbar rendering', () => {
             }
             ganttObj.refresh();
         });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
     });
+    describe('Gantt taskbar rendering actions', () => {
+        let ganttObj: Gantt;
+
+        (window as WindowDom).getheight = () => {
+            return ganttObj.getTaskbarHeight();
+        };
+
+        interface WindowDom extends Window {
+            getheight?: Function;
+        }
+
+        let lefttasklabel: Element = createElement('div', { id: 'lefttasklabelTS', styles: 'visibility:hidden' });
+        lefttasklabel.innerHTML = '<div>Progress - ${Progress}%</div>';
+        document.body.appendChild(lefttasklabel);
+
+        let righttasklabel: Element = createElement('div', { id: 'righttasklabelTS', styles: 'visibility:hidden' });
+        righttasklabel.innerHTML = '<div>Task Name  - ${TaskName}</div>';
+        document.body.appendChild(righttasklabel);
+
+        let indicatorlabel: Element = createElement('div', { id: 'indicatorTS', styles: 'visibility:hidden' });
+        indicatorlabel.innerHTML = '<span>TS-Template : ${TaskName}</span>';
+        document.body.appendChild(indicatorlabel);
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: baselineData,
+                    taskFields: {
+                        id: 'TaskId',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'Children',
+                        cssClass: 'cusClass',
+                        baselineStartDate: 'BaselineStartDate',
+                        baselineEndDate: 'BaselineEndDate',
+                        resourceInfo: 'resourceInfo',
+                        indicators: 'Indicators'
+                    },
+                    projectStartDate: new Date('10/15/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    renderBaseline: true,
+                    timelineSettings: {
+                        bottomTier: {
+                            unit: 'Day',
+                            format: 'ddd, MMM',
+                            count: 2
+                        },
+                        timelineUnitSize: 60
+                    },
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    resourceIDMapping: 'resourceId',
+                    resourceNameMapping: 'resourceName',
+                    resources: resourceData,
+                }, done);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Left/Right label with task property', () => {
+            ganttObj.queryTaskbarInfo = null;
+            ganttObj.renderBaseline = true;
+            ganttObj.taskbarHeight = 40;
+            ganttObj.rowHeight = 50;
+            ganttObj.baselineColor = 'blue';
+            ganttObj.labelSettings.leftLabel = 'Progress';
+            ganttObj.labelSettings.rightLabel = 'resourceInfo';
+            ganttObj.labelSettings.taskLabel = 'TaskId';
+            ganttObj.dataBound = () => {
+                expect((ganttObj.element.querySelector('.' + cls.chartRow) as HTMLElement).offsetHeight).toBe(50);
+                expect((ganttObj.element.querySelector('.' + cls.taskBarMainContainer) as HTMLElement).offsetHeight).toBe(40);
+                expect((ganttObj.element.querySelector('.' + cls.baselineBar) as HTMLElement).style.backgroundColor).toBe("blue");
+                expect((ganttObj.element.querySelector('.' + cls.baselineMilestoneContainer) as HTMLElement).style.backgroundColor).toBe("blue");
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('80');
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Robert King');
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('2');
+            }
+        });
+        it('Left/Right label with string template', () => {
+            ganttObj.labelSettings.leftLabel = '<div>${TaskName}</div>';
+            ganttObj.labelSettings.rightLabel = '<div>${TaskId}</div>';
+            ganttObj.dataBound = () => {
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('Child task 1');
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('2');
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('2');
+            }
+        });
+        it('Left/Right label with invalid task property', () => {
+            ganttObj.labelSettings.leftLabel = 'Custom';
+            ganttObj.labelSettings.rightLabel = 'Custom';
+            ganttObj.labelSettings.taskLabel = 'Custom';
+            ganttObj.dataBound = () => {
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('Custom');
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Custom');
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('Custom');
+            }
+        });
+        it('Left/Right label with template ID', () => {
+            ganttObj.labelSettings.leftLabel = '#lefttasklabelTS';
+            ganttObj.labelSettings.rightLabel = '#righttasklabelTS';
+            ganttObj.dataBound = () => {
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('Progress - 80%');
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Task Name- Child task 1');
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('Custom');
+            }
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    })
 });
 describe('Manual Task', () => {
     let ganttObj: Gantt;
 
     beforeAll((done: Function) => {
         ganttObj = createGantt({
-            dataSource: [
-                {
-                    'TaskID': 1,
-                    'TaskName': 'Parent Task 1',
-                    'StartDate': new Date('02/27/2017'),
-                    'EndDate': new Date('03/03/2017'),
-                    'Progress': '40',
-                    'isManual' : true,
-                    'Children': [
-                         { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
-                         'EndDate': new Date('02/03/2017'), 'Progress': '40' },
-                        
-                    ]
-                }
-              
-            ],
+            dataSource: projectNewData18,
             taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
@@ -319,89 +349,20 @@ describe('Manual Task', () => {
             projectEndDate: new Date('03/30/2017'),
         }, done);
     });
+    it('manual task convert into milestone', () => {
+       expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
     });
-    it('manual task convert into milestone', () => {
-       expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
-    });
 });
 describe('Render taskbar duration in minutes ', () => {
     let ganttObj: Gantt;
-
     beforeAll((done: Function) => {
         ganttObj = createGantt({
-            dataSource: [
-                {
-                  taskID: 5,
-                  taskName: 'Project estimation',
-                  startDate: new Date('04/02/2019'),
-                  endDate: new Date('04/21/2019'),
-                  BaselinestartDate: new Date('04/02/2019 10:45:00 AM'),
-                  BaselineendDate: new Date('04/15/2019 11:15:00 AM'),
-                },
-                {
-                  taskID: 6,
-                  taskName: 'Develop floor plan for estimation',
-                  startDate: new Date('04/04/2019'),
-                  duration: 3,
-                  predecessor: '3FS,4FS,7SS',
-                  Progress: 30,
-                  resources: 4,
-                  info: 'Develop floor plans and obtain a materials list for estimations',
-                  parentID: 5,
-                  BaselinestartDate: new Date('04/02/2019 11:15:00 AM'),
-                  BaselineendDate: new Date('04/12/2019 11:25:00 AM'),
-                },
-                {
-                  taskID: 7,
-                  taskName: 'List materials',
-                  startDate: new Date('04/04/2019'),
-                  duration: 3,
-                  resources: [4, 8],
-                  info: '',
-                  parentID: 5,
-                  BaselinestartDate: new Date('04/02/2019 11:00:00 AM'),
-                  BaselineendDate: new Date('04/18/2019 11:20:00 AM'),
-                },
-                {
-                  taskID: 8,
-                  taskName: 'Estimation approval',
-                  startDate: new Date('04/04/2019 08:00:00 AM'),
-                  duration: '40 minutes',
-                  predecessor: '',
-                  resources: [12, 5],
-                  info: '',
-                  parentID: 5,
-                  BaselinestartDate: new Date('04/02/2019 11:00:00 AM'),
-                  BaselineendDate: new Date('04/02/2019 11:30:00 AM'),
-                },
-
-                {
-                  taskID: 9,
-                  taskName: 'Sign contract',
-                  startDate: new Date('04/04/2019 08:00:00 AM'),
-                  duration: '100 minutes',
-                  predecessor: '8FS',
-                  Progress: 30,
-                  resources: [12],
-                  info: 'If required obtain approval from HOA (homeowners association) or ARC (architectural review committee)',
-                  BaselinestartDate: new Date('04/02/2019 11:20:00 AM'),
-                  BaselineendDate: new Date('04/02/2019 11:40:00 AM'),
-                },
-                {
-                  taskID: 10,
-                  taskName: 'Project approval and kick off',
-                  startDate: new Date('04/04/2019 08:00:00 AM'),
-                  endDate: new Date('05/21/2019 08:40:00 AM'),
-                  duration: '40 minutes',
-                  predecessor: '',
-                  BaselinestartDate: new Date('04/02/2019 11:40:00 AM'),
-                  BaselineendDate: new Date('05/02/2019 12:00:00 PM'),
-                },
-              ],
+            dataSource: projectNewData19,
               dateFormat: 'dd/MM/yyyy hh:mm a',
               taskFields: {
                 id: 'taskID',
@@ -479,13 +440,13 @@ describe('Render taskbar duration in minutes ', () => {
               ]
         }, done);
     });
+    it('Taskbar renders in minutes', () => {
+       expect(ganttObj.currentViewData[3].ganttProperties.width.toFixed()).toBe('3');
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
-    });
-    it('Taskbar renders in minutes', () => {
-       expect(ganttObj.currentViewData[3].ganttProperties.width.toFixed()).toBe('3');
     });
 });
 describe('Progress width not updated properly in split tasks issue', () => {
@@ -648,31 +609,16 @@ describe('Progress width not updated properly in split tasks issue', () => {
         expect(ganttObj.currentViewData[2].ganttProperties.segments[0].progressWidth).toBe(19.8);
     });
     afterAll(() => {
-        destroyGantt(ganttObj);
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('Bug-834012-Incorrect taskbar render when unit is given in hour', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt({
-            dataSource: [
-                {
-                    TaskID: 1,
-                    TaskName: 'Task 2',
-                    StartDate: new Date('06/16/2023'),
-                    Duration: 72,
-                    DurationUnit: 'hour',
-                    EndDate: new Date('06/20/2023'),
-                },
-                {
-                    TaskID: 2,
-                    TaskName: 'Task 2',
-                    StartDate: new Date('06/16/2023'),
-                    Duration: 1800,
-                    DurationUnit: 'minutes',
-                    EndDate: new Date('06/20/2023'),
-                }
-              ],
+            dataSource: projectNewData20,
               dateFormat: 'dd/MM/yyyy hh:mm a',
               taskFields: {
                 id: 'TaskID',
@@ -719,38 +665,19 @@ describe('Bug-834012-Incorrect taskbar render when unit is given in hour', () =>
               },
         }, done);
     });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
     it('Taskbar renders in hour mode & Minute mode', () => {
         //Checking taskbar width in "Hour" mode:
        expect(ganttObj.currentViewData[0].ganttProperties.width.toFixed()).toBe('429');
        //Checking taskbar width in "Minute" mode:
        expect(ganttObj.currentViewData[1].ganttProperties.width.toFixed()).toBe('186');  
     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });
-let splitData: object[] = [
-    {
-        TaskID: 1,
-        TaskName: 'Project initiation',
-        StartDate: new Date('03/29/2019'),
-        EndDate: new Date('09/29/2019'),
-        Segments: [
-          {
-            TaskName: 'Identify site location',
-            StartDate: new Date('03/29/2019'),
-            EndDate: new Date('04/01/2019'),
-          },
-          {
-            TaskName: 'Perform soil test',
-            StartDate: new Date('09/03/2019'),
-            EndDate: new Date('09/29/2019'),
-          },
-        ],
-      },
-];
+
 describe('CR-834869-Segment taskbar is not rendered correctly ', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
@@ -782,10 +709,9 @@ describe('CR-834869-Segment taskbar is not rendered correctly ', () => {
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[1].endDate, 'M/d/yyyy')).toBe('9/27/2019');
     });
     afterAll(() => {
-        destroyGantt(ganttObj);
-    });
-    beforeEach((done: Function) => {
-        setTimeout(done, 2000);
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('bug-833211-Render incorrect taskbarwidth with duration in minutes mode', () => {
@@ -845,14 +771,14 @@ describe('bug-833211-Render incorrect taskbarwidth with duration in minutes mode
               },
         }, done);
     });
+    it('Verifying taskbar width in minutes mode', () => {
+        //Checking taskbar width in "Minutes" mode:
+       expect(ganttObj.currentViewData[0].ganttProperties.width.toFixed()).toBe('66');  
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
-    });
-    it('Verifying taskbar width in minutes mode', () => {
-        //Checking taskbar width in "Minutes" mode:
-       expect(ganttObj.currentViewData[0].ganttProperties.width.toFixed()).toBe('66');  
     });
 });
 describe('Border is changed to outline in CSS', () => {
@@ -891,7 +817,9 @@ describe('Border is changed to outline in CSS', () => {
         expect((ganttObj.element.querySelector('.' + cls.childTaskBarInnerDiv) as HTMLElement).style.outlineColor).toBe("red");;
     });
     afterAll(() => {
-        destroyGantt(ganttObj);
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('Style not applied for the collapsed row when the virtual scroll is enabled', () => {
@@ -899,26 +827,7 @@ describe('Style not applied for the collapsed row when the virtual scroll is ena
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource: [{
-                    TaskID: 1,
-                    TaskName: 'Project initiation',
-                    StartDate: new Date('03/29/2019'),
-                    EndDate: new Date('04/21/2019'),
-                    subtasks: [
-                        {
-                            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
-                            Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
-                        },
-                        {
-                            TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
-                            resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
-                        },
-                        {
-                            TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
-                            resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
-                        },
-                    ]
-                }],
+                dataSource: projectNewData21,
                 resources: [{ resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team' }],
                 viewType: 'ResourceView',
                 enableMultiTaskbar: true,
@@ -992,31 +901,17 @@ describe('Style not applied for the collapsed row when the virtual scroll is ena
         expect((ganttObj.element.querySelector('.' + cls.childTaskBarInnerDiv) as HTMLElement).style.backgroundColor).toBe('rgb(242, 210, 189)');
     });
     afterAll(() => {
-        destroyGantt(ganttObj);
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('Manual parent does not render properly', () => {
     let ganttObj: Gantt;
-    let taskModeData = [
-        {
-            'TaskID': 1,
-            'TaskName': 'Parent Task 1',
-            'StartDate': new Date('02/27/2017'),
-            'EndDate': new Date('03/03/2017'),
-            'Progress': '40',
-            'isManual': true,
-            'Children': [
-                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
-                    'Progress': '40','Duration':0 ,'isManual': true},
-                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
-                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
-            ]
-        }
-    ];
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource: taskModeData,
+                dataSource: taskModeData4,
                 allowSorting: true,
                 enableContextMenu: true,
                 height: '450px',
@@ -1108,42 +1003,17 @@ describe('Manual parent does not render properly', () => {
         ganttObj.indent();
     });
     afterAll(() => {
-        destroyGantt(ganttObj);
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('parent drag for custom task mode', () => {
     let ganttObj: Gantt;
-    let taskModeData = [
-        {
-            'TaskID': 1,
-            'TaskName': 'Parent Task 1',
-            'StartDate': new Date('02/27/2017'),
-            'EndDate': new Date('03/03/2017'),
-            'Progress': '40',
-            'isManual': true,
-            'Children': [
-                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
-                    'Progress': '40','Duration':0 ,'isManual': true},
-                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
-                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
-            ]
-        },
-        {
-            'TaskID': 4,
-            'TaskName': 'Parent Task 1',
-            'StartDate': new Date('02/27/2017'),
-            'EndDate': new Date('03/03/2017'),
-            'Progress': '40',
-            'Children': [
-                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
-                    'Progress': '40','Duration':0 ,'isManual': true}
-            ]
-        }
-    ];
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource: taskModeData,
+                dataSource: taskModeData5,
                 allowSorting: true,
                 enableContextMenu: true,
                 height: '450px',
@@ -1235,34 +1105,16 @@ describe('parent drag for custom task mode', () => {
             triggerMouseEvent(dragElement, 'mouseup');
     });
     afterAll(() => {
-        destroyGantt(ganttObj);
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('CR-869856: dayWorkingTime and TimeZone issue', () => {
     let ganttObj: Gantt;
-
     beforeAll((done: Function) => {
         ganttObj = createGantt({
-            dataSource: [
-                {
-                    TaskID: 1,
-                    TaskName: 'Project initiation',
-                    StartDate: new Date('02/04/2019 08:30:00'),
-                    EndDate: new Date('02/04/2019 15:00:00')
-                },
-                {
-                    TaskID: 2,
-                    TaskName: 'Project estimation',
-                    StartDate: new Date('02/04/2019 08:30:00'),
-                    EndDate: new Date('02/04/2019 17:30:00')
-                },
-                {
-                    TaskID: 3,
-                    TaskName: 'Project estimation2',
-                    StartDate: new Date('02/04/2019 08:00:00'),
-                    EndDate: new Date('02/04/2019 16:30:00')
-                }
-              ],
+            dataSource: projectNewData22,
               taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
@@ -1299,13 +1151,13 @@ describe('CR-869856: dayWorkingTime and TimeZone issue', () => {
               },
         }, done);
     });
+    it('Checking Taskbar width timeZone API', () => {
+       expect(ganttObj.currentViewData[2].ganttProperties.width).toBe(28.875);
+       expect(ganttObj.currentViewData[1].ganttProperties.width).toBe(33);
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
-    });
-    it('Checking Taskbar width timeZone API', () => {
-       expect(ganttObj.currentViewData[2].ganttProperties.width).toBe(28.875);
-       expect(ganttObj.currentViewData[1].ganttProperties.width).toBe(33);
     });
 });

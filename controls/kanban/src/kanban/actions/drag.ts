@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Draggable, formatUnit, createElement, isNullOrUndefined as isNoU, addClass, closest, MouseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { Draggable, formatUnit, createElement, isNullOrUndefined as isNoU, addClass, closest, MouseEventArgs, KeyboardEventArgs, detach } from '@syncfusion/ej2-base';
 import { removeClass, classList, remove, EventHandler, extend } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { DragArgs, EJ2Instance, DragEdges, DragEventArgs } from '../base/interface';
@@ -513,10 +513,23 @@ export class DragAndDrop {
                     }
                 }
             }
+            this.removeEmptyTrElement();
             this.dragStopPostClear();
         });
     }
 
+    public removeEmptyTrElement(): void {
+        if (!this.parent.swimlaneSettings.showEmptyRow) {
+            const swimlaneRowList: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-content-row.e-swimlane-row');
+            for (let j: number = 0; j < swimlaneRowList.length; j++) {
+                const cardRowData: NodeListOf<Element> = swimlaneRowList[j as number].nextElementSibling.querySelectorAll('.e-card-wrapper .e-card');
+                if (!isNoU(swimlaneRowList[j as number].nextElementSibling) && cardRowData.length === 0) {
+                    detach(swimlaneRowList[j as number].nextElementSibling);
+                    detach(swimlaneRowList[j as number]);
+                }
+            }
+        }
+    }
     private dragStopClear(): void {
         this.removeElement(this.dragObj.draggedClone);
         this.removeElement(this.dragObj.targetClone, this.kanbanObj);

@@ -13,7 +13,7 @@ import { pasteCleanupGroupingTags } from '../../common/config';
 import { NodeSelection } from '../../selection/selection';
 import * as EVENTS from './../../common/constant';
 import { ServiceLocator } from '../services/service-locator';
-import { RenderType, UploadRequest } from '../base/enum';
+import { RenderType, ImageInputSource } from '../base/enum';
 import { DialogRenderer } from '../renderer/dialog-renderer';
 import { Uploader, MetaData, UploadingEventArgs, SelectedEventArgs, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
@@ -429,7 +429,7 @@ export class PasteCleanup {
     private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: ImageSuccessEventArgs): void {
         this.parent.inputElement.contentEditable = 'true';
         e.element = imgElem as HTMLElement;
-        e.requestType = UploadRequest.Pasted;
+        e.detectImageSource = ImageInputSource.Pasted;
         this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
             if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
                 const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;

@@ -385,6 +385,7 @@ export class EnterKeyAction {
                             else {
                                 currentParent = this.startNode as HTMLElement;
                             }
+                            const currentParentStyle: CSSStyleDeclaration = window.getComputedStyle(currentParent);
                             this.removeBRElement(currentParent);
                             let isEmptyBrInserted: boolean = false;
                             let currentParentLastChild: Node = currentParent.lastChild;
@@ -451,6 +452,15 @@ export class EnterKeyAction {
                                             this.parent.contentModule.getDocument(), currentFocusElem as Element, 0);
                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                         isEmptyBrInserted = true;
+                                    } else if (currentParent !== this.parent.inputElement &&
+                                        (currentParentStyle.display === 'inline' || currentParentStyle.display === 'inline-block')) {
+                                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                                        newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
+                                            this.range, currentParent, true).cloneNode(true);
+                                        currentParent.parentElement.insertBefore(outerBRElem, currentParent);
+                                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                            this.parent.contentModule.getDocument(), currentParent as Element, 0);
+                                        this.insertFocusContent();
                                     } else {
                                         this.insertBRElement();
                                     }

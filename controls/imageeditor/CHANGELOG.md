@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.40 (2024-04-16)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "content and close icon not proper in alert dialog of the ImageEditor" has been resolved.
+
 ## 25.1.39 (2024-04-09)
 
 ### Image Editor

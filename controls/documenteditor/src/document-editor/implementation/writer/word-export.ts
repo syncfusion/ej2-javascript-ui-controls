@@ -907,8 +907,7 @@ export class WordExport {
                 block = this.serializeMentions(dataName, url, block);
             }
             if (multiText[0].indexOf('span') !== -1) {
-                let emailMatch : RegExpMatchArray = multiText[0].match(/mailto:([^"]+)/);
-                let email : string = emailMatch ? emailMatch[1] : '';
+                let email = multiText[0].match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)[0];
                 let matchText : RegExpMatchArray = multiText[0].match(/&nbsp;(.+)/);
                 let text : string = matchText ? matchText[1] : '';
                 multiText[0] = email + " " + text;

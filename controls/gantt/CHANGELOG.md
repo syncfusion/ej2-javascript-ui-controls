@@ -2,7 +2,26 @@
 
 ## [Unreleased]
 
+## 25.1.42 (2024-04-30)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I576547` - When a parent record is deleted, the PUT method still returns the record that has already been deleted issue has been fixed.
+- `#I575077` - Timeline does not render properly while predecessor offset value in negative value issue has been fixed.
+- `#I578380` - When using tooltip template, an exception is thrown issue has been fixed.
+- `#I577723` - Dependency day not applied globalization issue has been fixed.
+- `#I576290` - Dialog edit not working properly for multiple dependency issue has been fixed.
+- `#I577597` - `queryTaskbarInfo` event using style is not applied when resource view in collapsed state in tasks issue has been fixed.
+
 ## 25.1.41 (2024-04-23)
+
+- `#I579405` - When `enablePersistence` enabled exception thrown in Gantt issue has been fixed.
+- `#I463798` - Parent date changes while adding Unscheduled task dynamically issue has been fixed.
+- `#I578431` - Last page index issue in virtualization when adding new record after scrolling issue has been fixed.
+
+## 25.1.40 (2024-04-16)
 
 ### GanttChart
 

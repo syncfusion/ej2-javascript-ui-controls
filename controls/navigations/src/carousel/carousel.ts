@@ -1438,7 +1438,12 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         if (this.itemsContainer && this.itemsContainer.firstElementChild) {
             const numOfItems: number = this.getNumOfItems();
             const slideWidth: number = this.itemsContainer.firstElementChild.clientWidth;
-            this.itemsContainer.style.transform = this.getTranslateX(slideWidth, this.selectedIndex + numOfItems);
+            if (this.loop) {
+                this.itemsContainer.style.transform = this.getTranslateX(slideWidth, this.selectedIndex + numOfItems);
+            }
+            else {
+                this.itemsContainer.style.transform = this.getTranslateX(slideWidth, this.selectedIndex);
+            }
         }
     }
 

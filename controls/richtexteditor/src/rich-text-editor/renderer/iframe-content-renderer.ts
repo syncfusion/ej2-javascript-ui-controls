@@ -67,6 +67,7 @@ const IFRAMEHEADER: string = `
                     overflow-x: auto;padding: 16px;position: relative;text-align: inherit;z-index: 2;}
                 p{margin: 0 0 10px;margin-bottom: 10px;}
                 li{margin-bottom: 10px;}
+                table{margin-bottom: 10px;}
                 h1{font-size: 2.17em;font-weight: 400;line-height: 1;margin: 10px 0;}
                 h2{font-size: 1.74em;font-weight: 400;margin: 10px 0;}
                 h3{font-size: 1.31em;font-weight: 400;margin: 10px 0;}

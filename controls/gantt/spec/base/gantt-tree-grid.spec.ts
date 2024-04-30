@@ -1,12 +1,12 @@
 /**
  * Gantt base spec
  */
-import { Gantt, ColumnMenu } from '../../src/index';
+import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
 import { baselineData, filterdata } from './data-source.spec';
 import { createGantt, destroyGantt } from './gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 describe('Gantt spec for  scroll', () => {
-    Gantt.Inject(ColumnMenu);
+    Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
     describe('Gantt base module', () => {        
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
@@ -39,9 +39,6 @@ describe('Gantt spec for  scroll', () => {
             }, done);
 
         });
-        afterAll(() => {
-            destroyGantt(ganttObj);
-        });
         it('Scroll-Task-Date Testing', () => {
             ganttObj.ganttChartModule.scrollElement.scrollLeft = 100;
             ganttObj.scrollToDate('10/23/2017');
@@ -50,7 +47,7 @@ describe('Gantt spec for  scroll', () => {
         it('Scroll-Task-ID Testing', () => {
             ganttObj.ganttChartModule.scrollElement.scrollLeft = 800;
             ganttObj.scrollToTask('3');
-            //expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(10);
+            expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(10);
         });
         it('gantt-Chart-Click Testing', () => {
             let element: HTMLElement = ganttObj.element.querySelector('.e-grid .e-content tbody tr td') as HTMLElement;
@@ -62,7 +59,7 @@ describe('Gantt spec for  scroll', () => {
         it('Scroll-Task Testing', () => {
             let element: HTMLElement = ganttObj.treeGridPane.querySelectorAll('.e-table')[1]['rows'][2].cells[0] as HTMLElement;
             element.click();
-            //expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(10);
+            expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(10);
         });
         it('Column menu click', () => {
             ganttObj.showColumnMenu = true;
@@ -70,6 +67,11 @@ describe('Gantt spec for  scroll', () => {
             let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol > div.e-gridheader.e-lib.e-droppable > div > table > thead > tr > th:nth-child(1) > div.e-icons.e-columnmenu') as HTMLElement;
             element.click();
          });
+         afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
     });
     describe('CR-Issue-EJ2-49364-', () => {        
         let ganttObj: Gantt;
@@ -91,14 +93,16 @@ describe('Gantt spec for  scroll', () => {
             }, done);
 
         });
-        afterAll(() => {
-            destroyGantt(ganttObj);
-        });
         it('scrollToDate', () => {
-            // ganttObj.scrollToDate('12/03/2017');
-            // let scrollLeft: number = getValue('element.scrollLeft', ganttObj.ganttChartModule.scrollObject);
-            // let gridLeft: number = ganttObj.chartVerticalLineContainer.offsetLeft;
-            //expect(scrollLeft === Math.abs(gridLeft)).toBe(true);
+            ganttObj.scrollToDate('12/03/2017');
+            let scrollLeft: number = getValue('element.scrollLeft', ganttObj.ganttChartModule.scrollObject);
+            let gridLeft: number = ganttObj.chartVerticalLineContainer.offsetLeft;
+            // expect(scrollLeft === Math.abs(gridLeft)).toBe(true);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
     });
     describe('CR-Issue-EJ2-EJ2-65261', () => {        
@@ -159,12 +163,13 @@ describe('Gantt spec for  scroll', () => {
                 }, done);
 
         });
-        afterAll(() => {
-            destroyGantt(ganttObj);
-        });
         it('column type', () => {
             expect(ganttObj.treeGridModule.treeGridColumns[3].type).toBe('number')
-
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
     });
 });

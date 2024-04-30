@@ -1,7 +1,8 @@
 /**
  * Gantt toolbar spec
  */
-import { Gantt, Edit, Toolbar, Selection, Filter, ZoomTimelineSettings } from '../../src/index';
+import { ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { Gantt, Edit, Toolbar, Selection, Filter, ZoomTimelineSettings, CriticalPath } from '../../src/index';
 import { projectData1, projectData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
@@ -55,7 +56,7 @@ describe('Gantt toolbar support', () => {
         it('Ensuring proper toolbar display', () => {
             ganttObj.toolbar = ["Add", "Cancel", "CollapseAll", "Delete", "Edit", "ExpandAll", "NextTimeSpan", "PrevTimeSpan", "Search" ,"Update","ZoomIn","ZoomOut","ZoomToFit"];
             ganttObj.dataBind();
-            expect(expect(ganttObj.element.getElementsByClassName('e-hidden').length).toBe(4));
+            expect(ganttObj.element.getElementsByClassName('e-hidden').length).toBe(4);
         });
 
         it('Add handler function', () => {
@@ -567,9 +568,6 @@ describe('Gantt toolbar support', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         it('Indent for children', () => {
             ganttObj.actionComplete = (args: any): void => {
                 if (args.requestType === "indented") {
@@ -641,9 +639,6 @@ describe('Gantt toolbar support', () => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
         });
         it('Zoom out', () => {
             let zoomIn: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement;
@@ -831,9 +826,6 @@ describe('Gantt toolbar support', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         it('Outdent performed', () => {
             ganttObj.selectRow(15);
             let outdent: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_outdent') as HTMLElement;
@@ -889,9 +881,6 @@ describe('Gantt toolbar support', () => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
         });
         it('Unscheduled Task', () => {
             let zoomToFit: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomtofit') as HTMLElement;
@@ -987,9 +976,6 @@ describe('Gantt toolbar support', () => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
         });
         it('Add record in UTC', () => {
             let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
@@ -1173,9 +1159,6 @@ describe('Custom Zooming levels zoomout ', () => {
             destroyGantt(ganttObj);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 500);
-    });
     it('Zoom in to zoom out ', () => {
         let zoomIn: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomin') as HTMLElement;
         triggerMouseEvent(zoomIn, 'click');
@@ -1313,5 +1296,294 @@ describe('Indent and outdent issue ', () => {
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
         expect((ganttObj.currentViewData[2] as any).StartDate.toDateString()).toBe("Wed Apr 17 2019");
+    });
+});
+
+describe('Gantt toolbar action with adaptive', () => {
+    Gantt.Inject(Edit, Toolbar, Selection, Filter,CriticalPath);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData1,
+                allowSelection: true,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                    segments: 'Segments'
+                },
+                loadingIndicator: { indicatorType: 'Shimmer' },
+                enableCriticalPath:true,
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Multiple',
+                    enableToggle: false
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                load: function() {
+                    this.isAdaptive = true;
+                },
+                toolbar: ['ZoomIn','ZoomOut','ZoomToFit','Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan', 'Custom', { text: 'Quick Filter', tooltipText: 'Quick Filter', id: 'toolbarfilter' },],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Search Icon handler function with adaptive', () => {
+        let searchbar: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('#' + ganttObj.element.id + '_searchbar'));
+        searchbar.value = '';
+        let searchIcon: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_searchbutton') as HTMLElement;
+        triggerMouseEvent(searchIcon, 'click');
+        expect(ganttObj.currentViewData.length).toBe(41);
+        ganttObj.clearFiltering();
+        ganttObj.toolbarModule['addReactToolbarPortals'];
+        ganttObj.toolbarModule['getSearchBarElement'];
+        ganttObj.toolbarModule.refreshToolbarItems();
+        ganttObj.toolbarModule.destroy();
+    });
+});
+describe('Gantt toolbar action with adaptive', () => {
+    Gantt.Inject(Edit, Toolbar, Selection, Filter);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData1,
+                allowSelection: true,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                load: function() {
+                    this.isAdaptive = true;
+                    this.isReact = true;
+                },
+                readOnly:true,
+                toolbar: ['ZoomIn','ZoomOut','ZoomToFit','Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan', 'Custom', { text: 'Quick Filter', tooltipText: 'Quick Filter', id: 'toolbarfilter' },],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Check all toolbar rendered properly', () => {
+        let toolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar') as HTMLElement;
+        expect(toolbar.getElementsByClassName('e-toolbar-item').length).toBe(15);
+    });
+});
+describe('Gantt toolbar action', () => {
+    Gantt.Inject(Edit, Toolbar, Selection, Filter,CriticalPath);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData1,
+                allowSelection: true,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                loadingIndicator: { indicatorType: 'Shimmer' },
+                toolbar: ['ZoomIn','ZoomOut','ZoomToFit','Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan', 'Custom', { text: 'Quick Filter', tooltipText: 'Quick Filter', id: 'toolbarfilter' },],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                toolbarClick: (args: ClickEventArgs) => {
+                    if (args.item.text === 'update') {
+                        let projectData: any = []
+                        ganttObj.dataSource = projectData; 
+                    }
+                },
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+
+    it('Add handler function', () => {
+        let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+        triggerMouseEvent(add, 'click');
+        let startDate: HTMLInputElement = (<HTMLInputElement>document.querySelector('#' + ganttObj.element.id + 'StartDate'));
+        if (startDate) {
+            let StartDateInput: any = (document.getElementById(ganttObj.element.id + 'StartDate') as any).ej2_instances[0];
+            StartDateInput.value = new Date('02/06/2017');
+        }
+        let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+        triggerMouseEvent(save, 'click');
+        expect(ganttObj.flatData.length).toBe(42);
+        ganttObj.toolbarModule['toolbarClickHandler'];
+    });
+});
+describe('Gantt toolbar action', () => {
+    Gantt.Inject(Edit, Toolbar, Selection, Filter);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData1,
+                allowSelection: true,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['ZoomIn','ZoomOut','ZoomToFit','Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan', 'Custom', { text: 'Quick Filter', tooltipText: 'Quick Filter', id: 'toolbarfilter' },],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Cancel handler function', () => {
+        let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(taskName, 'dblclick');
+        let taskValue: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName'));
+        if (taskValue) {
+            taskValue.value = 'Cancel TaskName';
+            let cancelToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_cancel') as HTMLElement;
+            triggerMouseEvent(cancelToolbar, 'mousedown');
+            expect(getValue('TaskName', ganttObj.flatData[3])).toBe('Plan budget');
+            ganttObj.selectionModule.clearSelection();
+        }
+    });
+    it('Cancel toolbar', (done: Function) => {
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let cancelToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_cancel') as HTMLElement;
+            triggerMouseEvent(cancelToolbar, 'click');
+            ganttObj.dataBound = () => {
+                done();
+            }
+            ganttObj.refresh();
+        });
+});
+describe('Gantt toolbar action with adaptive', () => {
+    Gantt.Inject(Edit, Toolbar, Selection, Filter);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData1,
+                allowSelection: true,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                load: function() {
+                    this.isAdaptive = true;
+                    this.isReact = true;
+                },
+                readOnly:true,
+                toolbar: ['ZoomIn','ZoomOut','ZoomToFit','Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan', 'Custom', { text: 'Quick Filter', tooltipText: 'Quick Filter', id: 'toolbarfilter' },],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Check all toolbar rendered properly', () => {
+        let toolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar') as HTMLElement;
+        expect(toolbar.getElementsByClassName('e-toolbar-item').length).toBe(15);
     });
 });

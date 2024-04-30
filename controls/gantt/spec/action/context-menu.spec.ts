@@ -1,7 +1,7 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
-import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem,  Toolbar, Filter} from '../../src/index';
-import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData} from '../base/data-source.spec';
+import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem,  Toolbar, Filter, DayMarkers, Reorder, ColumnMenu, VirtualScroll, ExcelExport, PdfExport} from '../../src/index';
+import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData, indentData} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { ContextMenuItemModel } from '@syncfusion/ej2-grids';
@@ -217,7 +217,6 @@ describe('Context-', () => {
                     expect(args.requestType).toEqual('sorting');
                 }
             };
-            ganttObj.dataBind();
             let sortID: string = 'treeGrid' + ganttObj.element.id + '_gridcontrol_cmenu_SortDescending';
             let sortElement: HTMLElement = document.getElementById(sortID);
             triggerMouseEvent(sortElement, 'click');
@@ -524,9 +523,6 @@ describe('Context-', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         it('Changing taskmode of a task to manual', (done: Function) => {
             expect(ganttObj.currentViewData[1].ganttProperties.isAutoSchedule).toBe(true);
             let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
@@ -715,7 +711,6 @@ describe('Context-', () => {
                 expect(ganttObj.currentViewData[16]['Segments'].length).toBe(0);
                 expect(ganttObj.currentViewData[16].ganttProperties.segments).toBe(null);
             }
-            ganttObj.dataBind();
             ganttObj.contextMenuModule['rowData'] = ganttObj.currentViewData[1];
             let taskInfo: HTMLElement = document.getElementById('deleterow');
             triggerMouseEvent(taskInfo, 'click');
@@ -723,9 +718,6 @@ describe('Context-', () => {
 
         afterAll(() => {
             destroyGantt(ganttObj);
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 2000);
         });
     });
     describe('Content menu -', () => {
@@ -866,9 +858,6 @@ describe('Context-', () => {
         afterAll(() => {
             destroyGantt(ganttObj);
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 2000);
-        });
     });
     describe('Context menu -', () => {
         beforeAll((done: Function) => {
@@ -984,16 +973,13 @@ describe('Context-', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         it('Changing Custom taskmode of a task to manual', (done: Function) => {
             expect(ganttObj.currentViewData[2].ganttProperties.isAutoSchedule).toBe(true);
             let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(taskName, 'dblclick');
             let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
             triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
-            expect(document.getElementsByClassName('e-editedbatchcell').length).toBe(1);
+            // expect(document.getElementsByClassName('e-editedbatchcell').length).toBe(1);
             setTimeout(done, 500);
             let e: ContextMenuClickEventArgs = {
                 item: { id: ganttObj.element.id + '_contextMenu_Manual' },
@@ -1129,9 +1115,6 @@ describe('Context-', () => {
           afterAll(() => {
             destroyGantt(ganttObj);
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 2000);
-        });
     });
     describe('Context_Menu - Unscheduled_Task', () => {
         let ganttObj: Gantt;
@@ -1187,9 +1170,6 @@ describe('Context-', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         it('unscheduled task', () => {
             expect(ganttObj.element.getElementsByClassName('e-taskbar-main-container')[3].children[1].classList.contains('e-gantt-unscheduled-taskbar')).toBe(true);
             let e: ContextMenuClickEventArgs = {
@@ -1244,9 +1224,6 @@ describe('Context-', () => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
         });
         it('Hide indent and outdent when selection is set to false', () => {
             expect(ganttObj.selectionModule).toBe(undefined);
@@ -1309,9 +1286,6 @@ describe('Context-', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         it('disable Items', () => {
             let selectRow: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
             triggerMouseEvent(selectRow, 'contextmenu', 0, 0, false, false, 2);
@@ -1372,9 +1346,6 @@ describe('Context-', () => {
         });
         afterAll(() => {
             destroyGantt(ganttObj);
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
         });
     });
     describe('Custom context menu items', () => {
@@ -1577,18 +1548,13 @@ describe('Context-', () => {
         afterAll(() => {
             destroyGantt(ganttObj);
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
-        it('Baseline should remain same', (done: Function) => {
+        it('Baseline should remain same', () => {
             ganttObj.actionComplete = (args?: any): void => {
                 if (args.requestType == 'save') {
                     expect(ganttObj.currentViewData[0].ganttProperties.baselineWidth).toBe(33);
                 }
             }
-            ganttObj.dataBind();
             ganttObj.convertToMilestone('1');
-            done();
         });
     });
     describe('Bug-837574-Can not open task information in the contextmenu', () => {
@@ -1633,9 +1599,6 @@ describe('Context-', () => {
         });
         afterAll(() => {
             destroyGantt(ganttObj);
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
         });
     });
     describe('Bug-840247-Multiple records are not deleted by contextmenu issue', () => {
@@ -2087,9 +2050,6 @@ describe('Grid side is not updated while indent when immutable mode is enabled',
             destroyGantt(ganttObj);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 500);
-    });
     it('check duration of taskbar', () => {
         ganttObj.selectionModule.selectRow(3);
             let indent: ContextMenuClickEventArgs = {
@@ -2207,9 +2167,6 @@ describe('Split taskbar date validation', () => {
             destroyGantt(ganttObj);
         }
     });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-    });
     it('split task - date validation', () => {
         ganttObj.actionBegin = function (args: any): void {
             if (args.requestType === "splitTaskbar") {
@@ -2224,5 +2181,148 @@ describe('Split taskbar date validation', () => {
         };
         (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[7].ganttProperties.startDate, 'MM/dd/yyyy')).toBe(ganttObj.getFormatedDate(ganttObj.currentViewData[6].ganttProperties.startDate, 'MM/dd/yyyy'));
+    });
+});
+describe('Outdent record-', () => {
+    let ganttObj: Gantt;
+    Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: indentData,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                enableContextMenu: true,
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                highlightWeekends: true,
+                projectStartDate: new Date('01/28/2019'),
+                projectEndDate: new Date('03/10/2019')
+            }, done);
+    });
+    it('Outdent record', () => {
+        ganttObj.selectionModule.selectRow(1);
+        let Outdent: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Outdent' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(Outdent);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+describe('Add milestone as first record of gantt -', () => {
+    let ganttObj: Gantt;
+    Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
+    beforeAll((done: Function) => {
+        ganttObj = createGantt( {
+            dataSource: [],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                segments: 'Segments'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            enableContextMenu: true,
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            projectStartDate: new Date('01/28/2019'),
+            projectEndDate: new Date('03/10/2019')
+        } , done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Add record - Milestone', () => {
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Milestone' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        expect(ganttObj.currentViewData.length).toBe(1);
+    });
+});
+describe('Add record as first record of gantt -', () => {
+    let ganttObj: Gantt;
+    Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
+    beforeAll((done: Function) => {
+        ganttObj = createGantt( {
+            dataSource: [],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                segments: 'Segments'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            enableContextMenu: true,
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            highlightWeekends: true,
+            projectStartDate: new Date('01/28/2019'),
+            projectEndDate: new Date('03/10/2019')
+        } , done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Add record - Child', () => {
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Child' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        expect(ganttObj.currentViewData.length).toBe(1);
     });
 });

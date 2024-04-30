@@ -877,7 +877,7 @@ export class FormFields {
                 } else if (currentData.Name === 'SignatureField' || currentData.Name === 'InitialField') {
                     // eslint-disable-next-line
                     let csData: any;
-                    if (currentData.Value === null || currentData.Value === '') {
+                    if (isRequired && (currentData.Value === null || currentData.Value === '')) {
                         this.addSignaturePath(currentData);
                     }
                     if (currentData.Value && currentData.Value !== '') {
@@ -894,7 +894,7 @@ export class FormFields {
                             csData = splitArrayCollection(collectionData);
                         }
                     }
-                    if (isRequired && currentData.Value === null || currentData.Value === '') {
+                    if (isRequired && (currentData.Value === null || currentData.Value === '')) {
                         this.pdfViewerBase.validateForm = true;
                         this.pdfViewerBase.nonFillableFields[currentData.FieldName] = JSON.stringify(csData);
                     } else {

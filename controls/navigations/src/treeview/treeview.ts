@@ -2443,7 +2443,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private clickHandler(event: TapEventArgs): void {
-        let target: Element = Browser.isDevice && !Browser.isIos ? document.elementFromPoint(event.originalEvent.changedTouches[0].clientX, event.originalEvent.changedTouches[0].clientY) : <Element>event.originalEvent.target;
+        let target: Element = Browser.isDevice && event.originalEvent.changedTouches && !Browser.isIos ? document.elementFromPoint(event.originalEvent.changedTouches[0].clientX, event.originalEvent.changedTouches[0].clientY) : <Element>event.originalEvent.target;
         EventHandler.remove(this.element, 'contextmenu', this.preventContextMenu);
         if (!target || this.dragStartAction) {
             return;
@@ -3080,7 +3080,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private expandHandler(e: TapEventArgs): void {
-        let target: Element = Browser.isDevice && !Browser.isIos ? document.elementFromPoint(e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY) : <Element>e.originalEvent.target;
+        let target: Element = Browser.isDevice && e.originalEvent.changedTouches && !Browser.isIos ? document.elementFromPoint(e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY) : <Element>e.originalEvent.target;
         if (!target || target.classList.contains(INPUT) || target.classList.contains(ROOT) ||
             target.classList.contains(PARENTITEM) || target.classList.contains(LISTITEM) ||
             target.classList.contains(ICON) || this.showCheckBox && closest(target, '.' + CHECKBOXWRAP)) {

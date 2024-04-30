@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.42 (2024-04-30)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I579519` - The issue with Tooltip position was improper while assigning margin top to the container has been resolved.
+
 ## 25.1.39 (2024-04-09)
 
 ### Tooltip

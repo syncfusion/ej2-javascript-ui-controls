@@ -2383,7 +2383,11 @@ export class TaskProcessor extends DateProcessor {
             this.parent.dataOperation.updateMappingData(data, 'segments');
         }
         this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(data), ganttRecord, true);
-        this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttRecord), ganttRecord, true);
+        if (!ganttRecord.startDate && !ganttRecord.endDate && ganttRecord.duration && data.parentItem && this.parent.getRecordByID(data.parentItem.taskId).ganttProperties.left) {
+            this.parent.setRecordValue('left', this.parent.getRecordByID(data.parentItem.taskId).ganttProperties.left, ganttRecord, true);
+        } else {
+            this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttRecord), ganttRecord, true);
+        }
         if (!isNullOrUndefined(ganttRecord.segments) && ganttRecord.segments.length > 0) {
             this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(totalSegmentsProgressWidth, ganttRecord.progress), ganttRecord, true);
         }

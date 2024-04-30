@@ -320,7 +320,7 @@ export class Double {
             for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval); tempInterval += axis.visibleRange.interval) {
                 duplicateTempInterval = tempInterval;
             }
-            if (duplicateTempInterval < axis.visibleRange.max) {
+            if (duplicateTempInterval < axis.visibleRange.max && axis.maximum == null) {
                 axis.visibleRange.max = duplicateTempInterval + axis.visibleRange.interval;
             }
         }

@@ -312,8 +312,9 @@ export class LayoutRender extends MobileLayout {
             for (const column of this.parent.columns) {
                 if (this.isColumnVisible(column)) {
                     const columnData: Record<string, any>[] = this.parent.swimlaneSettings.keyField ?
-                        this.getColumnData(column.keyField, this.swimlaneData[rows[index as number].keyField]) :
-                        this.columnData[column.keyField];
+                        this.getColumnData(column.keyField, (this.parent.swimlaneSettings.showEmptyRow &&
+                            isNoU(this.swimlaneData[rows[index as number].keyField])) ? []
+                            : this.swimlaneData[rows[index as number].keyField]) : this.columnData[column.keyField];
                     dataCount += columnData.length;
                     const columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
                     const cardWrapper: HTMLElement = createElement('div', {

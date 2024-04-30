@@ -1991,7 +1991,7 @@ export function getTitle(title: string, style: FontModel, width: number, isRtlEn
     let titleCollection: string[] = [];
     switch (style.textOverflow) {
     case 'Wrap':
-        titleCollection = textWrap(title, width, style, isRtlEnabled, null, null, themeFontStyle);
+        titleCollection = textWrap(title, width, style, isRtlEnabled, title.indexOf(' ') < 0 ? true : null, null, themeFontStyle);
         break;
     case 'Trim':
         titleCollection.push(textTrim(width, title, style, isRtlEnabled, themeFontStyle));

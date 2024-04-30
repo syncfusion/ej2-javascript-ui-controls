@@ -297,14 +297,14 @@ describe('List revert with BR configured - ', () => {
         const orderListEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[0];
         orderListEle.click();
         orderListEle.click();
-        expect(rteObj.inputElement.innerHTML).toBe('RTE BR configured');
+        expect(rteObj.inputElement.innerHTML).toBe('RTE BR configured<br>');
     });
 
     it('Default value when `BR` is configured with UL', function (): void {
         const unorderListEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[1];
         unorderListEle.click();
         unorderListEle.click();
-        expect(rteObj.inputElement.innerHTML).toBe('RTE BR configured');
+        expect(rteObj.inputElement.innerHTML).toBe('RTE BR configured<br>');
     });
 
     afterAll(() => {
@@ -544,7 +544,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, nodetext.textContent.length);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1<br><br></strong>');
+        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1</strong><br><strong>​</strong>');
     });
 
     it('Press enter by selecting whole line 1 - Style Applied -', function (): void {
@@ -577,7 +577,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, 0);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<strong><br>​Line 1</strong>');
+        expect(rteObj.inputElement.innerHTML).toBe('<br><strong>​Line 1</strong>');
     });
 
     it('Press enter at the middle of the line', function (): void {
@@ -599,7 +599,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, 3);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Li<br>ne 1</strong>');
+        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Li</strong><br><strong>ne 1</strong>');
     });
 
     it('Multiple lines - Press enter at the end of the first line', function (): void {
@@ -621,7 +621,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, nodetext.length);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1<br><br></strong><br><strong>Line 2​</strong>');
+        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1</strong><br><strong>​</strong><br><strong>Line 2​</strong>');
     });
 
     it('Multiple lines - Press enter at the start of the second line', function (): void {
@@ -689,7 +689,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setSelectionText(
             document, startNode, endNode, 2, 2);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1</strong><br><strong>Li</strong><strong><br>ne 3​</strong>');
+        expect(rteObj.inputElement.innerHTML).toBe('<strong>​Line 1</strong><br><strong>Li</strong><br><strong>ne 3​</strong>');
     });
 
     it('Multiple lines - Press enter on empty line', function (): void {
@@ -2468,5 +2468,57 @@ describe('878787 - The enter action is not working properly working with the tab
     afterAll((done) => {
         destroy(rteObj);
         done();
+    });
+});
+
+describe('Bug 880237: Bullet list not working properly and throws script error when we use enterKey as "BR" in RichTextEditor', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: `<ul><li level="1" style="list-style-type: disc;margin-bottom:0in;">One</li><li level="1" style="list-style-type: disc;margin-bottom:0in;">Two</li><li level="1" style="list-style-type: disc;margin-bottom:0in;">Three</li><li level="1" style="list-style-type: disc;margin-bottom:0in;">Four</li></ul>`,
+            enterKey: 'BR',
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            }
+        });
+        rteEle = rteObj.element;
+        done();
+    });
+    it('Default value when `BR` is configured with UL', function (): void {
+        const unorderListEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[1];
+        let startElement = rteObj.inputElement.querySelector('ul');
+        domSelection.setSelectionText(document, startElement.childNodes[0], startElement.childNodes[3], 0, 1);
+        unorderListEle.click();
+        unorderListEle.click();
+        unorderListEle.click();
+        unorderListEle.click();
+        expect(!isNullOrUndefined(rteObj.inputElement.querySelector('ul'))).toBe(true);
+    });
+    it('Default value when `BR` is configured with UL and with more inline tags', function (): void {
+        rteObj.value=`<ul><li>One&nbsp;<strong>asdasd</strong></li><li>Two&nbsp;<strong>asdasd</strong></li><li>Three&nbsp;<strong>asdasd</strong></li><li>Four&nbsp;<strong>asdasd</strong></li></ul>`;
+        rteObj.dataBind();
+        const unorderListEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[1];
+        let startElement = rteObj.inputElement.querySelector('ul');
+        domSelection.setSelectionText(document, startElement.childNodes[0], startElement.childNodes[3], 0, 1);
+        unorderListEle.click();
+        unorderListEle.click();
+        unorderListEle.click();
+        unorderListEle.click();
+        expect(!isNullOrUndefined(rteObj.inputElement.querySelector('ul'))).toBe(true);
+    });
+    it('Default value when `BR` is configured , applying list without selecting', function (): void {
+        rteObj.value=`<ul><li>hello&nbsp;<strong>world&nbsp;</strong>&nbsp;this is&nbsp;<strong>&nbsp;ME&nbsp;</strong></li></ul>`;
+        rteObj.dataBind();
+        const unorderListEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[1];
+        unorderListEle.click();
+        unorderListEle.click();
+        unorderListEle.click();
+        unorderListEle.click();
+        expect(!isNullOrUndefined(rteObj.inputElement.querySelector('ul'))).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
     });
 });

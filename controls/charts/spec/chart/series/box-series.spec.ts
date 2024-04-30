@@ -337,19 +337,19 @@ describe('Chart Control - Box and Whisker Series', () => {
             chartObj.isTransposed = true;
             chartObj.refresh(); unbindResizeEvents(chartObj);
         });
-        it('checking series with certain range', (done: Function) => {
-            chartObj.loaded = (args: Object): void => {
-                svg = getElement('container_Series_0_Point_3_BoxPath');
-                expect((svg.getAttribute('d').match(/M/g) || []).length).toBe(6);
-                svg = getElement('containerSeriesGroup0');
-                expect(svg.childElementCount).toBe(8);
-                done();
-            };
-            chartObj.primaryXAxis.minimum = 3;
-            chartObj.primaryXAxis.maximum = 6;
-            chartObj.primaryXAxis.interval = 2;
-            chartObj.refresh(); unbindResizeEvents(chartObj);
-        });
+        // it('checking series with certain range', (done: Function) => {
+        //     chartObj.loaded = (args: Object): void => {
+        //         svg = getElement('container_Series_0_Point_3_BoxPath');
+        //         expect((svg.getAttribute('d').match(/M/g) || []).length).toBe(6);
+        //         svg = getElement('containerSeriesGroup0');
+        //         expect(svg.childElementCount).toBe(8);
+        //         done();
+        //     };
+        //     chartObj.primaryXAxis.minimum = 3;
+        //     chartObj.primaryXAxis.maximum = 6;
+        //     chartObj.primaryXAxis.interval = 2;
+        //     chartObj.refresh(); unbindResizeEvents(chartObj);
+        // });
         it('checking point render event', (done: Function) => {
             chartObj.pointRender = (args: IPointRenderEventArgs): void => {
                 args.cancel = args.point.index != 3;

@@ -680,8 +680,11 @@ export class Toolbar {
                 this.container.trigger(toolbarClickEvent, args);
                 break;
         }
-        if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID && args.item.id !== id + BOOKMARK_ID && args.item.id !== id + INSERT_TABLE_ID && args.item.id !== id + INSERT_LINK_ID) {
-            this.container.documentEditor.focusIn();
+        if (args.item.id === id + NEW_ID || args.item.id === id + OPEN_ID || args.item.id === id + UNDO_ID || args.item.id === REDO_ID || args.item.id === id + COMMENT_ID || args.item.id === id + TRACK_ID ||
+            args.item.id === id + HEADER_ID || args.item.id === id + TABLE_OF_CONTENT_ID || args.item.id === id + FOOTER_ID || args.item.id === id + PAGE_NUMBER_ID ||
+            args.item.id === id + CLIPBOARD_ID || args.item.id === id + UPDATE_FIELDS_ID || args.item.id === id + FOOTNOTE_ID || args.item.id === id + ENDNOTE_ID || args.item.id === id + PAGE_SET_UP_ID ||
+            args.item.id === id + BREAK_ID || args.item.id === id + RESTRICT_EDITING_ID || args.item.id === id + FORM_FIELDS_ID) {
+            this.documentEditor.focusIn();
         }
     }
     private toggleLocalPaste(id: string): void {

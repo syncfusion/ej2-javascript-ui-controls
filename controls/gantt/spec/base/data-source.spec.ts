@@ -1213,6 +1213,146 @@ export let baselineDatas: Object[] = [
       EndDate: new Date('03/05/2018 10:40:00 AM'),
     },
   ];
+export let data : Object[]=[
+    {
+        'resourceInfo': [1], 'TaskId': 1, 'TaskName': 'Start-Duration', 'cusClass': 'cusclass',
+        'StartDate': new Date('10/23/2017'), 'BaselineStartDate': new Date('10/23/2017'),
+        'BaselineEndDate': new Date('10/26/2017'), 'Duration': 4, 'Progress': 80,
+        'Indicators': [
+            {
+                'date': '10/29/2017',
+                'iconCls': 'fas fa-cat',
+                'name': 'Custom String',
+                'tooltip': 'Follow up'
+            },
+            {
+                'date': '11/1/2017',
+                'iconCls': 'fas fa-dragon',
+                'name': '<span style="color:red">String Template</span>',
+                'tooltip': 'Review results'
+            }
+        ]
+    },
+    {
+        'resourceInfo': [2], 'TaskId': 2, 'TaskName': 'Start-End',
+        'StartDate': new Date('10/24/2017'), 'BaselineStartDate': new Date('10/24/2017'),
+        'BaselineEndDate': new Date('10/28/2017'), EndDate: new Date('10/24/2017'), 'Progress': 65, 'Predecessor': '1'
+    },
+    {
+        'resourceInfo': [2], 'TaskId': 3, 'TaskName': 'Duration-End',
+        'BaselineStartDate': new Date('10/24/2017'), Duration: '32h',
+        'BaselineEndDate': new Date('10/28/2017'), EndDate: new Date('10/24/2017'), 'Progress': 65, 'Predecessor': '1SS'
+    },
+    {
+        'resourceInfo': [2], 'TaskId': 4, 'TaskName': 'Duration-alone',
+        'BaselineStartDate': new Date('10/24/2017'), Duration: '32h',
+        'BaselineEndDate': new Date('10/28/2017'), 'Progress': 65,
+    },
+    {
+        'resourceInfo': [2], 'TaskId': 5, 'TaskName': 'StartDate-alone',
+        StartDate: new Date('10/24/2017'), 'BaselineStartDate': new Date('10/24/2017'),
+        'BaselineEndDate': new Date('10/28/2017'), 'Progress': 65, 'Predecessor': '2'
+    },
+    {
+        'resourceInfo': [2], 'TaskId': 6, 'TaskName': 'EndDate-alone',
+        EndDate: new Date('10/28/2017'), 'BaselineStartDate': new Date('10/24/2017'),
+        'BaselineEndDate': new Date('10/28/2017'), 'Progress': 65
+    },
+    {
+        'resourceInfo': [2], 'TaskId': 7, 'TaskName': 'Milestone',
+        EndDate: new Date('10/28/2017'), 'BaselineStartDate': new Date('10/24/2017'),
+        'BaselineEndDate': new Date('10/28/2017'), 'Progress': 65, Duration: 0
+    },
+]
+export let data1: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('02/27/2017'),
+        'Duration': 0,
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            {
+                'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('02/27/2017'), 'Duration': 0, 'Progress': '40'
+            },
+            {
+                'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('02/27/2017'), 'Progress': '40', 'Duration': 0, 'isManual': true
+            },
+            {
+                'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('02/27/2017'), 'Duration': 0, 'Progress': '40',
+            }
+        ]
+    }]
+export let data2: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'), BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/01/2019'), Duration: 0, Predecessor: "2", Progress: 30,
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 0, Progress: 30 },
+            {
+                TaskID: 3, TaskName: 'Defining target audience', Duration: 0,
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ]
+            },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/01/2019'), Duration: 1, Predecessor: "2", Progress: 30 },
+        ]
+    }]
+export let data3: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            {
+                'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40'
+            },
+            {
+                'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true
+            },
+            {
+                'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40',
+            }
+        ]
+    }]
+export let data4: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+            },
+            {
+                TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+            },
+            {
+                TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+            },
+        ]
+    }]
 export let scheduleModeData1: Object[] = [
     {
         "TaskID": 1,
@@ -3011,6 +3151,2784 @@ export let dialogEditData: object[] = [
     BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  },
 ];
 
+export let crDialogEditData: object[] = [
+    {
+        taskId: 1,
+        taskName: 'Grava',
+        propertyModelActivityId: 2,
+        actualStartDate: '2021-12-08T00:00:00',
+        actualEndDate: '2024-04-01T00:00:00',
+        basePlanStartDate: '23/12/2021 (IST)',
+        basePlanEndDate: '12/10/2024 (IST)',
+        revisionNo: 1,
+        subTasks: [
+            {
+                taskId: 2,
+                blockId: 1,
+                parentId: 1,
+                taskName: 'TOWER 10',
+                startDate: '2021-12-23T00:00:00',
+                endDate: '2024-09-12T00:00:00',
+                propertyModelActivityId: 3,
+                actualStartDate: '2021-12-08T00:00:00',
+                actualEndDate: '2024-04-01T00:00:00',
+                basePlanStartDate: '23/12/2021 (IST)',
+                basePlanEndDate: '03/09/2024 (IST)',
+                revisionNo: 1,
+                subTasks: [
+                    {
+                        taskId: 3,
+                        blockId: 1,
+                        siteDrawingTypeId: 1,
+                        parentId: 2,
+                        taskName: 'Structural',
+                        startDate: '2021-12-23T00:00:00',
+                        endDate: '2024-09-12T00:00:00',
+                        propertyModelActivityId: 4,
+                        actualStartDate: '2021-12-08T00:00:00',
+                        actualEndDate: '2024-04-01T00:00:00',
+                        basePlanStartDate: '23/12/2021 (IST)',
+                        basePlanEndDate: '03/09/2024 (IST)',
+                        revisionNo: 1,
+                        subTasks: [
+                            {
+                                taskId: 9,
+                                blockId: 1,
+                                floorId: 1,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-B07',
+                                startDate: '2021-12-23T00:00:00',
+                                endDate: '2022-04-16T00:00:00',
+                                propertyModelActivityId: 10,
+
+                                actualStartDate: '2021-12-08T00:00:00',
+                                actualEndDate: '2022-08-17T00:00:00',
+
+
+                                basePlanStartDate: '23/12/2021 (IST)',
+                                basePlanEndDate: '16/04/2022 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 15,
+                                        blockId: 1,
+                                        floorId: 1,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 10,
+                                        modelActivityName: 'FDL Jump Lift and Service lift area',
+                                        parentId: 9,
+                                        taskName: 'FDL Jump Lift and Service lift area',
+                                        startDate: '2021-12-23T00:00:00',
+                                        endDate: '2021-12-23T00:00:00',
+                                        propertyModelActivityId: 16,
+
+                                        actualStartDate: '2021-12-08T00:00:00',
+                                        actualEndDate: '2022-01-12T00:00:00',
+
+
+                                        basePlanStartDate: '23/12/2021 (IST)',
+                                        basePlanEndDate: '17/01/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '36 days',
+                                        id: 5,
+                                    },
+                                    {
+                                        taskId: 16,
+                                        blockId: 1,
+                                        floorId: 1,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 11,
+                                        modelActivityName: 'FDL Isolated Footing',
+                                        parentId: 9,
+                                        taskName: 'FDL Isolated Footing',
+                                        startDate: '2021-12-23T00:00:00',
+                                        endDate: '2021-12-23T00:00:00',
+                                        propertyModelActivityId: 17,
+
+                                        actualStartDate: '2021-12-08T00:00:00',
+                                        actualEndDate: '2021-02-10T00:00:00',
+
+
+                                        basePlanStartDate: '23/12/2021 (IST)',
+                                        basePlanEndDate: '23/12/2021 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '302 days',
+                                        id: 6,
+                                    },
+                                    {
+                                        taskId: 17,
+                                        blockId: 1,
+                                        floorId: 1,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 9,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2021-12-24T00:00:00',
+                                        endDate: '2022-02-07T00:00:00',
+                                        propertyModelActivityId: 18,
+
+                                        actualStartDate: '2022-01-03T00:00:00',
+                                        actualEndDate: '2022-03-19T00:00:00',
+
+
+                                        basePlanStartDate: '24/12/2021 (IST)',
+                                        basePlanEndDate: '07/02/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '76 days',
+                                        id: 7,
+                                    },
+                                    {
+                                        taskId: 18,
+                                        blockId: 1,
+                                        floorId: 1,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 12,
+                                        modelActivityName: 'FDL Raft',
+                                        parentId: 9,
+                                        taskName: 'FDL Raft',
+                                        startDate: '2021-12-29T00:00:00',
+                                        endDate: '2022-02-10T00:00:00',
+                                        propertyModelActivityId: 19,
+
+                                        actualStartDate: '2021-12-08T00:00:00',
+                                        actualEndDate: '2022-01-18T00:00:00',
+
+
+                                        basePlanStartDate: '29/12/2021 (IST)',
+                                        basePlanEndDate: '10/02/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '42 days',
+                                        id: 8,
+                                    },
+                                    {
+                                        taskId: 19,
+                                        blockId: 1,
+                                        floorId: 1,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 13,
+                                        modelActivityName: 'FDL SubSoil Drainage & Grade Slab',
+                                        parentId: 9,
+                                        taskName: 'FDL SubSoil Drainage & Grade Slab',
+                                        startDate: '2022-01-19T00:00:00',
+                                        endDate: '2022-04-16T00:00:00',
+                                        propertyModelActivityId: 20,
+
+                                        actualStartDate: '2022-02-10T00:00:00',
+                                        actualEndDate: '2022-08-17T00:00:00',
+
+
+                                        basePlanStartDate: '19/01/2022 (IST)',
+                                        basePlanEndDate: '16/04/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '189 days',
+                                        id: 9,
+                                    },
+                                ],
+                                actualDuration: '253 days',
+                                id: 4,
+                            },
+                            {
+                                taskId: 22,
+                                blockId: 1,
+                                floorId: 42,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-B06',
+                                startDate: '2022-02-02T00:00:00',
+                                endDate: '2022-05-16T00:00:00',
+                                propertyModelActivityId: 23,
+
+                                actualStartDate: '2022-02-17T00:00:00',
+                                actualEndDate: '2022-05-31T00:00:00',
+
+
+                                basePlanStartDate: '02/02/2022 (IST)',
+                                basePlanEndDate: '16/05/2022 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 30,
+                                        blockId: 1,
+                                        floorId: 42,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 22,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2022-02-02T00:00:00',
+                                        endDate: '2022-04-15T00:00:00',
+                                        propertyModelActivityId: 31,
+
+                                        actualStartDate: '2022-03-09T00:00:00',
+                                        actualEndDate: '2022-04-18T00:00:00',
+
+
+                                        basePlanStartDate: '02/02/2022 (IST)',
+                                        basePlanEndDate: '15/04/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '41 days',
+                                        id: 11,
+                                    },
+                                    {
+                                        taskId: 31,
+                                        blockId: 1,
+                                        floorId: 42,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 22,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2022-03-16T00:00:00',
+                                        endDate: '2022-04-15T00:00:00',
+                                        propertyModelActivityId: 32,
+
+                                        actualStartDate: '2022-02-17T00:00:00',
+                                        actualEndDate: '2022-04-18T00:00:00',
+
+
+                                        basePlanStartDate: '16/03/2022 (IST)',
+                                        basePlanEndDate: '15/04/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '61 days',
+                                        id: 12,
+                                    },
+                                    {
+                                        taskId: 32,
+                                        blockId: 1,
+                                        floorId: 42,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 22,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2022-03-29T00:00:00',
+                                        endDate: '2022-05-11T00:00:00',
+                                        propertyModelActivityId: 33,
+
+                                        actualStartDate: '2022-03-11T00:00:00',
+                                        actualEndDate: '2022-05-31T00:00:00',
+
+
+                                        basePlanStartDate: '29/03/2022 (IST)',
+                                        basePlanEndDate: '11/05/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '82 days',
+                                        id: 13,
+                                    },
+                                    {
+                                        taskId: 34,
+                                        blockId: 1,
+                                        floorId: 42,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 22,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2022-04-19T00:00:00',
+                                        endDate: '2022-05-16T00:00:00',
+                                        propertyModelActivityId: 35,
+
+                                        actualStartDate: '2022-04-12T00:00:00',
+                                        actualEndDate: '2022-04-28T00:00:00',
+
+
+                                        basePlanStartDate: '19/04/2022 (IST)',
+                                        basePlanEndDate: '16/05/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '17 days',
+                                        id: 14,
+                                    },
+                                ],
+                                actualDuration: '104 days',
+                                id: 10,
+                            },
+                            {
+                                taskId: 35,
+                                blockId: 1,
+                                floorId: 41,
+                                siteDrawingTypeId: 1,
+                                parentId: 3,
+                                taskName: 'Level-B05',
+                                startDate: '2022-05-02T00:00:00',
+                                endDate: '2022-06-21T00:00:00',
+                                propertyModelActivityId: 36,
+                                actualStartDate: '2022-04-14T00:00:00',
+                                actualEndDate: '2022-05-30T00:00:00',
+                                basePlanStartDate: '02/05/2022 (IST)',
+                                basePlanEndDate: '21/06/2022 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 41,
+                                        blockId: 1,
+                                        floorId: 41,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 35,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2022-05-02T00:00:00',
+                                        endDate: '2022-05-12T00:00:00',
+                                        propertyModelActivityId: 42,
+                                        predecessor: '',
+                                        actualStartDate: '2022-04-14T00:00:00',
+                                        actualEndDate: '2022-05-05T00:00:00',
+                                        displayPredecessor: '',
+                                        basePlanStartDate: '02/05/2022 (IST)',
+                                        basePlanEndDate: '12/05/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '22 days',
+                                        id: 16,
+                                    },
+                                    {
+                                        taskId: 42,
+                                        blockId: 1,
+                                        floorId: 41,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 35,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2022-05-02T00:00:00',
+                                        endDate: '2022-05-16T00:00:00',
+                                        propertyModelActivityId: 43,
+                                        predecessor: '',
+                                        actualStartDate: '2022-04-19T00:00:00',
+                                        actualEndDate: '2022-05-20T00:00:00',
+                                        displayPredecessor: '',
+                                        basePlanStartDate: '02/05/2022 (IST)',
+                                        basePlanEndDate: '16/05/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '32 days',
+                                        id: 17,
+                                    },
+                                    {
+                                        taskId: 43,
+                                        blockId: 1,
+                                        floorId: 41,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 35,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2022-05-18T00:00:00',
+                                        endDate: '2022-06-19T00:00:00',
+                                        propertyModelActivityId: 44,
+                                        predecessor: '34FS+1',
+                                        actualStartDate: '2022-04-30T00:00:00',
+                                        actualEndDate: '2022-05-18T00:00:00',
+                                        displayPredecessor: '34FS+1 day',
+                                        basePlanStartDate: '18/05/2022 (IST)',
+                                        basePlanEndDate: '19/06/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '19 days',
+                                        id: 18,
+                                    },
+                                    {
+                                        taskId: 44,
+                                        blockId: 1,
+                                        floorId: 41,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 35,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2022-05-07T00:00:00',
+                                        endDate: '2022-05-26T00:00:00',
+                                        propertyModelActivityId: 45,
+                                        predecessor: '',
+                                        actualStartDate: '2022-04-22T00:00:00',
+                                        actualEndDate: '2022-05-11T00:00:00',
+                                        displayPredecessor: '',
+                                        basePlanStartDate: '07/05/2022 (IST)',
+                                        basePlanEndDate: '26/05/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '20 days',
+                                        id: 19,
+                                    },
+                                    {
+                                        taskId: 45,
+                                        blockId: 1,
+                                        floorId: 41,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 35,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2022-05-17T00:00:00',
+                                        endDate: '2022-06-09T00:00:00',
+                                        propertyModelActivityId: 46,
+                                        predecessor: '44FS-10,41FS,42FS',
+                                        actualStartDate: '2022-05-02T00:00:00',
+                                        actualEndDate: '2022-05-30T00:00:00',
+                                        displayPredecessor: '44FS-10 days,41FS,42FS',
+                                        basePlanStartDate: '17/05/2022 (IST)',
+                                        basePlanEndDate: '09/06/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '29 days',
+                                        id: 20,
+                                    },
+                                    {
+                                        taskId: 47,
+                                        blockId: 1,
+                                        floorId: 41,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 35,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2022-06-02T00:00:00',
+                                        endDate: '2022-06-21T00:00:00',
+                                        propertyModelActivityId: 48,
+                                        predecessor: '45SS+16,43FF-10',
+                                        actualStartDate: '2022-05-17T00:00:00',
+                                        actualEndDate: '2022-05-25T00:00:00',
+                                        displayPredecessor: '45SS+16 days,43FF-10 days',
+                                        basePlanStartDate: '02/06/2022 (IST)',
+                                        basePlanEndDate: '21/06/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '9 days',
+                                        id: 21,
+                                    },
+                                ],
+                                actualDuration: '47 days',
+                                id: 15,
+                            },
+                            {
+                                taskId: 48,
+                                blockId: 1,
+                                floorId: 40,
+                                siteDrawingTypeId: 1,
+                                parentId: 3,
+                                taskName: 'Level-B04',
+                                startDate: '2022-06-12T00:00:00',
+                                endDate: '2022-07-21T00:00:00',
+                                propertyModelActivityId: 49,
+                                actualStartDate: '2022-05-22T00:00:00',
+                                actualEndDate: '2022-09-17T00:00:00',
+                                basePlanStartDate: '12/06/2022 (IST)',
+                                basePlanEndDate: '21/07/2022 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 54,
+                                        blockId: 1,
+                                        floorId: 40,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 48,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2022-06-12T00:00:00',
+                                        endDate: '2022-06-24T00:00:00',
+                                        propertyModelActivityId: 55,
+                                        predecessor: '47SS+10',
+                                        actualStartDate: '2022-05-23T00:00:00',
+                                        actualEndDate: '2022-06-03T00:00:00',
+                                        displayPredecessor: '47SS+10 days',
+                                        basePlanStartDate: '12/06/2022 (IST)',
+                                        basePlanEndDate: '24/06/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '12 days',
+                                        id: 23,
+                                    },
+                                    {
+                                        taskId: 55,
+                                        blockId: 1,
+                                        floorId: 40,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 48,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2022-06-12T00:00:00',
+                                        endDate: '2022-06-26T00:00:00',
+                                        propertyModelActivityId: 56,
+                                        predecessor: '47SS+10',
+                                        actualStartDate: '2022-05-23T00:00:00',
+                                        actualEndDate: '2022-06-17T00:00:00',
+                                        displayPredecessor: '47SS+10 days',
+                                        basePlanStartDate: '12/06/2022 (IST)',
+                                        basePlanEndDate: '26/06/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '26 days',
+                                        id: 24,
+                                    },
+                                    {
+                                        taskId: 56,
+                                        blockId: 1,
+                                        floorId: 40,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 48,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2022-06-13T00:00:00',
+                                        endDate: '2022-07-05T00:00:00',
+                                        propertyModelActivityId: 57,
+                                        predecessor: '47SS+11',
+                                        actualStartDate: '2022-06-02T00:00:00',
+                                        actualEndDate: '2022-06-22T00:00:00',
+                                        displayPredecessor: '47SS+11 days',
+                                        basePlanStartDate: '13/06/2022 (IST)',
+                                        basePlanEndDate: '05/07/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '21 days',
+                                        id: 25,
+                                    },
+                                    {
+                                        taskId: 57,
+                                        blockId: 1,
+                                        floorId: 40,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 48,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2022-06-14T00:00:00',
+                                        endDate: '2022-07-03T00:00:00',
+                                        propertyModelActivityId: 58,
+                                        predecessor: '47SS+12',
+                                        actualStartDate: '2022-05-22T00:00:00',
+                                        actualEndDate: '2022-06-19T00:00:00',
+                                        displayPredecessor: '47SS+12 days',
+                                        basePlanStartDate: '14/06/2022 (IST)',
+                                        basePlanEndDate: '03/07/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '29 days',
+                                        id: 26,
+                                    },
+                                    {
+                                        taskId: 58,
+                                        blockId: 1,
+                                        floorId: 40,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 48,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2022-06-19T00:00:00',
+                                        endDate: '2022-07-12T00:00:00',
+                                        propertyModelActivityId: 59,
+                                        predecessor: '57FS-15',
+                                        actualStartDate: '2022-05-24T00:00:00',
+                                        actualEndDate: '2022-09-17T00:00:00',
+                                        displayPredecessor: '57FS-15 days',
+                                        basePlanStartDate: '19/06/2022 (IST)',
+                                        basePlanEndDate: '12/07/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '117 days',
+                                        id: 27,
+                                    },
+                                    {
+                                        taskId: 60,
+                                        blockId: 1,
+                                        floorId: 40,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 48,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2022-07-02T00:00:00',
+                                        endDate: '2022-07-21T00:00:00',
+                                        propertyModelActivityId: 61,
+                                        predecessor: '58SS+13,55FS,54FS',
+                                        actualStartDate: '2022-06-12T00:00:00',
+                                        actualEndDate: '2022-06-25T00:00:00',
+                                        displayPredecessor: '58SS+13 days,55FS,54FS',
+                                        basePlanStartDate: '02/07/2022 (IST)',
+                                        basePlanEndDate: '21/07/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '14 days',
+                                        id: 28,
+                                    },
+                                ],
+                                actualDuration: '119 days',
+                                id: 22,
+                            },
+                            {
+                                taskId: 61,
+                                blockId: 1,
+                                floorId: 39,
+                                siteDrawingTypeId: 1,
+                                parentId: 3,
+                                taskName: 'Level-B03',
+                                startDate: '2022-07-10T00:00:00',
+                                endDate: '2022-08-20T00:00:00',
+                                propertyModelActivityId: 62,
+                                actualStartDate: '2022-06-16T00:00:00',
+                                actualEndDate: '2022-09-23T00:00:00',
+                                basePlanStartDate: '10/07/2022 (IST)',
+                                basePlanEndDate: '20/08/2022 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 68,
+                                        blockId: 1,
+                                        floorId: 39,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 61,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2022-07-10T00:00:00',
+                                        endDate: '2022-07-24T00:00:00',
+                                        propertyModelActivityId: 69,
+                                        predecessor: '60SS+8',
+                                        actualStartDate: '2022-06-17T00:00:00',
+                                        actualEndDate: '2022-07-26T00:00:00',
+                                        displayPredecessor: '60SS+8 days',
+                                        basePlanStartDate: '10/07/2022 (IST)',
+                                        basePlanEndDate: '24/07/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '40 days',
+                                        id: 30,
+                                    },
+                                    {
+                                        taskId: 67,
+                                        blockId: 1,
+                                        floorId: 39,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 61,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2022-07-10T00:00:00',
+                                        endDate: '2022-07-22T00:00:00',
+                                        propertyModelActivityId: 68,
+                                        predecessor: '60SS+8',
+                                        actualStartDate: '2022-06-16T00:00:00',
+                                        actualEndDate: '2022-06-30T00:00:00',
+                                        displayPredecessor: '60SS+8 days',
+                                        basePlanStartDate: '10/07/2022 (IST)',
+                                        basePlanEndDate: '22/07/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '15 days',
+                                        id: 31,
+                                    },
+                                    {
+                                        taskId: 69,
+                                        blockId: 1,
+                                        floorId: 39,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 61,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2022-07-11T00:00:00',
+                                        endDate: '2022-08-02T00:00:00',
+                                        propertyModelActivityId: 70,
+                                        predecessor: '60SS+9',
+                                        actualStartDate: '2022-06-25T00:00:00',
+                                        actualEndDate: '2022-07-18T00:00:00',
+                                        displayPredecessor: '60SS+9 days',
+                                        basePlanStartDate: '11/07/2022 (IST)',
+                                        basePlanEndDate: '02/08/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '24 days',
+                                        id: 32,
+                                    },
+                                    {
+                                        taskId: 70,
+                                        blockId: 1,
+                                        floorId: 39,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 61,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2022-07-12T00:00:00',
+                                        endDate: '2022-07-31T00:00:00',
+                                        propertyModelActivityId: 71,
+                                        predecessor: '60SS+10',
+                                        actualStartDate: '2022-06-21T00:00:00',
+                                        actualEndDate: '2022-07-11T00:00:00',
+                                        displayPredecessor: '60SS+10 days',
+                                        basePlanStartDate: '12/07/2022 (IST)',
+                                        basePlanEndDate: '31/07/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '21 days',
+                                        id: 33,
+                                    },
+                                    {
+                                        taskId: 71,
+                                        blockId: 1,
+                                        floorId: 39,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 61,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2022-07-19T00:00:00',
+                                        endDate: '2022-08-11T00:00:00',
+                                        propertyModelActivityId: 72,
+                                        predecessor: '70FS-13',
+                                        actualStartDate: '2022-06-25T00:00:00',
+                                        actualEndDate: '2022-09-23T00:00:00',
+                                        displayPredecessor: '70FS-13 days',
+                                        basePlanStartDate: '19/07/2022 (IST)',
+                                        basePlanEndDate: '11/08/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '91 days',
+                                        id: 34,
+                                    },
+                                    {
+                                        taskId: 73,
+                                        blockId: 1,
+                                        floorId: 39,
+                                        siteDrawingTypeId: 1,
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 61,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2022-08-01T00:00:00',
+                                        endDate: '2022-08-20T00:00:00',
+                                        propertyModelActivityId: 74,
+                                        predecessor: '71SS+13,67FS,68FS',
+                                        actualStartDate: '2022-07-11T00:00:00',
+                                        actualEndDate: '2022-07-22T00:00:00',
+                                        displayPredecessor: '71SS+13 days,67FS,68FS',
+                                        basePlanStartDate: '01/08/2022 (IST)',
+                                        basePlanEndDate: '20/08/2022 (IST)',
+                                        revisionNo: 1,
+                                        actualDuration: '12 days',
+                                        id: 35,
+                                    },
+                                ],
+                                actualDuration: '100 days',
+                                id: 29,
+                            },
+                            {
+                                taskId: 74,
+                                blockId: 1,
+                                floorId: 38,
+                                siteDrawingTypeId: 1,
+                                parentId: 3,
+                                taskName: 'Level-B02',
+                                startDate: '2022-08-09T00:00:00',
+                                endDate: '2022-09-20T00:00:00',
+                                propertyModelActivityId: 75,
+                                actualStartDate: '2022-07-15T00:00:00',
+                                actualEndDate: '2022-08-18T00:00:00',
+                                basePlanStartDate: '09/08/2022 (IST)',
+                                basePlanEndDate: '20/09/2022 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 80,
+                                        blockId: 1,
+                                        floorId: 38,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 74,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2022-08-09T00:00:00',
+                                        endDate: '2022-08-21T00:00:00',
+                                        propertyModelActivityId: 81,
+                                        predecessor: '73SS+8',
+                                        actualStartDate: '2022-07-16T00:00:00',
+                                        actualEndDate: '2022-07-27T00:00:00',
+
+                                        displayPredecessor: '73SS+8 days',
+                                        basePlanStartDate: '09/08/2022 (IST)',
+                                        basePlanEndDate: '21/08/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '12 days',
+                                        id: 37,
+                                    },
+                                    {
+                                        taskId: 81,
+                                        blockId: 1,
+                                        floorId: 38,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 74,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2022-08-09T00:00:00',
+                                        endDate: '2022-08-23T00:00:00',
+                                        propertyModelActivityId: 82,
+                                        predecessor: '73SS+8',
+                                        actualStartDate: '2022-07-15T00:00:00',
+                                        actualEndDate: '2022-07-30T00:00:00',
+
+                                        displayPredecessor: '73SS+8 days',
+                                        basePlanStartDate: '09/08/2022 (IST)',
+                                        basePlanEndDate: '23/08/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '16 days',
+                                        id: 38,
+                                    },
+                                    {
+                                        taskId: 82,
+                                        blockId: 1,
+                                        floorId: 38,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 74,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2022-08-10T00:00:00',
+                                        endDate: '2022-09-01T00:00:00',
+                                        propertyModelActivityId: 83,
+                                        predecessor: '73SS+9',
+                                        actualStartDate: '2022-07-26T00:00:00',
+                                        actualEndDate: '2022-08-12T00:00:00',
+
+                                        displayPredecessor: '73SS+9 days',
+                                        basePlanStartDate: '10/08/2022 (IST)',
+                                        basePlanEndDate: '01/09/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '18 days',
+                                        id: 39,
+                                    },
+                                    {
+                                        taskId: 83,
+                                        blockId: 1,
+                                        floorId: 38,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 74,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2022-08-11T00:00:00',
+                                        endDate: '2022-08-30T00:00:00',
+                                        propertyModelActivityId: 84,
+                                        predecessor: '73SS+10',
+                                        actualStartDate: '2022-07-19T00:00:00',
+                                        actualEndDate: '2022-08-03T00:00:00',
+
+                                        displayPredecessor: '73SS+10 days',
+                                        basePlanStartDate: '11/08/2022 (IST)',
+                                        basePlanEndDate: '30/08/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '16 days',
+                                        id: 40,
+                                    },
+                                    {
+                                        taskId: 84,
+                                        blockId: 1,
+                                        floorId: 38,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 74,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2022-08-19T00:00:00',
+                                        endDate: '2022-09-11T00:00:00',
+                                        propertyModelActivityId: 85,
+                                        predecessor: '83FS-12',
+                                        actualStartDate: '2022-07-23T00:00:00',
+                                        actualEndDate: '2022-08-17T00:00:00',
+
+                                        displayPredecessor: '83FS-12 days',
+                                        basePlanStartDate: '19/08/2022 (IST)',
+                                        basePlanEndDate: '11/09/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '26 days',
+                                        id: 41,
+                                    },
+                                    {
+                                        taskId: 86,
+                                        blockId: 1,
+                                        floorId: 38,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 74,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2022-09-01T00:00:00',
+                                        endDate: '2022-09-20T00:00:00',
+                                        propertyModelActivityId: 87,
+                                        predecessor: '84SS+13,80FS,81FS',
+                                        actualStartDate: '2022-08-05T00:00:00',
+                                        actualEndDate: '2022-08-18T00:00:00',
+
+                                        displayPredecessor: '84SS+13 days,80FS,81FS',
+                                        basePlanStartDate: '01/09/2022 (IST)',
+                                        basePlanEndDate: '20/09/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '14 days',
+                                        id: 42,
+                                    },
+                                ],
+                                actualDuration: '35 days',
+                                id: 36,
+                            },
+                            {
+                                taskId: 87,
+                                blockId: 1,
+                                floorId: 37,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-B01',
+                                startDate: '2022-09-09T00:00:00',
+                                endDate: '2022-10-20T00:00:00',
+                                propertyModelActivityId: 88,
+
+                                actualStartDate: '2022-08-08T00:00:00',
+                                actualEndDate: '2022-09-23T00:00:00',
+
+
+                                basePlanStartDate: '09/09/2022 (IST)',
+                                basePlanEndDate: '20/10/2022 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 93,
+                                        blockId: 1,
+                                        floorId: 37,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 87,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2022-09-09T00:00:00',
+                                        endDate: '2022-09-21T00:00:00',
+                                        propertyModelActivityId: 94,
+                                        predecessor: '86SS+8',
+                                        actualStartDate: '2022-08-08T00:00:00',
+                                        actualEndDate: '2022-08-22T00:00:00',
+
+                                        displayPredecessor: '86SS+8 days',
+                                        basePlanStartDate: '09/09/2022 (IST)',
+                                        basePlanEndDate: '21/09/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '15 days',
+                                        id: 44,
+                                    },
+                                    {
+                                        taskId: 94,
+                                        blockId: 1,
+                                        floorId: 37,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 87,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2022-09-09T00:00:00',
+                                        endDate: '2022-09-23T00:00:00',
+                                        propertyModelActivityId: 95,
+                                        predecessor: '86SS+8',
+                                        actualStartDate: '2022-08-09T00:00:00',
+                                        actualEndDate: '2022-08-23T00:00:00',
+
+                                        displayPredecessor: '86SS+8 days',
+                                        basePlanStartDate: '09/09/2022 (IST)',
+                                        basePlanEndDate: '23/09/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '15 days',
+                                        id: 45,
+                                    },
+                                    {
+                                        taskId: 95,
+                                        blockId: 1,
+                                        floorId: 37,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 87,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2022-09-10T00:00:00',
+                                        endDate: '2022-10-02T00:00:00',
+                                        propertyModelActivityId: 96,
+                                        predecessor: '86SS+9',
+                                        actualStartDate: '2022-08-16T00:00:00',
+                                        actualEndDate: '2022-09-01T00:00:00',
+
+                                        displayPredecessor: '86SS+9 days',
+                                        basePlanStartDate: '10/09/2022 (IST)',
+                                        basePlanEndDate: '02/10/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '17 days',
+                                        id: 46,
+                                    },
+                                    {
+                                        taskId: 96,
+                                        blockId: 1,
+                                        floorId: 37,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 87,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2022-09-11T00:00:00',
+                                        endDate: '2022-09-30T00:00:00',
+                                        propertyModelActivityId: 97,
+                                        predecessor: '86SS+10',
+                                        actualStartDate: '2022-08-12T00:00:00',
+                                        actualEndDate: '2022-08-30T00:00:00',
+
+                                        displayPredecessor: '86SS+10 days',
+                                        basePlanStartDate: '11/09/2022 (IST)',
+                                        basePlanEndDate: '30/09/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '19 days',
+                                        id: 47,
+                                    },
+                                    {
+                                        taskId: 97,
+                                        blockId: 1,
+                                        floorId: 37,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 87,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2022-09-19T00:00:00',
+                                        endDate: '2022-10-12T00:00:00',
+                                        propertyModelActivityId: 98,
+                                        predecessor: '96FS-12',
+                                        actualStartDate: '2022-08-17T00:00:00',
+                                        actualEndDate: '2022-09-23T00:00:00',
+
+                                        displayPredecessor: '96FS-12 days',
+                                        basePlanStartDate: '19/09/2022 (IST)',
+                                        basePlanEndDate: '12/10/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '38 days',
+                                        id: 48,
+                                    },
+                                    {
+                                        taskId: 99,
+                                        blockId: 1,
+                                        floorId: 37,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 87,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2022-10-02T00:00:00',
+                                        endDate: '2022-10-20T00:00:00',
+                                        propertyModelActivityId: 100,
+                                        predecessor: '97SS+13,93FS,94FS',
+                                        actualStartDate: '2022-08-29T00:00:00',
+                                        actualEndDate: '2022-09-09T00:00:00',
+
+                                        displayPredecessor: '97SS+13 days,93FS,94FS',
+                                        basePlanStartDate: '02/10/2022 (IST)',
+                                        basePlanEndDate: '20/10/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '12 days',
+                                        id: 49,
+                                    },
+                                ],
+                                actualDuration: '47 days',
+                                id: 43,
+                            },
+                            {
+                                taskId: 100,
+                                blockId: 1,
+                                floorId: 36,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-MZ',
+                                startDate: '2022-10-10T00:00:00',
+                                endDate: '2022-11-20T00:00:00',
+                                propertyModelActivityId: 101,
+
+                                actualStartDate: '2022-09-06T00:00:00',
+                                actualEndDate: '2023-01-18T00:00:00',
+
+
+                                basePlanStartDate: '10/10/2022 (IST)',
+                                basePlanEndDate: '20/11/2022 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 108,
+                                        blockId: 1,
+                                        floorId: 36,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 100,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2022-10-11T00:00:00',
+                                        endDate: '2022-10-25T00:00:00',
+                                        propertyModelActivityId: 109,
+                                        predecessor: '99SS+9',
+                                        actualStartDate: '2022-09-06T00:00:00',
+                                        actualEndDate: '2022-09-26T00:00:00',
+
+                                        displayPredecessor: '99SS+9 days',
+                                        basePlanStartDate: '11/10/2022 (IST)',
+                                        basePlanEndDate: '25/10/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '21 days',
+                                        id: 51,
+                                    },
+                                    {
+                                        taskId: 107,
+                                        blockId: 1,
+                                        floorId: 36,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 100,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2022-10-10T00:00:00',
+                                        endDate: '2022-10-24T00:00:00',
+                                        propertyModelActivityId: 108,
+                                        predecessor: '99SS+8',
+                                        actualStartDate: '2022-09-06T00:00:00',
+                                        actualEndDate: '2022-09-26T00:00:00',
+
+                                        displayPredecessor: '99SS+8 days',
+                                        basePlanStartDate: '10/10/2022 (IST)',
+                                        basePlanEndDate: '24/10/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '21 days',
+                                        id: 52,
+                                    },
+                                    {
+                                        taskId: 106,
+                                        blockId: 1,
+                                        floorId: 36,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 100,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2022-10-10T00:00:00',
+                                        endDate: '2022-10-22T00:00:00',
+                                        propertyModelActivityId: 107,
+                                        predecessor: '99SS+8',
+                                        actualStartDate: '2022-09-06T00:00:00',
+                                        actualEndDate: '2022-09-14T00:00:00',
+
+                                        displayPredecessor: '99SS+8 days',
+                                        basePlanStartDate: '10/10/2022 (IST)',
+                                        basePlanEndDate: '22/10/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '9 days',
+                                        id: 53,
+                                    },
+                                    {
+                                        taskId: 110,
+                                        blockId: 1,
+                                        floorId: 36,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 100,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2022-10-21T00:00:00',
+                                        endDate: '2022-11-13T00:00:00',
+                                        propertyModelActivityId: 111,
+                                        predecessor: '108FS-5',
+                                        actualStartDate: '2022-09-13T00:00:00',
+                                        actualEndDate: '2023-01-18T00:00:00',
+
+                                        displayPredecessor: '108FS-5 days',
+                                        basePlanStartDate: '21/10/2022 (IST)',
+                                        basePlanEndDate: '13/11/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '128 days',
+                                        id: 54,
+                                    },
+                                    {
+                                        taskId: 112,
+                                        blockId: 1,
+                                        floorId: 36,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 100,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2022-11-03T00:00:00',
+                                        endDate: '2022-11-20T00:00:00',
+                                        propertyModelActivityId: 113,
+                                        predecessor: '110SS+13,106FS,107FS',
+                                        actualStartDate: '2022-10-08T00:00:00',
+                                        actualEndDate: '2022-10-21T00:00:00',
+
+                                        displayPredecessor: '110SS+13 days,106FS,107FS',
+                                        basePlanStartDate: '03/11/2022 (IST)',
+                                        basePlanEndDate: '20/11/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '14 days',
+                                        id: 55,
+                                    },
+                                ],
+                                actualDuration: '135 days',
+                                id: 50,
+                            },
+                            {
+                                taskId: 113,
+                                blockId: 1,
+                                floorId: 35,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-LG',
+                                startDate: '2022-11-11T00:00:00',
+                                endDate: '2023-01-05T00:00:00',
+                                propertyModelActivityId: 114,
+
+                                actualStartDate: '2022-09-06T00:00:00',
+                                actualEndDate: '2023-01-09T00:00:00',
+
+
+                                basePlanStartDate: '11/11/2022 (IST)',
+                                basePlanEndDate: '05/01/2023 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 121,
+                                        blockId: 1,
+                                        floorId: 35,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 113,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2022-11-12T00:00:00',
+                                        endDate: '2023-01-04T00:00:00',
+                                        propertyModelActivityId: 122,
+                                        predecessor: '112SS+9',
+                                        actualStartDate: '2022-10-14T00:00:00',
+                                        actualEndDate: '2022-11-11T00:00:00',
+
+                                        displayPredecessor: '112SS+9 days',
+                                        basePlanStartDate: '12/11/2022 (IST)',
+                                        basePlanEndDate: '04/01/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '29 days',
+                                        id: 57,
+                                    },
+                                    {
+                                        taskId: 122,
+                                        blockId: 1,
+                                        floorId: 35,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 113,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2022-11-13T00:00:00',
+                                        endDate: '2022-12-02T00:00:00',
+                                        propertyModelActivityId: 123,
+                                        predecessor: '112SS+10',
+                                        actualStartDate: '2022-09-06T00:00:00',
+                                        actualEndDate: '2022-11-02T00:00:00',
+
+                                        displayPredecessor: '112SS+10 days',
+                                        basePlanStartDate: '13/11/2022 (IST)',
+                                        basePlanEndDate: '02/12/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '58 days',
+                                        id: 58,
+                                    },
+                                    {
+                                        taskId: 120,
+                                        blockId: 1,
+                                        floorId: 35,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 113,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2022-11-11T00:00:00',
+                                        endDate: '2022-12-20T00:00:00',
+                                        propertyModelActivityId: 121,
+                                        predecessor: '112SS+8',
+                                        actualStartDate: '2022-09-10T00:00:00',
+                                        actualEndDate: '2022-11-03T00:00:00',
+
+                                        displayPredecessor: '112SS+8 days',
+                                        basePlanStartDate: '11/11/2022 (IST)',
+                                        basePlanEndDate: '20/12/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '55 days',
+                                        id: 59,
+                                    },
+                                    {
+                                        taskId: 119,
+                                        blockId: 1,
+                                        floorId: 35,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 113,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2022-11-11T00:00:00',
+                                        endDate: '2022-11-23T00:00:00',
+                                        propertyModelActivityId: 120,
+                                        predecessor: '112SS+8',
+                                        actualStartDate: '2022-09-21T00:00:00',
+                                        actualEndDate: '2022-11-28T00:00:00',
+
+                                        displayPredecessor: '112SS+8 days',
+                                        basePlanStartDate: '11/11/2022 (IST)',
+                                        basePlanEndDate: '23/11/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '69 days',
+                                        id: 60,
+                                    },
+                                    {
+                                        taskId: 123,
+                                        blockId: 1,
+                                        floorId: 35,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 113,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2022-11-21T00:00:00',
+                                        endDate: '2022-12-10T00:00:00',
+                                        propertyModelActivityId: 124,
+                                        predecessor: '122FS-12',
+                                        actualStartDate: '2022-10-07T00:00:00',
+                                        actualEndDate: '2023-01-09T00:00:00',
+
+                                        displayPredecessor: '122FS-12 days',
+                                        basePlanStartDate: '21/11/2022 (IST)',
+                                        basePlanEndDate: '10/12/2022 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '95 days',
+                                        id: 61,
+                                    },
+                                    {
+                                        taskId: 125,
+                                        blockId: 1,
+                                        floorId: 35,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 113,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2022-12-21T00:00:00',
+                                        endDate: '2023-01-05T00:00:00',
+                                        propertyModelActivityId: 126,
+                                        predecessor: '123SS+8,119FS,120FS',
+                                        actualStartDate: '2022-11-01T00:00:00',
+                                        actualEndDate: '2022-11-15T00:00:00',
+
+                                        displayPredecessor: '123SS+8 days,119FS,120FS',
+                                        basePlanStartDate: '21/12/2022 (IST)',
+                                        basePlanEndDate: '05/01/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '15 days',
+                                        id: 62,
+                                    },
+                                ],
+                                actualDuration: '126 days',
+                                id: 56,
+                            },
+                            {
+                                taskId: 126,
+                                blockId: 1,
+                                floorId: 34,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-UG',
+                                startDate: '2022-12-27T00:00:00',
+                                endDate: '2023-02-15T00:00:00',
+                                propertyModelActivityId: 127,
+
+                                actualStartDate: '2022-11-03T00:00:00',
+                                actualEndDate: '2023-04-14T00:00:00',
+
+
+                                basePlanStartDate: '27/12/2022 (IST)',
+                                basePlanEndDate: '15/02/2023 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 132,
+                                        blockId: 1,
+                                        floorId: 34,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 126,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2022-12-27T00:00:00',
+                                        endDate: '2023-01-11T00:00:00',
+                                        propertyModelActivityId: 133,
+                                        predecessor: '125SS+6',
+                                        actualStartDate: '2022-11-10T00:00:00',
+                                        actualEndDate: '2022-12-27T00:00:00',
+
+                                        displayPredecessor: '125SS+6 days',
+                                        basePlanStartDate: '27/12/2022 (IST)',
+                                        basePlanEndDate: '11/01/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '48 days',
+                                        id: 64,
+                                    },
+                                    {
+                                        taskId: 133,
+                                        blockId: 1,
+                                        floorId: 34,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 126,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2022-12-27T00:00:00',
+                                        endDate: '2023-01-29T00:00:00',
+                                        propertyModelActivityId: 134,
+                                        predecessor: '125SS+6',
+                                        actualStartDate: '2022-11-03T00:00:00',
+                                        actualEndDate: '2022-12-22T00:00:00',
+
+                                        displayPredecessor: '125SS+6 days',
+                                        basePlanStartDate: '27/12/2022 (IST)',
+                                        basePlanEndDate: '29/01/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '50 days',
+                                        id: 65,
+                                    },
+                                    {
+                                        taskId: 134,
+                                        blockId: 1,
+                                        floorId: 34,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 126,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2022-12-28T00:00:00',
+                                        endDate: '2023-02-02T00:00:00',
+                                        propertyModelActivityId: 135,
+                                        predecessor: '125SS+7',
+                                        actualStartDate: '2022-11-27T00:00:00',
+                                        actualEndDate: '2022-12-21T00:00:00',
+
+                                        displayPredecessor: '125SS+7 days',
+                                        basePlanStartDate: '28/12/2022 (IST)',
+                                        basePlanEndDate: '02/02/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '25 days',
+                                        id: 66,
+                                    },
+                                    {
+                                        taskId: 135,
+                                        blockId: 1,
+                                        floorId: 34,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 126,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2022-12-29T00:00:00',
+                                        endDate: '2023-01-27T00:00:00',
+                                        propertyModelActivityId: 136,
+                                        predecessor: '125SS+8',
+                                        actualStartDate: '2022-11-17T00:00:00',
+                                        actualEndDate: '2022-12-20T00:00:00',
+
+                                        displayPredecessor: '125SS+8 days',
+                                        basePlanStartDate: '29/12/2022 (IST)',
+                                        basePlanEndDate: '27/01/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '34 days',
+                                        id: 67,
+                                    },
+                                    {
+                                        taskId: 136,
+                                        blockId: 1,
+                                        floorId: 34,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 126,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2023-01-22T00:00:00',
+                                        endDate: '2023-02-12T00:00:00',
+                                        propertyModelActivityId: 137,
+                                        predecessor: '135FS-12,134FS-12',
+                                        actualStartDate: '2022-11-03T00:00:00',
+                                        actualEndDate: '2023-04-14T00:00:00',
+
+                                        displayPredecessor: '135FS-12 days,134FS-12 days',
+                                        basePlanStartDate: '22/01/2023 (IST)',
+                                        basePlanEndDate: '12/02/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '163 days',
+                                        id: 68,
+                                    },
+                                    {
+                                        taskId: 138,
+                                        blockId: 1,
+                                        floorId: 34,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 126,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2023-01-30T00:00:00',
+                                        endDate: '2023-02-15T00:00:00',
+                                        propertyModelActivityId: 139,
+                                        predecessor: '136SS+8,132FS,133FS',
+                                        actualStartDate: '2022-12-25T00:00:00',
+                                        actualEndDate: '2023-01-06T00:00:00',
+
+                                        displayPredecessor: '136SS+8 days,132FS,133FS',
+                                        basePlanStartDate: '30/01/2023 (IST)',
+                                        basePlanEndDate: '15/02/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '13 days',
+                                        id: 69,
+                                    },
+                                ],
+                                actualDuration: '163 days',
+                                id: 63,
+                            },
+                            {
+                                taskId: 139,
+                                blockId: 1,
+                                floorId: 33,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-01',
+                                startDate: '2023-02-05T00:00:00',
+                                endDate: '2023-03-30T00:00:00',
+                                propertyModelActivityId: 140,
+
+                                actualStartDate: '2022-12-28T00:00:00',
+                                actualEndDate: '2023-04-13T00:00:00',
+
+
+                                basePlanStartDate: '05/02/2023 (IST)',
+                                basePlanEndDate: '30/03/2023 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 147,
+                                        blockId: 1,
+                                        floorId: 33,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 139,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2023-02-06T00:00:00',
+                                        endDate: '2023-02-28T00:00:00',
+                                        propertyModelActivityId: 148,
+                                        predecessor: '138SS+7',
+                                        actualStartDate: '2023-01-15T00:00:00',
+                                        actualEndDate: '2023-02-21T00:00:00',
+
+                                        displayPredecessor: '138SS+7 days',
+                                        basePlanStartDate: '06/02/2023 (IST)',
+                                        basePlanEndDate: '28/02/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '38 days',
+                                        id: 71,
+                                    },
+                                    {
+                                        taskId: 148,
+                                        blockId: 1,
+                                        floorId: 33,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 139,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2023-02-07T00:00:00',
+                                        endDate: '2023-02-26T00:00:00',
+                                        propertyModelActivityId: 149,
+                                        predecessor: '138SS+8',
+                                        actualStartDate: '2023-01-05T00:00:00',
+                                        actualEndDate: '2023-02-23T00:00:00',
+
+                                        displayPredecessor: '138SS+8 days',
+                                        basePlanStartDate: '07/02/2023 (IST)',
+                                        basePlanEndDate: '26/02/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '50 days',
+                                        id: 72,
+                                    },
+                                    {
+                                        taskId: 145,
+                                        blockId: 1,
+                                        floorId: 33,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 139,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2023-02-05T00:00:00',
+                                        endDate: '2023-03-11T00:00:00',
+                                        propertyModelActivityId: 146,
+                                        predecessor: '138SS+6',
+                                        actualStartDate: '2022-12-28T00:00:00',
+                                        actualEndDate: '2023-01-19T00:00:00',
+
+                                        displayPredecessor: '138SS+6 days',
+                                        basePlanStartDate: '05/02/2023 (IST)',
+                                        basePlanEndDate: '11/03/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '23 days',
+                                        id: 73,
+                                    },
+                                    {
+                                        taskId: 146,
+                                        blockId: 1,
+                                        floorId: 33,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 139,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2023-02-05T00:00:00',
+                                        endDate: '2023-03-11T00:00:00',
+                                        propertyModelActivityId: 147,
+                                        predecessor: '138SS+6',
+                                        actualStartDate: '2022-12-31T00:00:00',
+                                        actualEndDate: '2023-01-25T00:00:00',
+
+                                        displayPredecessor: '138SS+6 days',
+                                        basePlanStartDate: '05/02/2023 (IST)',
+                                        basePlanEndDate: '11/03/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '26 days',
+                                        id: 74,
+                                    },
+                                    {
+                                        taskId: 149,
+                                        blockId: 1,
+                                        floorId: 33,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 139,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2023-02-21T00:00:00',
+                                        endDate: '2023-03-16T00:00:00',
+                                        propertyModelActivityId: 150,
+                                        predecessor: '148FS-8,147FS-8',
+                                        actualStartDate: '2023-01-18T00:00:00',
+                                        actualEndDate: '2023-04-13T00:00:00',
+
+                                        displayPredecessor: '148FS-8 days,147FS-8 days',
+                                        basePlanStartDate: '21/02/2023 (IST)',
+                                        basePlanEndDate: '16/03/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '86 days',
+                                        id: 75,
+                                    },
+                                    {
+                                        taskId: 151,
+                                        blockId: 1,
+                                        floorId: 33,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 139,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2023-03-12T00:00:00',
+                                        endDate: '2023-03-30T00:00:00',
+                                        propertyModelActivityId: 152,
+                                        predecessor: '149SS+8,145FS,146FS',
+                                        actualStartDate: '2023-02-04T00:00:00',
+                                        actualEndDate: '2023-02-24T00:00:00',
+
+                                        displayPredecessor: '149SS+8 days,145FS,146FS',
+                                        basePlanStartDate: '12/03/2023 (IST)',
+                                        basePlanEndDate: '30/03/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '21 days',
+                                        id: 76,
+                                    },
+                                ],
+                                actualDuration: '107 days',
+                                id: 70,
+                            },
+                            {
+                                taskId: 152,
+                                blockId: 1,
+                                floorId: 43,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-02',
+                                startDate: '2023-03-18T00:00:00',
+                                endDate: '2023-04-12T00:00:00',
+                                propertyModelActivityId: 153,
+
+                                actualStartDate: '2023-02-05T00:00:00',
+                                actualEndDate: '2023-04-19T00:00:00',
+
+
+                                basePlanStartDate: '18/03/2023 (IST)',
+                                basePlanEndDate: '12/04/2023 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 158,
+                                        blockId: 1,
+                                        floorId: 43,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 152,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2023-03-18T00:00:00',
+                                        endDate: '2023-03-27T00:00:00',
+                                        propertyModelActivityId: 159,
+                                        predecessor: '151SS+6',
+                                        actualStartDate: '2023-02-05T00:00:00',
+                                        actualEndDate: '2023-03-27T00:00:00',
+
+                                        displayPredecessor: '151SS+6 days',
+                                        basePlanStartDate: '18/03/2023 (IST)',
+                                        basePlanEndDate: '27/03/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '51 days',
+                                        id: 78,
+                                    },
+                                    {
+                                        taskId: 159,
+                                        blockId: 1,
+                                        floorId: 43,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 152,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2023-03-18T00:00:00',
+                                        endDate: '2023-03-30T00:00:00',
+                                        propertyModelActivityId: 160,
+                                        predecessor: '151SS+6',
+                                        actualStartDate: '2023-02-05T00:00:00',
+                                        actualEndDate: '2023-03-17T00:00:00',
+
+                                        displayPredecessor: '151SS+6 days',
+                                        basePlanStartDate: '18/03/2023 (IST)',
+                                        basePlanEndDate: '30/03/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '41 days',
+                                        id: 79,
+                                    },
+                                    {
+                                        taskId: 160,
+                                        blockId: 1,
+                                        floorId: 43,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 152,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2023-03-19T00:00:00',
+                                        endDate: '2023-03-30T00:00:00',
+                                        propertyModelActivityId: 161,
+                                        predecessor: '151SS+7',
+                                        actualStartDate: '2023-02-27T00:00:00',
+                                        actualEndDate: '2023-03-14T00:00:00',
+
+                                        displayPredecessor: '151SS+7 days',
+                                        basePlanStartDate: '19/03/2023 (IST)',
+                                        basePlanEndDate: '30/03/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '16 days',
+                                        id: 80,
+                                    },
+                                    {
+                                        taskId: 161,
+                                        blockId: 1,
+                                        floorId: 43,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 152,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2023-03-20T00:00:00',
+                                        endDate: '2023-03-31T00:00:00',
+                                        propertyModelActivityId: 162,
+                                        predecessor: '151SS+8',
+                                        actualStartDate: '2023-02-21T00:00:00',
+                                        actualEndDate: '2023-03-13T00:00:00',
+
+                                        displayPredecessor: '151SS+8 days',
+                                        basePlanStartDate: '20/03/2023 (IST)',
+                                        basePlanEndDate: '31/03/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '21 days',
+                                        id: 81,
+                                    },
+                                    {
+                                        taskId: 162,
+                                        blockId: 1,
+                                        floorId: 43,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 152,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2023-03-27T00:00:00',
+                                        endDate: '2023-04-07T00:00:00',
+                                        propertyModelActivityId: 163,
+                                        predecessor: '160FS-5,161FS-5',
+                                        actualStartDate: '2023-02-08T00:00:00',
+                                        actualEndDate: '2023-04-19T00:00:00',
+
+                                        displayPredecessor: '160FS-5 days,161FS-5 days',
+                                        basePlanStartDate: '27/03/2023 (IST)',
+                                        basePlanEndDate: '07/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '71 days',
+                                        id: 82,
+                                    },
+                                    {
+                                        taskId: 164,
+                                        blockId: 1,
+                                        floorId: 43,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 152,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2023-04-04T00:00:00',
+                                        endDate: '2023-04-12T00:00:00',
+                                        propertyModelActivityId: 165,
+                                        predecessor: '162SS+8,158FS,159FS',
+                                        actualStartDate: '2023-02-07T00:00:00',
+                                        actualEndDate: '2023-03-20T00:00:00',
+
+                                        displayPredecessor: '162SS+8 days,158FS,159FS',
+                                        basePlanStartDate: '04/04/2023 (IST)',
+                                        basePlanEndDate: '12/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '42 days',
+                                        id: 83,
+                                    },
+                                ],
+                                actualDuration: '74 days',
+                                id: 77,
+                            },
+                            {
+                                taskId: 165,
+                                blockId: 1,
+                                floorId: 31,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-03',
+                                startDate: '2023-04-10T00:00:00',
+                                endDate: '2023-04-25T00:00:00',
+                                propertyModelActivityId: 166,
+
+                                actualStartDate: '2023-03-09T00:00:00',
+                                actualEndDate: '2023-05-13T00:00:00',
+
+
+                                basePlanStartDate: '10/04/2023 (IST)',
+                                basePlanEndDate: '25/04/2023 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 171,
+                                        blockId: 1,
+                                        floorId: 31,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 165,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2023-04-10T00:00:00',
+                                        endDate: '2023-04-14T00:00:00',
+                                        propertyModelActivityId: 172,
+                                        predecessor: '164SS+6',
+                                        actualStartDate: '2023-03-11T00:00:00',
+                                        actualEndDate: '2023-03-29T00:00:00',
+
+                                        displayPredecessor: '164SS+6 days',
+                                        basePlanStartDate: '10/04/2023 (IST)',
+                                        basePlanEndDate: '14/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '19 days',
+                                        id: 85,
+                                    },
+                                    {
+                                        taskId: 172,
+                                        blockId: 1,
+                                        floorId: 31,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 165,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2023-04-10T00:00:00',
+                                        endDate: '2023-04-14T00:00:00',
+                                        propertyModelActivityId: 173,
+                                        predecessor: '164SS+6',
+                                        actualStartDate: '2023-03-09T00:00:00',
+                                        actualEndDate: '2023-04-08T00:00:00',
+
+                                        displayPredecessor: '164SS+6 days',
+                                        basePlanStartDate: '10/04/2023 (IST)',
+                                        basePlanEndDate: '14/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '31 days',
+                                        id: 86,
+                                    },
+                                    {
+                                        taskId: 174,
+                                        blockId: 1,
+                                        floorId: 31,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 165,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2023-04-10T00:00:00',
+                                        endDate: '2023-04-14T00:00:00',
+                                        propertyModelActivityId: 175,
+                                        predecessor: '164SS+6',
+                                        actualStartDate: '2023-03-15T00:00:00',
+                                        actualEndDate: '2023-04-08T00:00:00',
+
+                                        displayPredecessor: '164SS+6 days',
+                                        basePlanStartDate: '10/04/2023 (IST)',
+                                        basePlanEndDate: '14/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '25 days',
+                                        id: 87,
+                                    },
+                                    {
+                                        taskId: 173,
+                                        blockId: 1,
+                                        floorId: 31,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 165,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2023-04-11T00:00:00',
+                                        endDate: '2023-04-15T00:00:00',
+                                        propertyModelActivityId: 174,
+                                        predecessor: '164SS+7',
+                                        actualStartDate: '2023-04-01T00:00:00',
+                                        actualEndDate: '2023-04-13T00:00:00',
+
+                                        displayPredecessor: '164SS+7 days',
+                                        basePlanStartDate: '11/04/2023 (IST)',
+                                        basePlanEndDate: '15/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '13 days',
+                                        id: 88,
+                                    },
+                                    {
+                                        taskId: 175,
+                                        blockId: 1,
+                                        floorId: 31,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 165,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2023-04-14T00:00:00',
+                                        endDate: '2023-04-21T00:00:00',
+                                        propertyModelActivityId: 176,
+                                        predecessor: '173SS+3,174SS+3',
+                                        actualStartDate: '2023-03-15T00:00:00',
+                                        actualEndDate: '2023-05-13T00:00:00',
+
+                                        displayPredecessor: '173SS+3 days,174SS+3 days',
+                                        basePlanStartDate: '14/04/2023 (IST)',
+                                        basePlanEndDate: '21/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '60 days',
+                                        id: 89,
+                                    },
+                                    {
+                                        taskId: 177,
+                                        blockId: 1,
+                                        floorId: 31,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 165,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2023-04-19T00:00:00',
+                                        endDate: '2023-04-25T00:00:00',
+                                        propertyModelActivityId: 178,
+                                        predecessor: '175SS+5,171FS,172FS',
+                                        actualStartDate: '2023-04-07T00:00:00',
+                                        actualEndDate: '2023-04-18T00:00:00',
+
+                                        displayPredecessor: '175SS+5 days,171FS,172FS',
+                                        basePlanStartDate: '19/04/2023 (IST)',
+                                        basePlanEndDate: '25/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '12 days',
+                                        id: 90,
+                                    },
+                                ],
+                                actualDuration: '66 days',
+                                id: 84,
+                            },
+                            {
+                                taskId: 178,
+                                blockId: 1,
+                                floorId: 30,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-04',
+                                startDate: '2023-04-24T00:00:00',
+                                endDate: '2023-05-09T00:00:00',
+                                propertyModelActivityId: 179,
+
+                                actualStartDate: '2023-04-10T00:00:00',
+                                actualEndDate: '2023-06-17T00:00:00',
+
+
+                                basePlanStartDate: '24/04/2023 (IST)',
+                                basePlanEndDate: '09/05/2023 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 184,
+                                        blockId: 1,
+                                        floorId: 30,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 178,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2023-04-24T00:00:00',
+                                        endDate: '2023-04-28T00:00:00',
+                                        propertyModelActivityId: 185,
+                                        predecessor: '177SS+5',
+                                        actualStartDate: '2023-04-11T00:00:00',
+                                        actualEndDate: '2023-04-18T00:00:00',
+
+                                        displayPredecessor: '177SS+5 days',
+                                        basePlanStartDate: '24/04/2023 (IST)',
+                                        basePlanEndDate: '28/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '8 days',
+                                        id: 92,
+                                    },
+                                    {
+                                        taskId: 185,
+                                        blockId: 1,
+                                        floorId: 30,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 178,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2023-04-24T00:00:00',
+                                        endDate: '2023-04-28T00:00:00',
+                                        propertyModelActivityId: 186,
+                                        predecessor: '177SS+5',
+                                        actualStartDate: '2023-04-10T00:00:00',
+                                        actualEndDate: '2023-05-01T00:00:00',
+
+                                        displayPredecessor: '177SS+5 days',
+                                        basePlanStartDate: '24/04/2023 (IST)',
+                                        basePlanEndDate: '28/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '22 days',
+                                        id: 93,
+                                    },
+                                    {
+                                        taskId: 187,
+                                        blockId: 1,
+                                        floorId: 30,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 178,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2023-04-24T00:00:00',
+                                        endDate: '2023-04-28T00:00:00',
+                                        propertyModelActivityId: 188,
+                                        predecessor: '177SS+5',
+                                        actualStartDate: '2023-04-17T00:00:00',
+                                        actualEndDate: '2023-04-25T00:00:00',
+
+                                        displayPredecessor: '177SS+5 days',
+                                        basePlanStartDate: '24/04/2023 (IST)',
+                                        basePlanEndDate: '28/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '9 days',
+                                        id: 94,
+                                    },
+                                    {
+                                        taskId: 186,
+                                        blockId: 1,
+                                        floorId: 30,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 178,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2023-04-25T00:00:00',
+                                        endDate: '2023-04-29T00:00:00',
+                                        propertyModelActivityId: 187,
+                                        predecessor: '177SS+6',
+                                        actualStartDate: '2023-04-22T00:00:00',
+                                        actualEndDate: '2023-05-06T00:00:00',
+
+                                        displayPredecessor: '177SS+6 days',
+                                        basePlanStartDate: '25/04/2023 (IST)',
+                                        basePlanEndDate: '29/04/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '15 days',
+                                        id: 95,
+                                    },
+                                    {
+                                        taskId: 188,
+                                        blockId: 1,
+                                        floorId: 30,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 178,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2023-04-28T00:00:00',
+                                        endDate: '2023-05-05T00:00:00',
+                                        propertyModelActivityId: 189,
+                                        predecessor: '186SS+3,187SS+3',
+                                        actualStartDate: '2023-04-15T00:00:00',
+                                        actualEndDate: '2023-06-17T00:00:00',
+
+                                        displayPredecessor: '186SS+3 days,187SS+3 days',
+                                        basePlanStartDate: '28/04/2023 (IST)',
+                                        basePlanEndDate: '05/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '64 days',
+                                        id: 96,
+                                    },
+                                    {
+                                        taskId: 190,
+                                        blockId: 1,
+                                        floorId: 30,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 178,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2023-05-03T00:00:00',
+                                        endDate: '2023-05-09T00:00:00',
+                                        propertyModelActivityId: 191,
+                                        predecessor: '188SS+5,184FS,185FS',
+                                        actualStartDate: '2023-04-27T00:00:00',
+                                        actualEndDate: '2023-05-08T00:00:00',
+
+                                        displayPredecessor: '188SS+5 days,184FS,185FS',
+                                        basePlanStartDate: '03/05/2023 (IST)',
+                                        basePlanEndDate: '09/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '12 days',
+                                        id: 97,
+                                    },
+                                ],
+                                actualDuration: '69 days',
+                                id: 91,
+                            },
+                            {
+                                taskId: 191,
+                                blockId: 1,
+                                floorId: 29,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-05',
+                                startDate: '2023-05-08T00:00:00',
+                                endDate: '2023-05-23T00:00:00',
+                                propertyModelActivityId: 192,
+
+                                actualStartDate: '2023-04-27T00:00:00',
+                                actualEndDate: '2023-06-17T00:00:00',
+
+
+                                basePlanStartDate: '08/05/2023 (IST)',
+                                basePlanEndDate: '23/05/2023 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 199,
+                                        blockId: 1,
+                                        floorId: 29,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 191,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2023-05-09T00:00:00',
+                                        endDate: '2023-05-20T00:00:00',
+                                        propertyModelActivityId: 200,
+                                        predecessor: '190SS+6',
+                                        actualStartDate: '2023-04-27T00:00:00',
+                                        actualEndDate: '2023-05-23T00:00:00',
+
+                                        displayPredecessor: '190SS+6 days',
+                                        basePlanStartDate: '09/05/2023 (IST)',
+                                        basePlanEndDate: '20/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '27 days',
+                                        id: 99,
+                                    },
+                                    {
+                                        taskId: 197,
+                                        blockId: 1,
+                                        floorId: 29,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 191,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2023-05-08T00:00:00',
+                                        endDate: '2023-05-12T00:00:00',
+                                        propertyModelActivityId: 198,
+                                        predecessor: '190SS+5',
+                                        actualStartDate: '2023-04-29T00:00:00',
+                                        actualEndDate: '2023-05-04T00:00:00',
+
+                                        displayPredecessor: '190SS+5 days',
+                                        basePlanStartDate: '08/05/2023 (IST)',
+                                        basePlanEndDate: '12/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '6 days',
+                                        id: 100,
+                                    },
+                                    {
+                                        taskId: 198,
+                                        blockId: 1,
+                                        floorId: 29,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 191,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2023-05-08T00:00:00',
+                                        endDate: '2023-05-12T00:00:00',
+                                        propertyModelActivityId: 199,
+                                        predecessor: '190SS+5',
+                                        actualStartDate: '2023-04-30T00:00:00',
+                                        actualEndDate: '2023-05-17T00:00:00',
+
+                                        displayPredecessor: '190SS+5 days',
+                                        basePlanStartDate: '08/05/2023 (IST)',
+                                        basePlanEndDate: '12/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '18 days',
+                                        id: 101,
+                                    },
+                                    {
+                                        taskId: 200,
+                                        blockId: 1,
+                                        floorId: 29,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 191,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2023-05-08T00:00:00',
+                                        endDate: '2023-05-12T00:00:00',
+                                        propertyModelActivityId: 201,
+                                        predecessor: '190SS+5',
+                                        actualStartDate: '2023-05-03T00:00:00',
+                                        actualEndDate: '2023-05-13T00:00:00',
+
+                                        displayPredecessor: '190SS+5 days',
+                                        basePlanStartDate: '08/05/2023 (IST)',
+                                        basePlanEndDate: '12/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '11 days',
+                                        id: 102,
+                                    },
+                                    {
+                                        taskId: 201,
+                                        blockId: 1,
+                                        floorId: 29,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 191,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2023-05-12T00:00:00',
+                                        endDate: '2023-05-19T00:00:00',
+                                        propertyModelActivityId: 202,
+                                        predecessor: '199SS+3,200SS+3',
+                                        actualStartDate: '2023-05-02T00:00:00',
+                                        actualEndDate: '2023-06-17T00:00:00',
+
+                                        displayPredecessor: '199SS+3 days,200SS+3 days',
+                                        basePlanStartDate: '12/05/2023 (IST)',
+                                        basePlanEndDate: '19/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '47 days',
+                                        id: 103,
+                                    },
+                                    {
+                                        taskId: 203,
+                                        blockId: 1,
+                                        floorId: 29,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 191,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2023-05-17T00:00:00',
+                                        endDate: '2023-05-23T00:00:00',
+                                        propertyModelActivityId: 204,
+                                        predecessor: '201SS+5,197FS,198FS',
+                                        actualStartDate: '2023-05-15T00:00:00',
+                                        actualEndDate: '2023-05-23T00:00:00',
+
+                                        displayPredecessor: '201SS+5 days,197FS,198FS',
+                                        basePlanStartDate: '17/05/2023 (IST)',
+                                        basePlanEndDate: '23/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '9 days',
+                                        id: 104,
+                                    },
+                                ],
+                                actualDuration: '52 days',
+                                id: 98,
+                            },
+                            {
+                                taskId: 204,
+                                blockId: 1,
+                                floorId: 28,
+                                siteDrawingTypeId: 1,
+
+
+
+
+                                parentId: 3,
+                                taskName: 'Level-06',
+                                startDate: '2023-05-22T00:00:00',
+                                endDate: '2023-06-06T00:00:00',
+                                propertyModelActivityId: 205,
+
+                                actualStartDate: '2023-05-17T00:00:00',
+                                actualEndDate: '2023-07-01T00:00:00',
+
+
+                                basePlanStartDate: '22/05/2023 (IST)',
+                                basePlanEndDate: '06/06/2023 (IST)',
+                                revisionNo: 1,
+                                subTasks: [
+                                    {
+                                        taskId: 210,
+                                        blockId: 1,
+                                        floorId: 28,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 1,
+                                        modelActivityName: 'Precast Column Erection',
+                                        parentId: 204,
+                                        taskName: 'Precast Column Erection',
+                                        startDate: '2023-05-22T00:00:00',
+                                        endDate: '2023-05-26T00:00:00',
+                                        propertyModelActivityId: 211,
+                                        predecessor: '203SS+5',
+                                        actualStartDate: '2023-05-17T00:00:00',
+                                        actualEndDate: '2023-05-30T00:00:00',
+
+                                        displayPredecessor: '203SS+5 days',
+                                        basePlanStartDate: '22/05/2023 (IST)',
+                                        basePlanEndDate: '26/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '14 days',
+                                        id: 106,
+                                    },
+                                    {
+                                        taskId: 211,
+                                        blockId: 1,
+                                        floorId: 28,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 2,
+                                        modelActivityName: 'Precast Walls Erection',
+                                        parentId: 204,
+                                        taskName: 'Precast Walls Erection',
+                                        startDate: '2023-05-22T00:00:00',
+                                        endDate: '2023-05-26T00:00:00',
+                                        propertyModelActivityId: 212,
+                                        predecessor: '203SS+5',
+                                        actualStartDate: '2023-05-17T00:00:00',
+                                        actualEndDate: '2023-06-01T00:00:00',
+
+                                        displayPredecessor: '203SS+5 days',
+                                        basePlanStartDate: '22/05/2023 (IST)',
+                                        basePlanEndDate: '26/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '16 days',
+                                        id: 107,
+                                    },
+                                    {
+                                        taskId: 213,
+                                        blockId: 1,
+                                        floorId: 28,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 4,
+                                        modelActivityName: 'CIS Column casting',
+                                        parentId: 204,
+                                        taskName: 'CIS Column casting',
+                                        startDate: '2023-05-22T00:00:00',
+                                        endDate: '2023-05-26T00:00:00',
+                                        propertyModelActivityId: 214,
+                                        predecessor: '203SS+5',
+                                        actualStartDate: '2023-05-24T00:00:00',
+                                        actualEndDate: '2023-05-28T00:00:00',
+
+                                        displayPredecessor: '203SS+5 days',
+                                        basePlanStartDate: '22/05/2023 (IST)',
+                                        basePlanEndDate: '26/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '5 days',
+                                        id: 108,
+                                    },
+                                    {
+                                        taskId: 212,
+                                        blockId: 1,
+                                        floorId: 28,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 3,
+                                        modelActivityName: 'CIS walls casting',
+                                        parentId: 204,
+                                        taskName: 'CIS walls casting',
+                                        startDate: '2023-05-23T00:00:00',
+                                        endDate: '2023-05-27T00:00:00',
+                                        propertyModelActivityId: 213,
+                                        predecessor: '203SS+6',
+                                        actualStartDate: '2023-05-24T00:00:00',
+                                        actualEndDate: '2023-06-01T00:00:00',
+
+                                        displayPredecessor: '203SS+6 days',
+                                        basePlanStartDate: '23/05/2023 (IST)',
+                                        basePlanEndDate: '27/05/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '9 days',
+                                        id: 109,
+                                    },
+                                    {
+                                        taskId: 214,
+                                        blockId: 1,
+                                        floorId: 28,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 5,
+                                        modelActivityName: 'Precast Beams & HCS/SS Erection',
+                                        parentId: 204,
+                                        taskName: 'Precast Beams & HCS/SS Erection',
+                                        startDate: '2023-05-26T00:00:00',
+                                        endDate: '2023-06-02T00:00:00',
+                                        propertyModelActivityId: 215,
+                                        predecessor: '212SS+3,213SS+3',
+                                        actualStartDate: '2023-05-19T00:00:00',
+                                        actualEndDate: '2023-07-01T00:00:00',
+
+                                        displayPredecessor: '212SS+3 days,213SS+3 days',
+                                        basePlanStartDate: '26/05/2023 (IST)',
+                                        basePlanEndDate: '02/06/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '44 days',
+                                        id: 110,
+                                    },
+                                    {
+                                        taskId: 216,
+                                        blockId: 1,
+                                        floorId: 28,
+                                        siteDrawingTypeId: 1,
+
+
+                                        modelActivityId: 7,
+                                        modelActivityName: 'Topping and Slab Casting',
+                                        parentId: 204,
+                                        taskName: 'Topping and Slab Casting',
+                                        startDate: '2023-05-31T00:00:00',
+                                        endDate: '2023-06-06T00:00:00',
+                                        propertyModelActivityId: 217,
+                                        predecessor: '214SS+5,210FS,211FS',
+                                        actualStartDate: '2023-05-31T00:00:00',
+                                        actualEndDate: '2023-06-07T00:00:00',
+
+                                        displayPredecessor: '214SS+5 days,210FS,211FS',
+                                        basePlanStartDate: '31/05/2023 (IST)',
+                                        basePlanEndDate: '06/06/2023 (IST)',
+                                        revisionNo: 1,
+
+                                        actualDuration: '8 days',
+                                        id: 111,
+                                    },
+                                ],
+                                actualDuration: '46 days',
+                                id: 105,
+                            }
+                        ],
+                        actualDuration: '846 days',
+                        id: 3,
+                    }
+                ],
+                actualDuration: '846 days',
+                id: 2,
+            },
+        ],
+        actualDuration: '846 days',
+        id: 1,
+    },
+];
+
 export let resourcesData: Object[] = [
     { resourceId: 1, resourceName: 'Resource 1' },
     { resourceId: 2, resourceName: 'Resource 2' },
@@ -3018,6 +5936,40 @@ export let resourcesData: Object[] = [
     { resourceId: 4, resourceName: 'Resource 4' },
 ];
 
+export let resourcesDatas: Object[] =
+    [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                    Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+                },
+                {
+                    TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+                },
+                {
+                    TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+                },
+            ]
+        },
+];
+export let coverageData: Object[]=[{
+    TaskID: 1,
+    TaskName: 'Product Concept',
+    StartDate: new Date('04/02/2019'),
+    EndDate: new Date('04/21/2019'),
+    isManual: false,
+    subtasks: [
+        { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        { TaskID: 3, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+    ]
+}];
 export let resources: Object[] = [
     { resourceId: 1, resourceName: 'Resource 1' },
     { resourceId: 2, resourceName: 'Resource 2', resourceUnit: 80 },
@@ -4093,6 +7045,23 @@ export let editingData: Object[] = [
         ]
     },
 ];
+export let taskModeData: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual' : true,
+        'Children': [
+             { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+             'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+             { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+             'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+             { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+             'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+        ]
+    }];
 export let splitTasksData: object[] = [
     {
         TaskID: 1,
@@ -4546,3 +7515,3289 @@ export let GanttData1: Object[]  = [
         ]
     },
 ];
+
+export let exportData1: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+            Indicators: [
+                {
+                    'date': '04/10/2019',
+                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                    'name': 'Indicator title',
+                    'tooltip': 'tooltip'
+                }
+            ] 
+        },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+    {
+        TaskID: 6,
+        TaskName: 'Market Research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand Analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5",Progress: 30 },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                ]
+            },
+            { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8" ,Progress: 30},
+            { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+            { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+        ]
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product Design and Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 14, TaskName: 'Functionality design', StartDate: new Date('04/04/2019'), Duration: 7,Progress: 30 },
+            { TaskID: 15, TaskName: 'Quality design', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 16, TaskName: 'Define Reliability', StartDate: new Date('04/04/2019'), Duration: 5,Progress: 30 },
+            { TaskID: 17, TaskName: 'Identifying raw materials ', StartDate: new Date('04/04/2019'), Duration: 4 },
+            {
+                TaskID: 18,
+                TaskName: 'Define cost plan',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 19, TaskName: 'Manufacturing cost', StartDate: new Date('04/04/2019'), Duration: 1,Progress: 30 },
+                    { TaskID: 20, TaskName: 'Selling cost', StartDate: new Date('04/04/2019'), Duration: 1 }
+                ]
+            },
+            {
+                TaskID: 21,
+                TaskName: 'Development of the final design',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 22, TaskName: 'Defining dimensions and package volume', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 },
+                    { TaskID: 23, TaskName: 'Develop design to meet industry standards', StartDate: new Date('04/04/2019'), Duration: 3 },
+                    { TaskID: 24, TaskName: 'Include all the details', StartDate: new Date('04/04/2019'), Duration: 5 }
+                ]
+            },
+            { TaskID: 25, TaskName: 'CAD Computer-aided design', StartDate: new Date('04/04/2019'), Duration: 10,Progress: 30 },
+            { TaskID: 26, TaskName: 'CAM Computer-aided manufacturing', StartDate: new Date('04/04/2019'), Duration: 10 }
+        ]
+    },
+    { TaskID: 27, TaskName: 'Prototype Testing', StartDate: new Date('04/04/2019'), Duration: 12,Progress: 30 },
+    { TaskID: 28, TaskName: 'Include feedback', StartDate: new Date('04/04/2019'), Duration: 5 },
+    { TaskID: 29, TaskName: 'Manufacturing', StartDate: new Date('04/04/2019'), Duration: 9 ,Progress: 30},
+    { TaskID: 30, TaskName: 'Assembling materials to finished goods', StartDate: new Date('04/04/2019'), Duration: 12 },
+    {
+        TaskID: 31,
+        TaskName: 'Feedback and Testing',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 32, TaskName: 'Internal testing and feedback', StartDate: new Date('04/04/2019'), Duration: 5,Progress: 30 },
+            { TaskID: 33, TaskName: 'Customer testing and feedback', StartDate: new Date('04/04/2019'), Duration: 7,Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 34,
+        TaskName: 'Product Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 35, TaskName: 'Important improvements', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 },
+            { TaskID: 36, TaskName: 'Address any unforeseen issues', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 37,
+        TaskName: 'Final Product',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 38, TaskName: 'Branding product', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 39, TaskName: 'Marketing and pre-sales', StartDate: new Date('04/04/2019'), Duration: 10,Progress: 30 }
+        ]
+    }
+];
+
+export let projectNewData: Object[] = [
+    { TaskID: 1, TaskName: 'Project Initiation_1', StartDate: new Date('04/02/2019'), EndDate: new Date('04/21/2019') },
+    { TaskID: 2, TaskName: 'Identify Site location_1', StartDate: new Date('03/29/2019'), Duration: 6, Progress: 70, ParentId: 1 },
+    { TaskID: 3, TaskName: 'Perform Soil test_1', StartDate: new Date('04/02/2019'), Duration: 7, Progress: 70, ParentId: 1 },
+    { TaskID: 4, TaskName: 'Soil test approval_1', StartDate: new Date('04/02/2019'), Duration: 8, Progress: 70, Predecessor: '2', ParentId: 1 },
+    { TaskID: 5, TaskName: 'Project Estimation_1', StartDate: new Date('04/02/2019'), EndDate: new Date('04/21/2019') },
+    { TaskID: 6, TaskName: 'Develop floor plan for estimation_1', StartDate: new Date('04/04/2019'), Duration: 9, Progress: 70, ParentId: 5 },
+    { TaskID: 7, TaskName: 'List materials_1', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 70, ParentId: 5 },
+    { TaskID: 8, TaskName: 'Estimation approval_1', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 70, ParentId: 5 }
+];
+export let indentData: Object[] = [{
+    TaskID: 1,
+    TaskName: 'Product Concept',
+    StartDate: new Date('04/02/2019'),
+    EndDate: new Date('04/21/2019'),
+    subtasks: [
+        { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+        {
+            TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+            Indicators: [
+                {
+                    'date': '04/10/2019',
+                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                    'name': 'Indicator title',
+                    'tooltip': 'tooltip'
+                }
+            ]
+        },
+        { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+    ]
+}]
+export let connectorLineFSDatasource: Object[] = [
+    {
+        'TaskId': 1, 'TaskName': 'FS',
+        'StartDate': new Date('10/23/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 2, 'TaskName': 'FS',
+        'StartDate': new Date('10/18/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 3, 'TaskName': 'FS',
+        'StartDate': new Date('10/26/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 4, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7'
+    },
+    {
+        'TaskId': 5, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7+3'
+    },
+    {
+        'TaskId': 6, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7-3'
+    },
+    {
+        'TaskId': 7, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/24/2017'), 'Progress': 65, 'Predecessor': '1,2,3-3,8,9,10-3'
+    },
+    {
+        'TaskId': 8, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/23/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 9, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/18/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 10, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/26/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 11, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7'
+    },
+    {
+        'TaskId': 12, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7+3'
+    },
+    {
+        'TaskId': 13, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7-3'
+    },
+    {
+        'TaskId': 14, 'TaskName': 'FS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '23,16'
+    }
+];
+export let connectorLineSSDatasource: Object[] = [
+    {
+        'TaskId': 1, 'TaskName': 'SS',
+        'StartDate': new Date('10/23/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 2, 'TaskName': 'SS',
+        'StartDate': new Date('10/18/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 3, 'TaskName': 'SS',
+        'StartDate': new Date('10/26/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 4, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SS'
+    },
+    {
+        'TaskId': 5, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SS+3'
+    },
+    {
+        'TaskId': 6, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SS-3'
+    },
+    {
+        'TaskId': 7, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/24/2017'), 'Progress': 65, 'Predecessor': '1SS,2SS,3SS-3,8SS,9SS,10SS-3'
+    },
+    {
+        'TaskId': 8, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/23/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 9, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/18/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 10, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/26/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 11, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SS'
+    },
+    {
+        'TaskId': 12, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SS+3'
+    },
+    {
+        'TaskId': 13, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SS-3'
+    },
+    {
+        'TaskId': 14, 'TaskName': 'SS', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '14'
+    }
+];
+export let connectorLineFFDatasource: Object[] = [
+    {
+        'TaskId': 1, 'TaskName': 'FF',
+        'StartDate': new Date('10/23/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 2, 'TaskName': 'FF',
+        'StartDate': new Date('10/18/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 3, 'TaskName': 'FF',
+        'StartDate': new Date('10/26/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 4, 'TaskName': 'FF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7FF'
+    },
+    {
+        'TaskId': 5, 'TaskName': 'FF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7FF+3'
+    },
+    {
+        'TaskId': 6, 'TaskName': 'FF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7FF-3'
+    },
+    {
+        'TaskId': 7, 'TaskName': 'FF', 'Duration': 1,
+        'StartDate': new Date('10/24/2017'), 'Progress': 65, 'Predecessor': '1FF,2FF,3FF-3,8FF,9FF,10FF-3'
+    },
+    {
+        'TaskId': 8, 'TaskName': 'FF', 'Duration': 1,
+        'StartDate': new Date('10/23/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 9, 'TaskName': 'FF', 'Duration': 1,
+        'StartDate': new Date('10/18/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 10, 'TaskName': 'FF', 'Duration': 1,
+        'StartDate': new Date('10/26/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 11, 'TaskName': 'FF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7FF'
+    },
+    {
+        'TaskId': 12, 'TaskName': 'FF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7FF+3'
+    },
+    {
+        'TaskId': 13, 'TaskName': 'FF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7FF-3'
+    },
+    {
+        'TaskId': 14, 'TaskName': 'FF', 'Predecessor': '7FF'
+    }
+];
+export let connectorLineSFDatasource: Object[] = [
+    {
+        'TaskId': 1, 'TaskName': 'SF',
+        'StartDate': new Date('10/23/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 2, 'TaskName': 'SF',
+        'StartDate': new Date('10/18/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 3, 'TaskName': 'SF',
+        'StartDate': new Date('10/26/2017'), 'Duration': 1, 'Progress': 80
+    },
+    {
+        'TaskId': 4, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SF'
+    },
+    {
+        'TaskId': 5, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SF+3'
+    },
+    {
+        'TaskId': 6, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SF-3'
+    },
+    {
+        'TaskId': 7, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/24/2017'), 'Progress': 65, 'Predecessor': '1SF,2SF,3SF-3,8SF,9SF,10SF-3'
+    },
+    {
+        'TaskId': 8, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/23/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 9, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/18/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 10, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/26/2017'), 'Progress': 65
+    },
+    {
+        'TaskId': 11, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SF'
+    },
+    {
+        'TaskId': 12, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SF+3'
+    },
+    {
+        'TaskId': 13, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65, 'Predecessor': '7SF-3'
+    },
+    {
+        'TaskId': 14, 'TaskName': 'SF', 'Duration': 1,
+        'StartDate': new Date('10/25/2017'), 'Progress': 65
+    }
+];
+export let predecessorData: Object[] = [
+    {
+        TaskId: 1,
+        TaskName: "Planning",
+        StartDate: new Date("10/06/2017"),
+        EndDate: new Date("10/10/2017"),
+        taskColor: "#79BDC9",
+        progressColor: "#59AAB4",
+        Children: [
+            {
+                TaskId: 2, TaskName: "Allocate resources 1",
+                EndDate: new Date("10/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskId: 3, TaskName: "Allocate resources 2", Predecessor: '2FS',
+                EndDate: new Date("10/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskId: 4, TaskName: "Allocate resources 3", Predecessor: '2FS,9FS',
+                EndDate: new Date("10/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskId: 5, TaskName: "Allocate resources 4", Predecessor: '2FS',
+                EndDate: new Date("10/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            }
+        ]
+    }, {
+        TaskId: 6,
+        TaskName: "Planning",
+        StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"),
+        taskColor: "#79BDC9",
+        progressColor: "#59AAB4",
+        Children: [
+            {
+                TaskId: 7, TaskName: "Allocate resources 1",
+                EndDate: new Date("10/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskId: 8, TaskName: "Allocate resources 2", Predecessor: '4FS',
+                EndDate: new Date("10/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskId: 9, TaskName: "Allocate resources 3", Predecessor: '2FS',
+                EndDate: new Date("10/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskId: 10, TaskName: "Allocate resources 4",
+                EndDate: new Date("10/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            }
+        ]
+    }];
+export  let projectNewData1: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+        {
+            TaskID: 6,
+            TaskName: 'Market Research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand Analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5", Progress: 30 },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                    ]
+                },
+                { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8", Progress: 30 },
+                { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+                { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+            ]
+        }
+    ];
+export let editingData1 : Object[]  = [
+    {
+        TaskID: 24,
+        TaskName: '[OPERATOR CRISTIAN] OEM Cristian PROYECTO CRISTIAN 2 SW_NOSW',
+        StartDate: '2024-02-09T05:00:00.000Z',
+        Progress: 0,
+        Duration: 1,
+        subtasks: [
+            {
+                TaskID: 33,
+                TaskName: 'Homologation_Process',
+                StartDate: '2024-02-09T05:00:00.000Z',
+                Duration: 1,
+                Progress: 0,
+                subtasks: [
+                    {
+                        TaskID: 113,
+                        TaskName: 'Actividad 2',
+                        StartDate: '2024-02-09T05:00:00.000Z',
+                        Duration: 3,
+                        Predecessor: '',
+                        Progress: 0
+                    },
+                    {
+                        TaskID: 114,
+                        TaskName: 'Actividad 3',
+                        StartDate: '2024-02-12T05:00:00.000Z',
+                        Duration: 1,
+                        Predecessor: '113FS',
+                        Progress: 0,
+                        subtasks: [
+                            {
+                                TaskID: 104,
+                                TaskName: 'Test Case 4',
+                                StartDate: '2024-02-12T05:00:00.000Z',
+                                Duration: 1,
+                                Progress: 0,
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+];
+
+export let data5: Object[] =[{
+    TaskID: 1,
+    TaskName: 'Project initiation',
+    StartDate: new Date('03/29/2019'),
+    EndDate: new Date('04/21/2019'),
+    subtasks: [
+        {
+            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+            Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+        },
+        {
+            TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+            resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+        },
+        {
+            TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+            resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+        },
+    ]
+}];
+export let data6: Object[]  = [{
+    TaskID: 1,
+    TaskName: 'Project initiation',
+    StartDate: new Date('03/29/2019'),
+    EndDate: new Date('04/21/2019'),
+    subtasks: [
+        {
+            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+            Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+        },
+        {
+            TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+            resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+        },
+        {
+            TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+            resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+        },
+    ]
+}];
+
+export let data7: Object[] = [{
+    TaskID: 1,
+    TaskName: 'Project initiation',
+    StartDate: new Date('03/29/2019'),
+    EndDate: new Date('04/21/2019'),
+    subtasks: [
+        {
+            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+            Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+        },
+        {
+            TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+            resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+        },
+        {
+            TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+            resources: [{ resourceId: 1, resourceUnit: 75 }], Progress: 30, work: 10,
+        },
+    ]
+}];
+
+export let criticalPathData: Object[] = [
+    {
+        taskID: 7,
+        taskName: "Design",
+        startDate: new Date("02/10/2017"),
+        endDate: new Date("02/18/2017"),
+        subtasks: [
+            { taskID: 8, taskName: "Software Specification", startDate: new Date("02/11/2017"), endDate: new Date("02/12/2017"), duration: 3, progress: "60", resourceInfo: [2] },
+            {
+                taskID: 9, taskName: "Develop prototype", startDate: new Date("02/10/2017"), endDate: new Date("02/12/2017"), duration: 3, progress: "40", resourceInfo: [3],
+                subtasks: [
+                    { taskID: 30, taskName: "Plan timeline", startDate: new Date("02/06/2017"), endDate: new Date("02/20/2017"), duration: 5, progress: "80", resourceInfo: [1] }
+                ]
+            },
+            { taskID: 10, taskName: "Get approval from customer", startDate: new Date("02/15/2017"), endDate: new Date("02/18/2017"), duration: 5, progress: "50", predecessor: "30SF", resourceInfo: [1] },
+            { taskID: 11, taskName: "Design complete", startDate: new Date("02/18/2017"), endDate: new Date("02/21/2017"), duration: 3, predecessor: "10FF" },
+            { taskID: 12, taskName: "Design complete", startDate: new Date("02/18/2017"), endDate: new Date("02/21/2017"), duration: 3, predecessor: "10SS" }
+        ]
+    }
+];
+export let taskModeData1: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            {
+                'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40'
+            },
+            {
+                'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true
+            },
+            {
+                'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40',
+            }
+        ]
+    },
+    {
+        'TaskID': 5,
+        'TaskName': 'Parent Task 2',
+        'StartDate': new Date('03/05/2017'),
+        'EndDate': new Date('03/09/2017'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            {
+                'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+                'EndDate': new Date('03/09/2017'), 'Progress': '40'
+            },
+            {
+                'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+                'EndDate': new Date('03/09/2017'), 'Progress': '40', 'Predecessor': '8FS'
+            },
+            {
+                'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017',),
+                'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true, 'Predecessor': '9FF'
+            },
+            {
+                'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+                'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true
+            }
+        ]
+    },
+    {
+        'TaskID': 10,
+        'TaskName': 'Parent Task 3',
+        'StartDate': new Date('03/13/2017'),
+        'EndDate': new Date('03/17/2017'),
+        'Progress': '40',
+        'Children': [
+            {
+                'TaskID': 11, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/13/2017'),
+                'EndDate': new Date('03/17/2017'), 'Progress': '40'
+            },
+            {
+                'TaskID': 12, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/13/2017'),
+                'EndDate': new Date('03/17/2017'), 'Progress': '40', 'Predecessor': '11SF'
+            },
+            {
+                'TaskID': 13, 'TaskName': 'Child Task 3', 'StartDate': new Date('03/13/2017'),
+                'EndDate': new Date('03/17/2017'), 'Progress': '40',
+            },
+            {
+                'TaskID': 14, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/12/2017'),
+                'EndDate': new Date('03/17/2017'), 'Progress': '40', 'Predecessor': '13SS'
+            },
+            {
+                'TaskID': 15, 'TaskName': 'Child Task 5', 'StartDate': new Date('03/13/2017'),
+                'EndDate': new Date('03/17/2017'), 'Progress': '40'
+            }
+        ]
+    }
+];
+export let taskModeData2: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            {
+                'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40'
+            },
+            {
+                'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true
+            },
+            {
+                'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40',
+            }
+        ]
+    },
+    {
+        'TaskID': 5,
+        'TaskName': 'Parent Task 2',
+        'StartDate': new Date('03/05/2017'),
+        'EndDate': new Date('03/09/2017'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            {
+                'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/06/2017'),
+                'EndDate': new Date('03/09/2017'), 'Progress': '40'
+            },
+            {
+                'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/06/2017'),
+                'EndDate': new Date('03/09/2017'), 'Progress': '40', 'Predecessor': '8FS'
+            },
+            {
+                'TaskID': 8, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/28/2017',),
+                'EndDate': new Date('03/05/2017'), 'Progress': '40', 'isManual': true, 'Predecessor': '9FF'
+            },
+            {
+                'TaskID': 9, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/04/2017'),
+                'EndDate': new Date('03/09/2017'), 'Progress': '40', 'isManual': true
+            }
+        ]
+    },
+    {
+        'TaskID': 10,
+        'TaskName': 'Parent Task 3',
+        'StartDate': new Date('03/13/2017'),
+        'EndDate': new Date('03/17/2017'),
+        'Progress': '40',
+        'Children': [
+            {
+                'TaskID': 11, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/13/2017'),
+                'EndDate': new Date('03/17/2017'), 'Progress': '40'
+            },
+            {
+                'TaskID': 12, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/13/2017'),
+                'EndDate': new Date('03/17/2017'), 'Progress': '40', 'Predecessor': '11SF'
+            },
+            {
+                'TaskID': 13, 'TaskName': 'Child Task 3', 'StartDate': new Date('03/13/2017'),
+                'EndDate': new Date('03/17/2017'), 'Progress': '40',
+            },
+            {
+                'TaskID': 14, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/12/2017'),
+                'EndDate': new Date('03/17/2017'), 'Progress': '40', 'Predecessor': '13SS'
+            },
+            {
+                'TaskID': 15, 'TaskName': 'Child Task 5', 'StartDate': new Date('03/13/2017'),
+                'EndDate': new Date('03/17/2017'), 'Progress': '40'
+            }
+        ]
+    }
+];
+export let bwData: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'New Task 1',
+        StartDate: new Date('05/22/2023'),
+        EndDate: new Date('05/22/2023'),
+        BaselineStartDate: new Date('05/22/2023'),
+        BaselineEndDate: new Date('05/22/2023'),
+        Progress: 59,
+        Duration: 1,
+    },
+    {
+        TaskID: 2,
+        TaskName: 'New Task 2',
+        StartDate: new Date('05/22/2023'),
+        EndDate: new Date('05/22/2023'),
+        BaselineStartDate: new Date('05/22/2023'),
+        BaselineEndDate: new Date('05/22/2023'),
+        Progress: 45,
+        Duration: 1,
+        Predecessor: '1FS',
+    },
+];
+export let criticalPathData1: Object[] = [
+    {
+        taskID: 7,
+        taskName: "Design",
+        startDate: new Date("02/10/2017"),
+        endDate: new Date("02/18/2017"),
+        subtasks: [
+            { taskID: 8, taskName: "Software Specification", startDate: new Date("02/11/2017"), endDate: new Date("02/12/2017"), duration: 3, progress: "60", resourceInfo: [2] },
+            {
+                taskID: 9, taskName: "Develop prototype", startDate: new Date("02/10/2017"), endDate: new Date("02/12/2017"), duration: 3, progress: "40", resourceInfo: [3],
+                subtasks: [
+                    { taskID: 30, taskName: "Plan timeline", startDate: new Date("02/06/2017"), endDate: new Date("02/20/2017"), duration: 5, progress: "80", resourceInfo: [1] }
+                ]
+            },
+            { taskID: 10, taskName: "Get approval from customer", startDate: new Date("02/15/2017"), endDate: new Date("02/18/2017"), duration: 5, progress: "50", predecessor: "30FF", resourceInfo: [1] },
+            { taskID: 11, taskName: "Design complete", startDate: new Date("02/18/2017"), endDate: new Date("02/21/2017"), duration: 3 },
+            { taskID: 12, taskName: "Design complete", startDate: new Date("02/18/2017"), endDate: new Date("02/21/2017"), duration: 3, predecessor: "10FS" }
+        ]
+    }
+];
+export  let criticalPathData2: Object[] = [
+    {
+        taskID: 7,
+        taskName: "Design",
+        startDate: new Date("02/10/2017"),
+        endDate: new Date("02/18/2017"),
+        subtasks: [
+            { taskID: 8, taskName: "Software Specification", startDate: new Date("02/11/2017"), endDate: new Date("02/12/2017"), duration: 3, progress: "60", resourceInfo: [2] },
+            {
+                taskID: 9, taskName: "Develop prototype", startDate: new Date("02/10/2017"), endDate: new Date("02/12/2017"), duration: 3, progress: "40", resourceInfo: [3],
+                subtasks: [
+                    { taskID: 30, taskName: "Plan timeline", startDate: new Date("02/06/2017"), endDate: new Date("02/20/2017"), duration: 5, progress: "80", resourceInfo: [1] }
+                ]
+            },
+            { taskID: 10, taskName: "Get approval from customer", startDate: new Date("02/15/2017"), endDate: new Date("02/18/2017"), duration: 5, progress: "50", predecessor: "30FF", resourceInfo: [1] },
+            { taskID: 11, taskName: "Design complete", startDate: new Date("02/18/2017"), endDate: new Date("02/21/2017"), duration: 3 },
+            { taskID: 12, taskName: "Design complete", startDate: new Date("02/18/2017"), endDate: new Date("02/21/2017"), duration: 3, predecessor: "10FS" }
+        ]
+    }
+];
+export  let bwData1: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'New Task 1',
+        StartDate: new Date('05/22/2023'),
+        EndDate: new Date('05/22/2023'),
+        BaselineStartDate: new Date('05/22/2023'),
+        BaselineEndDate: new Date('05/22/2023'),
+        Progress: 59,
+        Duration: 1,
+    },
+    {
+        TaskID: 2,
+        TaskName: 'New Task 2',
+        StartDate: new Date('05/22/2023'),
+        EndDate: new Date('05/22/2023'),
+        BaselineStartDate: new Date('05/22/2023'),
+        BaselineEndDate: new Date('05/22/2023'),
+        Progress: 45,
+        Duration: 1,
+        Predecessor: '1FS',
+    },
+];
+
+export let bwData2: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'New Task 1',
+        StartDate: new Date('05/22/2023'),
+        EndDate: new Date('05/22/2023'),
+        BaselineStartDate: new Date('05/22/2023'),
+        BaselineEndDate: new Date('05/22/2023'),
+        Progress: 59,
+        Duration: 1,
+    },
+    {
+        TaskID: 2,
+        TaskName: 'New Task 2',
+        StartDate: new Date('05/22/2023'),
+        EndDate: new Date('05/22/2023'),
+        BaselineStartDate: new Date('05/22/2023'),
+        BaselineEndDate: new Date('05/22/2023'),
+        Progress: 45,
+        Duration: 1,
+        Predecessor: '1FS',
+    },
+];
+
+export  let bwData3: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'New Task 1',
+        StartDate: new Date('07/11/2023'),
+        EndDate: new Date('07/11/2023'),
+        Progress: 59,
+        Duration: 1,
+        Predecessor: '2FS',
+    },
+    {
+        TaskID: 2,
+        TaskName: 'New Task 2',
+        StartDate: new Date('07/10/2023'),
+        EndDate: new Date('07/10/2023'),
+        Progress: 45,
+        Duration: 1,
+    },
+    {
+        TaskID: 3,
+        TaskName: 'New Task 1',
+        StartDate: new Date('07/12/2023'),
+        EndDate: new Date('07/12/2023'),
+        Progress: 59,
+        Duration: 1,
+        Predecessor: '1FS',
+    },
+    {
+        TaskID: 4,
+        TaskName: 'New Task 2',
+        StartDate: new Date('07/13/2023'),
+        EndDate: new Date('07/13/2023'),
+        Progress: 45,
+        Duration: 1,
+        Predecessor: '3FS',
+    },
+];
+
+export let bwData4: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'New Task 1',
+        StartDate: new Date('07/11/2023'),
+        EndDate: new Date('07/11/2023'),
+        Progress: 59,
+        Duration: 1,
+        Predecessor: '2FS',
+    },
+    {
+        TaskID: 2,
+        TaskName: 'New Task 2',
+        StartDate: new Date('07/10/2023'),
+        EndDate: new Date('07/10/2023'),
+        Progress: 45,
+        Duration: 1,
+    },
+    {
+        TaskID: 3,
+        TaskName: 'New Task 1',
+        StartDate: new Date('07/12/2023'),
+        EndDate: new Date('07/12/2023'),
+        Progress: 59,
+        Duration: 1,
+        Predecessor: '1FS',
+    },
+    {
+        TaskID: 4,
+        TaskName: 'New Task 2',
+        StartDate: new Date('07/13/2023'),
+        EndDate: new Date('07/13/2023'),
+        Progress: 45,
+        Duration: 1,
+        Predecessor: '3FS',
+    },
+];
+export let weekenddata: Object[] = [
+    { TaskID: 1, TaskName: 'Project Initiation_1', StartDate: new Date('04/02/2019'), EndDate: new Date('04/21/2019') },
+    { TaskID: 2, TaskName: 'Identify Site location_1', StartDate: new Date('03/29/2019'), Duration: 6, Progress: 70, ParentId: 1 },
+    { TaskID: 3, TaskName: 'Perform Soil test_1', StartDate: new Date('04/02/2019'), Duration: 7, Progress: 70, ParentId: 1 },
+    { TaskID: 4, TaskName: 'Soil test approval_1', StartDate: new Date('04/02/2019'), Duration: 8, Progress: 70, Predecessor: '2', ParentId: 1 },
+    { TaskID: 5, TaskName: 'Project Estimation_1', StartDate: new Date('04/02/2019'), EndDate: new Date('04/21/2019') },
+    { TaskID: 6, TaskName: 'Develop floor plan for estimation_1', StartDate: new Date('04/04/2019'), Duration: 9, Progress: 70, ParentId: 5 },
+    { TaskID: 7, TaskName: 'List materials_1', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 70, ParentId: 5 },
+    { TaskID: 8, TaskName: 'Estimation approval_1', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 70, ParentId: 5 }
+];
+export let projectNewData9 = [
+    {
+      TaskID: 1,
+      TaskName: 'Product concept',
+      StartDate: new Date('04/02/2019'),
+      EndDate: new Date('04/21/2019'),
+      subtasks: [
+        {
+          TaskID: 2,
+          TaskName: 'Defining the product and its usage',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/02/2019'),
+          Progress: 30,
+          Milestone: false,
+        },
+        {
+          TaskID: 3,
+          TaskName: 'Defining target audience',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/02/2019'),
+          Milestone: false,
+        },
+        {
+          TaskID: 4,
+          TaskName: 'Prepare product sketch and notes',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/02/2019'),
+          Progress: 30,
+          Milestone: true,
+        },
+      ],
+    },       
+];
+export let projectNewData10 = [
+    {
+      TaskID: 1,
+      TaskName: 'Product concept',
+      StartDate: new Date('04/02/2019'),
+      EndDate: new Date('04/21/2019'),
+      subtasks: [
+        {
+          TaskID: 2,
+          TaskName: 'Defining the product and its usage',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/02/2019'),
+          Progress: 30,
+          Milestone: false,
+        },
+        {
+          TaskID: 3,
+          TaskName: 'Defining target audience',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/02/2019'),
+          Milestone: false,
+        },
+        {
+          TaskID: 4,
+          TaskName: 'Prepare product sketch and notes',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/02/2019'),
+          Progress: 30,
+          Milestone: true,
+        },
+      ],
+    },       
+];
+export let projectNewData11 = [
+    {
+      TaskID: 1,
+      TaskName: 'Product concept',
+      StartDate: new Date('04/02/2019'),
+      EndDate: new Date('04/21/2019'),
+      subtasks: [
+        {
+          TaskID: 2,
+          TaskName: 'Defining the product and its usage',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/02/2019'),
+          Progress: 30,
+          Milestone: false,
+        },
+        {
+          TaskID: 3,
+          TaskName: 'Defining target audience',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/02/2019'),
+          Milestone: false,
+        },
+        {
+          TaskID: 4,
+          TaskName: 'Prepare product sketch and notes',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/02/2019'),
+          Progress: 30,
+          Milestone: true,
+        },
+      ],
+    },       
+];
+export let projectNewData12 =  [
+    {
+        TaskID: 1,
+        TaskName: 'Receive vehicle and create job card',
+        BaselineStartDate: new Date('03/05/2018 00:00:00 AM'),
+        BaselineEndDate: new Date('03/03/2018 00:00:00 AM'),
+        Duration: 1,
+        StartDate: new Date('03/05/2018 00:00:00 AM'),
+        EndDate: new Date('03/10/2018 00:00:00 AM'),
+    },
+]
+export let selfData1 = [
+    {
+        taskID: 1,
+        taskName: 'Project Schedule',
+        startDate: new Date('02/04/2019'),
+        endDate: new Date('03/10/2019'),
+    },
+    {
+        taskID: 2,
+        taskName: 'Planning',
+        startDate: new Date('02/04/2019'),
+        endDate: new Date('02/10/2019'),
+        parentID: 1,
+    },
+    {
+        taskID: 5,
+        taskName: 'Allocate resources',
+        startDate: new Date('02/04/2019'),
+        endDate: new Date('02/10/2019'),
+        duration: 6,
+        progress: '75',
+        parentID: 2,
+    },
+    {
+        taskID: 6,
+        taskName: 'Planning complete',
+        startDate: new Date('02/06/2019 12:00:00 PM'),
+        endDate: new Date('02/06/2019 12:00:00 PM'),
+        baselineStart: new Date('02/06/2019 12:00:00 PM'),
+        baselineEnd: new Date('02/06/2019 12:00:00 PM'),
+        duration: 0,
+        predecessor: '3FS,4FS,5FS',
+        parentID: 2,
+    },
+];
+export let splitTasksData1 = [
+    {
+        TaskID: 1,
+        TaskName: 'Defining the product and its usage',
+        StartDate: new Date('2019-02-04T21:28:41'),
+        EndDate: new Date('2019-02-05T21:28:41'),
+        Duration: 180,
+        Progress: 47,
+        Segments: [
+            {
+                StartDate: new Date('2019-02-04'),
+                Duration: 90,
+            },
+            {
+                StartDate: new Date('2019-02-05'),
+                Duration: 90,
+            },
+        ],
+    },
+];
+export let projectNewData13 = [{
+    TaskID: 1,
+    TaskName: 'Project initiation',
+    StartDate: new Date('03/29/2019'),
+    EndDate: new Date('04/21/2019'),
+    subtasks: [
+        {
+            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+            Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+        },
+        {
+            TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+            resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+        },
+        {
+            TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+            resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+        },
+    ]
+}]
+export let columnTemplateData: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: "Project Schedule",
+        StartDate: new Date("02/06/2017"),
+        EndDate: new Date("03/10/2017"),
+        taskColor: "#F2A4A7",
+        progressColor: "#DE605C",
+        Children: [
+            {
+                TaskID: 2,
+                TaskName: "Planning",
+                StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"),
+                taskColor: "#79BDC9",
+                progressColor: "#59AAB4",
+                Children: [
+                    {
+                        TaskID: 3, TaskName: "Plan timeline", StartDate: new Date("02/06/2017"),
+                        EndDate: new Date("02/10/2017"), Duration: 6, Progress: "60", resourceId: [1]
+                    },
+                    {
+                        TaskID: 4, TaskName: "Plan budget", StartDate: new Date("02/06/2017"),
+                        EndDate: new Date("02/10/2017"), Duration: 6, Progress: "90", resourceId: [5]
+                    },
+                    {
+                        TaskID: 5, TaskName: "Allocate resources", StartDate: new Date("02/06/2017"),
+                        EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75",
+                        predObj: [{ 'from': 4, 'to': 5, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        resourceId: [6]
+                    },
+                    {
+                        TaskID: 6, TaskName: "Planning complete", StartDate: new Date("02/06/2017"),
+                        EndDate: new Date("02/10/2017"), Duration: 0,
+                        predObj: [{ 'from': 3, 'to': 6, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false },
+                        { 'from': 4, 'to': 6, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false },
+                        { 'from': 5, 'to': 6, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "3FS,4FS,5FS", resourceId: [1]
+                    }
+                ]
+            },
+            {
+                TaskID: 7,
+                TaskName: "Design",
+                StartDate: new Date("02/13/2017"),
+                EndDate: new Date("02/17/2017"),
+                taskColor: "#93b8a6",
+                progressColor: "#7AA992",
+                Children: [
+                    {
+                        TaskID: 8, TaskName: "Software Specification", StartDate: new Date("02/13/2017"),
+                        EndDate: new Date("02/15/2017"), Duration: 3, Progress: "60",
+                        predObj: [{ 'from': 6, 'to': 8, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "6FS", resourceId: [2]
+                    },
+                    {
+                        TaskID: 9, TaskName: "Develop prototype", StartDate: new Date("02/13/2017"),
+                        EndDate: new Date("02/15/2017"), Duration: 3, Progress: "100",
+                        predObj: [{ 'from': 6, 'to': 9, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "6FS", resourceId: [3]
+                    },
+                    {
+                        TaskID: 10, TaskName: "Get approval from customer", StartDate: new Date("02/16/2017"),
+                        EndDate: new Date("02/17/2017"), Duration: 2, Progress: "100",
+                        predObj: [{ 'from': 9, 'to': 10, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "9FS", resourceId: [1]
+                    },
+                    {
+                        TaskID: 11, TaskName: "Design complete", StartDate: new Date("02/17/2017"),
+                        EndDate: new Date("02/17/2017"), Duration: 0,
+                        predObj: [{ 'from': 10, 'to': 11, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "10FS", resourceId: [2]
+                    }
+                ]
+            },
+            {
+                TaskID: 12,
+                TaskName: "Implementation",
+                StartDate: new Date("02/20/2017"),
+                EndDate: new Date("03/02/2017"),
+                taskColor: "#FAC9CD",
+                progressColor: "#F2928D",
+                Children: [
+                    {
+                        TaskID: 13, TaskName: "Development Task 1", StartDate: new Date("02/20/2017"),
+                        EndDate: new Date("02/22/2017"), Duration: 3, Progress: "50",
+                        predObj: [{ 'from': 11, 'to': 13, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "11FS", resourceId: [3]
+                    },
+                    {
+                        TaskID: 14, TaskName: "Development Task 2", StartDate: new Date("02/20/2017"),
+                        EndDate: new Date("02/22/2017"), Duration: 3, Progress: "50",
+                        predObj: [{ 'from': 11, 'to': 14, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "11FS", resourceId: [3]
+                    },
+                    {
+                        TaskID: 15, TaskName: "Testing", StartDate: new Date("02/23/2017"),
+                        EndDate: new Date("02/25/2017"), Duration: 2, Progress: "0",
+                        predObj: [{ 'from': 13, 'to': 15, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false },
+                        { 'from': 14, 'to': 15, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "13FS,14FS", resourceId: [4]
+                    },
+                    {
+                        TaskID: 16, TaskName: "Bug fix", StartDate: new Date("02/27/2017"),
+                        EndDate: new Date("02/28/2017"), Duration: 2, Progress: "0",
+                        predObj: [{ 'from': 15, 'to': 16, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "15FS", resourceId: [3]
+                    },
+                    {
+                        TaskID: 17, TaskName: "Customer review meeting", StartDate: new Date("03/01/2017"),
+                        EndDate: new Date("03/02/2017"), Duration: 2, Progress: "0",
+                        predObj: [{ 'from': 16, 'to': 17, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "16FS", resourceId: [1]
+                    },
+                    {
+                        TaskID: 18, TaskName: "Implemenation complete", StartDate: new Date("03/02/2017"),
+                        EndDate: new Date("03/02/2017"), Duration: 0,
+                        predObj: [{ 'from': 17, 'to': 18, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                        Predecessor: "17FS", resourceId: [2]
+                    }
+
+                ]
+            },
+            {
+                TaskID: 19, TaskName: "Integration", StartDate: new Date("03/03/2017"),
+                EndDate: new Date("03/05/2017"), Duration: 2, Progress: "0",
+                predObj: [{ 'from': 18, 'to': 19, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                Predecessor: "18FS", resourceId: [3]
+            },
+            {
+                TaskID: 20, TaskName: "Final Testing", StartDate: new Date("03/06/2017"),
+                EndDate: new Date("03/07/2017"), Duration: 2, Progress: "0",
+                predObj: [{ 'from': 19, 'to': 20, 'predecessorsType': 'FS', 'offset': 1, 'isdrawn': false }],
+                Predecessor: "19FS", resourceId: [4]
+            },
+            {
+                TaskID: 21, TaskName: "Final Delivery", StartDate: new Date("03/07/2017"),
+                EndDate: new Date("03/07/2017"), Duration: 0,
+                predObj: [{ 'from': 20, 'to': 21, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                Predecessor: "20FS", resourceId: [1]
+            }
+        ]
+    }
+];
+export let predData1: Object[] = [
+    {
+        TaskID: 1, TaskName: "Plan timeline", StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"), Duration: 6, Progress: "60", resourceId: [1]
+    },
+    {
+        TaskID: 2, TaskName: "Plan budget", StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"), Duration: 6, Progress: "90", Predecessor: '1SS-2', resourceId: [5]
+    },
+    {
+        TaskID: 3, TaskName: "Allocate resources", StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75",
+        Predecessor: '1SF+1', resourceId: [6]
+    },
+    {
+        TaskID: 4, TaskName: "Planning complete", StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"), Predecessor: '3FF+1', resourceId: [1]
+    },
+    {
+        TaskID: 5, TaskName: "Task complete", StartDate: new Date("02/06/2017"),
+        Duration: 0, Progress: "90", Predecessor: '4SS', resourceId: [5]
+    }
+];
+export let predData2: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: "Planning",
+        StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"),
+        taskColor: "#79BDC9",
+        progressColor: "#59AAB4",
+        Children: [
+            {
+                TaskID: 2, TaskName: "Plan timeline", StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "60", resourceId: [1]
+            },
+            {
+                TaskID: 3, TaskName: "Plan budget", StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "90", resourceId: [5]
+            },
+            {
+                TaskID: 4, TaskName: "Allocate resources", StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75",
+                Predecessor: '1FS', resourceId: [6]
+            }]
+    }];
+export let predData3: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: "Planning",
+        StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"),
+        taskColor: "#79BDC9",
+        progressColor: "#59AAB4",
+        Children: [
+            {
+                TaskID: 2, TaskName: "Plan timeline", StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "60", resourceId: [1]
+            },
+            {
+                TaskID: 3, TaskName: "Plan budget", StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "90", resourceId: [5]
+            },
+            {
+                TaskID: 4, TaskName: "Allocate resources", StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75",
+                Predecessor: [{ 'from': 1, 'to': 4, 'predecessorsType': 'FS', 'offset': 0, 'isdrawn': false }],
+                resourceId: [6]
+            }]
+    }];
+export let predData4: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: "Planning",
+        StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"),
+        taskColor: "#79BDC9",
+        progressColor: "#59AAB4",
+        Children: [
+            {
+                TaskID: 2, TaskName: "Plan timeline", StartDate: new Date("02/06/2017"),
+                Duration: 6, Progress: "60", resourceId: [1] // without end date
+            },
+            {
+                TaskID: 3, TaskName: "Plan budget", StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"), Progress: "90", Predecessor: '2', resourceId: [5] // without duration
+            },
+            {
+                TaskID: 4, TaskName: "Allocate resources 1",
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75",
+                Predecessor: '2,3', resourceId: [6] // without start date
+            }
+        ]
+    }];
+export let predData5: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: "Planning",
+        StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"),
+        taskColor: "#79BDC9",
+        progressColor: "#59AAB4",
+        Children: [
+            {
+                TaskID: 2, TaskName: "Allocate resources 1",
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskID: 3, TaskName: "Allocate resources 2",
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75",
+                Predecessor: '2f', resourceId: [6]
+            }
+        ]
+    }];
+export let predData6: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: "Planning",
+        StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"),
+        taskColor: "#79BDC9",
+        progressColor: "#59AAB4",
+        Children: [
+            {
+                TaskID: 2, TaskName: "Allocate resources 1",
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskID: 3, TaskName: "Allocate resources 2",
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75",
+                Predecessor: '1011', resourceId: [6]
+            },
+            {
+                TaskID: 7, TaskName: "Allocate resources 3", Progress: "75",
+                resourceId: [6] // without start date, end date and duration
+            },
+        ]
+    }];
+export let predData7: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: "Planning",
+        StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"),
+        taskColor: "#79BDC9",
+        progressColor: "#59AAB4",
+        Children: [
+            {
+                TaskID: 2, TaskName: "Allocate resources 1", StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskID: 3, TaskName: "Allocate resources 2", StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskID: 4, TaskName: "Allocate resources 3", Progress: "75", StartDate: new Date("02/06/2017"),
+                EndDate: new Date("02/10/2017"), resourceId: [6]
+            },
+        ]
+    }];
+export let predData8: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: "Planning",
+        StartDate: new Date("02/06/2017"),
+        EndDate: new Date("02/10/2017"),
+        taskColor: "#79BDC9",
+        progressColor: "#59AAB4",
+        Children: [
+            {
+                TaskID: 2, TaskName: "Allocate resources 1",
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskID: 3, TaskName: "Allocate resources 2", Predecessor: '2FS+2.5',
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskID: 4, TaskName: "Allocate resources 3", Predecessor: '2FS+2hour',
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            },
+            {
+                TaskID: 5, TaskName: "Allocate resources 4", Predecessor: '2FS+2minute',
+                EndDate: new Date("02/10/2017"), Duration: 6, Progress: "75", resourceId: [6]
+            }
+        ]
+    }];
+export let editingData13: Object[]  = [
+        {
+            TaskID: 1,
+            TaskName: 'Parent 1',
+            StartDate: new Date('07/01/2022'),
+            subtasks: [
+                {
+                    TaskID: 2,
+                    TaskName: 'Child 1',
+                    StartDate: new Date('07/01/2022'),
+                    EndDate: new Date('07/04/2022'),
+                }
+            ],
+        },
+        {
+            TaskID: 5,
+            TaskName: 'Parent 2',
+            Predecessor: '1FS',
+            subtasks: [
+                {
+                    TaskID: 6,
+                    TaskName: 'Child 1',
+                },
+            ],
+        },
+    ];
+export  let editingData14: Object[]  = [
+        {
+            TaskID: 1,
+            TaskName: 'Parent 1',
+            StartDate: new Date('07/01/2022'),
+            subtasks: [
+                {
+                    TaskID: 2,
+                    TaskName: 'Child 1',
+                    StartDate: new Date('07/01/2022'),
+                    EndDate: new Date('07/04/2022'),
+                }
+            ],
+        },
+        {
+            TaskID: 5,
+            TaskName: 'Parent 2',
+            Predecessor: '1FS',
+            subtasks: [
+                {
+                    TaskID: 6,
+                    TaskName: 'Child 1',
+                },
+            ],
+        },
+    ];
+export let data15: Object[]  = [
+        {
+          TaskID: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+          TaskName: 'Parent Task 1',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/21/2019'),
+        },
+        {
+          TaskID: '78A9F47B-580D-49BB-9DF1-311AF2BA678C',
+          TaskName: 'Child Task 1.1',
+          StartDate: new Date('04/02/2019'),
+          Duration: 3,
+          Progress: 30,
+          ParentId: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+        },
+        {
+          TaskID: '1962C26C-6DE9-4636-83A6-93F030C6166B',
+          TaskName: 'Child Task 1.2',
+          StartDate: new Date('04/02/2019'),
+          Duration: 3,
+          ParentId: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+        },
+        {
+          TaskID: '35DBDA27-8A2E-43E2-99B8-C664484E6E5F',
+          TaskName: 'Sub Child Task 1.2.1',
+          StartDate: new Date('04/02/2019'),
+          Duration: 2,
+          Progress: 30,
+          ParentId: '1962C26C-6DE9-4636-83A6-93F030C6166B',
+        },
+        {
+          TaskID: 'D9851ABA-7794-4553-9491-4E35852C8542',
+          TaskName: 'Sub Child Task 1.2.2',
+          StartDate: new Date('04/02/2019'),
+          Duration: 0,
+          ParentId: '1962C26C-6DE9-4636-83A6-93F030C6166B',
+        },
+        {
+          TaskID: 'D2BAF06C-8F30-416D-9958-DCE241B0D9C4',
+          TaskName: 'Child Task 1.3',
+          StartDate: new Date('04/04/2019'),
+          Duration: 4,
+          Progress: 30,
+          Predecessor: '35DBDA27-8A2E-43E2-99B8-C664484E6E5FFS',
+          ParentId: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+        },
+        {
+          TaskID: '4A22967A-E869-4DF0-AECD-F61BA1B1D3B0',
+          TaskName: 'Child Task 1.4',
+          StartDate: new Date('04/04/2019'),
+          Duration: 4,
+          Progress: 30,
+          ParentId: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+        },
+        {
+          TaskID: '0FC2EDEC-04C5-4EAF-8186-CF0BE4C2D659',
+          TaskName: 'Sub Child Task 1.4.1',
+          StartDate: new Date('04/04/2019'),
+          Duration: 4,
+          Predecessor: '35DBDA27-8A2E-43E2-99B8-C664484E6E5FSS',
+          ParentId: '4A22967A-E869-4DF0-AECD-F61BA1B1D3B0',
+        },
+        {
+          TaskID: '1CB5D82F-26AF-4C8E-BFE1-5AB0A48CC0E7',
+          TaskName: 'Child Task 1.5',
+          StartDate: new Date('04/06/2019'),
+          Duration: 4,
+          Progress: 30,
+          ParentId: '0AB8BA0D-9CB1-417E-966B-4EED940A905D',
+        },
+        {
+          TaskID: '0D22F66C-FBA3-4BE1-801C-4D9F3A93381C',
+          TaskName: 'Sub Child Task 1.5.1',
+          StartDate: new Date('04/06/2019'),
+          Duration: 4,
+          ParentId: '1CB5D82F-26AF-4C8E-BFE1-5AB0A48CC0E7',
+        },
+      ];
+export let editingData15: Object[]  = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 10,
+                    Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+                },
+                {
+                    TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2FF',
+                    resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                        'From an engineer or company specializing in soil testing'
+                },
+            ]
+        }
+    ];
+    export let editingData16: Object[]   = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('11/02/2022'),
+            EndDate: new Date('11/21/2022'),
+          },
+          {
+            TaskID: 'A-2',
+            TaskName: 'Identify site location',
+            StartDate: new Date('11/02/2022'),
+            Duration: 3,
+            Progress: 30,
+          },
+          {
+            TaskID: 3,
+            TaskName: 'Perform Soil test',
+            StartDate: new Date('11/02/2022'),
+            Duration: 4,
+            Predecessor: 'A-2FS',
+          },
+          {
+            TaskID: 'A1',
+            TaskName: 'Project Initiation',
+            StartDate: new Date('2022-11-06'),
+            EndDate: new Date('2022-11-20'),
+          },
+          {
+            TaskID: 'A-3',
+            TaskName: 'Identify Site location',
+            StartDate: new Date('2022-11-16'),
+            EndDate: new Date('2022-11-19'),
+            progress: 50,
+          },
+          {
+            TaskID: 'A3',
+            TaskName: 'Apply for permits',
+            StartDate: new Date('2022-11-19'),
+            EndDate: new Date('2022-11-22'),
+            Progress: 50,
+            Predecessor: 'A-2SS'
+          }
+      ];
+      export let editingData17: Object[]  = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+        {
+            TaskID: 6,
+            TaskName: 'Market Research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand Analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                    ]
+                },
+                { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8", Progress: 30 },
+            ]
+        },
+    ];
+ export let crData2: Object[] =   [
+        {
+          TaskID: 1,
+          TaskName: "Project Initiation",
+          StartDate: new Date("04/02/2019"),
+          EndDate: new Date("04/21/2019"),
+          subtasks: [
+            {
+              TaskID: 2,
+              TaskName: "Identify Site location",
+              StartDate: new Date("04/02/2019"),
+              Duration: 6,
+              resources: [{ resourceId: 1, resourceUnit: 50 }],
+            },
+          ],
+        },
+      ];
+export let crData3: Object[] =[
+    {
+      TaskID: 1,
+      TaskName: "Project Initiation",
+      StartDate: new Date("04/02/2019"),
+      EndDate: new Date("04/21/2019"),
+      subtasks: [
+        {
+          TaskID: 2,
+          TaskName: "Identify Site location",
+          StartDate: new Date("04/02/2019"),
+          Duration: 6,
+          resources: [{ resourceId: 1, resourceUnit: 50 }],
+        },
+      ],
+    },
+  ];
+  export let crData4: Object[] = [
+    {
+      TaskID: 1,
+      TaskName: "Project Initiation",
+      StartDate: new Date("04/02/2019"),
+      EndDate: new Date("04/21/2019"),
+      subtasks: [
+        {
+          TaskID: 2,
+          TaskName: "Identify Site location",
+          StartDate: new Date("04/02/2019"),
+          Duration: 6,
+          resources: [{ resourceId: 1, resourceUnit: 50 }],
+        },
+      ],
+    },
+  ];
+  export  let multiTaskbarData1: Object[] = [
+    {
+      PlanningId: 'aa657d87-4b5f-4f4f-de0f-08daf5585765',
+      ActivityId: 'd82b2a52-b461-4f87-162e-08da0b5543a2',
+      TaskId: '00000000-0000-0000-0000-000000000000',
+      Name: '🛠 AB TESTE',
+      Label: 'AB TESTE',
+      BackgroundColor: '#383c48',
+      obs: '',
+      LabelColor: '#4ce96d',
+      WorkerContract: null,
+      StartDate: '2023-01-23T00:00:00.000Z',
+      EndDate: null,
+      Duration: 12960,
+      ParentId: '00000000-0000-0000-0000-000000000000',
+      IsPlanningTask: false,
+      childs: [],
+      SegmentsFields: [
+        {
+          Duration: 12960,
+          StartDate: '2023-01-23T00:00:00.000Z',
+          EndDate: '2023-02-01T00:00:00.000Z',
+          Id: 'aa657d87-4b5f-4f4f-de0f-08daf5585765',
+          IdSerie: null,
+          EnumPeriodRecord: 0,
+        },
+      ],
+      Resources: [
+        {
+          ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+          ResourceName: '🙂 rsantos@endiprev.com',
+          ResourceGroup: null,
+          Department: 'Information Technology',
+          obs: '',
+          isExpand: true,
+          unit: 100,
+        },
+      ],
+      EnumTypeRecords: 1,
+      EnumStatusVacationTimeOff: 0,
+    },
+    {
+      PlanningId: 'f7026179-a138-4b5f-bb7f-08daf944dae3',
+      ActivityId: 'd987939b-06da-4461-88c4-08daf9444246',
+      TaskId: '00000000-0000-0000-0000-000000000000',
+      Name: '🛠 DuplicateFiles',
+      Label: 'DuplicateFiles',
+      BackgroundColor: null,
+      obs: '',
+      LabelColor: null,
+      WorkerContract: null,
+      StartDate: '2023-01-17T00:00:00.000Z',
+      EndDate: null,
+      Duration: 14399,
+      ParentId: '00000000-0000-0000-0000-000000000000',
+      IsPlanningTask: false,
+      childs: [],
+      SegmentsFields: [
+        {
+          Duration: 14399,
+          StartDate: '2023-01-17T00:00:00.000Z',
+          EndDate: '2023-01-26T23:59:00.000Z',
+          Id: 'f7026179-a138-4b5f-bb7f-08daf944dae3',
+          IdSerie: null,
+          EnumPeriodRecord: 0,
+        },
+      ],
+      Resources: [
+        {
+          ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+          ResourceName: '🙂 rsantos@endiprev.com',
+          ResourceGroup: null,
+          Department: 'Information Technology',
+          obs: '',
+          isExpand: true,
+          unit: 100,
+        },
+      ],
+      EnumTypeRecords: 1,
+      EnumStatusVacationTimeOff: 0,
+    },
+    {
+      PlanningId: 'ca36c7bd-52b2-490b-2f37-08db03884b34',
+      ActivityId: 'c58144c0-a966-4742-a79f-08db03876317',
+      TaskId: '00000000-0000-0000-0000-000000000000',
+      Name: '🛠 New Activity',
+      Label: '🛠 New Activity',
+      BackgroundColor: null,
+      obs: '',
+      LabelColor: null,
+      WorkerContract: null,
+      StartDate: '2023-01-31T00:00:00.000Z',
+      EndDate: null,
+      Duration: 8640,
+      ParentId: '00000000-0000-0000-0000-000000000000',
+      IsPlanningTask: false,
+      childs: [],
+      SegmentsFields: [
+        {
+          Duration: 8640,
+          StartDate: '2023-01-31T00:00:00.000Z',
+          EndDate: '2023-02-06T00:00:00.000Z',
+          Id: 'ca36c7bd-52b2-490b-2f37-08db03884b34',
+          IdSerie: null,
+          EnumPeriodRecord: 0,
+        },
+      ],
+      Resources: [
+        {
+          ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+          ResourceName: '🙂 rsantos@endiprev.com',
+          ResourceGroup: null,
+          Department: 'Information Technology',
+          obs: '',
+          isExpand: true,
+          unit: 100,
+        },
+      ],
+      EnumTypeRecords: 1,
+      EnumStatusVacationTimeOff: 0,
+    },
+    {
+      PlanningId: 'za36c7bd-52b2-490b-2f37-08db03884b34',
+      ActivityId: 'z58144c0-a966-4742-a79f-08db03876317',
+      TaskId: '00000000-0000-0000-0000-000000000000',
+      Name: '🛠 New Activityz',
+      Label: '🛠 New Activity',
+      BackgroundColor: null,
+      obs: '',
+      LabelColor: null,
+      WorkerContract: null,
+      StartDate: '2023-01-31T00:00:00.000Z',
+      EndDate: null,
+      Duration: 8640,
+      ParentId: '00000000-0000-0000-0000-000000000000',
+      IsPlanningTask: false,
+      childs: [],
+      SegmentsFields: [
+        {
+          Duration: 8640,
+          StartDate: '2023-01-31T00:00:00.000Z',
+          EndDate: '2023-02-06T00:00:00.000Z',
+          Id: 'ca36c7bd-52b2-490b-2f37-08db03884b34',
+          IdSerie: null,
+          EnumPeriodRecord: 0,
+        },
+      ],
+      Resources: [
+        {
+          ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+          ResourceName: '🙂 rsantos@endiprev.com',
+          ResourceGroup: null,
+          Department: 'Information Technology',
+          obs: '',
+          isExpand: true,
+          unit: 100,
+        },
+      ],
+      EnumTypeRecords: 1,
+      EnumStatusVacationTimeOff: 0,
+    },
+  ];
+
+export  let multiTaskbarDataLess: Object[] = [
+    {
+      PlanningId: 'f7026179-a138-4b5f-bb7f-08daf944dae3',
+      ActivityId: 'd987939b-06da-4461-88c4-08daf9444246',
+      TaskId: '00000000-0000-0000-0000-000000000000',
+      Name: '🛠 DuplicateFiles',
+      Label: 'DuplicateFiles',
+      BackgroundColor: null,
+      obs: '',
+      LabelColor: null,
+      WorkerContract: null,
+      StartDate: '2023-01-17T00:00:00.000Z',
+      EndDate: null,
+      Duration: 14399,
+      ParentId: '00000000-0000-0000-0000-000000000000',
+      IsPlanningTask: false,
+      childs: [],
+      SegmentsFields: [
+        {
+          Duration: 14399,
+          StartDate: '2023-01-17T00:00:00.000Z',
+          EndDate: '2023-01-26T23:59:00.000Z',
+          Id: 'f7026179-a138-4b5f-bb7f-08daf944dae3',
+          IdSerie: null,
+          EnumPeriodRecord: 0,
+        },
+      ],
+      Resources: [
+        {
+          ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+          ResourceName: '🙂 rsantos@endiprev.com',
+          ResourceGroup: null,
+          Department: 'Information Technology',
+          obs: '',
+          isExpand: true,
+          unit: 100,
+        },
+      ],
+      EnumTypeRecords: 1,
+      EnumStatusVacationTimeOff: 0,
+    },
+    {
+      PlanningId: 'ca36c7bd-52b2-490b-2f37-08db03884b34',
+      ActivityId: 'c58144c0-a966-4742-a79f-08db03876317',
+      TaskId: '00000000-0000-0000-0000-000000000000',
+      Name: '🛠 New Activity',
+      Label: '🛠 New Activity',
+      BackgroundColor: null,
+      obs: '',
+      LabelColor: null,
+      WorkerContract: null,
+      StartDate: '2023-01-31T00:00:00.000Z',
+      EndDate: null,
+      Duration: 8640,
+      ParentId: '00000000-0000-0000-0000-000000000000',
+      IsPlanningTask: false,
+      childs: [],
+      SegmentsFields: [
+        {
+          Duration: 8640,
+          StartDate: '2023-01-31T00:00:00.000Z',
+          EndDate: '2023-02-06T00:00:00.000Z',
+          Id: 'ca36c7bd-52b2-490b-2f37-08db03884b34',
+          IdSerie: null,
+          EnumPeriodRecord: 0,
+        },
+      ],
+      Resources: [
+        {
+          ResourceId: '58d98a21-2e02-4b6e-9547-54b56f7b17a7',
+          ResourceName: '🙂 rsantos@endiprev.com',
+          ResourceGroup: null,
+          Department: 'Information Technology',
+          obs: '',
+          isExpand: true,
+          unit: 100,
+        },
+      ],
+      EnumTypeRecords: 1,
+      EnumStatusVacationTimeOff: 0,
+    },
+  ];
+  export  let editData18: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+            },
+            {
+                TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+            },
+            {
+                TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+            },
+        ]
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('03/29/2019'),
+                Duration: 3, Progress: 30, resources: [{ resourceId: 2, resourceUnit: 70 }], Predecessor: '3FS+2', work: 30
+            },
+            {
+                TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/08/2019'), Duration: 12,
+                resources: [{ resourceId: 6, resourceUnit: 40 }], Progress: 30, work: 40
+            },
+            {
+                TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/03/2019'),
+                Duration: 10, resources: [{ resourceId: 5, resourceUnit: 75 }], Progress: 30, work: 60,
+            },
+            {
+                TaskID: 9, TaskName: 'Excavate for foundations', StartDate: new Date('04/01/2019'),
+                Duration: 4, Progress: 30, resources: [4]
+            },
+            {
+                TaskID: 10, TaskName: 'Install plumbing grounds', StartDate: new Date('04/08/2019'), Duration: 4,
+                Progress: 30, Predecessor: '9SS', resources: [3]
+            },
+            {
+                TaskID: 11, TaskName: 'Dig footer', StartDate: new Date('04/08/2019'),
+                Duration: 3, resources: [2]
+            },
+            {
+                TaskID: 12, TaskName: 'Electrical utilities', StartDate: new Date('04/03/2019'),
+                Duration: 4, Progress: 30, resources: [3]
+            }
+        ]
+    },
+    {
+        TaskID: 13, TaskName: 'Sign contract', StartDate: new Date('04/04/2019'), Duration: 2,
+        Progress: 30,
+    }
+];
+export let sampleData1: object[] = [
+    { TaskID: 11, TaskName: 'Parent' },
+    {
+      TaskID: 12,
+      TaskName: 'Article #5678567',
+      parentId: 11,
+      StartDate: new Date('02/13/2023'),
+      EndDate: new Date('02/28/2023'),
+      Segments: [
+        {
+          StartDate: new Date('02/13/2023'),
+          EndDate: new Date('02/18/2023'),
+          projectName: 'Topology 2-1'
+        },
+        {
+          StartDate: new Date('02/20/2023'),
+          EndDate: new Date('02/28/2023'),
+          projectName: 'Topology 2-2'
+        }
+      ]
+    },
+    { TaskID: 13, TaskName: 'Child of FIRST 2', parentId: 11 },
+    { TaskID: 14, TaskName: 'Child of FIRST 3', parentId: 11 },
+    { TaskID: 15, TaskName: 'NEXT' },
+    { TaskID: 16, TaskName:'Child of NEXT 1', parentId: 15 },
+    { TaskID: 17, TaskName: 'Child of NEXT 2', parentId: 15 },
+    { TaskID: 14, TaskName: 'Child of FIRST 4', parentId: 11 },
+    { TaskID: 16, TaskName: 'Child of NEXT 3', parentId: 15 }
+      ];
+export let projectNewData14: Object[] = [
+        {
+            Id: '7aa84bb0da79427390e16a683802e35c',
+            Name: 'Project initiation',
+        
+            Subtasks: [
+              {
+                Id: 'a01d9aa633904ee4bd7206282b65268b',
+                Name: 'Identify site location',
+                CreateDate: '2019-04-01T23:00:00.000Z',
+                Duration: 0,
+                Progress: 0,
+                resources: [1],
+                info: 'Measure the total property area alloted for construction',
+              },
+              {
+                Id: 'e68b6c03898d427f96687526969b888d',
+                Name: 'Perform Soil test',
+                CreateDate: '2019-04-01T23:00:00.000Z',
+                EndDate: '2019-04-07T23:00:00.000Z',
+                Dependency: '',
+                Progress: 0,
+                resources: [2, 3, 5],
+                info:
+                  'Obtain an engineered soil test of lot where construction is planned.' +
+                  'From an engineer or company specializing in soil testing',
+              },
+              {
+                Id: 'e68b6c03898d427f96687526969b888d',
+                Name: 'Soil test approval',
+                CreateDate: '2019-04-02T23:00:00.000Z',
+                Dependency: '',
+                Progress: 0,
+              },
+            ],
+          },
+        ];
+export let projectNewData15: Object[] =  [
+    {
+        TaskID: 1,
+        TaskName: "Identify Site location",
+        StartDate: new Date("04/02/2019"),
+        Duration: 4,
+        resources: [{ resourceId: 1, resourceUnit: 50 }],
+    },
+    {
+        TaskID: 2,
+        TaskName: "Identify Soil",
+        StartDate: new Date("04/02/2019"),
+        Duration: 0,
+        resources: [{ resourceId: 1, resourceUnit: 50 }],
+    },
+  ]
+export  let projectNewData16: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+];
+export  let projectNewData17: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/02/2019'),
+        subtasks: []
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Project estimation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019')
+    }
+]
+export let projectNewData18: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual' : true,
+        'Children': [
+             { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+             'EndDate': new Date('02/03/2017'), 'Progress': '40' },
+            
+        ]
+    }
+  
+];
+export let projectNewData19: Object[] = [
+    {
+      taskID: 5,
+      taskName: 'Project estimation',
+      startDate: new Date('04/02/2019'),
+      endDate: new Date('04/21/2019'),
+      BaselinestartDate: new Date('04/02/2019 10:45:00 AM'),
+      BaselineendDate: new Date('04/15/2019 11:15:00 AM'),
+    },
+    {
+      taskID: 6,
+      taskName: 'Develop floor plan for estimation',
+      startDate: new Date('04/04/2019'),
+      duration: 3,
+      predecessor: '3FS,4FS,7SS',
+      Progress: 30,
+      resources: 4,
+      info: 'Develop floor plans and obtain a materials list for estimations',
+      parentID: 5,
+      BaselinestartDate: new Date('04/02/2019 11:15:00 AM'),
+      BaselineendDate: new Date('04/12/2019 11:25:00 AM'),
+    },
+    {
+      taskID: 7,
+      taskName: 'List materials',
+      startDate: new Date('04/04/2019'),
+      duration: 3,
+      resources: [4, 8],
+      info: '',
+      parentID: 5,
+      BaselinestartDate: new Date('04/02/2019 11:00:00 AM'),
+      BaselineendDate: new Date('04/18/2019 11:20:00 AM'),
+    },
+    {
+      taskID: 8,
+      taskName: 'Estimation approval',
+      startDate: new Date('04/04/2019 08:00:00 AM'),
+      duration: '40 minutes',
+      predecessor: '',
+      resources: [12, 5],
+      info: '',
+      parentID: 5,
+      BaselinestartDate: new Date('04/02/2019 11:00:00 AM'),
+      BaselineendDate: new Date('04/02/2019 11:30:00 AM'),
+    },
+
+    {
+      taskID: 9,
+      taskName: 'Sign contract',
+      startDate: new Date('04/04/2019 08:00:00 AM'),
+      duration: '100 minutes',
+      predecessor: '8FS',
+      Progress: 30,
+      resources: [12],
+      info: 'If required obtain approval from HOA (homeowners association) or ARC (architectural review committee)',
+      BaselinestartDate: new Date('04/02/2019 11:20:00 AM'),
+      BaselineendDate: new Date('04/02/2019 11:40:00 AM'),
+    },
+    {
+      taskID: 10,
+      taskName: 'Project approval and kick off',
+      startDate: new Date('04/04/2019 08:00:00 AM'),
+      endDate: new Date('05/21/2019 08:40:00 AM'),
+      duration: '40 minutes',
+      predecessor: '',
+      BaselinestartDate: new Date('04/02/2019 11:40:00 AM'),
+      BaselineendDate: new Date('05/02/2019 12:00:00 PM'),
+    },
+  ];
+  export let projectNewData20: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Task 2',
+        StartDate: new Date('06/16/2023'),
+        Duration: 72,
+        DurationUnit: 'hour',
+        EndDate: new Date('06/20/2023'),
+    },
+    {
+        TaskID: 2,
+        TaskName: 'Task 2',
+        StartDate: new Date('06/16/2023'),
+        Duration: 1800,
+        DurationUnit: 'minutes',
+        EndDate: new Date('06/20/2023'),
+    }
+  ];
+export let splitData: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('09/29/2019'),
+        Segments: [
+          {
+            TaskName: 'Identify site location',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/01/2019'),
+          },
+          {
+            TaskName: 'Perform soil test',
+            StartDate: new Date('09/03/2019'),
+            EndDate: new Date('09/29/2019'),
+          },
+        ],
+      },
+];
+
+export let projectNewData21: Object[] = [{
+    TaskID: 1,
+    TaskName: 'Project initiation',
+    StartDate: new Date('03/29/2019'),
+    EndDate: new Date('04/21/2019'),
+    subtasks: [
+        {
+            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+            Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+        },
+        {
+            TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+            resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+        },
+        {
+            TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+            resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+        },
+    ]
+}];
+export let taskModeData4: Object[]  = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                'Progress': '40','Duration':0 ,'isManual': true},
+            { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+        ]
+    }
+];
+export let taskModeData5: Object[]  = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual': true,
+        'Children': [
+            { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                'Progress': '40','Duration':0 ,'isManual': true},
+            { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+        ]
+    },
+    {
+        'TaskID': 4,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'Children': [
+            { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                'Progress': '40','Duration':0 ,'isManual': true}
+        ]
+    }
+];
+export let projectNewData22: Object[]  = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('02/04/2019 08:30:00'),
+        EndDate: new Date('02/04/2019 15:00:00')
+    },
+    {
+        TaskID: 2,
+        TaskName: 'Project estimation',
+        StartDate: new Date('02/04/2019 08:30:00'),
+        EndDate: new Date('02/04/2019 17:30:00')
+    },
+    {
+        TaskID: 3,
+        TaskName: 'Project estimation2',
+        StartDate: new Date('02/04/2019 08:00:00'),
+        EndDate: new Date('02/04/2019 16:30:00')
+    }
+  ];
+  export let customZoomingLevels: any[] = [
+    {
+      level: 0,
+      timelineUnitSize: 99,
+      timelineViewMode: 'Year',
+      bottomTier: {
+        unit: 'Month',
+        count: 3,
+        formatter: (date: Date) => {
+          const month = date.getMonth();
+          if (month >= 0 && month <= 2) {
+            return 'CQ1';
+          } else if (month >= 3 && month <= 5) {
+            return 'CQ2';
+          } else if (month >= 6 && month <= 3) {
+            return 'CQ3';
+          } else {
+            return 'CQ4';
+          }
+        },
+      },
+      topTier: {
+        unit: 'Year',
+        count: 1,
+        formatter: (date: Date) => {
+          return date.getFullYear().toString();
+        },
+      },
+    },
+    {
+      level: 1,
+      timelineUnitSize: 99,
+      timelineViewMode: 'Year',
+      bottomTier: {
+        unit: 'Month',
+        count: 1,
+        formatter: (date: Date) => {
+          // return date.toDateString().match(this.datePattern)[2];
+        },
+      },
+      topTier: {
+        unit: 'Month',
+        count: 3,
+        formatter: (date: Date) => {
+          const month = date.getMonth();
+          const year = date.getFullYear();
+          if (month >= 0 && month <= 2) {
+            return 'CQ1 ' + year;
+          } else if (month >= 3 && month <= 5) {
+            return 'CQ2 ' + year;
+          } else if (month >= 6 && month <= 3) {
+            return 'CQ3 ' + year;
+          } else {
+            return 'CQ4 ' + year;
+          }
+        },
+      },
+    },
+    {
+      level: 2,
+      timelineUnitSize: 99,
+      timelineViewMode: 'Month',
+      bottomTier: {
+        unit: 'Week',
+        count: 1,
+        formatter: (date: Date) => {
+          //const match = date.toDateString().match(this.datePattern);
+          // return `${match[2]} ${match[3]}`;
+        },
+      },
+      topTier: {
+        unit: 'Month',
+        count: 1,
+        formatter: (date: Date) => {
+          // const match = date.toDateString().match(this.datePattern);
+          //return `${match[2]}, ${match[4]}`;
+        },
+      },
+    },
+    {
+      level: 3,
+      topTier: {
+        unit: 'Week',
+        count: 1,
+        formatter: (date: Date) => {
+          // const match = date.toDateString().match(this.datePattern);
+          // return `${match[2]} ${match[3]}, ${match[4]}`;
+        },
+      },
+      bottomTier: {
+        unit: 'Day',
+        count: 1,
+        formatter: (date: Date) => {
+          // const match = date.toDateString().match(this.datePattern);
+          //  return `${match[1]}`;
+        },
+      },
+      timelineUnitSize: 99,
+      timelineViewMode: 'Week',
+      weekStartDay: 0,
+      updateTimescaleView: true,
+    },
+  ];
+  export let zoomingData1: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+            {
+                TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 2,
+                Predecessor: '2', Progress: 30
+            },
+        ]
+    },
+    {
+        TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4',
+        Indicators: [
+            {
+                'date': new Date('04/10/2019'),
+                'name': '#briefing',
+                'title': 'Product concept breifing',
+            }
+        ]
+    },
+    {
+        TaskID: 6,
+        TaskName: 'Market research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4,
+                        Predecessor: '5', Progress: 30
+                    },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '5' }
+                ]
+            },
+            {
+                TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'), Duration: 4,
+                Predecessor: '7, 8', Progress: 30
+            },
+            { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '9' },
+            {
+                TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 1, Predecessor: '10',
+                Indicators: [
+                    {
+                        'date': new Date('04/20/2019'),
+                        'name': '#meeting',
+                        'title': '1st board of directors meeting',
+                    }
+                ]
+            }
+        ]
+    }
+]
+export let customZoomingLevels1: any[] = [
+    {
+      level: 0,
+      timelineUnitSize: 99,
+      timelineViewMode: 'Year',
+      bottomTier: {
+        unit: 'Month',
+        count: 3,
+        formatter: (date: Date) => {
+          const month = date.getMonth();
+          if (month >= 0 && month <= 2) {
+            return 'CQ1';
+          } else if (month >= 3 && month <= 5) {
+            return 'CQ2';
+          } else if (month >= 6 && month <= 3) {
+            return 'CQ3';
+          } else {
+            return 'CQ4';
+          }
+        },
+      },
+      topTier: {
+        unit: 'Year',
+        count: 1,
+        formatter: (date: Date) => {
+          return date.getFullYear().toString();
+        },
+      },
+    },
+    {
+      level: 1,
+      timelineUnitSize: 99,
+      timelineViewMode: 'Year',
+      bottomTier: {
+        unit: 'Month',
+        count: 1,
+        formatter: (date: Date) => {
+          // return date.toDateString().match(this.datePattern)[2];
+        },
+      },
+      topTier: {
+        unit: 'Month',
+        count: 3,
+        formatter: (date: Date) => {
+          const month = date.getMonth();
+          const year = date.getFullYear();
+          if (month >= 0 && month <= 2) {
+            return 'CQ1 ' + year;
+          } else if (month >= 3 && month <= 5) {
+            return 'CQ2 ' + year;
+          } else if (month >= 6 && month <= 3) {
+            return 'CQ3 ' + year;
+          } else {
+            return 'CQ4 ' + year;
+          }
+        },
+      },
+    }
+  ];
+  export let manualData: Object[] =  [
+    {
+        taskID: '100010-ABCDEFGH??!',
+        taskName: 'Project Schedule',
+        startDate: new Date('02/04/2019'),
+        endDate: new Date('03/10/2019'),
+    },
+    {
+        taskID: 'ABCDEFGH?!200001',
+        taskName: 'Planning',
+        startDate: new Date('02/04/2019'),
+        endDate: new Date('02/10/2019'),
+        parentID: '100010-ABCDEFGH??!',
+    },
+    {
+        taskID: '3',
+        taskName: 'Plan timeline',
+        startDate: new Date('02/04/2019'),
+        endDate: new Date('02/10/2019'),
+        duration: 6,
+        progress: '60',
+        parentID: 'ABCDEFGH?!200001',
+    },
+];
+export let tempData1: object[] = [
+    {
+      TaskID: 1,
+      TaskName: 'Project Initiation',
+      StartDate: new Date('04/02/2019'),
+      EndDate: new Date('04/21/2019'),
+    },
+    {
+      TaskID: 2,
+      TaskName: 'Identify Site location',
+      StartDate: new Date('04/02/2019'),
+      Duration: 4,
+      Progress: 50,
+    },
+  ];
+ export let tempData2: Object[] = [
+    {
+      TaskID: 1,
+      TaskName: 'Project Initiation',
+      StartDate: new Date('04/02/2019'),
+      EndDate: new Date('04/21/2019'),
+    },
+    {
+      TaskID: 2,
+      TaskName: 'Identify Site location',
+      StartDate: new Date('04/02/2019'),
+      Duration: 4,
+      Progress: 50,
+    },
+    {
+      TaskID: 3,
+      TaskName: 'Perform Soil test',
+      StartDate: new Date('04/02/2013'),
+      Duration: 4,
+      Progress: 50,
+    },
+    {
+      TaskID: 4,
+      TaskName: 'Soil test approval',
+      StartDate: new Date('04/02/2017'),
+      Duration: 4,
+      Progress: 50,
+    },
+  ]; 
+  export let zoomInData: Object[] =[
+    {
+      TaskID: 1,
+      TaskName: 'New Task 1',
+      StartDate: new Date('06/16/2023'),
+      EndDate: new Date('06/16/2023'),
+      Progress: 59,
+      Duration: 1,
+    },
+    {
+      TaskID: 2,
+      TaskName: 'New Task 2',
+      StartDate: new Date('05/22/2023'),
+      EndDate: new Date('05/22/2023'),
+      Progress: 45,
+      Duration: 1,
+      Predecessor: 1
+    },
+    {
+      TaskID: 3,
+      TaskName: 'New Task 3',
+      StartDate: new Date('05/23/2023'),
+      EndDate: new Date('05/23/2023'),
+      Duration: 0,
+    },
+    {
+      TaskID: 4,
+      TaskName: 'New Task 4',
+      StartDate: new Date('05/22/2023'),
+      EndDate: new Date('05/22/2023'),
+      Progress: 38,
+      Duration: 1,
+    },
+    {
+      TaskID: 5,
+      TaskName: 'New Task 5',
+      StartDate: new Date('05/22/2023'),
+      EndDate: new Date('05/22/2023'),
+      Progress: 68,
+      Duration: 1,
+      Predecessor: 4,
+    },
+    {
+      TaskID: 6,
+      TaskName: 'New Task 6',
+      StartDate: new Date('05/22/2023'),
+      EndDate: new Date('05/22/2023'),
+      Progress: 57,
+      Duration: 1,
+      Predecessor: 5,
+    },
+    {
+      TaskID: 7,
+      TaskName: 'New Task 7',
+      StartDate: new Date('05/22/2023'),
+      EndDate: new Date('05/22/2023'),
+      Progress: 0,
+      Duration: 1,
+    },
+  ];
+  export let tempData3: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project Initiation',
+        StartDate: new Date('04/02/2024'),
+        EndDate: new Date('04/21/2024'),
+    },
+    {
+        TaskID: 2,
+        TaskName: 'Identify Site location',
+        StartDate: new Date('04/02/2024'),
+        Duration: 4,
+        Progress: 50,
+    },
+  ];
+ export let tempData4: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project Initiation',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+    },
+    {
+        TaskID: 2,
+        TaskName: 'Identify Site location',
+        Duration: 4,
+        Progress: 50,
+    },
+    {
+        TaskID: 3,
+        TaskName: 'Perform Soil test',
+        StartDate: new Date('04/02/2019'),
+        Duration: 4,
+        Progress: 50,
+    },
+    {
+        TaskID: 4,
+        TaskName: 'Soil test approval',
+        StartDate: new Date('04/02/2019'),
+        Duration: 4,
+        Progress: 50,
+    },
+  ]; 
+  export let tempData5: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: '2019-04-02',
+        EndDate: '2019-04-25',
+        Segments: [
+            {
+              StartDate: '2019-04-02',
+              EndDate: '2019-04-16'
+            },
+            {
+              StartDate: '2019-04-17',
+              EndDate: '2019-04-25'
+            }
+          ]
+    }
+];
+export let tempData6: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: '2019-04-02',
+        EndDate: '2019-04-25',
+        Segments: [
+            {
+              StartDate: '2019-04-02',
+              EndDate: '2019-04-16'
+            },
+            {
+              StartDate: '2019-04-17',
+              EndDate: '2019-04-25'
+            }
+          ]
+    }
+];
+export let editingData18: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('01/01/2019'), Duration: 0,
+                Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+            },
+            {
+                TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2',
+                resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                    'From an engineer or company specializing in soil testing'
+            },
+            { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3', Progress: 30 },
+        ]
+    },
+];
+export let editingResources1: Object[] = [
+    { resourceId: 1, resourceName: 'Martin Tamer' },
+    { resourceId: 2, resourceName: 'Rose Fuller' },
+    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+    { resourceId: 4, resourceName: 'Fuller King' },
+    { resourceId: 5, resourceName: 'Davolio Fuller' },
+    { resourceId: 6, resourceName: 'Van Jack' },
+    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+    { resourceId: 8, resourceName: 'Jack Davolio' },
+    { resourceId: 9, resourceName: 'Tamer Vinet' },
+    { resourceId: 10, resourceName: 'Vinet Fuller' },
+    { resourceId: 11, resourceName: 'Bergs Anton' },
+    { resourceId: 12, resourceName: 'Construction Supervisor' }
+];
+
+export  let projectNewData23  : Object[]= [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 0,
+                Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+            },
+            {
+                TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2',
+                resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                    'From an engineer or company specializing in soil testing'
+            },
+            { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3', Progress: 30 },
+        ]
+    },
+];
+export let pdfData1: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+            Indicators: [
+                {
+                    'date': '04/10/2019',
+                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                    'name': 'Indicator title',
+                    'tooltip': 'tooltip'
+                }
+            ] 
+        },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+        ]
+    }]
+    export let templateData: Object[] =   [
+        {
+            TaskID: 1,
+            TaskName: 'Product concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'),
+                  Duration: 3, Progress: 30, resources: [2] },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'),
+                  Duration: 3, resources: [3]},
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'),
+                  Duration: 2, Predecessor: '2', Progress: 30, resources: [4] }]
+            },
+            {
+            TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4', resources: [1]
+        },
+        {
+            TaskID: 6,
+            TaskName: 'Market research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'),
+                         Duration: 4, Predecessor: '5', Progress: 30, resources: [5] },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'),
+                         Duration: 4, Predecessor: '5', resources: [6] }
+                    ]
+                },
+                { TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'),
+                  Duration: 4, Predecessor: '7, 8', Progress: 30, resources: [4] },
+                { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'),
+                  Duration: 4, Predecessor: '9', resources: [8] },
+            ]
+        }
+    ]
+export let projectResourcestemplate: Object[] = [
+        { resourceId: 1, resourceName: 'Martin Tamer' },
+        { resourceId: 2, resourceName: 'Rose Fuller' },
+        { resourceId: 3, resourceName: 'Margaret Buchanan' },
+        { resourceId: 4, resourceName: 'Fuller King' },
+        { resourceId: 5, resourceName: 'Davolio Fuller' },
+        { resourceId: 6, resourceName: 'Van Jack' },
+        { resourceId: 7, resourceName: 'Fuller Buchanan' },
+    ];
+export let virtual1 : Object[] =  [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+            Indicators: [
+                {
+                    'date': '04/10/2019',
+                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                    'name': 'Indicator title',
+                    'tooltip': 'tooltip'
+                }
+            ] 
+        },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+        ]
+    }]
+export let criticalData1 : Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+            {
+                TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 2,
+                Predecessor: '2', Progress: 30
+            },
+        ]
+    },
+    {
+        TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4',
+        Indicators: [
+            {
+                'date': '04/10/2019',
+                'name': 'Design Phase',
+                'tooltip': 'Design phase completed',
+                'iconClass': 'okIcon e-icons'
+            }
+        ],
+    },
+    {
+        TaskID: 6,
+        TaskName: 'Market research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4,
+                        Predecessor: '5', Progress: 30
+                    },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '5' }
+                ]
+            },
+            {
+                TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'), Duration: 4,
+                Predecessor: '7, 8', Progress: 30
+            },
+            { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '9' },
+            {
+                TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: '10',
+                Indicators: [
+                    {
+                        'date': '04/27/2019',
+                        'name': 'Research completed',
+                        'tooltip': 'Research completed',
+                        'iconClass': 'description e-icons'
+                    }
+                ],
+            }
+        ]
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product design and development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 14, TaskName: 'Functionality design', StartDate: new Date('04/04/2019'),
+                Duration: 3, Progress: 30, Predecessor: '12'
+            },
+            { TaskID: 15, TaskName: 'Quality design', StartDate: new Date('04/04/2019'), Duration: 3, Predecessor: '12' },
+            { TaskID: 16, TaskName: 'Define reliability', StartDate: new Date('04/04/2019'), Duration: 2, Progress: 30, Predecessor: '15' },
+            { TaskID: 17, TaskName: 'Identifying raw materials', StartDate: new Date('04/04/2019'), Duration: 2, Predecessor: '15' },
+            {
+                TaskID: 18,
+                TaskName: 'Define cost plan',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 19, TaskName: 'Manufacturing cost', StartDate: new Date('04/04/2019'),
+                        Duration: 2, Progress: 30, Predecessor: '17'
+                    },
+                    { TaskID: 20, TaskName: 'Selling cost', StartDate: new Date('04/04/2019'), Duration: 2, Predecessor: '17' }
+                ]
+            },
+            {
+                TaskID: 21,
+                TaskName: 'Development of the final design',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 22, TaskName: 'Defining dimensions and package volume', StartDate: new Date('04/04/2019'),
+                        Duration: 2, Progress: 30, Predecessor: '19,20'
+                    },
+                    {
+                        TaskID: 23, TaskName: 'Develop design to meet industry standards', StartDate: new Date('04/04/2019'),
+                        Duration: 2, Predecessor: '22'
+                    },
+                    { TaskID: 24, TaskName: 'Include all the details', StartDate: new Date('04/04/2019'), Duration: 3, Predecessor: '23' }
+                ]
+            },
+            {
+                TaskID: 25, TaskName: 'CAD computer-aided design', StartDate: new Date('04/04/2019'),
+                Duration: 3, Progress: 30, Predecessor: '24'
+            },
+            { TaskID: 26, TaskName: 'CAM computer-aided manufacturing', StartDate: new Date('04/04/2019'), Duration: 3, Predecessor: '25' },
+            {
+                TaskID: 27, TaskName: 'Design complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: '26',
+            }
+
+        ]
+    },
+    { TaskID: 28, TaskName: 'Prototype testing', StartDate: new Date('04/04/2019'), Duration: 4, Progress: 30, Predecessor: '27' },
+    { TaskID: 29, TaskName: 'Include feedback', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '28ss',  Indicators: [
+        {
+            'date': '05/24/2019',
+            'name': 'Production phase',
+            'tooltip': 'Production phase completed',
+            'iconClass': 'okIcon e-icons'
+        }
+    ], },
+    { TaskID: 30, TaskName: 'Manufacturing', StartDate: new Date('04/04/2019'), Duration: 5, Progress: 30, Predecessor: '28,29' },
+    { TaskID: 31, TaskName: 'Assembling materials to finsihed goods', StartDate: new Date('04/04/2019'), Duration: 5, Predecessor: '30' },
+    {
+        TaskID: 32,
+        TaskName: 'Feedback and testing',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 33, TaskName: 'Internal testing and feedback', StartDate: new Date('04/04/2019'),
+                Duration: 3, Progress: 45, Predecessor: '31'
+            },
+            {
+                TaskID: 34, TaskName: 'Customer testing and feedback', StartDate: new Date('04/04/2019'),
+                Duration: 3, Progress: 50, Predecessor: '33'
+            }
+        ]
+    },
+    {
+        TaskID: 35,
+        TaskName: 'Final product development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 36, TaskName: 'Important improvements', StartDate: new Date('04/04/2019'),
+                Duration: 4, Progress: 30, Predecessor: '34'
+            },
+            {
+                TaskID: 37, TaskName: 'Address any unforeseen issues', StartDate: new Date('04/04/2019'),
+                Duration: 4, Progress: 30, Predecessor: '36ss',
+                Indicators: [
+                    {
+                        'date': '06/21/2019',
+                        'name': 'Sales and marketing',
+                        'tooltip': 'Sales and marketing',
+                        'iconClass': 'description e-icons'
+                    }
+                ],
+            }
+        ]
+    },
+    {
+        TaskID: 38,
+        TaskName: 'Final product',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 39, TaskName: 'Branding product', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '37' },
+            {
+                TaskID: 40, TaskName: 'Marketing and presales', StartDate: new Date('04/04/2019'),
+                Duration: 4, Progress: 30, Predecessor: '39'
+            }
+        ]
+    }
+]
+export let resourcesData1: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+            },
+            {
+                TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+            },
+            {
+                TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+            },
+        ]
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('03/29/2019'),
+                Duration: 3, Progress: 30, resources: [{ resourceId: 2, resourceUnit: 70 }], Predecessor: '3FS+2', work: 30
+            },
+            {
+                TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/08/2019'), Duration: 12,
+                resources: [{ resourceId: 6, resourceUnit: 40 }], Progress: 30, work: 40
+            },
+            {
+                TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/03/2019'),
+                Duration: 10, resources: [{ resourceId: 5, resourceUnit: 75 }], Progress: 30, work: 60,
+            },
+            {
+                TaskID: 9, TaskName: 'Excavate for foundations', StartDate: new Date('04/01/2019'),
+                Duration: 4, Progress: 30, resources: [4]
+            },
+            {
+                TaskID: 10, TaskName: 'Install plumbing grounds', StartDate: new Date('04/08/2019'), Duration: 4,
+                Progress: 30, Predecessor: '9SS', resources: [3]
+            },
+            {
+                TaskID: 11, TaskName: 'Dig footer', StartDate: new Date('04/08/2019'),
+                Duration: 3, resources: [2]
+            },
+            {
+                TaskID: 12, TaskName: 'Electrical utilities', StartDate: new Date('04/03/2019'),
+                Duration: 4, Progress: 30, resources: [3]
+            }
+        ]
+    },
+    {
+        TaskID: 13, TaskName: 'Sign contract', StartDate: new Date('04/04/2019'), Duration: 2,
+        Progress: 30,
+    }
+];
+
+export let resourceCollection1: object[] = [
+    { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team' },
+    { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team' },
+    { resourceId: 3, resourceName: 'Margaret Buchanan', resourceGroup: 'Approval Team' },
+    { resourceId: 4, resourceName: 'Fuller King', resourceGroup: 'Development Team' },
+    { resourceId: 5, resourceName: 'Davolio Fuller', resourceGroup: 'Approval Team' },
+    { resourceId: 6, resourceName: 'Van Jack', resourceGroup: 'Development Team' }
+];
+
+export let coulmntemplate: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        // EmailId:'abs@gmail.com',
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'),
+              Duration: 3, Progress: 30, resources: [2],EmailId:'RoseFuller@gmail.com',resourcesImage:'/9j/4AAQSkZJRgABAQAAAQABAAD//gAfQ29tcHJlc3NlZCBieSBqcGVnLXJlY29tcHJlc3P/2wCEAAQEBAQEBAQEBAQGBgUGBggHBwcHCAwJCQkJCQwTDA4MDA4MExEUEA8QFBEeFxUVFx4iHRsdIiolJSo0MjRERFwBBAQEBAQEBAQEBAYGBQYGCAcHBwcIDAkJCQkJDBMMDgwMDgwTERQQDxAUER4XFRUXHiIdGx0iKiUlKjQyNEREXP/CABEIADcANwMBIgACEQEDEQH/xAAbAAADAAMBAQAAAAAAAAAAAAAFBwgEBgkCA//aAAgBAQAAAAC/hQFOvYjnCinKzbmZbGH5zuQtL+rjE/fO5y7I93/rpMhES5qCgxOTPErmqDaDCzVpNoBsPfbf/8QAGgEAAQUBAAAAAAAAAAAAAAAAAAECAwQFBv/aAAgBAhAAAAAoWZjmNLVM6a2Pan//xAAXAQEBAQEAAAAAAAAAAAAAAAAABAUG/9oACAEDEAAAAGjNO7PFxm1FEH//xAA3EAACAgECBAMFBgQHAAAAAAABAgMEBQAGBxESQSExMhATUVKBCBQiYWKhFiNxkTNCU2RygrH/2gAIAQEAAT8A0chavSvWwcaFUYrJdlBMSkeYjA9Z/bW5b209pY98xvncBFf57UrKrP8ACOGL1H8gCdRcfOB8txaopTojeU5p8o9Uq+OuVUv7XzrLE4DIYpvvNduY+Vif2I1Vyk0NiPH5eBYLD+EUqEmCc/BSfJv0n2ZB5MjajwlZ2RCnvbkinkViJ5CMH5n/APNdNajV5L0Q14IyflREUeJ1vDP53jTu65l72QMOMWZ4MbW/yQwBuw+Yj1HW3OAEF1lntZ50iHNRGkHiSe/MtrbEF3ghuPEWkyktvbt2daeQRx4oH8EfkPk1PTr5CrLVtRBom5fkQR3B7EdjrD2Z1exibrdVury/mf6sLeiT+vY6wRV69rJv671mSX4n3anoRfoo1l6pv4rKUAwQ2ak8AY+QMiFef76x2VbacmNrvjnnmjAMiGRU5OW9IB8WOtucRXk2ra3FiMK9panISQGTpCv+ZAJ1ZvZjiJgbr28VBVimjjmj6RYVo2V/DwljQN3BI1Gysqup5hgCNZ2VcbZx2Z7Rl683LzaORSw/syjW3HUYHFfEVkB9m7sNitqby3LVzlFmkhlkmrFVKO6MSY+nXBvN0Zq+YoLQsixLKr9DxosBHkSCxAIXvrFTRzyDCrSjhnM6x9KgCFwT6l5dtIOlFX4Aa3uhG3bCjxYyxfU9WsEfu5v4lvBqlhygPeGY9aH9yPZ9rHEQ0M5tvOo/4sjVnqSoP9uQQw+kuuFMAd0DW4pK5J61lkYsOf8A28DrYaU23dFVqoohgWWdlTyDEcv7nnz9mShTIZGhiTzaNFe1Z5dlAKIPqTrK1bEU8GYx8ZezApSWIec8BPMqP1DzXXEn7Ue2dlT2sNisLfyGZi7TxmrWT+rP+JtY7c03GVty/wAVSKcnNcjsQyJ4CCLoEaJEOypy1tjgruGnuypiZcpXkSWMWVevZVHeH5mTnzGt75ylwWweJkw5jmzlu5FyD94IiGm+jenWy+NG1N60m+4CxHlo4laTGshMhZjyHQw8GBOsZTmrJNaukNftMJJyPJeyxj9KD2cReDu0OJNUnJVBDdH+Hai/C6nW2+AWe4ZbrOTe3VvYKeKSByT0ypzIKkL31tfZ+8It62tx5a37h6+T+/0pY5FKycj0CAgEkRmPw1ujg/n+Ke7XzuRvpTwcaJBVjRg0vuk8T/xJOtmcPtu7EpJVw9VRL0/zJ28XY+z/xAAiEQACAQMEAgMAAAAAAAAAAAABAgMABBEQEhNRISIFQYH/2gAIAQIBAT8AqW/hjk4y/t1ioJ0nTemtyA0pYREOjeT3XxjFufxhcg/ut5aMw5Ez7H6Gas7ZraHa4wzHcdVYjaOjmiSTk6f/xAAiEQACAQIGAwEAAAAAAAAAAAABAgMEEQAFEBITISJBUZH/2gAIAQMBAT8AxFltRJGsvH4H3fFTTvTPsf2LjWlBEChp1aNk8V+YzdVUwDddrH81y6t4xxkjpSLsbdYr6hamfehuoULr91//2Q=='},
+          { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'),
+              Duration: 2, Predecessor: '2', Progress: 30, resources: [4] ,EmailId:'FullerKing@gmail.com',resourcesImage:'/9j/4AAQSkZJRgABAQAAAQABAAD//gAfQ29tcHJlc3NlZCBieSBqcGVnLXJlY29tcHJlc3P/2wCEAAQEBAQEBAQEBAQGBgUGBggHBwcHCAwJCQkJCQwTDA4MDA4MExEUEA8QFBEeFxUVFx4iHRsdIiolJSo0MjRERFwBBAQEBAQEBAQEBAYGBQYGCAcHBwcIDAkJCQkJDBMMDgwMDgwTERQQDxAUER4XFRUXHiIdGx0iKiUlKjQyNEREXP/CABEIADcANwMBIgACEQEDEQH/xAAbAAACAwEBAQAAAAAAAAAAAAAFBwQGCAMCCf/aAAgBAQAAAADfwhV0x/EZ4hW5npVo+hcTlnMn4TW6ofZUBIXDSIEnOzwAaDYEyICYV79vc+aEqNLsbBM//8QAGAEAAwEBAAAAAAAAAAAAAAAAAgQFAwD/2gAIAQIQAAAABNvRaHSpjAqO9hof/8QAGQEAAgMBAAAAAAAAAAAAAAAAAgUDBAYA/9oACAEDEAAAADbLIbutRIi2OdXdagD/xAAfEAACAwEBAQADAQAAAAAAAAAEBQIDBgEHABITFBX/2gAIAQEAAQgA+/0izrLKEuj9O81zxtwL2r3Pze87lUFwwDEEVrlQ21sL617X47th5VaUf2TSlZ/O0Z9IT468vpqspb+dtFYNhQ3jnpLfFP6lzAoQY4aY5acm+MyFJqOf5jlMu+12WWaxaJBjugEFv8cG+5kMlobU70irSIgntauc+rF0rHtsVpK5z9nZ/ihVc56fmiTmueaDmJMvJkTeVxnnCKIgcJUrma0oRaHRwYYYeO3h3mdIjxF3+fp6mRlA5dMxyHyyqbZuDVFcbTyFFuAVdpIlKz5lTBgxAU9aikV30OALtIDMbnQ9akbk12vEoL7YmE1i9xrWtZKdU6tYkvF7IVYHcNC4o35zmhjLJmCfqbZwqBJeqGzphcDs2mzjIsTN8WJ84Ak7K2H3/8QAMxAAAgEDAgMECQMFAAAAAAAAAQIDAAQREjETIVEFQWGhEBQjMkJicXKBBiIzUlOCkbH/2gAIAQEACT8ApE0IxWS9l5xKRuEHxnyrt687Wv4v5o4Q7oh8Fj0pX6PuY7HIBunjjDjqdCk12xItvOgkhZJDPbspH9D58iDUKw3D8opUJMEx6KTs3yn0SMqlOLeyqcFYicCNT1f/AJXsZryMxkxjBSHbC/dUS3XEjDSaSoYN/kRVndZikKSppJKMOoHcakkXseadI7mCbKhdZwZUB2K0gaKTGANwe4g9xFNqu7XHtP7sLe5J9e40My31zJL1IjU6EH4UUTxNFsR0KvIVxVnLPPGig5dIkzjnguQTiuxxi4bHtpAgBHzYNWcEc9rexJrt51nDRzciCQBUgaQ20RYg55ledbRl7ebG7RyKWH+mUVv6sgPhgUoYiWO3lDclVUbiqSfrUEMlyrH4QWOfOpFdopjmAxMMN0C489qgRtckMiRON3WQPjyonTFEqDPRRiubGWL8nVXJrS4coOsMx1ofMiow6HcVcvBLLMdMyAFlO/xCnLXnMLcNAMdNVScd7ePEkxULqZ+/C4A9GWjRXurnHcoBRB+Saj13MAKSxDeeA8yo+YbrUmt2HMEEafr4ipHkljYm4Qe+veGHUVLFpZsamWpGnyWSd1HvTIobC/aDtUrTTNgJbqhEruTyUCiGv7phJPjZcDCxj5UHok9WvH95gMxyfevXxFW4MWzNFIGR1+hwaaW2u5c8UJEBFkjGcMVw3iKs/Ubaxt7mOX1iZZuJLOysZMpgs37eg3ocW9fOudhjGdwg7h6P/8QAIREBAAIBBAEFAAAAAAAAAAAAAQIDAAQQETESBSJBYYH/2gAIAQIBAT8AnMhFk4a2Euph+ZXYWG2rOaX6yTxEDr5z015jMD2m0kB5yyLXKzkAVTND4RoiHart3llNdkGE48mRhGIeMToNv//EACIRAQACAQMEAwEAAAAAAAAAAAECAxEAEBIEBTFhFSEiNP/aAAgBAwEBPwCuuVs4wj5dfFTBzFUPGdXUyplxdu3/ANURQyOq6xCUs5cYdd7hwnUyRk7R5cjj510t5OqGP2kQfSa7k2T6qyUj6MB62FETVHU3U2RsrniXh96nZOaspLlV2//Z'}]
+        }
+];
+
+export let resourceCollectiontemplate1: object[] = [
+    { resourceId: 1, resourceName: 'Martin Tamer' },
+    { resourceId: 2, resourceName: 'Rose Fuller' },
+    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+    { resourceId: 4, resourceName: 'Fuller King' },
+    { resourceId: 5, resourceName: 'Davolio Fuller' },
+    { resourceId: 6, resourceName: 'Van Jack' },
+    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+    { resourceId: 8, resourceName: 'Jack Davolio' },
+    { resourceId: 9, resourceName: 'Tamer Vinet' },
+    { resourceId: 10, resourceName: 'Vinet Fuller' },
+    { resourceId: 11, resourceName: 'Bergs Anton' },
+    { resourceId: 12, resourceName: 'Construction Supervisor' }
+    ];
+export let splitTasks :Object[] =   [
+    {
+        TaskID: 1,
+        TaskName: 'Project Schedule',
+        StartDate: new Date('02/04/2019'),
+        EndDate: new Date('03/10/2019'),
+        subtasks: [
+            {
+                TaskID: 2,
+                TaskName: 'Planning',
+                StartDate: new Date('02/04/2019'),
+                subtasks: [
+                    {
+                        TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '60',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 2 }
+                          ]
+                    },
+                    {
+                        TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '90'
+                    },
+                    {
+                        TaskID: 5, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '75',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 4 },
+                            { StartDate: new Date('02/08/2019'), Duration: 2 }
+                          ]
+                    },
+                    {
+                        TaskID: 6, TaskName: 'Planning complete', StartDate: new Date('02/21/2019'), EndDate: new Date('02/21/2019'),
+                        Duration: 0, Predecessor: '3FS,5FS'
+                    },
+                ]
+            },
+            {
+                TaskID: 7,
+                TaskName: 'Design',
+                StartDate: new Date('02/25/2019'),
+                subtasks: [
+                    {
+                        TaskID: 8, TaskName: 'Software Specification', StartDate: new Date('02/25/2019'), EndDate: new Date('03/02/2019'),
+                        Duration: 5, Progress: '60', Predecessor: '6FS'
+                    },
+                    {
+                        TaskID: 9, TaskName: 'Develop prototype', StartDate: new Date('02/25/2019'), EndDate: new Date('03/02/2019'),
+                        Duration: 5, Progress: '100', Predecessor: '6FS',
+                        Segments: [
+                            { StartDate: new Date('02/25/2019'), Duration: 2 },
+                            { StartDate: new Date('02/28/2019'), Duration: 3 }
+                          ]
+                    },
+                    {
+                        TaskID: 10, TaskName: 'Get approval from customer', StartDate: new Date('02/25/2019'),
+                        EndDate: new Date('03/01/2019'), Duration: 4, Progress: '100', Predecessor: '9FS'
+                    },
+                    {
+                        TaskID: 11, TaskName: 'Design complete', StartDate: new Date('02/25/2019'), EndDate: new Date('02/25/2019'),
+                        Duration: 0, Predecessor: '10FS'
+                    }
+                ]
+            }
+        ]
+    }
+]

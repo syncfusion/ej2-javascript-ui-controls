@@ -444,6 +444,10 @@ export class TextSelection {
      */
     // eslint-disable-next-line
     public selectAWord(element: any, x: number, y: number, isStoreSelection: boolean): void {
+        let padding: number = 0;
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+            padding = 3;
+        }
         if (element.nodeType === element.TEXT_NODE) {
             const selection: Selection = window.getSelection();
             const range: Range = element.ownerDocument.createRange();
@@ -454,7 +458,7 @@ export class TextSelection {
                 range.setStart(element, currentPosition);
                 range.setEnd(element, currentPosition + 1);
                 const rangeBounds: ClientRect = range.getBoundingClientRect();
-                if (rangeBounds.left <= x && rangeBounds.right >= x && rangeBounds.top <= y && rangeBounds.bottom >= y) {
+                if (rangeBounds.left <= x + padding && rangeBounds.right >= x - padding && rangeBounds.top <= y + padding && rangeBounds.bottom >= y - padding) {
                     const textContent: string = element.textContent;
                     const indices: number[] = [];
                     let startPosition: number;
@@ -515,7 +519,7 @@ export class TextSelection {
             for (let i: number = 0; i < element.childNodes.length; i++) {
                 const range: Range = this.getSelectionRange(i, element);
                 const rangeBounds: ClientRect = range.getBoundingClientRect();
-                if (rangeBounds.left <= x && rangeBounds.right >= x && rangeBounds.top <= y && rangeBounds.bottom >= y) {
+                if (rangeBounds.left <= x + padding && rangeBounds.right >= x - padding && rangeBounds.top <= y + padding && rangeBounds.bottom >= y - padding) {
                     range.detach();
                     this.selectAWord(element.childNodes[i], x, y, isStoreSelection);
                 } else {
@@ -1424,6 +1428,9 @@ export class TextSelection {
             }
             for (let j: number = currentId; j < textDivs.length; j++) {
                 const textElement: HTMLElement = textDivs[j] as HTMLElement;
+                if (j > focusTextId) {
+                    break;
+                }
                 if (j === anchorTextId) {
                     startOffset = range.startOffset;
                 } else {

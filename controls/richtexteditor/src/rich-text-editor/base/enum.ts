@@ -100,11 +100,11 @@ export type ToolbarConfigItems = 'Alignments' | 'JustifyLeft'| 'JustifyCenter' |
 /**
  * Defines types to be used as inserted image.
  */
-export enum UploadRequest {
-    /** Defines UploadRequest as Uploaded */
+export enum ImageInputSource {
+    /** Defines ImageInputSource as Uploaded */
     Uploaded = 'Uploaded',
-    /** Defines UploadRequest as Dropped */
+    /** Defines ImageInputSource as Dropped */
     Dropped = 'Dropped',
-    /** Defines UploadRequest as Pasted */
+    /** Defines ImageInputSource as Pasted */
     Pasted = 'Pasted'
 }

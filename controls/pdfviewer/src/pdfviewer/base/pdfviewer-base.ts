@@ -10922,139 +10922,141 @@ export class PdfViewerBase {
             let annotationOrderCollection: any = annotation.annotationOrder;
             let annotationData: any = [];
             let isRefreshRequired: boolean = true;
-            for (let index = 0; index < annotationOrderCollection.length; index++) {
-                let annotationName: string = annotationOrderCollection[parseInt(index.toString(), 10)].AnnotType ? annotationOrderCollection[parseInt(index.toString(), 10)].AnnotType : annotationOrderCollection[parseInt(index.toString(), 10)].AnnotationType;
-                annotationData.push(annotationOrderCollection[parseInt(index.toString(), 10)]);
-                let storeObject: any;
-                let annotObject: IPageAnnotations[];
-                switch (annotationName) {
-                    case 'textMarkup':
-                        isRefreshRequired = false;
-                        storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_textMarkup');
-                        if (this.isStorageExceed) {
-                            storeObject = this.annotationStorage[this.documentId + '_annotations_textMarkup'];
-                        }
-                        if (storeObject) {
-                            annotObject = JSON.parse(storeObject);
-                            if (annotObject) {
+            if (!isNullOrUndefined(annotationOrderCollection)) {
+                for (let index = 0; index < annotationOrderCollection.length; index++) {
+                    let annotationName: string = annotationOrderCollection[parseInt(index.toString(), 10)].AnnotType ? annotationOrderCollection[parseInt(index.toString(), 10)].AnnotType : annotationOrderCollection[parseInt(index.toString(), 10)].AnnotationType;
+                    annotationData.push(annotationOrderCollection[parseInt(index.toString(), 10)]);
+                    let storeObject: any;
+                    let annotObject: IPageAnnotations[];
+                    switch (annotationName) {
+                        case 'textMarkup':
+                            isRefreshRequired = false;
+                            storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_textMarkup');
+                            if (this.isStorageExceed) {
+                                storeObject = this.annotationStorage[this.documentId + '_annotations_textMarkup'];
+                            }
+                            if (storeObject) {
+                                annotObject = JSON.parse(storeObject);
+                                if (annotObject) {
+                                    annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
+                                }
+                            }
+                            if (annotationData) {
+                                this.setAnnotationSettings(annotationData[0]);
+                            }
+                            annotation.textMarkupAnnotation = this.checkAnnotationCommentsCollections(annotation.textMarkupAnnotation, pageIndex);
+                            this.pdfViewer.annotationModule.renderAnnotations(pageIndex, null, null, annotationData, null, true);
+                            break;
+                        case 'shape':
+                            isRefreshRequired = false;
+                            storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_shape');
+                            if (this.isStorageExceed) {
+                                storeObject = this.annotationStorage[this.documentId + '_annotations_shape'];
+                            }
+                            if (storeObject) {
+                                annotObject = JSON.parse(storeObject);
                                 annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
                             }
-                        }
-                        if(annotationData) {
-                            this.setAnnotationSettings(annotationData[0]);
-                        }
-                        annotation.textMarkupAnnotation = this.checkAnnotationCommentsCollections(annotation.textMarkupAnnotation, pageIndex);
-                        this.pdfViewer.annotationModule.renderAnnotations(pageIndex, null, null, annotationData, null, true);
-                        break;
-                    case 'shape':
-                        isRefreshRequired = false;
-                        storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_shape');
-                        if (this.isStorageExceed) {
-                            storeObject = this.annotationStorage[this.documentId + '_annotations_shape'];
-                        }
-                        if (storeObject) {
+                            if (annotationData) {
+                                this.setAnnotationSettings(annotationData[0]);
+                            }
+                            annotation.shapeAnnotation = this.checkAnnotationCommentsCollections(annotation.shapeAnnotation, pageIndex);
+                            this.pdfViewer.annotationModule.renderAnnotations(pageIndex, annotationData, null, null, null, true);
+                            break;
+                        case 'shape_measure':
+                            isRefreshRequired = false;
+                            storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_shape_measure');
+                            if (this.isStorageExceed) {
+                                storeObject = this.annotationStorage[this.documentId + '_annotations_shape_measure'];
+                            }
+                            if (storeObject) {
+                                annotObject = JSON.parse(storeObject);
+                                annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
+                            }
+                            if (annotationData) {
+                                this.setAnnotationSettings(annotationData[0]);
+                            }
+                            annotation.measureShapeAnnotation = this.checkAnnotationCommentsCollections(annotation.measureShapeAnnotation, pageIndex);
+                            this.pdfViewer.annotationModule.renderAnnotations(pageIndex, null, annotationData, null, null, true);
+                            break;
+                        case 'stamp':
+                            storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_stamp');
+                            if (this.isStorageExceed) {
+                                storeObject = this.annotationStorage[this.documentId + '_annotations_stamp'];
+                            }
+                            if (storeObject) {
+                                annotObject = JSON.parse(storeObject);
+                                annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
+                            }
+                            if (annotationData) {
+                                this.setAnnotationSettings(annotationData[0]);
+                            }
+                            annotation.stampAnnotations = this.checkAnnotationCommentsCollections(annotation.stampAnnotations, pageIndex);
+                            this.pdfViewer.annotationModule.stampAnnotationModule.renderStampAnnotations(annotationData, pageIndex, null, true);
+                            break;
+                        case 'Text Box':
+                        case 'freeText':
+                            storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_freetext');
+                            if (this.isStorageExceed) {
+                                storeObject = this.annotationStorage[this.documentId + '_annotations_freetext'];
+                            }
+                            if (storeObject) {
+                                annotObject = JSON.parse(storeObject);
+                                annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
+                            }
+                            if (annotationData) {
+                                this.setAnnotationSettings(annotationData[0]);
+                            }
+                            annotation.freeTextAnnotation = this.checkAnnotationCommentsCollections(annotation.freeTextAnnotation, pageIndex);
+                            this.pdfViewer.annotationModule.freeTextAnnotationModule.renderFreeTextAnnotations(annotationData, pageIndex, true);
+                            break;
+                        case 'sticky':
+                            storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_sticky');
+                            if (this.isStorageExceed) {
+                                storeObject = this.annotationStorage[this.documentId + '_annotations_sticky'];
+                            }
+                            if (storeObject) {
+                                annotObject = JSON.parse(storeObject);
+                                annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
+                            }
+                            if (annotationData) {
+                                this.setAnnotationSettings(annotationData[0]);
+                            }
+                            annotation.stickyNotesAnnotation = this.checkAnnotationCommentsCollections(annotation.stickyNotesAnnotation, pageIndex);
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderStickyNotesAnnotations(annotationData, pageIndex);
+                            break;
+                        case 'signature':
+                            storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_sign');
                             annotObject = JSON.parse(storeObject);
-                            annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
-                        }
-                        if(annotationData) {
-                            this.setAnnotationSettings(annotationData[0]);
-                        }
-                        annotation.shapeAnnotation = this.checkAnnotationCommentsCollections(annotation.shapeAnnotation, pageIndex);
-                        this.pdfViewer.annotationModule.renderAnnotations(pageIndex, annotationData, null, null, null, true);
-                        break;
-                    case 'shape_measure':
-                        isRefreshRequired = false;
-                        storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_shape_measure');
-                        if (this.isStorageExceed) {
-                            storeObject = this.annotationStorage[this.documentId + '_annotations_shape_measure'];
-                        }
-                        if (storeObject) {
-                            annotObject = JSON.parse(storeObject);
-                            annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
-                        }
-                        if(annotationData) {
-                            this.setAnnotationSettings(annotationData[0]);
-                        }
-                        annotation.measureShapeAnnotation = this.checkAnnotationCommentsCollections(annotation.measureShapeAnnotation, pageIndex);
-                        this.pdfViewer.annotationModule.renderAnnotations(pageIndex, null, annotationData, null, null, true);
-                        break;
-                    case 'stamp':
-                        storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_stamp');
-                        if (this.isStorageExceed) {
-                            storeObject = this.annotationStorage[this.documentId + '_annotations_stamp'];
-                        }
-                        if (storeObject) {
-                            annotObject = JSON.parse(storeObject);
-                            annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
-                        }
-                        if(annotationData) {
-                            this.setAnnotationSettings(annotationData[0]);
-                        }
-                        annotation.stampAnnotations = this.checkAnnotationCommentsCollections(annotation.stampAnnotations, pageIndex);
-                        this.pdfViewer.annotationModule.stampAnnotationModule.renderStampAnnotations(annotationData, pageIndex, null, true);
-                        break;
-                    case 'Text Box':
-                    case 'freeText':
-                        storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_freetext');
-                        if (this.isStorageExceed) {
-                            storeObject = this.annotationStorage[this.documentId + '_annotations_freetext'];
-                        }
-                        if (storeObject) {
-                            annotObject = JSON.parse(storeObject);
-                            annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
-                        }
-                        if(annotationData) {
-                            this.setAnnotationSettings(annotationData[0]);
-                        }
-                        annotation.freeTextAnnotation = this.checkAnnotationCommentsCollections(annotation.freeTextAnnotation, pageIndex);
-                        this.pdfViewer.annotationModule.freeTextAnnotationModule.renderFreeTextAnnotations(annotationData, pageIndex, true);
-                        break;
-                    case 'sticky':
-                        storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_sticky');
-                        if (this.isStorageExceed) {
-                            storeObject = this.annotationStorage[this.documentId + '_annotations_sticky'];
-                        }
-                        if (storeObject) {
-                            annotObject = JSON.parse(storeObject);
-                            annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
-                        }
-                        if(annotationData) {
-                            this.setAnnotationSettings(annotationData[0]);
-                        }
-                        annotation.stickyNotesAnnotation = this.checkAnnotationCommentsCollections(annotation.stickyNotesAnnotation, pageIndex);
-                        this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderStickyNotesAnnotations(annotationData, pageIndex);
-                        break;
-                    case 'signature':
-                        storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_sign');
-                        annotObject = JSON.parse(storeObject);
-                        if(annotationData) {
-                            this.setAnnotationSettings(annotationData[0]);
-                        }
-                        if (annotObject) {
-                            annotation.signatureAnnotation = this.checkSignatureCollections(annotObject, annotationData, pageIndex);
-                        }
-                        this.signatureModule.renderExistingSignature(annotationData, pageIndex, true);
-                        break;
-                    case 'Ink':
-                    case 'ink':
-                        storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_ink');
-                        if (this.isStorageExceed) {
-                            storeObject = this.annotationStorage[this.documentId + '_annotations_ink'];
-                        }
-                        if (storeObject) {
-                            annotObject = JSON.parse(storeObject);
-                            annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
-                        }
-                        if(annotationData) {
-                            this.setAnnotationSettings(annotationData[0]);
-                        }
-                        annotation.signatureInkAnnotation = this.checkAnnotationCommentsCollections(annotation.signatureInkAnnotation, pageIndex);
-                        this.pdfViewer.annotationModule.inkAnnotationModule.renderExistingInkSignature(annotationData, pageIndex, true);
-                        break;
-                    default:
-                        break;
+                            if (annotationData) {
+                                this.setAnnotationSettings(annotationData[0]);
+                            }
+                            if (annotObject) {
+                                annotation.signatureAnnotation = this.checkSignatureCollections(annotObject, annotationData, pageIndex);
+                            }
+                            this.signatureModule.renderExistingSignature(annotationData, pageIndex, true);
+                            break;
+                        case 'Ink':
+                        case 'ink':
+                            storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_ink');
+                            if (this.isStorageExceed) {
+                                storeObject = this.annotationStorage[this.documentId + '_annotations_ink'];
+                            }
+                            if (storeObject) {
+                                annotObject = JSON.parse(storeObject);
+                                annotationData = this.checkAnnotationCollections(annotObject, annotationData, pageIndex);
+                            }
+                            if (annotationData) {
+                                this.setAnnotationSettings(annotationData[0]);
+                            }
+                            annotation.signatureInkAnnotation = this.checkAnnotationCommentsCollections(annotation.signatureInkAnnotation, pageIndex);
+                            this.pdfViewer.annotationModule.inkAnnotationModule.renderExistingInkSignature(annotationData, pageIndex, true);
+                            break;
+                        default:
+                            break;
+                    }
+                    annotationData = [];
                 }
-                annotationData = [];
             }
             if (isRefreshRequired) {
                 let canvas: HTMLElement = this.getElement('_annotationCanvas_' + pageIndex);

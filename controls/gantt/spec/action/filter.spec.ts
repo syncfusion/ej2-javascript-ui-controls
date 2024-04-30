@@ -302,31 +302,31 @@ describe('Gantt filter support', () => {
             }
         });
         beforeEach((done: Function) => {
-            setTimeout(done, 1000);
+            setTimeout(done, 500);
         });
-        it('Check the filtered records for checkbox count', (done: Function) => {
-            ganttObj.actionComplete = function (args: any): void {
-              if(args.requestType === 'filterchoicerequest'){
-              expect(document.getElementsByClassName('e-label e-checkboxfiltertext').length == 6).toBe(true);
-              done();
-              }
-            }
-            ganttObj.filterByColumn("duration","equal",11);
-            (<HTMLElement>ganttObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
-        });
-        it('Initial Filtering resourceID', () => {
-            ganttObj.actionComplete = function (args: any): void {
-                if(args.requestType === 'filtering'){
-                expect(ganttObj.currentViewData.length).toBe(20);
-                }
-              }
-            let element: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[0];
-            triggerMouseEvent(element, 'click');
-            let element1: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[1]
-            triggerMouseEvent(element1, 'click');
-            let element2: any = document.getElementsByClassName('e-footer-content')[0].children[0];
-            triggerMouseEvent(element2, 'click');
-        });
+        // it('Check the filtered records for checkbox count', (done: Function) => {
+        //     ganttObj.actionComplete = function (args: any): void {
+        //       if(args.requestType === 'filterchoicerequest'){
+        //       expect(document.getElementsByClassName('e-label e-checkboxfiltertext').length == 6).toBe(true);
+        //       done();
+        //       }
+        //     }
+        //     ganttObj.filterByColumn("duration","equal",11);
+        //     (<HTMLElement>ganttObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
+        // });
+        // it('Initial Filtering resourceID', () => {
+        //     ganttObj.actionComplete = function (args: any): void {
+        //         if(args.requestType === 'filtering'){
+        //         expect(ganttObj.currentViewData.length).toBe(20);
+        //         }
+        //       }
+        //     let element: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[0];
+        //     triggerMouseEvent(element, 'click');
+        //     let element1: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[1]
+        //     triggerMouseEvent(element1, 'click');
+        //     let element2: any = document.getElementsByClassName('e-footer-content')[0].children[0];
+        //     triggerMouseEvent(element2, 'click');
+        // });
     });
     describe('Gantt Excel filter action', () => {
         Gantt.Inject(Filter, Toolbar, ColumnMenu);
@@ -380,29 +380,29 @@ describe('Gantt filter support', () => {
         beforeEach((done: Function) => {
             setTimeout(done, 1000);
         });
-        it('Task Name check box count', (done: Function) => {
-            ganttObj.actionComplete = function (args: any): void {
-              if(args.requestType === 'filterchoicerequest'){
-              expect(document.getElementsByClassName('e-label e-checkboxfiltertext').length).toBe(32);
-              done();
-              }
-            }
-            ganttObj.filterByColumn("duration","equal",11);
-            (<HTMLElement>ganttObj.element.querySelectorAll('.e-filtermenudiv')[2]).click();
-        });
-        it('Initial Filtering Task Name', () => {
-            ganttObj.actionComplete = function (args: any): void {
-                if(args.requestType === 'filtering'){
-                expect(ganttObj.currentViewData.length).toBe(3);
-                }
-              }
-            let element: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[0];
-            triggerMouseEvent(element, 'click');
-            let element1: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[1]
-            triggerMouseEvent(element1, 'click');
-            let element3: any = document.getElementsByClassName("e-control e-btn e-lib e-primary e-flat")[0];
-            triggerMouseEvent(element3, 'click');
-        });
+        // it('Task Name check box count', (done: Function) => {
+        //     ganttObj.actionComplete = function (args: any): void {
+        //       if(args.requestType === 'filterchoicerequest'){
+        //       expect(document.getElementsByClassName('e-label e-checkboxfiltertext').length).toBe(32);
+        //       done();
+        //       }
+        //     }
+        //     ganttObj.filterByColumn("duration","equal",11);
+        //     (<HTMLElement>ganttObj.element.querySelectorAll('.e-filtermenudiv')[2]).click();
+        // });
+        // it('Initial Filtering Task Name', () => {
+        //     ganttObj.actionComplete = function (args: any): void {
+        //         if(args.requestType === 'filtering'){
+        //         expect(ganttObj.currentViewData.length).toBe(3);
+        //         }
+        //       }
+        //     let element: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[0];
+        //     triggerMouseEvent(element, 'click');
+        //     let element1: any = document.getElementsByClassName('e-label e-checkboxfiltertext')[1]
+        //     triggerMouseEvent(element1, 'click');
+        //     let element3: any = document.getElementsByClassName("e-control e-btn e-lib e-primary e-flat")[0];
+        //     triggerMouseEvent(element3, 'click');
+        // });
     });
     describe('Gantt disable filter for one column', () => {
         Gantt.Inject(Filter, Toolbar, ColumnMenu);

@@ -80,6 +80,45 @@ describe('Gantt Selection support', () => {
             triggerMouseEvent(row, 'mouseup', 10, 10, false, true);
             expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(0);
         });
+    });
+    describe('Gantt selection', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor',
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    allowSelection: true,
+                    selectionSettings: {
+                        mode: 'Both',
+                        type: 'Single'
+                    }
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
         it('Select rows by clicking on chart side', () => {
             let row: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-left-label-container') as HTMLElement;
             let row1: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(2)') as HTMLElement;
@@ -210,7 +249,6 @@ describe('Gantt Selection support', () => {
                     expect(ganttObj.selectedRowIndex).toBe(-1);
                 }
             };
-            ganttObj.dataBind();
             ganttObj.selectRow(38, false);
             expect(ganttObj.selectedRowIndex).toBe(38);
             ganttObj.editModule.deleteRecord(getValue('TaskID', ganttObj.selectionModule.getSelectedRecords()[0]));
@@ -256,5 +294,62 @@ describe('Gantt Selection support', () => {
           //  ganttObj.ganttChartModule.scrollObject.setScrollTop(500);
           //  expect(ganttObj.selectedRowIndex).toBe(3);
         // });
+    });
+    describe('Gantt selection by select cell method', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor',
+                    },
+                    load: function () {
+                        this.isAdaptive = true;
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                    },
+                    cellSelecting: function (args: any) {
+                        if (args.data.TaskID == 4 && args.cellIndex.cellIndex == 1) {
+                            args.cancel = true;
+                        }
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    allowSelection: true,
+                    selectionSettings: {
+                        mode: 'Cell',
+                        type: 'Multiple',
+                        enableToggle: true
+                    }
+
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Select the cell using selectcell method', () => {
+            const rowCellIndexes = [
+                { rowIndex: 1, cellIndexes: [2, 4] }
+            ];
+            ganttObj.selectionModule.selectCells(rowCellIndexes);
+            ganttObj.selectionModule.getCellSelectedRecords();
+        });
+
     });
 });

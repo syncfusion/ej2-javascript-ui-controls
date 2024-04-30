@@ -2384,7 +2384,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 allowedExtensions.push(extension.trim().toLocaleLowerCase());
             }
             for (let i: number = 0; i < files.length; i++) {
-                if (allowedExtensions.indexOf(('.' + files[i as number].type).toLocaleLowerCase()) === -1) {
+                let checkFileType: string = files[i as number].type.indexOf(".") !== -1 ? files[i as number].type.replace(".", "") : files[i as number].type;
+                if (allowedExtensions.indexOf(('.' + checkFileType).toLocaleLowerCase()) === -1) {
                     files[i as number].status = this.localizedTexts('invalidFileType');
                     files[i as number].statusCode = '0';
                 }

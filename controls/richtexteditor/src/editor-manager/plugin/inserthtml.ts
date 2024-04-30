@@ -118,7 +118,7 @@ export class InsertHtml {
                     nodes[index as number].parentNode.removeChild(nodes[index as number]);
                 }
             }
-            if (sibNode) {
+            if (!isNOU(sibNode) && !isNOU(sibNode.parentNode)) {
                 InsertMethods.AppendBefore(node as HTMLElement, sibNode as HTMLElement, true);
             } else {
                 let previousNode: Node = null;
@@ -337,6 +337,12 @@ export class InsertHtml {
                 }
                 node.parentNode.replaceChild(fragment, node);
             }
+        }
+        if (lastSelectionNode.nodeName === 'TABLE') {
+            const pTag: HTMLElement = createElement('p');
+            pTag.appendChild(createElement('br'));
+            lastSelectionNode.parentElement.insertBefore(pTag, lastSelectionNode.nextSibling);
+            lastSelectionNode = pTag;
         }
         if (lastSelectionNode.nodeName === '#text') {
             this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);

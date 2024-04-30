@@ -1711,7 +1711,7 @@ export class AnnotationRenderer {
         }
         const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(cropX + left, cropY + top, width, height);
         annotation.setAppearance(true);
-        if (freeTextAnnotation['author'] === null) {
+        if (isNullOrUndefined(freeTextAnnotation['author'])) {
             freeTextAnnotation['author'] = 'Guest';
         }
         annotation.author = freeTextAnnotation['author'].toString();
@@ -1766,6 +1766,7 @@ export class AnnotationRenderer {
         const lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
         lineBorder.width = !isNullOrUndefined(freeTextAnnotation.thickness) ? freeTextAnnotation.thickness : 1;
         annotation.border = lineBorder;
+        annotation.border.width = lineBorder.width;
         if(freeTextAnnotation.hasOwnProperty('padding') && !isNullOrUndefined(freeTextAnnotation.padding)){
             const paddingValues: number = freeTextAnnotation.padding;
             // let padding: PdfPaddings = new PdfPaddings(); // PdfPaddings not exist in ej2-pdf

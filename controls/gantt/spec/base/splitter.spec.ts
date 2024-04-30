@@ -6,6 +6,8 @@ import { baselineData, projectData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { ISplitterResizedEventArgs } from '../../src/gantt/base/interface';
+import { EmitType } from '@syncfusion/ej2-base';
+import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 describe('Gantt splitter support', () => {
     describe('Gantt splitter action', () => {
@@ -27,11 +29,6 @@ describe('Gantt splitter support', () => {
                     projectEndDate: new Date('12/30/2017'),
                 }, done);
         });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
         it('Perform Splitter Action', () => {
             ganttObj.splitterResizeStart = (args: ResizeEventArgs) => {
                 expect(args['name']).toBe('splitterResizeStart');
@@ -43,7 +40,6 @@ describe('Gantt splitter support', () => {
                 args.cancel = true;
                 expect(args['name']).toBe('splitterResized');
             };
-            ganttObj.dataBind();
             let splitterIcon: HTMLElement = ganttObj.element.querySelector('.e-split-bar') as HTMLElement;
             triggerMouseEvent(splitterIcon, 'mousedown');
             triggerMouseEvent(splitterIcon, 'mousemove',100,0);
@@ -54,7 +50,6 @@ describe('Gantt splitter support', () => {
             ganttObj.splitterResized = (args) => {
                 args.cancel = false;
             }
-            ganttObj.dataBind();
             ganttObj.setSplitterPosition('50%','position');
             expect(ganttObj.splitterModule.splitterObject.paneSettings[0].size).toBe('50%');
         });
@@ -77,6 +72,11 @@ describe('Gantt splitter support', () => {
             ganttObj.splitterSettings.view = 'Chart';
             ganttObj.dataBind();
             expect(ganttObj.splitterModule.splitterObject.paneSettings[0].size).toBe('0%');
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
         
     });
@@ -102,13 +102,13 @@ describe('Gantt splitter support', () => {
                     projectEndDate: new Date('12/30/2017'),
                 }, done);
         });
+        it('Column index position', () => {
+            expect(ganttObj.splitterModule.splitterObject['properties']['separatorSize']).toBe(4);
+        });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
-        });
-        it('Column index position', () => {
-            expect(ganttObj.splitterModule.splitterObject['properties']['separatorSize']).toBe(4);
         });
     });
     describe('Splitter setting columnIndex when column is not visible', () => {
@@ -164,13 +164,13 @@ describe('Gantt splitter support', () => {
                     ]
                 }, done);
         });
+        it('Column index position column visible is set to false', () => {
+            expect((document.getElementsByClassName('e-split-bar')[0] as HTMLElement).style.order).toBe('1');
+        });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
-        });
-        it('Column index position column visible is set to false', () => {
-            expect((document.getElementsByClassName('e-split-bar')[0] as HTMLElement).style.order).toBe('1');
         });
     });
     describe('Schedule mode', () => {
@@ -195,15 +195,15 @@ describe('Gantt splitter support', () => {
                 projectEndDate: new Date('12/30/2017'),
             }, done);
         });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
         it('Vertical scrollbar hidden issue while setting columnIndex', () => {
             ganttObj.splitterSettings.position = '50%';
             ganttObj.dataBind();
             expect(ganttObj.splitterModule.splitterObject.paneSettings[0].size).toBe('50%');
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
     });
     describe('bug-871577-updating spliter position', () => {
@@ -225,20 +225,20 @@ describe('Gantt splitter support', () => {
                 projectEndDate: new Date('12/30/2017'),
             }, done);
         });
+        it('bug-871577-updating spliter position', () => {
+            let splitterView = ganttObj.splitterSettings.view;
+            splitterView = 'Grid';
+            ganttObj.setSplitterPosition(splitterView, 'view');
+            expect(ganttObj.splitterSettings.view).toBe('Grid');
+        });
         afterAll(() => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
         });
-        it('bug-871577-updating spliter position', () => {
-            let splitterView = ganttObj.splitterSettings.view;
-            splitterView = 'Grid';
-            ganttObj.setSplitterPosition(splitterView, 'view');
-            ganttObj.dataBind();
-            expect(ganttObj.splitterSettings.view).toBe('Grid');
-        });
     });
 });
+
 
 
 describe('Schedule mode', () => {
@@ -263,21 +263,18 @@ describe('Schedule mode', () => {
             projectEndDate: new Date('12/30/2017'),
         }, done);
     });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
     it('Vertical scrollbar hidden issue while setting columnIndex', () => {
         
         ganttObj.splitterSettings.view = 'Grid';
         setTimeout(() => {
-            ganttObj.splitterSettings.view='Default'
-
-            
+            ganttObj.splitterSettings.view='Default'     
         }, 100);
-        ganttObj.dataBind();
         expect((document.querySelector("#"+ganttObj.element.id+" > div.e-gantt-splitter.e-control.e-splitter.e-lib.e-splitter-horizontal > div.e-gantt-tree-grid-pane.e-pane.e-pane-horizontal.e-scrollable.e-static-pane.e-resizable") as HTMLElement).offsetWidth).toBe(399);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });
 describe('Splitter position issue after resizing', () => {
@@ -301,11 +298,6 @@ describe('Splitter position issue after resizing', () => {
             projectStartDate: new Date('10/15/2017'),
             projectEndDate: new Date('12/30/2017'),
         }, done);
-    });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
     });
     it('checking position of splitter after splitter resize', () => {
         ganttObj.setSplitterPosition('50%', 'position');
@@ -331,5 +323,10 @@ describe('Splitter position issue after resizing', () => {
        var className= ganttObj.chartPane.classList[1];
         expect(className).toBe('e-droppable');
         
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });

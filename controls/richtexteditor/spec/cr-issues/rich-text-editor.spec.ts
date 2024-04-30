@@ -1,14 +1,15 @@
 /**
  * CR-Issues RTE spec
  */
-import { createElement, L10n, isNullOrUndefined, Browser, detach, isVisible } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, Browser, detach, isVisible, getUniqueID } from '@syncfusion/ej2-base';
 import { FormValidator } from "@syncfusion/ej2-inputs";
 import { dispatchEvent } from '../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent as dispatchEve } from './../rich-text-editor/render.spec';
 import { SelectionCommands } from '../../src/editor-manager/plugin/selection-commands';
 import { NodeSelection } from '../../src/selection/selection';
-import { IRenderer, QuickToolbar } from '../../src/index';
+import { HtmlEditor, IRenderer, QuickToolbar } from '../../src/index';
+import { Dialog } from '@syncfusion/ej2-popups';
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -3858,6 +3859,149 @@ describe('RTE CR issues ', () => {
         });
         afterAll((done: DoneFn) => {
             destroy(rteObj);
+            done();
+        });
+    });
+  
+    describe('879054: InsertHtml executeCommand not inserts into the cursor position after inserting table in RichTextEditor ', () => {
+        const selection: NodeSelection = new NodeSelection();
+        let range: Range;
+        let customBtn: HTMLElement;
+        let dialogCtn: HTMLElement;
+        let saveSelection: NodeSelection;
+        dialogCtn = document.getElementById('rteSpecial_char');
+        let dialogObj: Dialog;
+        let rteObj: RichTextEditor;
+
+        const onCreate = () => {
+            customBtn = document.getElementById('custom_tbar') as HTMLElement;
+            dialogCtn = document.getElementById('rteSpecial_char') as HTMLElement;
+            dialogObj.target = document.getElementById('rteSection');
+            customBtn.onclick = (e: Event) => {
+                (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+                dialogObj.element.style.display = '';
+                range = selection.getRange(document);
+                saveSelection = selection.save(range, document);
+                dialogObj.show();
+            };
+        }
+        const onInsert = () => {
+            const activeEle: Element = dialogObj.element.querySelector(
+                '.char_block.e-active'
+            );
+            if (activeEle) {
+                if (rteObj.formatter.getUndoRedoStack().length === 0) {
+                    rteObj.formatter.saveData();
+                }
+                if (Browser.isDevice && Browser.isIos) {
+                    saveSelection.restore();
+                }
+                rteObj.executeCommand('insertHTML', activeEle.textContent);
+                console.log(window.getSelection().getRangeAt(0));
+                rteObj.formatter.saveData();
+                rteObj.formatter.enableUndo(rteObj);
+            }
+            dialogOverlay();
+        }
+        const dialogOverlay = () => {
+            const activeEle: Element = dialogObj.element.querySelector('.char_block.e-active');
+            if (activeEle) {
+                activeEle.classList.remove('e-active');
+            }
+            dialogObj.hide();
+        }
+        const dialogCreate = () => {
+            dialogCtn = document.getElementById('rteSpecial_char');
+            dialogCtn.onclick = (e: Event) => {
+                const target: HTMLElement = e.target as HTMLElement;
+                const activeEle: Element = dialogObj.element.querySelector(
+                    '.char_block.e-active'
+                );
+                if (target.classList.contains('char_block')) {
+                    target.classList.add('e-active');
+                    if (activeEle) {
+                        activeEle.classList.remove('e-active');
+                    }
+                }
+            };
+        }
+        beforeAll((done: DoneFn) => {
+            let rteSection = createElement('div', { id: 'rteSection' });
+            let customRTE = createElement('div', { id: 'customRTE' });
+            let rteDialog = createElement('div', { id: 'rteDialog' });
+            let rteSpecial_char = createElement('div', { id: 'rteSpecial_char' });
+            rteSpecial_char.innerHTML = '<div class="char_block" title="^">^</div>';
+            document.body.appendChild(rteSection);
+            rteSection.appendChild(customRTE);
+            rteSection.appendChild(rteDialog);
+            rteDialog.appendChild(rteSpecial_char);
+
+            dialogObj = new Dialog({
+                buttons: [
+                    {
+                        buttonModel: { content: 'Insert', isPrimary: true },
+                        click: onInsert
+                    },
+                    {
+                        buttonModel: { content: 'Cancel' },
+                        click: dialogOverlay
+                    }
+                ],
+                overlayClick: dialogOverlay,
+                header: 'Special Characters',
+                visible: false,
+                showCloseIcon: false,
+                width: '43%',
+                cssClass: 'e-rte-elements',
+                target: document.getElementById('rteSection'),
+                created: dialogCreate,
+                isModal: true
+            });
+            dialogObj.appendTo('#rteDialog');
+
+            rteObj = new RichTextEditor(
+                {
+                    toolbarSettings: {
+                        items: ['CreateTable', {
+                            tooltipText: 'Insert Symbol',
+                            template:
+                                '<button class="e-tbar-btn e-btn e-rte-elements" tabindex="-1" id="custom_tbar"  style="width:100%">' +
+                                '<div class="e-tbar-btn-text" style="font-weight: 500;"> Ω</div></button>'
+                        }]
+                    },
+                    created: onCreate,
+                    value: `<div style="display:block;">
+                            <p style="margin-right:10px">
+                                The custom command "insert special character" is configured 
+                                as the last item of the toolbar. Click on the command and choose the special character 
+                                you want to include from the popup.
+                            </p>
+                        </div>`,
+                }
+            );
+            rteObj.appendTo('#customRTE');
+            if (rteObj.quickToolbarModule) {
+                rteObj.quickToolbarModule.debounceTimeout = 0;
+            }
+            done();
+        });
+
+        it('insert the special character inside the table', (done: DoneFn) => {
+            rteObj.dataBind();
+            let start: Element =(document.querySelector('.e-content').childNodes[0] as HTMLElement).children[0] as Element;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, start.firstChild, start.firstChild, 293, 293);
+            (document.querySelector('[title="Create Table (Ctrl+Shift+E)"]') as HTMLElement).click();
+            (document.querySelector('#customRTE_insertTable')as HTMLElement).click();
+            (document.querySelector('.e-insert-table.e-primary')as HTMLElement).click();
+            (document.getElementById('custom_tbar') as HTMLElement).click();
+            (document.querySelector('[title="^"]') as HTMLElement).click();
+            (document.querySelector('.e-rte-elements.e-primary') as HTMLElement).click();
+            expect(window.getSelection().getRangeAt(0).startContainer.textContent === '^' ).toBe(true);
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            document.body.innerHTML = "";
             done();
         });
     });

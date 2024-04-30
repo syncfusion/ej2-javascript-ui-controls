@@ -326,6 +326,8 @@ export class WorkbookSave extends SaveWorker {
         const json: string = JSON.stringify(model, (key: string, value: { [key: string]: object }) => {
             if (skipProp.indexOf(key) > -1) {
                 return undefined;
+            } else if (key === 'cellStyle') {
+                return this.parent.commonCellStyle;
             } else {
                 if (value && value.cells) {
                     for (let i: number = 0, len: number = (value.cells as CellModel[]).length; i < len; i++) {

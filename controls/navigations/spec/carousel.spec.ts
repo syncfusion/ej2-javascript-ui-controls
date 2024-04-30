@@ -2297,6 +2297,13 @@ describe('Carousel Testing', () => {
             (carousel as any).resizeHandler();
             expect(carousel.width).toEqual('500px');
         });
+        it('test case for changing window size when loop set to false', () => {
+            const carouselElement: HTMLElement = document.getElementById('carousel');
+            carousel = new Carousel({ items: items, animationEffect: 'Slide', loop: false}, carouselElement);
+            let itemContainer: HTMLElement = (carousel.element.querySelector('.e-carousel-items') as HTMLElement);
+            (carousel as any).resizeHandler();
+            expect(itemContainer.style.transform).toEqual('translateX(0px)');
+        });
     });
 
     it('memory leak', () => {

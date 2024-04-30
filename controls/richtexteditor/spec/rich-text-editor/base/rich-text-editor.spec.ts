@@ -7444,5 +7444,35 @@ describe('876271 - Checking the tooltip is notshown when the dropdown is in open
         destroy(rteObj);
     });
 });
+describe('881576 - The tooltips are not destroyed when the dialog with the editor is closed by a keyboard action.', () => {
+    let rteObj: RichTextEditor;
+    beforeAll((done)=> {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Bold', 'FullScreen'],
+             type: ToolbarType.Expand ,
+            },
+            value : "Rich Text Editor"
+        });
+        done();
+    });
+    it('Tooltip hide while Esc key is pressed', (done: Function) => {
+        const toolbarItems: NodeListOf<Element> = document.querySelectorAll('.e-toolbar-item');
+        event = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
+        toolbarItems[0].dispatchEvent(event);
+        let toolTipContent = document.querySelector('.e-tip-content');
+        expect(toolTipContent).not.toBe(null);
+        rteObj.destroy();
+        setTimeout(function () {
+            toolTipContent = document.querySelector('.e-tip-content');
+            expect(toolTipContent).toBe(null);
+            done();
+        }, 100)
+    });
+    afterAll((done: DoneFn) => {
+        destroy(rteObj);
+        done();
+    });
+});
   
 });

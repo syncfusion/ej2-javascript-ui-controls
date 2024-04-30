@@ -552,6 +552,7 @@ export class TextLayer {
                     }
                 }
             }
+            spanElement.style.height = textDiv.style.height;
             spanElement.appendChild(node);
             textDiv.appendChild(spanElement);
         } else {

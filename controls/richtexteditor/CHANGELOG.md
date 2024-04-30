@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
+## 25.1.42 (2024-04-30)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I581044` - Now, with the content pasted with a table as the last element, a newline will be inserted, and the focus will be maintained on a new line.
+
 ## 25.1.41 (2024-04-23)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I577917` - Now, The tooltips are destroyed when the dialog with the editor is closed by a keyboard action.
+
+- `#I52134`: Now, the cursor position remains in the correct place when you use InsertHtml executeCommand to insert text into Rich Text Editor after the table.
+
+- `#I572493`: Now, added the new `requestType` property to the `imageUploadSuccess` event argument in Rich Text Editor.
+
+## 25.1.40 (2024-04-16)
 
 ### RichTextEditor
 

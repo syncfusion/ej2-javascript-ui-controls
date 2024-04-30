@@ -121,14 +121,12 @@ export class Legend extends BaseLegend {
                     seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
                         <ChartSeriesType>series.type;
                     fill = points.interior ? points.interior : series.interior;
-                    if (this.legendCollections.filter((i: LegendOptions) => i.text === points.x.toString()).length === 0) {
-                        this.legendCollections.push(new LegendOptions(
-                            points.x.toString(), fill, series.legendShape, (series.category === 'TrendLine' ?
-                                (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : points.visible),
-                            seriesType, (series.type === 'Scatter' && series.marker.shape === 'Image') ? series.marker.imageUrl : '',
-                            series.marker.shape, series.marker.visible
-                        ));
-                    }
+                    this.legendCollections.push(new LegendOptions(
+                        points.x.toString(), fill, series.legendShape, (series.category === 'TrendLine' ?
+                            (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : points.visible),
+                        seriesType, (series.type === 'Scatter' && series.marker.shape === 'Image') ? series.marker.imageUrl : '',
+                        series.marker.shape, series.marker.visible
+                    ));
                 }
             } else if (this.legend.mode === 'Range') {
                 for (const points of series.points) {

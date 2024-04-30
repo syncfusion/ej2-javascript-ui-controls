@@ -1,18 +1,18 @@
 /**
  * Gantt toolbar spec
  */
-import { Gantt, Edit, Toolbar, Selection, Filter, PdfExport } from '../../src/index';
-import { exportData, image,adventProFont,GanttData1} from '../base/data-source.spec';
+import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQueryCellInfoEventArgs, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport } from '../../src/index';
+import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks } from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
 import { getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfTrueTypeFont } from '@syncfusion/ej2-pdf-export';
+Gantt.Inject(Edit, Toolbar, Selection, Filter, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport);
 
 describe('Gantt pdfexport support', () => {
     let exportComplete: () => void = () => true;
     describe('Gantt toolbar action', () => {
-        Gantt.Inject(Toolbar, Selection, PdfExport);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt(
@@ -151,7 +151,7 @@ describe('Gantt pdfexport support', () => {
             });
         });
         describe('Gantt PDF Export', () => {
-            Gantt.Inject(Toolbar, PdfExport);
+
             let ganttObj: Gantt;
             beforeAll((done: Function) => {
                 ganttObj = createGantt(
@@ -205,7 +205,7 @@ describe('Gantt pdfexport support', () => {
     });
 });
 describe('Gantt PDF Export with blobdata', () => {
-    Gantt.Inject(Toolbar, PdfExport);
+
     let ganttObj: Gantt;
     let blobDatas: any;
     beforeAll((done: Function) => {
@@ -260,30 +260,31 @@ describe('Gantt PDF Export with blobdata', () => {
     });
 });
 describe('Gantt PDF Export with baseline', () => {
-    Gantt.Inject(Toolbar, PdfExport);
+
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource:  [
+                dataSource: [
                     {
                         TaskID: 1,
                         TaskName: 'Product Concept',
                         StartDate: new Date('04/02/2019'),
                         EndDate: new Date('04/21/2019'),
                         subtasks: [
-                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
-                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
-                            Indicators: [
-                                {
-                                    'date': '04/10/2019',
-                                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
-                                    'name': 'Indicator title',
-                                    'tooltip': 'tooltip'
-                                }
-                            ] 
-                        },
-                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
                         ]
                     }],
                 allowPdfExport: true,
@@ -334,32 +335,33 @@ describe('Gantt PDF Export with baseline', () => {
     it('Export data with baseline', () => {
         ganttObj.pdfExport();
     });
-}); 
+});
 describe('Gantt PDF Export with eventmarker', () => {
-    Gantt.Inject(Toolbar, PdfExport);
+
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource:  [
+                dataSource: [
                     {
                         TaskID: 1,
                         TaskName: 'Product Concept',
                         StartDate: new Date('04/02/2019'),
                         EndDate: new Date('04/21/2019'),
                         subtasks: [
-                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
-                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
-                            Indicators: [
-                                {
-                                    'date': '04/10/2019',
-                                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
-                                    'name': 'Indicator title',
-                                    'tooltip': 'tooltip'
-                                }
-                            ] 
-                        },
-                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
                         ]
                     }],
                 allowPdfExport: true,
@@ -415,38 +417,40 @@ describe('Gantt PDF Export with eventmarker', () => {
         }
     });
     it('Export data with eventMarker', () => {
-         let pdfExportProperties = {
+        let pdfExportProperties = {
             ganttStyle: {
-                font:  new PdfTrueTypeFont(adventProFont, 12)
-            }}
+                font: new PdfTrueTypeFont(adventProFont, 12)
+            }
+        }
         ganttObj.pdfExport(pdfExportProperties);
     });
-}); 
+});
 describe('Gantt PDF Export with eventmarker without label', () => {
-    Gantt.Inject(Toolbar, PdfExport);
+
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource:  [
+                dataSource: [
                     {
                         TaskID: 1,
                         TaskName: 'Product Concept',
                         StartDate: new Date('04/02/2019'),
                         EndDate: new Date('04/21/2019'),
                         subtasks: [
-                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
-                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
-                            Indicators: [
-                                {
-                                    'date': '04/10/2019',
-                                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
-                                    'name': 'Indicator title',
-                                    'tooltip': 'tooltip'
-                                }
-                            ] 
-                        },
-                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
                         ]
                     }],
                 allowPdfExport: true,
@@ -504,9 +508,9 @@ describe('Gantt PDF Export with eventmarker without label', () => {
     it('Export data with eventMarker without lable', () => {
         ganttObj.pdfExport();
     });
-}); 
+});
 describe('Gantt PDF Export indicator', () => {
-    Gantt.Inject(Toolbar, PdfExport);
+
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
@@ -544,30 +548,31 @@ describe('Gantt PDF Export indicator', () => {
     });
 });
 describe('Gantt PDF Export with eventmarker without empty  label', () => {
-    Gantt.Inject(Toolbar, PdfExport);
+
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource:  [
+                dataSource: [
                     {
                         TaskID: 1,
                         TaskName: 'Product Concept',
                         StartDate: new Date('04/02/2019'),
                         EndDate: new Date('04/21/2019'),
                         subtasks: [
-                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
-                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
-                            Indicators: [
-                                {
-                                    'date': '04/10/2019',
-                                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
-                                    'name': 'Indicator title',
-                                    'tooltip': 'tooltip'
-                                }
-                            ] 
-                        },
-                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
                         ]
                     }],
                 allowPdfExport: true,
@@ -628,7 +633,7 @@ describe('Gantt PDF Export with eventmarker without empty  label', () => {
     });
 });
 describe('Gantt PDF Export with customization of header and footer', () => {
-    Gantt.Inject(Toolbar, PdfExport);
+
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
@@ -818,32 +823,33 @@ describe('Gantt PDF Export with customization of header and footer', () => {
             done();
         });
     });
-});    
+});
 describe('Gantt PDF Export with holiday label', () => {
-    Gantt.Inject(Toolbar, PdfExport);
+
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource:  [
+                dataSource: [
                     {
                         TaskID: 1,
                         TaskName: 'Product Concept',
                         StartDate: new Date('04/02/2019'),
                         EndDate: new Date('04/21/2019'),
                         subtasks: [
-                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
-                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
-                            Indicators: [
-                                {
-                                    'date': '04/10/2019',
-                                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
-                                    'name': 'Indicator title',
-                                    'tooltip': 'tooltip'
-                                }
-                            ] 
-                        },
-                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
                         ]
                     }],
                 allowPdfExport: true,
@@ -922,30 +928,31 @@ describe('Gantt PDF Export with holiday label', () => {
     });
 });
 describe('Gantt PDF Export  with number taskname', () => {
-    Gantt.Inject(Toolbar, PdfExport);
+
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt(
             {
-                dataSource:  [
+                dataSource: [
                     {
                         TaskID: 1,
-                        TaskName:"1project",
+                        TaskName: "1project",
                         StartDate: new Date('04/02/2019'),
                         EndDate: new Date('04/21/2019'),
                         subtasks: [
-                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
-                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
-                            Indicators: [
-                                {
-                                    'date': '04/10/2019',
-                                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
-                                    'name': 'Indicator title',
-                                    'tooltip': 'tooltip'
-                                }
-                            ] 
-                        },
-                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
                         ]
                     }],
                 allowPdfExport: true,
@@ -992,7 +999,7 @@ describe('Gantt PDF Export  with number taskname', () => {
                 ],
                 labelSettings: {
                     taskLabel: 'TaskName',
-                  },
+                },
                 treeColumnIndex: 0,
                 height: '450px',
             }, done);
@@ -1005,4 +1012,1756 @@ describe('Gantt PDF Export  with number taskname', () => {
     it('Export data with long text', () => {
         ganttObj.pdfExport();
     });
-}); 
+});
+describe('Gantt PDF Export  with number taskname', () => {
+
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: "1project",
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                        ]
+                    }],
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 20,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                columns: [
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                eventMarkers: [
+                    {
+                        day: '04/02/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                labelSettings: {
+                    taskLabel: 'TaskName',
+                },
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with long text', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export for resource', () => {
+
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [{
+                    TaskID: 1,
+                    TaskName: 'Project initiation',
+                    StartDate: new Date('03/29/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                            Progress: 30, work: 10, resourceInfo: [{ resourceId: 1, resourceUnit: 50 }]
+                        },
+                        {
+                            TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                            resourceInfo: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+                        },
+                        {
+                            TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                            resourceInfo: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+                        },
+                    ]
+                }],
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team' },
+                    { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team' }],
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resourceInfo',
+                    work: 'work',
+                    child: 'subtasks',
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'resourceInfo', headerText: 'ResourceInfo' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                    { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export with resource data', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export', () => {
+
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: exportData,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                columns: [
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export with custom date format', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with critical task', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Project Initiation',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Identify Site location', Duration: 3, Progress: 50 },
+                            { TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Progress: 50 },
+                            { TaskID: 4, TaskName: 'Soil test approval', EndDate: new Date('04/08/2019'), Progress: 50 },
+                        ]
+                    }],
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                pdfQueryTaskbarInfo: (args: any) => {
+                    args.taskbar.progressColor = new PdfColor(205, 92, 92);
+                    args.taskbar.taskColor = args.taskbar.taskBorderColor = new PdfColor(240, 128, 128);
+                    args.taskbar.progressFontColor = new PdfColor(105, 92, 92);
+                    args.taskbar.milestoneColor = new PdfColor(240, 128, 128);
+
+                },
+                enableCriticalPath: true,
+                columns: [
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy', },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                allowUnscheduledTasks: true,
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export with custom date format', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with empty gantt', () => {
+
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [],
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                columns: [
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with empty gantt', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export for connector lines', () => {
+
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', Predecessor: '3FS', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: '4FF',
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "10FF", Progress: 30 },
+                        ]
+                    },
+                    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+                    {
+                        TaskID: 6,
+                        TaskName: 'Market Research',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            {
+                                TaskID: 7,
+                                TaskName: 'Demand Analysis',
+                                StartDate: new Date('04/04/2019'),
+                                EndDate: new Date('04/21/2019'),
+                                subtasks: [
+                                    { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5", Progress: 30 },
+                                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "20FF" }
+                                ]
+                            },
+                            { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8", Progress: 30 },
+                            { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9SS" },
+                            { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10FF" }
+                        ]
+                    },
+                    {
+                        TaskID: 13,
+                        TaskName: 'Product Design and Development',
+                        StartDate: new Date('04/04/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 14, TaskName: 'Functionality design', StartDate: new Date('04/04/2019'), Duration: 7, Progress: 30, Predecessor: '19SF', },
+                            { TaskID: 15, TaskName: 'Quality design', StartDate: new Date('04/04/2019'), Duration: 5, Predecessor: '14SS', },
+                            { TaskID: 16, TaskName: 'Define Reliability', StartDate: new Date('04/04/2019'), Duration: 5, Progress: 30 },
+                            { TaskID: 17, TaskName: 'Identifying raw materials ', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '5FS', },
+                            {
+                                TaskID: 18,
+                                TaskName: 'Define cost plan',
+                                StartDate: new Date('04/04/2019'),
+                                EndDate: new Date('04/21/2019'),
+                                subtasks: [
+                                    { TaskID: 19, TaskName: 'Manufacturing cost', StartDate: new Date('04/04/2019'), Duration: 1, Progress: 30, Predecessor: '12SS' },
+                                    { TaskID: 20, TaskName: 'Selling cost', StartDate: new Date('04/04/2019'), Duration: 1, Predecessor: '12SF', }
+                                ]
+                            },
+                            {
+                                TaskID: 21,
+                                TaskName: 'Development of the final design',
+                                StartDate: new Date('04/04/2019'),
+                                EndDate: new Date('04/21/2019'),
+                                subtasks: [
+                                    { TaskID: 22, TaskName: 'Defining dimensions and package volume', StartDate: new Date('04/04/2019'), Duration: 2, Progress: 30, Predecessor: '33SF' },
+                                    { TaskID: 23, TaskName: 'Develop design to meet industry standards', StartDate: new Date('04/04/2019'), Duration: 3 },
+                                    { TaskID: 24, TaskName: 'Include all the details', StartDate: new Date('04/04/2019'), Duration: 5, Predecessor: '22FS', }
+                                ]
+                            },
+                            { TaskID: 25, TaskName: 'CAD Computer-aided design', StartDate: new Date('04/04/2019'), Duration: 10, Progress: 30, Predecessor: '34SF' },
+                            { TaskID: 26, TaskName: 'CAM Computer-aided manufacturing', StartDate: new Date('04/04/2019'), Duration: 10 }
+                        ]
+                    },
+                    { TaskID: 27, TaskName: 'Prototype Testing', StartDate: new Date('04/04/2019'), Duration: 12, Progress: 30, Predecessor: '10SF', },
+                    { TaskID: 28, TaskName: 'Include feedback', StartDate: new Date('04/04/2019'), Duration: 5, Predecessor: '9FF', },
+                    { TaskID: 29, TaskName: 'Manufacturing', StartDate: new Date('04/04/2019'), Duration: 9, Progress: 30, Predecessor: '8FS', },
+                    { TaskID: 30, TaskName: 'Assembling materials to finished goods', StartDate: new Date('04/04/2019'), Duration: 12, Predecessor: '7SS', },
+                    {
+                        TaskID: 31,
+                        TaskName: 'Feedback and Testing',
+                        StartDate: new Date('04/04/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 32, TaskName: 'Internal testing and feedback', StartDate: new Date('04/04/2019'), Duration: 5, Progress: 30 },
+                            { TaskID: 33, TaskName: 'Customer testing and feedback', StartDate: new Date('04/04/2019'), Duration: 7, Progress: 30 }
+                        ]
+                    },
+                    {
+                        TaskID: 34,
+                        TaskName: 'Product Development',
+                        StartDate: new Date('04/04/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 35, TaskName: 'Important improvements', StartDate: new Date('04/04/2019'), Duration: 2, Progress: 30, Predecessor: '4SS', },
+                            { TaskID: 36, TaskName: 'Address any unforeseen issues', StartDate: new Date('04/04/2019'), Duration: 2, Progress: 30 }
+                        ]
+                    },
+                    {
+                        TaskID: 37,
+                        TaskName: 'Final Product',
+                        StartDate: new Date('04/04/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 38, TaskName: 'Branding product', StartDate: new Date('04/04/2019'), Duration: 5 },
+                            { TaskID: 39, TaskName: 'Marketing and pre-sales', StartDate: new Date('04/04/2019'), Duration: 10, Progress: 30, Predecessor: '5FS', }
+                        ]
+                    }
+                ],
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                pdfQueryTimelineCellInfo: (args: any) => {
+                    args.timelineCell.backgroundColor = new PdfColor(240, 248, 255);
+
+                },
+                columns: [
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                treeColumnIndex: 0,
+                height: '450px'
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data for connector lines', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with grid width', () => {
+    //
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: pdfData1,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with holiday lable', () => {
+        var exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+                gridWidth: '50%'
+            }
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});
+describe('Gantt PDF Export with chart width', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: pdfData1,
+                allowPdfExport: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    }
+                },
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                toolbar: ['PdfExport'],
+                columns: [
+                    { field: 'TaskID', headerTextAlign: 'Right' },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    }
+                ],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with holiday lable', () => {
+        var exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+                chartWidth: '50%'
+            }
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});
+describe('Gantt PDF Export with customZoomingLevels ', () => {
+    //
+    let ganttObj: Gantt;
+    let customZoomingLevels: ZoomTimelineSettings[] = [{
+        topTier: { unit: 'Month', format: 'MMM, yy', count: 1 },
+        bottomTier: { unit: 'Week', format: 'dd', count: 1 }, timelineUnitSize: 33, level: 0,
+        timelineViewMode: 'Month', weekStartDay: 0, perDayWidth: 33, updateTimescaleView: true, weekendBackground: null, showTooltip: true,
+    },
+    {
+        topTier: { unit: 'Month', format: 'MMM, yyyy', count: 1 },
+        bottomTier: { unit: 'Week', format: 'dd MMM', count: 1 }, timelineUnitSize: 66, level: 1,
+        timelineViewMode: 'Month', weekStartDay: 0, perDayWidth: 30, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+    },
+    {
+        topTier: { unit: 'Month', format: 'MMM, yyyy', count: 1 },
+        bottomTier: { unit: 'Week', format: 'dd MMM', count: 1 }, timelineUnitSize: 99, level: 2,
+        timelineViewMode: 'Month', weekStartDay: 0, perDayWidth: 33, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+    },
+    {
+        topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
+        bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 33, level: 3,
+        timelineViewMode: 'Week', weekStartDay: 0, perDayWidth: 33, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+    },
+    {
+        topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
+        bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 66, level: 4,
+        timelineViewMode: 'Week', weekStartDay: 0, perDayWidth: 33, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+    },
+    {
+        topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
+        bottomTier: { unit: 'Hour', format: 'hh a', count: 12 }, timelineUnitSize: 66, level: 5,
+        timelineViewMode: 'Day', weekStartDay: 0, perDayWidth: 33, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+    },
+    {
+        topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
+        bottomTier: { unit: 'Hour', format: 'hh a', count: 6 }, timelineUnitSize: 99, level: 6,
+        timelineViewMode: 'Day', weekStartDay: 0, perDayWidth: 33, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+    },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: customZoomingdata,
+                allowPdfExport: true,
+                dataBound: function () {
+                    ganttObj.zoomingLevels = customZoomingLevels;
+                },
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with customZoomingLevels', () => {
+        var exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true
+            }
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});
+describe('Gantt PDF Export with column header template', () => {
+    let ganttObj: Gantt;
+    let i: number = 0;
+    let pdfColumnHeaderQueryCellInfo = (args: any) => {
+        let base64Array: Object[] = [
+            { 'TaskName': '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/9sAQwEDAwMEAwQIBAQIEAsJCxAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ/8AAEQgAIAAgAwERAAIRAQMRAf/EABgAAQEBAQEAAAAAAAAAAAAAAAYIAAcF/8QALBAAAQQCAgEDAwIHAAAAAAAAAQIDBAUGBxESAAgTIRQVQRYxFzhXdpa01f/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwB7gessOlaiw2zpdS4Ld2cqngOyl2rLbHcqjpLiy6IzylL7/gp/J+RxwQQt68w6mewu7XrfEKC+azXGuiqiO2r2ybqKnhD3stLVy2TyOg/cj5A5IXr4G8Cf9+aD0XT6K2Nb1GlsEgz4OJW8mLKjY5DaeYdRDdUhxC0thSVJUAQoEEEAjwNW2XoFprGLb1E/QEGdBeRJiyoztK08w6hQUhxC0kFKkqAIUCCCAR4CDD9sbV2RWSso19r3BrDGza2NfWWEnOH21T2Yst2MJKUs1ryAhwslSeHFfBHyRwSHnW26tv12qpO5Ier8GtMdYoVZI2qJm01L0iCGPfC0IeqEcKLfyErKT+DwfjwFvqO/l62h/Zl3/oveB0TwJTe2FRYxX5RqrLrj065HUuZRdzXIOQ7GRHc6yLV+YlmVDcgPJS6044AQVHhTY/I58Ao3lmJUeibfRWBZH6bKCFbUL1K7PTtRpTrzjsQRlzJCWqxoPyFISkqWepUQOfj48Ctdj4j/ABA15lGB/cPoP1JSzaj6v2vd+n+oYW17nTsnv1789ew5445H7+Ad+x+oX+qGu/8AA53/AGPA5drHb+D4rru/xSy3nrPG86i5hkwnOXDjbTIkG9lrU4qCqY271W0R0BfJSFI5UvqQQKWW5cOT6NMhxTZO+9d5Fl72ByIYjQrmM9LMo1oQll0iXIMuSH+3Z9BSlaiFBCeOSH//2Q==' },
+            { 'StartDate': '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/9sAQwEDAwMEAwQIBAQIEAsJCxAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ/8AAEQgAIAAgAwERAAIRAQMRAf/EABcAAQEBAQAAAAAAAAAAAAAAAAcABgX/xAAzEAAABAQDBwEGBwAAAAAAAAABAgMEBQYHEQgSEwAUFRYYITI0IiQxMzVCN0NRVWaCg//EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAGBEBAQEBAQAAAAAAAAAAAAAAABEBIUH/2gAMAwEAAhEDEQA/AG2t2PafKP4qHFI3sLlRGR4bE4QlEIi4Yu1XqLJdBsq5UAU1spjEKqoJQBIfEoZTD8QCJcxxTdhwp3JlI6RxCQ5yYQmGOVYjEVYbE8oPVoi8VFNMVRanEoInbjcUvIxwAw27BTHjim7EfTuc6R1ciEhyawi0MbKw6IpQ2J5ReoxFmqCagpC6OBRRI4G4JeRSAJgv3B3ojj2nysGKhvSNlC5UWkeJROLpQ+It2LtJ6syQQcqtlBFRbKUxypJiYBSDyMGUo/AOtP7GoFVcRtTZRkWjGHiLcm8F3qKTvLi68Qd72wIoTMslm1MmmcgXAtigmAXsO1lSwYwJKqEwV0mLD8yw54TiTFLMNJFXblWUHAMjpHK2MAJnC5xNZ2n2EgB2N37BdCqOpVQl+uku4fnuHPCceYpmhp4q0cpSg4FkRIhXJhBQ42OBrNFOwEEO5e/cbIUnSAxqBSrEbTKUZ6oxh4hPOXGt1ikkS4uhEGm6MDqHyrK5dPPqEINgNcoqANrhskLWameB0/jWL2uPPWIuYaV6PLO68Jm5CB8SvCy58+qA62nYlreOqN/INmGiCT5cpetjBnmEvcV00w2XUIAio0ndKem6L2Jq5GN2ykQEMixQEygaYBcN3KH5Y7PTxThLlL0cYMjQlliummJS6vAFlHc7qz03WewxXI+s2TiABkRKIlTDTELjvBg/MDZ6eF+WIHT+C4vaHci4i5hqprczb1xabkI5w20LNkyaQBo6lz3v5aQW8R2aYz1VOkrq9rP1Sfx3gX1P9rJvPof8PP8Ar92zDQxLHQ71NzbzJ+EHBkuAfV/X5Gefw968t8+Z7P6fZs4dUz9DvU3KXLf4QcGV4/8AV/X5HmTz968tz+X7P6/fs4dM9K+krq9ox0t/yLjv1P8Aaz7t67/fw/t9uzTH/9k=' },
+            // { 'resources' :'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/8AACwgAIAAgAQERAP/EABkAAAMAAwAAAAAAAAAAAAAAAAYHCAIEBf/EADYQAAEEAQMDAgIEDwAAAAAAAAIBAwQFBgcIEgAREwkhFCIVFhgxFxkjNDhSWWFigYOFp7XT/9oACAEBAAA/ALz3c632u3HbrmestFRxLeyoI8YYcSW4QMK/IlMxmzc4/MQAT6GoIoqaAooQcuYzKem/qnt6JrqKe7SoHLhrlsyxMsLqk7Cjfk8Hxfw/bz9u48fFw5+3k7fN129F/Vk2x5Lpfj91rRnUTD82fjkN1TxKa0lsMPg4Qc23G45jwcERdQOZqCOICkSipLalTbVV/VQr2is4ljW2MduXDmRHheYksOChNutuCqiYEKoSEiqioqKnUI+pDrrX6k4rkGx3RzEb7OdUL56AtrBroTot0kVpyLPB51ww4OeQfCKIBcBQzVwwUBBwE1w1L9SGRs9yTB9Rtsjde63RIxeZpCy2C6+te2g/EOFBadNxXDaE0cIS7djNeCJ7JTKLst+xkgkWKLo4mP8Af2+H59/B7+33/SHf+t5v4utD0uP0E9Mv71/uJvQX6SmM4wu26RqolsF1m+c3lhMyqyfk/ETlfbkOA21IcJVPko/l/mXuSyVJe/Lv1jTUma+oLmuVXd9nt9jGgWMW8jH6emoJaxH8sfYXjIlSnx+ZY3P2AE9lT9UhIiM/xWuxbxeP8CR8uPHyfWa35d+33/nXbv8Ay7fu6RueYHknpZ5JT6saT5Jkl3oDd3YNZphbrrD78N91hxpqVGddDuiIqgqohNk4TDDTjiiQk2/7b0y9jl1azbmZoREbkT5Dkl0Il3ZxWBMyUlRtlmSLTQIqr2BsRAU7IKIiInSe2yJv12p6VRtCV2a1WewManzwrr2v1Dra1uWw7Jcd5+N5CcJFNw1EjFsuCghAJCvTX+0Pvs/Z1f5dp/8An0qNzab9d1mlUnQlNmtVgUDJZ8ALG9sNQ62ybiMNSW3efjZQXBRDbBSIBcLghoIERJ1//9k='},
+            // { 'Duration' : '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/8AACwgAIAAgAQERAP/EABgAAAMBAQAAAAAAAAAAAAAAAAAFBggH/8QAIxAAAgIBBAMBAQEBAAAAAAAAAgMBBAYFBxESCBMhCRQAIv/aAAgBAQAAPwDR/ln5Z7gaJuBR8avGrSrN7cm86vFy5FQGxSgwFwJUDolRESphjHHEqUqZ+9uxJjNZ/PDDdKwPIN2PJHd3PMsyPTNMdrOr2tItKkiTWqCRIA7gMZYIYUYgwyVBD646L4n/ABo354YbquB4/ux43bu55ieR6npidZ0i1q9pUEKbNQiFBnTBbK5FDQE2ATYEfZHRnMf6z8TPLPcDW9wL3jV5K6VZo7k0XWIp3JqAqLsABONLQTEKEhVEsW4IhTVRH3t1Jyb8xtDq5Nj24W/WQn/fmWT5NYo3rrEJHgIBVpkrgAiV+11qSYIz0n1J4GOn3v8A5bZli+F+Oe4FjKdbracGrY/qGjUIbM9rV2zVatKFjESRERTz8j/kRMy4ESKJXx08i9g0bB7d0L+8uGadc07GdO0+3U1DWq9OwixXrgloGpxCccGsoiZjgo4IZkZiZ5V+nOh1cZx7b3frHj/gzLGMmr0aN1aElyEg20uWQYTLPU6rBLEp6R7XcjPf4fmNrlXGce3C2FyEP4MyxjJrF69SY9JchIKqshcgcyz1OqyLCGOke1PBT3+ay3L2s2/3ixdmGblYzW1vSDcuzCGmayW4J/5YtiyFiy4kh7AUTIkYzyJFEyuPeKnjZjOj19D03Y7DHVq3foeoaSq/YnsUlPd9mDaf0p47FPEcDHERERnf9Odcq5Nj23uwuPB/fmWT5NXvUaS3pHgIBtVcMkziV+11qBWRR0n1O5KOn1z5Z+Jm4Gt7gUfJXxq1WzR3JourzcpxbBUXYABSDlG6YUJCqIWxJzCmqifnbsLk2h/pzj2M1Sx7frZvM8YzKh6l3aNGmEhPZKzhsrtMS1HeSIhUUHwEhPsPn4a5+nOPZNVHHthdm8zyfMr/ALV0qN6mEBHVLDlsLqsc1/SREiUMByEHPsDj658TPEzcDRNwL3kr5K6rZvbk3nWJp05tg2KUGBJNzTTMqIiVMrWkJlSlTHzt1FP/2Q=='},
+            { 'Progress': '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/9sAQwEDAwMEAwQIBAQIEAsJCxAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ/8AAEQgAIAAgAwERAAIRAQMRAf/EABoAAAICAwAAAAAAAAAAAAAAAAAIAwUGBwn/xAArEAAABQIEBQQDAQAAAAAAAAABAgQFBgMHABESFAgTFSEiFhcxMiQzYWL/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A6p4AwBgDAK3BuMx4n0rYrftUSgyaWSFuTuiVlVyt1LWLRroSria6pGUycDbYwHEAqjl9ft2wELJxwJ5HEJLPGZJbtQxRDZ9aV+pXwm13dUaSfwMwgc+o5RDwKbL5HIO+Ay6N8Q85l8QaZ5HYpbtWxPnP2Cv1g7U+dyao0qvgdkA5cjlEPIoZ5ZhmHfATzm+d2YC0vrm62ygympHm5Q6KkaSarjVjUaFA1c+gTtBaYm5ZREAE4Z/Hz2wC92j4bLmQW9EOvm+W2nNRwjrCgaVLIkpsFSieonZCNgmIrM8FMJREnNDOiA99P+sBUQng6m8OtDcq1XpO4iv3D6N+f02PU9jsFRq/6+ujzderT9iacs/L4wG3bbW5m9vbQxO1XtNcRf6X3/5/Lj1LcblUev8Ar6ybRp16fsOeWfb4wFvdxruZOmWYlY7FTmm4SJhXtKairVsFOiSooQnTAY9QroYwFAT6hyII9sv7gGcwBgDAGA//2Q==' }
+        ]
+        while (i < base64Array.length) {
+            const key = Object.keys(base64Array[i])[0];
+            const value = base64Array[i][key];
+            if (key === args.column.field) {
+                args.headerTemplate.image = [{
+                    base64: value, width: 20, height: 20
+                }];
+                args.headerTemplate.value = args.column.field;
+                args.headerTemplate.fontStyle.fontSize = 6;
+                args.headerTemplate.fontStyle.fontColor = new PdfColor(255, 0, 0);
+                break;
+            }
+            i++;
+        }
+    }
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: templateData,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                columns: [
+                    { field: 'TaskName', width: 250 },
+                    { field: 'StartDate' },
+                    { field: 'Progress' }
+                ],
+                toolbar: ['PdfExport'],
+                resources: projectResourcestemplate,
+                pdfColumnHeaderQueryCellInfo: pdfColumnHeaderQueryCellInfo,
+                projectStartDate: new Date('03/24/2019'),
+                projectEndDate: new Date('07/06/2019'),
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with column template', () => {
+        let exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+                gridWidth: '50%'
+            }
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});
+describe('Gantt PDF Export with column header template without image height and width', () => {
+    let ganttObj: Gantt;
+    let projectResources: Object[] = [
+        { resourceId: 1, resourceName: 'Martin Tamer' },
+        { resourceId: 2, resourceName: 'Rose Fuller' },
+        { resourceId: 3, resourceName: 'Margaret Buchanan' },
+        { resourceId: 4, resourceName: 'Fuller King' },
+        { resourceId: 5, resourceName: 'Davolio Fuller' },
+        { resourceId: 6, resourceName: 'Van Jack' },
+        { resourceId: 7, resourceName: 'Fuller Buchanan' },
+    ];
+    let i: number = 0;
+    let pdfColumnHeaderQueryCellInfo = (args: any) => {
+        let base64Array: Object[] = [
+            { 'TaskName': '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/9sAQwEDAwMEAwQIBAQIEAsJCxAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ/8AAEQgAIAAgAwERAAIRAQMRAf/EABgAAQEBAQEAAAAAAAAAAAAAAAYIAAcF/8QALBAAAQQCAgEDAwIHAAAAAAAAAQIDBAUGBxESAAgTIRQVQRYxFzhXdpa01f/EABQBAQAAAAAAAAAAAAAAAAAAAAD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwB7gessOlaiw2zpdS4Ld2cqngOyl2rLbHcqjpLiy6IzylL7/gp/J+RxwQQt68w6mewu7XrfEKC+azXGuiqiO2r2ybqKnhD3stLVy2TyOg/cj5A5IXr4G8Cf9+aD0XT6K2Nb1GlsEgz4OJW8mLKjY5DaeYdRDdUhxC0thSVJUAQoEEEAjwNW2XoFprGLb1E/QEGdBeRJiyoztK08w6hQUhxC0kFKkqAIUCCCAR4CDD9sbV2RWSso19r3BrDGza2NfWWEnOH21T2Yst2MJKUs1ryAhwslSeHFfBHyRwSHnW26tv12qpO5Ier8GtMdYoVZI2qJm01L0iCGPfC0IeqEcKLfyErKT+DwfjwFvqO/l62h/Zl3/oveB0TwJTe2FRYxX5RqrLrj065HUuZRdzXIOQ7GRHc6yLV+YlmVDcgPJS6044AQVHhTY/I58Ao3lmJUeibfRWBZH6bKCFbUL1K7PTtRpTrzjsQRlzJCWqxoPyFISkqWepUQOfj48Ctdj4j/ABA15lGB/cPoP1JSzaj6v2vd+n+oYW17nTsnv1789ew5445H7+Ad+x+oX+qGu/8AA53/AGPA5drHb+D4rru/xSy3nrPG86i5hkwnOXDjbTIkG9lrU4qCqY271W0R0BfJSFI5UvqQQKWW5cOT6NMhxTZO+9d5Fl72ByIYjQrmM9LMo1oQll0iXIMuSH+3Z9BSlaiFBCeOSH//2Q==' },
+            { 'StartDate': '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/9sAQwEDAwMEAwQIBAQIEAsJCxAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ/8AAEQgAIAAgAwERAAIRAQMRAf/EABcAAQEBAQAAAAAAAAAAAAAAAAcABgX/xAAzEAAABAQDBwEGBwAAAAAAAAABAgMEBQYHEQgSEwAUFRYYITI0IiQxMzVCN0NRVWaCg//EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAGBEBAQEBAQAAAAAAAAAAAAAAABEBIUH/2gAMAwEAAhEDEQA/AG2t2PafKP4qHFI3sLlRGR4bE4QlEIi4Yu1XqLJdBsq5UAU1spjEKqoJQBIfEoZTD8QCJcxxTdhwp3JlI6RxCQ5yYQmGOVYjEVYbE8oPVoi8VFNMVRanEoInbjcUvIxwAw27BTHjim7EfTuc6R1ciEhyawi0MbKw6IpQ2J5ReoxFmqCagpC6OBRRI4G4JeRSAJgv3B3ojj2nysGKhvSNlC5UWkeJROLpQ+It2LtJ6syQQcqtlBFRbKUxypJiYBSDyMGUo/AOtP7GoFVcRtTZRkWjGHiLcm8F3qKTvLi68Qd72wIoTMslm1MmmcgXAtigmAXsO1lSwYwJKqEwV0mLD8yw54TiTFLMNJFXblWUHAMjpHK2MAJnC5xNZ2n2EgB2N37BdCqOpVQl+uku4fnuHPCceYpmhp4q0cpSg4FkRIhXJhBQ42OBrNFOwEEO5e/cbIUnSAxqBSrEbTKUZ6oxh4hPOXGt1ikkS4uhEGm6MDqHyrK5dPPqEINgNcoqANrhskLWameB0/jWL2uPPWIuYaV6PLO68Jm5CB8SvCy58+qA62nYlreOqN/INmGiCT5cpetjBnmEvcV00w2XUIAio0ndKem6L2Jq5GN2ykQEMixQEygaYBcN3KH5Y7PTxThLlL0cYMjQlliummJS6vAFlHc7qz03WewxXI+s2TiABkRKIlTDTELjvBg/MDZ6eF+WIHT+C4vaHci4i5hqprczb1xabkI5w20LNkyaQBo6lz3v5aQW8R2aYz1VOkrq9rP1Sfx3gX1P9rJvPof8PP8Ar92zDQxLHQ71NzbzJ+EHBkuAfV/X5Gefw968t8+Z7P6fZs4dUz9DvU3KXLf4QcGV4/8AV/X5HmTz968tz+X7P6/fs4dM9K+krq9ox0t/yLjv1P8Aaz7t67/fw/t9uzTH/9k=' },
+            // { 'resources' :'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/8AACwgAIAAgAQERAP/EABkAAAMAAwAAAAAAAAAAAAAAAAYHCAIEBf/EADYQAAEEAQMDAgIEDwAAAAAAAAIBAwQFBgcIEgAREwkhFCIVFhgxFxkjNDhSWWFigYOFp7XT/9oACAEBAAA/ALz3c632u3HbrmestFRxLeyoI8YYcSW4QMK/IlMxmzc4/MQAT6GoIoqaAooQcuYzKem/qnt6JrqKe7SoHLhrlsyxMsLqk7Cjfk8Hxfw/bz9u48fFw5+3k7fN129F/Vk2x5Lpfj91rRnUTD82fjkN1TxKa0lsMPg4Qc23G45jwcERdQOZqCOICkSipLalTbVV/VQr2is4ljW2MduXDmRHheYksOChNutuCqiYEKoSEiqioqKnUI+pDrrX6k4rkGx3RzEb7OdUL56AtrBroTot0kVpyLPB51ww4OeQfCKIBcBQzVwwUBBwE1w1L9SGRs9yTB9Rtsjde63RIxeZpCy2C6+te2g/EOFBadNxXDaE0cIS7djNeCJ7JTKLst+xkgkWKLo4mP8Af2+H59/B7+33/SHf+t5v4utD0uP0E9Mv71/uJvQX6SmM4wu26RqolsF1m+c3lhMyqyfk/ETlfbkOA21IcJVPko/l/mXuSyVJe/Lv1jTUma+oLmuVXd9nt9jGgWMW8jH6emoJaxH8sfYXjIlSnx+ZY3P2AE9lT9UhIiM/xWuxbxeP8CR8uPHyfWa35d+33/nXbv8Ay7fu6RueYHknpZ5JT6saT5Jkl3oDd3YNZphbrrD78N91hxpqVGddDuiIqgqohNk4TDDTjiiQk2/7b0y9jl1azbmZoREbkT5Dkl0Il3ZxWBMyUlRtlmSLTQIqr2BsRAU7IKIiInSe2yJv12p6VRtCV2a1WewManzwrr2v1Dra1uWw7Jcd5+N5CcJFNw1EjFsuCghAJCvTX+0Pvs/Z1f5dp/8An0qNzab9d1mlUnQlNmtVgUDJZ8ALG9sNQ62ybiMNSW3efjZQXBRDbBSIBcLghoIERJ1//9k='},
+            // { 'Duration' : '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/8AACwgAIAAgAQERAP/EABgAAAMBAQAAAAAAAAAAAAAAAAAFBggH/8QAIxAAAgIBBAMBAQEBAAAAAAAAAgMBBAYFBxESCBMhCRQAIv/aAAgBAQAAPwDR/ln5Z7gaJuBR8avGrSrN7cm86vFy5FQGxSgwFwJUDolRESphjHHEqUqZ+9uxJjNZ/PDDdKwPIN2PJHd3PMsyPTNMdrOr2tItKkiTWqCRIA7gMZYIYUYgwyVBD646L4n/ABo354YbquB4/ux43bu55ieR6npidZ0i1q9pUEKbNQiFBnTBbK5FDQE2ATYEfZHRnMf6z8TPLPcDW9wL3jV5K6VZo7k0XWIp3JqAqLsABONLQTEKEhVEsW4IhTVRH3t1Jyb8xtDq5Nj24W/WQn/fmWT5NYo3rrEJHgIBVpkrgAiV+11qSYIz0n1J4GOn3v8A5bZli+F+Oe4FjKdbracGrY/qGjUIbM9rV2zVatKFjESRERTz8j/kRMy4ESKJXx08i9g0bB7d0L+8uGadc07GdO0+3U1DWq9OwixXrgloGpxCccGsoiZjgo4IZkZiZ5V+nOh1cZx7b3frHj/gzLGMmr0aN1aElyEg20uWQYTLPU6rBLEp6R7XcjPf4fmNrlXGce3C2FyEP4MyxjJrF69SY9JchIKqshcgcyz1OqyLCGOke1PBT3+ay3L2s2/3ixdmGblYzW1vSDcuzCGmayW4J/5YtiyFiy4kh7AUTIkYzyJFEyuPeKnjZjOj19D03Y7DHVq3foeoaSq/YnsUlPd9mDaf0p47FPEcDHERERnf9Odcq5Nj23uwuPB/fmWT5NXvUaS3pHgIBtVcMkziV+11qBWRR0n1O5KOn1z5Z+Jm4Gt7gUfJXxq1WzR3JourzcpxbBUXYABSDlG6YUJCqIWxJzCmqifnbsLk2h/pzj2M1Sx7frZvM8YzKh6l3aNGmEhPZKzhsrtMS1HeSIhUUHwEhPsPn4a5+nOPZNVHHthdm8zyfMr/ALV0qN6mEBHVLDlsLqsc1/SREiUMByEHPsDj658TPEzcDRNwL3kr5K6rZvbk3nWJp05tg2KUGBJNzTTMqIiVMrWkJlSlTHzt1FP/2Q=='},
+            { 'Progress': '/9j/4AAQSkZJRgABAQIAHAAcAAD/4QBiRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAMAAAITAAMAAAABAAEAAAAAAAAAAAAcAAAAAQAAABwAAAAB/9sAQwADAgICAgIDAgICAwMDAwQGBAQEBAQIBgYFBgkICgoJCAkJCgwPDAoLDgsJCQ0RDQ4PEBAREAoMEhMSEBMPEBAQ/9sAQwEDAwMEAwQIBAQIEAsJCxAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ/8AAEQgAIAAgAwERAAIRAQMRAf/EABoAAAICAwAAAAAAAAAAAAAAAAAIAwUGBwn/xAArEAAABQIEBQQDAQAAAAAAAAABAgQFBgMHABESFAgTFSEiFhcxMiQzYWL/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A6p4AwBgDAK3BuMx4n0rYrftUSgyaWSFuTuiVlVyt1LWLRroSria6pGUycDbYwHEAqjl9ft2wELJxwJ5HEJLPGZJbtQxRDZ9aV+pXwm13dUaSfwMwgc+o5RDwKbL5HIO+Ay6N8Q85l8QaZ5HYpbtWxPnP2Cv1g7U+dyao0qvgdkA5cjlEPIoZ5ZhmHfATzm+d2YC0vrm62ygympHm5Q6KkaSarjVjUaFA1c+gTtBaYm5ZREAE4Z/Hz2wC92j4bLmQW9EOvm+W2nNRwjrCgaVLIkpsFSieonZCNgmIrM8FMJREnNDOiA99P+sBUQng6m8OtDcq1XpO4iv3D6N+f02PU9jsFRq/6+ujzderT9iacs/L4wG3bbW5m9vbQxO1XtNcRf6X3/5/Lj1LcblUev8Ar6ybRp16fsOeWfb4wFvdxruZOmWYlY7FTmm4SJhXtKairVsFOiSooQnTAY9QroYwFAT6hyII9sv7gGcwBgDAGA//2Q==' }
+        ]
+        while (i < base64Array.length) {
+            const key = Object.keys(base64Array[i])[0];
+            const value = base64Array[i][key];
+            if (key === args.column.field) {
+                args.headerTemplate.image = [{
+                    base64: value
+                }];
+                args.headerTemplate.value = args.column.field;
+                args.headerTemplate.fontStyle.fontSize = 6;
+                args.headerTemplate.fontStyle.fontColor = new PdfColor(255, 0, 0);
+                break;
+            }
+            i++;
+        }
+    }
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: templateData,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                columns: [
+                    { field: 'TaskName', width: 250 },
+                    { field: 'StartDate' },
+                    { field: 'Progress' }
+                ],
+                toolbar: ['PdfExport'],
+                resources: projectResourcestemplate,
+                pdfColumnHeaderQueryCellInfo: pdfColumnHeaderQueryCellInfo,
+                projectStartDate: new Date('03/24/2019'),
+                projectEndDate: new Date('07/06/2019'),
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with column template', () => {
+        let exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+                gridWidth: '50%'
+            }
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});
+describe('Gantt PDF Export with virtualization', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: virtual1,
+                allowPdfExport: true,
+                enableTimelineVirtualization: true,
+                enableVirtualization: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with virtualization', () => {
+        let exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+                gridWidth: '50%'
+            }
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+
+    it('Export data with virtualization', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with virtualization', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: virtual1,
+                allowPdfExport: true,
+                enableTimelineVirtualization: true,
+                enableVirtualization: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                timelineSettings: {
+                    bottomTier: {
+                        unit: 'Month',
+                        count: 1
+                    }
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with virtualization', () => {
+        let exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+                gridWidth: '50%'
+            },
+            showPredecessorLines: false
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+})
+describe('Gantt PDF Export with critical task', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: criticalData1,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                pdfQueryTaskbarInfo: (args: any) => {
+                    args.taskbar.progressColor = new PdfColor(205, 92, 92);
+                    args.taskbar.taskColor = args.taskbar.taskBorderColor = new PdfColor(240, 128, 128);
+                    args.taskbar.progressFontColor = new PdfColor(105, 92, 92);
+                    args.taskbar.milestoneColor = new PdfColor(240, 128, 128);
+
+                },
+                enableCriticalPath: true,
+                columns: [
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy', },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'TaskName',
+                    taskLabel: '${Progress}%'
+                },
+                connectorLineWidth: 7,
+                allowUnscheduledTasks: true,
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export with custom date format', () => {
+        let exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true
+            },
+            showPredecessorLines: true
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});
+describe('Gantt PDF Export with resource', () => {
+    //
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourcesData1,
+                resources: resourceCollection1,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                renderBaseline: true,
+                allowPdfExport: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'resources', headerText: 'resources' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019'),
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Gantt PDF Export with resource', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with column template', () => {
+    //
+    let ganttObj: Gantt;
+
+    function pdfQueryCellInfo(args: PdfQueryCellInfoEventArgs): any {
+        if (args.column.headerText === 'Resources') {
+            {
+                args.image = { height: 40, width: 40, base64: (args as any).data.taskData.resourcesImage };
+            }
+        }
+        if (args.column.headerText === 'Email ID') {
+            args.hyperLink = {
+                target: 'mailto:' + (args as any).data.taskData.EmailId,
+                displayText: (args as any).data.taskData.EmailId
+            };
+        }
+    }
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['PdfExport'],
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Left' },
+                    { field: 'TaskName', headerText: 'Task Name', width: '250' },
+                    { field: 'resources', headerText: 'Resources', width: '250', template: '#columnTemplate' },
+                    { field: 'EmailId', headerText: 'Email ID', template: '#template2', width: 180 }
+                ],
+                allowExcelExport: true,
+                pdfQueryCellInfo: pdfQueryCellInfo,
+                allowPdfExport: true,
+                allowSelection: true,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Gantt PDF Export with column template', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with column template without height and width to image', () => {
+    //
+    let ganttObj: Gantt;
+    function pdfQueryCellInfo(args: PdfQueryCellInfoEventArgs): any {
+        if (args.column.headerText === 'Resources') {
+            {
+                args.image = { base64: (args as any).data.taskData.resourcesImage };
+            }
+        }
+        if (args.column.headerText === 'Email ID') {
+            args.hyperLink = {
+                target: 'mailto:' + (args as any).data.taskData.EmailId,
+            };
+        }
+    }
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['PdfExport'],
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Left' },
+                    { field: 'TaskName', headerText: 'Task Name', width: '250' },
+                    { field: 'resources', headerText: 'Resources', width: '250', template: '#columnTemplate' },
+                    { field: 'EmailId', headerText: 'Email ID', template: '#template2', width: 180 }
+                ],
+                allowExcelExport: true,
+                pdfQueryCellInfo: pdfQueryCellInfo,
+                allowPdfExport: true,
+                allowSelection: true,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Gantt PDF Export with column template', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with splitask', () => {
+    //
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: splitTasks,
+                allowPdfExport: true,
+                enableVirtualization: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 60 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with baseline', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with tasklabel template', () => {
+    //
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                // labelSettings: {
+                //     leftLabel: '#leftLabel',
+                //     rightLabel: '#rightLabel',
+                //     // taskLabel: '${Progress}%'
+                // },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                pdfQueryTaskbarInfo: (args: any) => {
+                    args.labelSettings.leftLabel.value = args.data.ganttProperties.taskName + '[' + args.data.ganttProperties.progress + ']';
+                    args.labelSettings.leftLabel.fontStyle.fontSize = 6;
+                    if (args.data.ganttProperties.resourceNames) {
+                        args.labelSettings.rightLabel.value = args.data.ganttProperties.resourceNames;
+                        args.labelSettings.rightLabel.fontStyle.fontSize = 6;
+                        args.labelSettings.rightLabel.image = [{
+                            base64: (args as any).data.taskData.resourcesImage, width: 20, height: 20
+                        }]
+
+                    }
+                    args.labelSettings.taskLabel.value = args.data.ganttProperties.progress + '%';
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName', headerTemplate: '#projectName', width: 250 },
+                    { field: 'StartDate', headerTemplate: '#dateTemplate' }
+                ],
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with tasklabel template', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with tasklabel template', () => {
+    //
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                pdfQueryTaskbarInfo: (args: any) => {
+                    args.labelSettings.rightLabel.value = args.data.ganttProperties.taskName + '[' + args.data.ganttProperties.progress + ']';
+                    args.labelSettings.rightLabel.fontStyle.fontSize = 6;
+                    if (args.data.ganttProperties.resourceNames) {
+                        args.labelSettings.leftLabel.value = args.data.ganttProperties.resourceNames;
+                        args.labelSettings.leftLabel.fontStyle.fontSize = 6;
+                        args.labelSettings.leftLabel.image = [{
+                            base64: (args as any).data.taskData.resourcesImage, width: 20, height: 20
+                        }]
+
+                    }
+                    args.labelSettings.taskLabel.value = args.data.ganttProperties.progress + '%';
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName', headerTemplate: '#projectName', width: 250 },
+                    { field: 'StartDate', headerTemplate: '#dateTemplate' }
+                ],
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with tasklabel template', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with taskbar template', () => {
+    //
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                pdfQueryTaskbarInfo: (args: any) => {
+                    if (!args.data.hasChildRecords) {
+                        args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                        if (args.data.ganttProperties.resourceNames) {
+                            args.taskbarTemplate.image = [{
+                                width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                            }]
+                        }
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontColor: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+
+                        }
+                    }
+                    if (args.data.hasChildRecords) {
+                        args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                        if (args.data.ganttProperties.resourceNames) {
+                            args.taskbarTemplate.image = [{
+                                width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                            }]
+                        }
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontColor: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+
+                        }
+                    }
+                    if (args.data.ganttProperties.duration === 0) {
+                        args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                        if (args.data.ganttProperties.resourceNames) {
+                            args.taskbarTemplate.image = [{
+                                width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20,
+                            }]
+                        }
+                        args.taskbarTemplate.value = args.data.TaskName,
+                            args.taskbarTemplate.fontStyle = {
+                                fontColor: new PdfColor(255, 255, 255),
+                                fontFamily: 'TimesRoman'
+                            }
+                    }
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName', headerTemplate: '#projectName', width: 250 },
+                    { field: 'StartDate', headerTemplate: '#dateTemplate' }
+                ],
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with tasklabel template', () => {
+        ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export with customization of header and footer', () => {
+    //
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                        ]
+                    }],
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 20,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 100);
+    });
+    it("Export data with header and footer", () => {
+        let exportProperties: PdfExportProperties = {
+            header: {
+                fromTop: 0,
+                height: 150,
+                contents: [
+                    {
+                        type: 'Text',
+                        value: null,
+                        position: { x: 380, y: 0 },
+                        style: { penColor: '#C25050', penSize: 25, },
+                    },
+                    {
+                        type: 'Image',
+                        src: '',
+                        position: { x: 400, y: 70 },
+                        size: { height: 50, width: 50 },
+                    },
+                ]
+            },
+            footer: {
+                fromBottom: 160,
+                height: 100,
+                contents: [
+                    {
+                        type: 'Text',
+                        value: 'Thank you for your business !',
+                        position: { x: 350, y: 40 },
+                        style: { textBrushColor: '#C67878', fontSize: 14, hAlign: 'Right', vAlign: 'Top' }
+                    },
+                    {
+                        type: 'PageNumber',
+                        pageNumberType: 'Arabic',
+                        format: 'Page {$current} of {$total}',
+                        position: { x: 0, y: 25 },
+                        size: { height: 50, width: 100 },
+                        style: { textBrushColor: '#000000', hAlign: 'Center', vAlign: 'Bottom' }
+                    },
+                    {
+                        type: 'PageNumber',
+                        position: { x: 250, y: 10 },
+                        style: { textBrushColor: '#C67878', fontSize: 14, hAlign: 'Right', vAlign: 'Middle' }
+                    },
+                    {
+                        type: 'Line',
+                        points: { x1: 400, y1: 90, x2: 450, y2: 90 },
+                        style: {
+                            penSize: 2,
+                            dashStyle: 'Dash'
+                        }
+                    },
+                    {
+                        type: 'Line',
+                        points: { x1: 200, y1: 40, x2: 150, y2: 90 },
+                        style: {
+                            penSize: 2,
+                            dashStyle: 'Dot'
+                        }
+                    },
+
+                ]
+            },
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});
+describe('Gantt PDF Export with eventmarker with fittowidth', () => {
+
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                        ]
+                    }],
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 20,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                eventMarkers: [
+                    {
+                        day: '04/02/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with eventMarker', () => {
+        let exportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+            }
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});

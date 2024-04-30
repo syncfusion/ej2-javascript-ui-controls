@@ -394,6 +394,7 @@ export class FormDesigner {
                 maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint, rotation: drawingObject.rotateAngle, tooltip: drawingObject.tooltip,
                 borderColor: drawingObject.borderColor, thickness: drawingObject.thickness, options: drawingObject.options, pageNumber: drawingObject.pageNumber, isChecked: drawingObject.isChecked, isSelected: drawingObject.isSelected
             };
+            this.pdfViewerBase.updateDocumentEditedProperty(true);
             this.pdfViewer.fireFormFieldAddEvent("formFieldAdd", field, this.pdfViewerBase.activeElements.activePageID);
         } else {
             const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
@@ -3463,7 +3464,7 @@ export class FormDesigner {
     public setFormFieldIndex(): number {
         if (this.pdfViewer.formFieldCollections.length > 0) {
             let lastFormField: any = this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.length - 1];
-            let lastFormFieldIndex: any = lastFormField ? parseInt(lastFormField.name.match(/\d+/)) : null;
+            let lastFormFieldIndex: any = lastFormField && lastFormField.name ? parseInt(lastFormField.name.match(/\d+/)) : null;
             if (this.isAddFormFieldUi) {
                 this.formFieldIndex = this.formFieldIndex > this.pdfViewer.formFieldCollections.length ? lastFormFieldIndex + 1 : this.pdfViewer.formFieldCollections.length + 1;
             }

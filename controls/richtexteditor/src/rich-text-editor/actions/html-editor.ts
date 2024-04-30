@@ -238,8 +238,14 @@ export class HtmlEditor {
                     range.insertNode(tempSpan);
                 }
                 let currentChild: Element = this.parent.inputElement.firstChild as Element;
-                while (!isNOU(currentChild) && currentChild.textContent.replace(regEx, '').trim().length > 0) {
-                    currentChild.innerHTML = currentChild.innerHTML.replace(regEx, '');
+                while (!isNOU(currentChild)) {
+                    if (currentChild.nodeName === '#text') {
+                        currentChild = currentChild.nextElementSibling;
+                        continue;
+                    }
+                    if (currentChild.textContent.replace(regEx, '').trim().length > 0) {
+                        currentChild.innerHTML = currentChild.innerHTML.replace(regEx, '');
+                    }
                     currentChild = currentChild.nextElementSibling;
                 }
                 let tempSpanToRemove: Element = this.parent.inputElement.querySelector('.tempSpan');
@@ -475,7 +481,9 @@ export class HtmlEditor {
                     lastNode = lastNode.lastChild;
                 }
                 if (lastNode.nodeName === 'IMG') {
-                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(), lastNode.parentElement as Element, lastNode.parentElement.childNodes.length);
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),
+                                                                                     lastNode.parentElement as Element,
+                                                                                     lastNode.parentElement.childNodes.length);
                 }
                 else {
                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),

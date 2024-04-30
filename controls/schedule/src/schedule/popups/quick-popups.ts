@@ -1390,6 +1390,7 @@ export class QuickPopups {
                 util.removeChildren(form);
                 form.remove();
             }
+            this.parent.resetTemplates(['content', 'header', 'footer']);
         }
     }
 

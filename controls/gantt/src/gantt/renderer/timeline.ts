@@ -1600,7 +1600,8 @@ export class Timeline {
      * @returns {void} .
      * @private
      */
-    public updateTimeLineOnEditing(tempArray: IGanttData[][], action: string): void {
+    public updateTimeLineOnEditing(tempArray: IGanttData[][], data: any): void {
+        let action:any = data.action
         if (tempArray[0].length >= 1)
         {
             for (let i: number = 0; i < tempArray.length; i++)
@@ -1625,12 +1626,22 @@ export class Timeline {
                 const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
                 let isChanged: string;
                 let taskbarModule: TaskbarEdit = this.parent.editModule.taskbarEditModule;
-                if (!isNullOrUndefined(maxStartLeft) && (((!isNullOrUndefined(taskbarModule)) && (!isNullOrUndefined(taskbarModule.taskBarEditAction)
-                   && taskbarModule.taskBarEditAction !== 'ProgressResizing' &&
-                   taskbarModule.taskBarEditAction !== 'RightResizing' && taskbarModule.taskBarEditAction !== 'LeftResizing')) ||((taskbarModule)
-                    && isNullOrUndefined(taskbarModule.taskBarEditAction))) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
+                let validateDate:any;
+                if (data.data && data.data.ganttProperties) {
+                    validateDate = data.data.ganttProperties.startDate ? 
+                                        data.data.ganttProperties.startDate : 
+                                        data.data.ganttProperties.endDate;
+                }
+                let validLeft = maxStartLeft ? maxStartLeft : maxEndLeft
+                let validStartorEndLeft = validStartLeft ? validStartLeft : validEndLeft
+                let minOrMaxDate = minStartDate ? minStartDate :maxEndDate
+                if (!isNullOrUndefined(validLeft) && (((!isNullOrUndefined(taskbarModule)) && (!isNullOrUndefined(taskbarModule.taskBarEditAction)
+                    && taskbarModule.taskBarEditAction !== 'ProgressResizing' &&
+                    taskbarModule.taskBarEditAction !== 'RightResizing' && taskbarModule.taskBarEditAction !== 'LeftResizing')) || (((taskbarModule)
+                        && isNullOrUndefined(taskbarModule.taskBarEditAction)) && this.parent.timelineModule.timelineStartDate !== null &&
+                        validateDate && this.parent.timelineModule.timelineStartDate > validateDate)) && (validLeft < this.bottomTierCellWidth || validLeft <= validStartorEndLeft)) {
                     isChanged = 'prevTimeSpan';
-                    minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
+                    minStartDate = minOrMaxDate > this.timelineStartDate ? this.timelineStartDate : minOrMaxDate;
                 } else {
                     minStartDate = this.timelineStartDate;
                 }

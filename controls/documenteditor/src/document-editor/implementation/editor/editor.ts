@@ -4833,7 +4833,7 @@ export class Editor {
         selection.start.setPositionParagraph(fieldEnd.line, (fieldEnd.line).getOffset(fieldEnd, 0));
         blockInfo = this.selection.getParagraphInfo(selection.start);
         let startIndex: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
-        selection.end.setPositionInternal(selection.start);
+        selection.end.setPositionParagraph(fieldEnd.line, (fieldEnd.line).getOffset(fieldEnd, 1));
         this.delete();
 
         selection.start.setPositionInternal(this.selection.getTextPosBasedOnLogicalIndex(fieldSeparatorString));
@@ -4855,6 +4855,8 @@ export class Editor {
         this.initHistory('Delete');
         this.deleteSelectedContents(selection, false);
         this.reLayout(selection, true);
+        // Bug 873011: Combined the field begin and field end revisions to preserve single tracking in track changes pane.
+        this.combineElementRevision(fieldSeparator.revisions, fieldEnd.revisions);
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)) {
             this.editorHistory.updateComplexHistory();
         }
@@ -6953,6 +6955,9 @@ export class Editor {
                 } else {
                     element.line.children.splice(insertIndex, 0, newElement);
                 }
+            } else if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.isHyperlinkField && newElement instanceof FieldElementBox && newElement.fieldType === 1 && newElement.removedIds.length > 0) {
+                this.constructRevisionFromID(newElement, false);
+                line.children.splice(insertIndex, 0, newElement);
             } else {
                 insertIndex = this.incrementCommentIndex(isBidi, element, insertIndex);
                 let textElement: TextElementBox = new TextElementBox();
@@ -7064,14 +7069,31 @@ export class Editor {
                         // Handle collab editing for track changes.
                         this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(insertElement, undefined, revisionToInclude));
                     } 
-                    isEnd = isEnd ? true : this.skipTracking();
+                    let isFieldBeginRedoing: boolean = insertElement instanceof FieldElementBox && (insertElement as FieldElementBox).fieldType === 0;
+                    isEnd = isEnd ? true : (!isFieldBeginRedoing && this.skipTracking());
+                    let isInsertEnd: boolean = false;
+                    // Bug 873011: Handled the revision update for Accept Change action on undoing.
+                    if (this.editorHistory.isUndoing && this.owner.editorHistoryModule.currentBaseHistoryInfo
+                        && this.owner.editorHistoryModule.currentBaseHistoryInfo.isHyperlinkField
+                        && this.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'Accept Change'
+                        && insertElement instanceof FieldElementBox && insertElement.fieldType === 1) {
+                        isInsertEnd = true;
+                    }
                     if (isEnd) {
                         if (this.editorHistory.isRedoing && this.owner.editorHistoryModule.currentBaseHistoryInfo && this.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'BackSpace' && this.selection.isTOC()) {
+                            isEnd = false;
+                        }
+                        // Bug 873011: Handled the revision update for Remove Hyperlink action on redoing.
+                        if (this.editorHistory.isRedoing && this.owner.editorHistoryModule.currentHistoryInfo && this.owner.editorHistoryModule.currentHistoryInfo.action === 'RemoveHyperlink'
+                            && insertElement instanceof FieldElementBox && insertElement.fieldType === 0) {
                             isEnd = false;
                         }
                     }
                     if (!isNullOrUndefined(prevElement)) {
                         let rangeIndex: number = revisionToInclude.range.indexOf(prevElement);
+                        if (rangeIndex === -1 && isInsertEnd && revisionToInclude.range.length > 0) {
+                            rangeIndex = revisionToInclude.range.indexOf(revisionToInclude.range[revisionToInclude.range.length - 1]);
+                        }
                         if (rangeIndex >= 0) {
                             revisionToInclude.range.splice(rangeIndex + ((isEnd) ? 1 : 0), 0, insertElement);
                         } else {
@@ -10679,6 +10701,13 @@ export class Editor {
                 }
 
             } else {
+                let currentRevision: Revision = currentElement.revisions[currentElement.revisions.length - 1];
+                if (!isNullOrUndefined(currentRevision) && currentRevision.range.length > 0) {
+                    currentElement.revisions.splice(currentElement.revisions.length - 1, 1);
+                    let rangeIndex: number = currentRevision.range.indexOf(currentElement);
+                    currentRevision.range.splice(rangeIndex, 1);
+                    this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
+                }
                 this.insertRevision(currentElement, 'Insertion');
             }
         }

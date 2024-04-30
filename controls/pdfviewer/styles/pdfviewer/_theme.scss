@@ -1992,7 +1992,7 @@ $lg-desktop: 1399.98;
 
   .e-pv-search-btn.e-btn {
     background-color: transparent;
-    @if $skin-name == 'bootstrap4' {
+    @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5') {
       color: $pv-icon-color;
     }
     border: 0;
@@ -2000,7 +2000,7 @@ $lg-desktop: 1399.98;
     height: $pv-search-btn-height;
     margin-top: $pv-search-btn-margin-top;
     width: $pv-search-btn-width;
-    @if $skin-name == 'FluentUI' {
+    @if ($skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark') {
       padding-bottom: 0;
       padding-left: 1px;
       padding-right: 1px;

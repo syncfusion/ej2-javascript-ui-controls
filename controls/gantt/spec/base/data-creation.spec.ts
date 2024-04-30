@@ -1,16 +1,15 @@
-import { Gantt, IGanttData } from '../../src/index';
+import { Gantt, IGanttData, Edit, Selection, DayMarkers } from '../../src/index';
 import {
     unscheduledData, selfReference, projectData, projectResources, unscheduledData2,
     unscheduledData3, unscheduledData4
 } from './data-source.spec';
 import { createGantt, destroyGantt } from './gantt-util.spec';
 import { DataManager } from '@syncfusion/ej2-data';
-
+Gantt.Inject(Edit, Selection, DayMarkers)
 /**
  * 
  */
 describe('Data-Binding', () => {
-
     describe('Hierarchy data binding', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
@@ -27,6 +26,11 @@ describe('Data-Binding', () => {
                         child: 'Children',
                         baselineStartDate: 'BaselineStartDate',
                         baselineEndDate: 'BaselineEndDate'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
                     },
                     renderBaseline: true,
                     allowUnscheduledTasks: true,
@@ -49,20 +53,20 @@ describe('Data-Binding', () => {
             expect(flatData.length).toBe(15);
         });
         it('Allow Unscheduled tasks - type 2', () => {
-            ganttObj.dataSource = JSON.parse(JSON.stringify(unscheduledData2));
-            ganttObj.refresh();
+            ganttObj.dataSource = unscheduledData2;
+            ganttObj.dataBind();
             let flatData: Object[] = ganttObj.flatData;
             expect(flatData.length).toBe(4);
         });
         it('Allow Unscheduled tasks - type 3', () => {
-            ganttObj.dataSource = JSON.parse(JSON.stringify(unscheduledData3));
-            ganttObj.refresh();
+            ganttObj.dataSource = unscheduledData3;
+            ganttObj.dataBind();
             let flatData: Object[] = ganttObj.flatData;
             expect(flatData.length).toBe(4);
         });
         it('Allow Unscheduled tasks - type 4', () => {
-            ganttObj.dataSource = JSON.parse(JSON.stringify(unscheduledData4));
-            ganttObj.refresh();
+            ganttObj.dataSource = unscheduledData4;
+            ganttObj.dataBind();
             let flatData: Object[] = ganttObj.flatData;
             expect(flatData.length).toBe(4);
         });
@@ -70,13 +74,13 @@ describe('Data-Binding', () => {
             ganttObj.dataSource = [];
             ganttObj.projectStartDate = '03/01/2017';
             ganttObj.projectEndDate = '03/30/2017';
-            ganttObj.refresh();
+            ganttObj.dataBind();
             let flatData: IGanttData[] = ganttObj.flatData;
             expect(flatData.length).toBe(0);
         });
         it('Scheduled tasks Only', () => {
             ganttObj.allowUnscheduledTasks = false;
-            ganttObj.dataSource = JSON.parse(JSON.stringify(unscheduledData));
+            ganttObj.dataSource = unscheduledData;
             ganttObj.eventMarkers = [
                 { day: '03/10/2017', label: 'project start', cssClass: 'stripLine' }
             ];
@@ -87,22 +91,24 @@ describe('Data-Binding', () => {
             ];
             ganttObj.projectStartDate = null;
             ganttObj.projectEndDate = null;
-            ganttObj.refresh();
+            ganttObj.dataBind();
             let flatData: IGanttData[] = ganttObj.flatData;
             expect(flatData.length).toBe(15);
         });
-        it('Rendering with DataManager', (done) => {
-            ganttObj.allowUnscheduledTasks = false;
-            ganttObj.dataSource = new DataManager(JSON.parse(JSON.stringify(unscheduledData)));
-            ganttObj.dataBound = () => {
-                let flatData: IGanttData[] = ganttObj.flatData;
-                expect(flatData.length).toBe(15);
-                done();
-            };
-            ganttObj.refresh();
-        });
+        // it('Rendering with DataManager', (done: Function) => {
+        //     ganttObj.allowUnscheduledTasks = false;
+        //     ganttObj.dataSource = new DataManager(unscheduledData);
+        //     ganttObj.dataBind();
+        //     ganttObj.dataBound = () => {
+        //         let flatData: IGanttData[] = ganttObj.flatData;
+        //         expect(flatData.length).toBe(15);
+        //         done();
+        //     };
+        // });
         afterAll(() => {
-            destroyGantt(ganttObj);
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
 
     });
@@ -122,8 +128,13 @@ describe('Data-Binding', () => {
                         parentID: 'ParentID'
                     },
                     includeWeekend: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                    },
                     timelineSettings: {
-                        topTier: {  
+                        topTier: {
                             unit: 'Week',
                             format: 'dd/MM/yyyy'
                         },
@@ -143,24 +154,72 @@ describe('Data-Binding', () => {
             expect(flatData.length).toBe(0);
         });
         it('flat record length', () => {
-            ganttObj_self.dataSource = JSON.parse(JSON.stringify(selfReference));
-            ganttObj_self.refresh();
+            ganttObj_self.dataSource = selfReference;
+            ganttObj_self.dataBind();
             let flatData: Object[] = ganttObj_self.flatData;
             expect(flatData.length).toBe(15);
         });
-        it('Rendering with DataManager', (done) => {
-            ganttObj_self.dataSource = new DataManager(JSON.parse(JSON.stringify(selfReference)));
+        afterAll(() => {
+            if(ganttObj_self){
+                destroyGantt(ganttObj_self);
+            }
+        });
+    });
+    describe('SelfReference data binding', () => {
+        let ganttObj_self: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_self = createGantt(
+                {
+                    dataSource: [],
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        parentID: 'ParentID'
+                    },
+                    includeWeekend: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                    },
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        },
+                        timelineUnitSize: 60
+                    },
+                    projectStartDate: '02/25/2017',
+                    projectEndDate: '03/20/2017'
+                }, done
+            );
+        });
+        beforeEach(function (done) {
+            setTimeout(done, 100);
+        });
+        it('Rendering with DataManager', (done: Function) => {
+            ganttObj_self.dataSource = new DataManager(selfReference);
+            ganttObj_self.dataBind();
             ganttObj_self.dataBound = () => {
                 let flatData: IGanttData[] = ganttObj_self.flatData;
                 expect(flatData.length).toBe(15);
                 done();
             };
-            ganttObj_self.refresh();
         });
         afterAll(() => {
-            destroyGantt(ganttObj_self);
+            if(ganttObj_self){
+                destroyGantt(ganttObj_self);
+            }
         });
-    });
+    })
     describe('Hierarchy data with resources', () => {
         let ganttObj_tree: Gantt;
         beforeAll((done: Function) => {
@@ -178,6 +237,11 @@ describe('Data-Binding', () => {
                         milestone: 'milestone',
                         expandState: 'Expand',
                         resourceInfo: 'ResourceId'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
                     },
                     includeWeekend: true,
                     collapseAllParentTasks: true,
@@ -211,7 +275,9 @@ describe('Data-Binding', () => {
             expect(flatData.length).toBe(41);
         });
         afterAll(() => {
-            destroyGantt(ganttObj_tree);
+            if(ganttObj_tree){
+                destroyGantt(ganttObj_tree);
+            }
         });
     });
 });

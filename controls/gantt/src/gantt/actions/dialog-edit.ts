@@ -70,6 +70,7 @@ export class DialogEdit {
     private customFieldColumn: Array<any> = [];
     private isFromAddDialog: boolean;
     private isFromEditDialog:boolean;
+    public processedId: { id: any, value: any }[] = [];
     private storeColumn:any;
     private taskfields:any;
     private storeValidTab:any;
@@ -2812,7 +2813,30 @@ export class DialogEdit {
                         idCollection.splice(idIndex, 1);
                     }
                     const ganttData: IGanttData = this.parent.connectorLineModule.getRecordByID(toId);
-                    this.validSuccessorTasks(ganttData, ids, idCollection);
+                    let isIdInclude: boolean = true;
+                    for (const item of this.processedId) {
+                        if (item.id === ganttData.ganttProperties.taskId) {
+                            if (Array.isArray(item.value) && Array.isArray(ganttData.ganttProperties.predecessor)) {
+                                if (item.value.length === ganttData.ganttProperties.predecessor.length) {
+                                    let arraysMatch = true;
+                                    for (let i: number = 0; i < item.value.length; i++) {
+                                        if (item.value[i as number] !== ganttData.ganttProperties.predecessor[i as number]) {
+                                            arraysMatch = false;
+                                            break;
+                                        }
+                                    }
+                                    if (arraysMatch) {
+                                        isIdInclude = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (isIdInclude) {
+                        this.processedId.push({ id: ganttData.ganttProperties.taskId, value: ganttData.ganttProperties.predecessor });
+                        this.validSuccessorTasks(ganttData, ids, idCollection);
+                    }
                 }
             });
         }

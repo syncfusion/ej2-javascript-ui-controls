@@ -1240,11 +1240,18 @@ export class BaseLegend {
                         new Rect(0, -this.translatePage(isCanvas, null, this.currentPageNumber - 1, this.currentPageNumber ), 0, 0) : null, null, null, null, null, this.chart.themeStyle.legendLabelFont);
         if (isCanvas) {
             const textSize: Size = measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont);
-            this.legendRegions[i as number].rect.y = textOptions.y < this.legendRegions[i as number].rect.y ? textOptions.y : this.legendRegions[i as number].rect.y;
-            this.legendRegions[i as number].rect.width += textSize.width;
-            this.legendRegions[i as number].rect.height = textSize.height;
-            this.legendRegions[i as number].rect.y -= textSize.height * 0.5;
-            this.legendRegions[i as number].rect.x -= (this.isRtlEnable) ? this.legendRegions[i as number].rect.width : 0 ;
+            let region: ILegendRegions;
+            for (let j = 0; j < this.legendRegions.length; j++) {
+                if (this.legendRegions[j as number].index === i) {
+                    region = this.legendRegions[j as number];
+                    break;
+                }
+            }
+            region.rect.y = textOptions.y < region.rect.y ? textOptions.y : region.rect.y;
+            region.rect.width += textSize.width;
+            region.rect.height = textSize.height;
+            region.rect.y -= textSize.height * 0.5;
+            region.rect.x -= (this.isRtlEnable) ? region.rect.width : 0 ;
         }
     }
     /**

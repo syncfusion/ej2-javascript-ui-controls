@@ -355,11 +355,11 @@ export class Dependency {
                         temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
                         const multiple: boolean = currentValue.offset !== 1;
                         if (currentValue.offsetUnit === 'day') {
-                            temp += multiple ? getValue('days', durationUnitTexts) : getValue('day', durationUnitTexts);
+                            temp += multiple ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
                         } else if (currentValue.offsetUnit === 'hour') {
-                            temp += multiple ? getValue('hours', durationUnitTexts) : getValue('hour', durationUnitTexts);
+                            temp += multiple ? this.parent.localeObj.getConstant('hours') :this.parent.localeObj.getConstant('hour');
                         } else {
-                            temp += multiple ? getValue('minutes', durationUnitTexts) : getValue('minute', durationUnitTexts);
+                            temp += multiple ? this.parent.localeObj.getConstant('minutes') : this.parent.localeObj.getConstant('minute');
                         }
                     }
                     if (resultString.length > 0) {

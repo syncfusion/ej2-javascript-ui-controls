@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.42 (2024-04-30)
+
+### TreeView
+
+#### Bug fixes
+
+- `#I581340` - Fixed the console error that occurred while clicking the node after changing `isDevice` to true.
+
 ## 25.1.41 (2024-04-23)
 
 ### TreeView
@@ -9,6 +17,12 @@
 #### Bug Fixes
 
 - `#I572876` - The issue with "The checkbox state are not read by the screen reader in the TreeView component with edge browser" has been resolved.
+
+### Carousel
+
+#### Bug Fixes
+
+- `#FB52446` - The issue with carousel slide changes during window resizing while the `loop` is set to false has been fixed.
 
 ## 25.1.40 (2024-04-16)
 

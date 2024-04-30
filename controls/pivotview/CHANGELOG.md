@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.42 (2024-04-30)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I579456` - When the load report option is not displayed in the toolbar UI, report manipulation operations will now work properly.
+
 ## 25.1.41 (2024-04-23)
 
 ### Pivot Table

@@ -83,7 +83,7 @@ export class PieBase extends AccumulationBase {
 
         return series.dataLabel.position === 'Inside' ?
             ((((stringToNumber(point.sliceRadius, this.pieBaseRadius) - this.innerRadius)) / 2) + this.innerRadius) :
-            (stringToNumber(point.sliceRadius, this.seriesRadius) + stringToNumber(
+            (stringToNumber(point.sliceRadius, this.size / 2) + stringToNumber(
                 series.dataLabel.connectorStyle.length || '4%', this.size / 2));
 
     }

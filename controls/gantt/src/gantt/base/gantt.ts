@@ -381,7 +381,7 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public loadChildOnDemand: boolean;
-        
+
     /**
      * Specifies whether to update offset value on a task for all the predecessor edit actions.
      *
@@ -2224,10 +2224,6 @@ export class Gantt extends Component<HTMLElement>
         if (isChange) {
             this.isFromOnPropertyChange = isChange;
         }
-        if (this.enableValidation) {
-            this.dataOperation.calculateProjectDates();
-            this.timelineModule.validateTimelineProp();
-        }
         if (this.allowParentDependency) {
             this.predecessorModule.updateParentPredecessor();
         }
@@ -2241,6 +2237,8 @@ export class Gantt extends Component<HTMLElement>
             }
         }
         if (this.enableValidation) {
+            this.dataOperation.calculateProjectDates();
+            this.timelineModule.validateTimelineProp();
             this.dataOperation.updateGanttData();
         }
         if (isChange) {
@@ -3371,6 +3369,18 @@ export class Gantt extends Component<HTMLElement>
         const persist2: string = 'mergeColumns';
         this.treeGrid.grid[persist2 as string].apply(this, [storedColumn, columns]);
     }
+    private setFrozenCount(): void {
+        const persist3: string = 'setFrozenCount';
+        this.treeGrid.grid[`${persist3}`].apply(this);
+    }
+    private splitFrozenCount(columns: Column[]): void {
+        const persist4: string = 'splitFrozenCount';
+        this.treeGrid.grid[`${persist4}`].apply(this, [columns]);
+    }
+    private isFrozenGrid(): boolean {
+        return this.treeGrid.grid.isFrozenGrid();
+    }
+
     /**
      * Clears all the sorted columns of the Gantt.
      *

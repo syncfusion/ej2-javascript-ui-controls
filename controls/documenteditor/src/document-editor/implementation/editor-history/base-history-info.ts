@@ -115,6 +115,10 @@ export class BaseHistoryInfo {
     /**
      * @private
      */
+    public isHyperlinkField: boolean;
+    /**
+     * @private
+     */
     public dropDownIndex: number;
     //Properties
     //gets owner control
@@ -544,6 +548,11 @@ export class BaseHistoryInfo {
             if (this.editorHistory.isUndoing) {
                 if (this.lastElementRevision && isNullOrUndefined(this.isAcceptOrReject) && deletedNodes.length > 0 && deletedNodes[0] instanceof ParagraphWidget && (deletedNodes[0] as ParagraphWidget).isEmpty()) {
                     this.endRevisionLogicalIndex = this.selectionEnd;
+                } else if (this.action === 'Delete' && this.editorHistory.currentHistoryInfo
+                    && this.editorHistory.currentHistoryInfo.action === 'RemoveHyperlink'
+                    && this.lastElementRevision instanceof FieldElementBox) {
+                    // Bug 873011: Updated the selection for delete operation on "RemoveHyperlink" undo case.
+                    this.endRevisionLogicalIndex = this.selectionEnd;
                 } else if (this.lastElementRevision && isNullOrUndefined(this.endRevisionLogicalIndex)) {
                     this.updateEndRevisionInfo();
                 } else if (this.action === 'RemoveRowTrack') {
@@ -551,7 +560,20 @@ export class BaseHistoryInfo {
                 }
             }
             if (this.action === 'ClearRevisions') {
-                this.undoRevisionForElements(insertTextPosition, endTextPosition, deletedNodes[deletedNodes.length - 1] as string);
+                // Bug 873011: Handled the separate undo revision for field begin and field end for "ClearRevisions" action on hyperlink undo.
+                let fieldBegin: FieldElementBox = sel.getHyperlinkField();
+                if (this.isHyperlinkField && !isNullOrUndefined(fieldBegin)) {
+                    let offset: number = fieldBegin.fieldSeparator.line.getOffset(fieldBegin.fieldSeparator, 1);
+                    endTextPosition.setPositionParagraph(fieldBegin.fieldSeparator.line, offset);
+                    this.undoRevisionForElements(insertTextPosition, endTextPosition, deletedNodes[deletedNodes.length - 1] as string);
+
+                    let fieldEnd: FieldElementBox = fieldBegin.fieldEnd;
+                    insertTextPosition.setPositionParagraph(fieldEnd.line, fieldEnd.line.getOffset(fieldEnd, 0));
+                    endTextPosition.setPositionParagraph(fieldEnd.line, fieldEnd.line.getOffset(fieldEnd, 1));
+                    this.undoRevisionForElements(insertTextPosition, endTextPosition, deletedNodes[deletedNodes.length - 1] as string);
+                } else {
+                    this.undoRevisionForElements(insertTextPosition, endTextPosition, deletedNodes[deletedNodes.length - 1] as string);
+                }
                 this.removedNodes.push(deletedNodes[deletedNodes.length - 1] as string);
                 deletedNodes = [];
             }
@@ -644,7 +666,27 @@ export class BaseHistoryInfo {
                             this.action !== 'ParaMarkReject' && this.action !== 'RemoveRowTrack') {
                             this.owner.editorModule.removeSelectedContents(sel);
                         } else {
-                            this.owner.editorModule.deleteSelectedContents(sel, true);
+                            // Bug 873011: Handled the separate deletion for field begin and field end for "Accept Change" action on hyperlink redo.
+                            let fieldBegin: FieldElementBox = sel.getHyperlinkField();
+                            if (this.isHyperlinkField && !isNullOrUndefined(fieldBegin)
+                                && this.editorHistory.isRedoing && this.action === 'Accept Change') {
+                                let fieldEnd: FieldElementBox = fieldBegin.fieldEnd;
+                                sel.start.setPositionParagraph(fieldBegin.line, (fieldBegin.line).getOffset(fieldBegin, 0));
+                                sel.end.setPositionParagraph(fieldBegin.fieldSeparator.line, (fieldBegin.fieldSeparator.line).getOffset(fieldBegin.fieldSeparator, 1));
+                                this.owner.editorModule.deleteSelectedContents(sel, true);
+                                if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+                                    this.editorHistory.currentBaseHistoryInfo.removedNodes.reverse();
+                                }
+
+                                sel.start.setPositionParagraph(fieldEnd.line, (fieldEnd.line).getOffset(fieldEnd, 0));
+                                sel.end.setPositionParagraph(fieldEnd.line, (fieldEnd.line).getOffset(fieldEnd, 1));
+                                this.owner.editorModule.deleteSelectedContents(sel, true);
+                                if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+                                    this.editorHistory.currentBaseHistoryInfo.removedNodes.reverse();
+                                }
+                            } else {
+                                this.owner.editorModule.deleteSelectedContents(sel, true);
+                            }
                         }
                         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
                             this.editorHistory.currentHistoryInfo.action === 'PageBreak' && this.documentHelper.blockToShift) {
@@ -667,7 +709,7 @@ export class BaseHistoryInfo {
             }
             let isRedoAction: boolean = (this.editorHistory.isRedoing && !isRemoveContent);
             isRemoveContent = this.lastElementRevision ? false : isRemoveContent;
-            this.revertModifiedNodes(deletedNodes, isRedoAction, isForwardSelection ? start : end, start === end);
+            this.revertModifiedNodes(deletedNodes, isRedoAction, isForwardSelection ? start : end, start === end, isForwardSelection ? end : start);
             // Use this property to delete table or cell based on history action.
             let isDeletecell: boolean = false;
             if (this.action === 'DeleteCells') {
@@ -866,7 +908,7 @@ export class BaseHistoryInfo {
                 break;
         }
     }
-    private revertModifiedNodes(deletedNodes: IWidget[], isRedoAction: boolean, start: string, isEmptySelection: boolean): void {
+    private revertModifiedNodes(deletedNodes: IWidget[], isRedoAction: boolean, start: string, isEmptySelection: boolean, end: string): void {
         if (isRedoAction && (this.action === 'BackSpace' || this.action === 'Delete' || this.action === 'DeleteTable'
             || this.action === 'DeleteColumn' || this.action === 'DeleteRow' || this.action === 'InsertRowAbove' ||
             this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft' || this.action === 'InsertColumnRight'
@@ -1041,16 +1083,21 @@ export class BaseHistoryInfo {
                     if (block instanceof TableWidget) {
                         block = block.combineWidget(this.viewer) as BlockWidget;
                     }
-                    this.insertRemovedNodes(deletedNodes, block);
+                    this.insertRemovedNodes(deletedNodes, block, end);
                 }
             }
         }
     }
-    private insertRemovedNodes(deletedNodes: IWidget[], block: BlockWidget): void {
+    private insertRemovedNodes(deletedNodes: IWidget[], block: BlockWidget, endIndex?: string): void {
         // Use this property to relayout whole document (after complete all insertion intead of each section insertion) when insert section (this functionality already added in insertSection API).
         let isRelayout: boolean = false;
         for (let i: number = deletedNodes.length - 1, index: number = 0; i > -1; i--) {
             let node: IWidget = deletedNodes[i];
+            if (this.isHyperlinkField && !isNullOrUndefined(endIndex) && node instanceof FieldElementBox && node.fieldType === 1) {
+                // Bug 873011: Updated the selection for field end element insertion on "Accept Change" undo case.
+                this.owner.selectionModule.start.setPositionInternal(this.owner.selectionModule.getTextPosBasedOnLogicalIndex(endIndex));
+                this.owner.selectionModule.end.setPositionInternal(this.owner.selectionModule.start);
+            }
             if (node instanceof ElementBox) {
                 this.owner.editorModule.insertInlineInSelection(this.owner.selectionModule, node as ElementBox);
             } else if (node instanceof ParagraphWidget && node.childWidgets === undefined) {

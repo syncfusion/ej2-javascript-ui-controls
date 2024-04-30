@@ -502,7 +502,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         if (connector.type === 'Curve') {
             if (this.isCircular()) {
                 const r: number = labelRadius - (
-                    this.isVariousRadius() ? stringToNumber(point.sliceRadius, this.accumulation.pieSeriesModule.seriesRadius) :
+                    this.isVariousRadius() ? stringToNumber(point.sliceRadius, this.accumulation.pieSeriesModule.size / 2) :
                         this.radius);
                 //let r: number = labelRadius - this.radius;
                 if (point.isLabelUpdated) {

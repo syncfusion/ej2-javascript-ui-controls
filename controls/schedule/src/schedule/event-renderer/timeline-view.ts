@@ -363,7 +363,7 @@ export class TimelineEvent extends MonthEvent {
             const resIndex: number = parseInt(element.getAttribute('data-group-index'), 10);
             const firstChild: HTMLElement = this.getFirstChild(resIndex);
             element.style.height = firstChild.offsetHeight + 'px';
-            const width: number = Math.round(element.offsetWidth / firstChild.offsetWidth);
+            const width: number = element.offsetWidth / firstChild.offsetWidth;
             element.style.width = (firstChild.offsetWidth * width) + 'px';
         }
         const blockIndicator: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.BLOCK_INDICATOR_CLASS));

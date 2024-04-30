@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-richtexteditor",
-	"version": "25.1.39",
+	"version": "25.1.41",
 	"description": "Essential JS 2 RichTextEditor component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -50,7 +50,17 @@
 		"rich-text-editor",
 		"markdown-editor",
 		"wysiwyg-markdown-editor",
-		"editor"
+		"editor",
+		"rich text editor",
+		"editing",
+		"rich text",
+		"rich editor",
+		"text editor",
+		"contenteditable",
+		"wysiwyg",
+		"html",
+		"text",
+		"markdown"
 	],
 	"repository": {
 		"type": "git",

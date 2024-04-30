@@ -2593,3 +2593,157 @@ describe('867606-Perform Grouping on the existing group', () => {
         done();
     });
 });
+describe('880811-grouping child nodes with addChildToGroup method does not push child to group at DOM Level', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'exisitingGroup' });
+        document.body.appendChild(ele);
+
+        let connectors = [
+            {
+                id: 'connector1',
+                sourceID: 'node1',
+                targetID: 'node2',
+            },
+            {
+                id: 'connector2',
+                sourceID: 'node2',
+                targetID: 'node3',
+            },
+            {
+                id: 'connector3',
+                sourceID: 'node3',
+                targetID: 'node1',
+            },
+            {
+                id: 'connector5',
+                sourcePoint: { x: 800, y: 300 },
+                targetPoint: { x: 900, y: 400 },
+            },
+        ];
+
+        let nodes = [
+            {
+                id: 'node1',
+                offsetX: 375,
+                offsetY: 130,
+                height: 60,
+                width: 100,
+                annotations: [
+                    {
+                        content: 'Node1',
+                    },
+                ],
+            },
+            {
+                id: 'node2',
+                offsetX: 675,
+                offsetY: 130,
+                height: 60,
+                width: 100,
+                annotations: [
+                    {
+                        content: 'Node2',
+                    },
+                ],
+            },
+            {
+                id: 'node3',
+                offsetX: 525,
+                offsetY: 300,
+                height: 60,
+                width: 100,
+                annotations: [
+                    {
+                        content: 'Node3',
+                    },
+                ],
+            },
+            {
+                id: 'node4',
+                offsetX: 850,
+                offsetY: 130,
+                height: 60,
+                width: 100,
+                annotations: [
+                    {
+                        content: 'node4',
+                    },
+                ],
+            },
+            {
+                id: 'group1',
+                children: ['node1', 'node2', 'connector2', 'connector3'],
+                padding: { left: 20, right: 20, top: 20, bottom: 20 },
+                style: { fill: "white", strokeColor: 'black', strokeWidth: 2 }
+            }
+        ];
+        diagram = new Diagram({
+            width: '500px', height: '600px', nodes: nodes, connectors: connectors, getNodeDefaults: getNodeDefaults,
+        });
+        diagram.appendTo('#exisitingGroup');
+        function getNodeDefaults(node: Node) {
+            if (node.children) {
+                node.padding = { left: 20, right: 20, top: 20, bottom: 20 },
+                    node.style = { fill: "white", strokeColor: 'black', strokeWidth: 2 }
+            }
+            return node;
+        }
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check the child node is moved inside the Group at DOM Level', (done: Function) => {
+        expect((diagram.nodes[4] as any).children.length === 4).toBe(true);  
+        diagram.addChildToGroup(diagram.nodes[4], 'node3');
+        let childElement = document.getElementById('node3_groupElement');
+        let groupElement = document.getElementById('group1_groupElement');
+        expect((groupElement.contains(childElement))).toBe(true);
+        expect((diagram.nodes[4] as any).children.length === 5).toBe(true);  
+        done();
+    });
+    it('check the child node is moved outside the Group at DOM Level', (done: Function) => {
+        expect((diagram.nodes[4] as any).children.length === 5).toBe(true);  
+        diagram.removeChildFromGroup(diagram.nodes[4], 'node3');
+        let childElement = document.getElementById('node3_groupElement');
+        let groupElement = document.getElementById('group1_groupElement');
+        expect((groupElement.parentNode.contains(childElement))).toBe(true);
+        expect((diagram.nodes[4] as any).children.length === 4).toBe(true);  
+        done();
+    });
+    it('Check the child connector is moved inside the Group at DOM Level', (done: Function) => {
+        expect((diagram.nodes[4] as any).children.length === 4).toBe(true);  
+        diagram.addChildToGroup(diagram.nodes[4], 'connector5');
+        let childElement = document.getElementById('connector5_groupElement');
+        let groupElement = document.getElementById('group1_groupElement');
+        expect((groupElement.contains(childElement))).toBe(true);
+        expect((diagram.nodes[4] as any).children.length === 5).toBe(true);  
+        done();
+    });
+    it('check the child node is moved outside the Group at DOM Level', (done: Function) => {
+        expect((diagram.nodes[4] as any).children.length === 5).toBe(true);  
+        diagram.removeChildFromGroup(diagram.nodes[4], 'connector5');
+        let childElement = document.getElementById('connector5_groupElement');
+        let groupElement = document.getElementById('group1_groupElement');
+        expect((groupElement.parentNode.contains(childElement))).toBe(true);
+        expect((diagram.nodes[4] as any).children.length === 4).toBe(true);  
+        done();
+    });
+    it('Group the node and connector', (done: Function) => {
+        diagram.select([diagram.nodes[3], diagram.connectors[3]])
+        diagram.group();
+        let newGroup = diagram.getObject((diagram.nodes[3] as any).parentId);
+        diagram.addChildToGroup(newGroup, 'node3');
+        expect((diagram.selectedItems.nodes[0] as any).children.length === 3).toBe(true);
+        done();
+    });
+});

@@ -53,19 +53,16 @@ describe('Gantt undoredo support', () => {
                     expect(ganttObj.flatData.length).toBe(41);
                 }
             };
-            ganttObj.dataBind();
             ganttObj.addRecord();
             let undo: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_undo') as HTMLElement;
             triggerMouseEvent(undo, 'click');
         });
         it('Redo actin for add record', () => {
-            debugger
             ganttObj.actionComplete = function (args: any): void {
                 if(args.requestType === 'add') {
                     expect(ganttObj.flatData.length).toBe(42);
                 }
             };
-            ganttObj.dataBind();
             let undo: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_redo') as HTMLElement;
             triggerMouseEvent(undo, 'click');
         });
@@ -115,7 +112,6 @@ describe('Gantt undoredo support', () => {
                     expect(ganttObj.flatData[2].hasChildRecords).toBe(false);
                 }
             };
-            ganttObj.dataBind();
             ganttObj.selectRow(3);
             ganttObj.indent();
             let undo: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_undo') as HTMLElement;
@@ -256,7 +252,6 @@ describe('Gantt undoredo support', () => {
                     expect(parseInt(ganttObj.flatData[1].ganttProperties.taskId)).toBe(3);
                 }
             };
-            ganttObj.dataBind();
             ganttObj.reorderRows([1], 3, 'child');
         });
         it('Undo action for row drag drop', () => {
@@ -265,7 +260,6 @@ describe('Gantt undoredo support', () => {
                     expect(parseInt(ganttObj.flatData[1].ganttProperties.taskId)).toBe(2);
                 }
             };
-            ganttObj.dataBind();
             ganttObj.undo()
         });
     });
@@ -398,7 +392,6 @@ describe('Gantt undoredo support', () => {
                 expect(args.taskBarEditAction).toBe('ProgressResizing');
                 expect(args.editingFields.progress).toBe(0);
             };
-            ganttObj.dataBind();
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
             triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
             triggerMouseEvent(dragElement, 'mousemove', 0, 0);
@@ -408,7 +401,6 @@ describe('Gantt undoredo support', () => {
             ganttObj.actionComplete = function (args: any): void {
                 expect(ganttObj.flatData[1].ganttProperties.progress).toBe(30);
             };
-            ganttObj.dataBind();
             ganttObj.undo()
         });
         it('Zooming actions', () => {
@@ -424,14 +416,12 @@ describe('Gantt undoredo support', () => {
             ganttObj.actionComplete = function (args: any): void {
                 expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineEndDate, 'M/d/yyyy')).toBe('6/2/2019');
             }
-            ganttObj.dataBind();
             ganttObj.nextTimeSpan();
         });
         it('undo action for Timespan action', () => {
             ganttObj.actionComplete = function (args: any): void {
                 expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineEndDate, 'M/d/yyyy')).toBe('5/30/2019');
             }
-            ganttObj.dataBind();
             ganttObj.undo();
         });
         it('delete action', () => {
@@ -440,7 +430,6 @@ describe('Gantt undoredo support', () => {
                     expect(ganttObj.currentViewData.length).toBe(1);
                 }
             }
-            ganttObj.dataBind();
             ganttObj.deleteRecord(1);
         });
         it('undo action for delete action', () => {
@@ -448,7 +437,6 @@ describe('Gantt undoredo support', () => {
                 if(args.requestType == 'add') {
                     expect(ganttObj.currentViewData.length).toBe(5);
                 }            }
-            ganttObj.dataBind();
             ganttObj.undo();
         });
     });
@@ -618,9 +606,6 @@ describe('Gantt undoredo support', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         it('Merge segment action', () => {
             ganttObj.mergeTask(3,[{ 'firstSegmentIndex': 0, 'secondSegmentIndex': 1 }]);
             expect(ganttObj.flatData[2].ganttProperties.segments.length).toBe(2);
@@ -756,9 +741,6 @@ describe('Gantt undoredo support', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         it('edit dependency column', () => {
             let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(7)') as HTMLElement;
             triggerMouseEvent(dependency, 'dblclick');
@@ -884,9 +866,6 @@ describe('Gantt undoredo support', () => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
-        });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
         });
         it('edit dependency column', () => {
             let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(7)') as HTMLElement;
@@ -1014,14 +993,10 @@ describe('Gantt undoredo support', () => {
                 destroyGantt(ganttObj);
             }
         });
-        beforeEach((done: Function) => {
-            setTimeout(done, 500);
-        });
         it('convert to milestone', (done: Function) => {
             ganttObj.actionComplete = function (args: any): void {
                 expect(ganttObj.getUndoActions.length).toBe(0);
             };
-            ganttObj.dataBind();
             ganttObj.convertToMilestone('2');
             done()
         });

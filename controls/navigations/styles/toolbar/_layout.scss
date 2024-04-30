@@ -751,6 +751,7 @@
         }
 
         &:not(.e-separator) {
+          height: $tbar-item-height;
           min-width: 34px;
           padding: $tbar-item-pop-nrml-padding;
         }

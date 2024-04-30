@@ -14,6 +14,7 @@ import { cloneObject } from '../drawing/drawing-util';
 import { FreeTextAnnotation } from '../annotation/free-text-annotation';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Query } from '@syncfusion/ej2-data';
+import { MouseEventArgs, PolygonDrawingTool } from '../drawing/tools';
 import { DynamicStampItem, SignStampItem, StandardBusinessStampItem, SignatureItem } from '../base/types';
 
 /**
@@ -1092,8 +1093,13 @@ export class AnnotationToolbar {
         items.push({ prefixIcon: 'e-pv-annotation-delete-icon e-pv-icon', className: 'e-pv-annotation-delete-container', id: this.pdfViewer.element.id + '_annotation_delete', align: 'right' });
         return items;
     }
-    private goBackToToolbar(): void {
+    private goBackToToolbar(args: ClickEventArgs): void {
         this.isMobileAnnotEnabled = false;
+        if (Browser.isDevice || !this.pdfViewer.enableDesktopMode) {
+            if (this.pdfViewerBase.action === 'Polygon') {
+                (this.pdfViewerBase.tool as PolygonDrawingTool).mouseUp((args as MouseEventArgs), true, true);
+            }
+        }
         if (this.toolbarElement.children.length > 0) {
             this.toolbarElement.style.display = 'block';
         } else {
@@ -1624,7 +1630,7 @@ export class AnnotationToolbar {
                 standardsBusinessStamps.push({ text: this.pdfViewer.localeObj.getConstant(name), label: name });
             });
         }
-        if (this.pdfViewer.customStampSettings.enableCustomStamp && !Browser.isDevice) {
+        if (this.pdfViewer.customStampSettings.enableCustomStamp) {
             if (items.length > 0) {
                 items.push({ separator: true });
             }
@@ -2997,6 +3003,11 @@ export class AnnotationToolbar {
     private onShapeToolbarClicked = (args: ClickEventArgs): void => {
         const elementId: string = this.pdfViewer.element.id;
         const shapeAnnotationModule: ShapeAnnotation = this.pdfViewer.annotation.shapeAnnotationModule;
+        if (Browser.isDevice || !this.pdfViewer.enableDesktopMode) {
+            if (this.pdfViewerBase.action === 'Polygon') {
+                (this.pdfViewerBase.tool as PolygonDrawingTool).mouseUp((args as MouseEventArgs), true, true);
+            }
+        }
         if (!Browser.isDevice) {
             this.deselectAllItems();
             this.resetFreeTextAnnot();

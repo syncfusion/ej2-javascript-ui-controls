@@ -1209,7 +1209,7 @@ export class Drawing {
                 options.stroke = borderColor;
                 options.strokeWidth = currentSelector.selectionBorderThickness === 1 ? 1 : annotationSelector.selectionBorderThickness;
                 // eslint-disable-next-line max-len
-                let lineDash: number[] = annotationSelector.selectorLineDashArray.length === 0 ? [6, 3] : annotationSelector.selectorLineDashArray;
+                let lineDash: number[] = (isNullOrUndefined(currentSelector.selectorLineDashArray) || currentSelector.selectorLineDashArray.length === 0) ? [6, 3] : currentSelector.selectorLineDashArray;
                 if (lineDash.length > 2) {
                     lineDash = [lineDash[0], lineDash[1]];
                 }
@@ -1219,11 +1219,13 @@ export class Drawing {
                 options.stroke = borderColor;
                 options.strokeWidth = currentSelector.selectionBorderThickness === 1 ? 1 : currentSelector.selectionBorderThickness;
                 // eslint-disable-next-line max-len
-                let lineDash: number[] = currentSelector.selectorLineDashArray.length === 0 ? [6, 3] : currentSelector.selectorLineDashArray;
-                if (lineDash.length > 2) {
+                let lineDash: number[] = (!isNullOrUndefined(currentSelector.selectorLineDashArray) && (currentSelector.selectorLineDashArray.length === 0)) ? [6, 3] : currentSelector.selectorLineDashArray;
+                if (!isNullOrUndefined(lineDash) && lineDash.length > 2) {
                     lineDash = [lineDash[0], lineDash[1]];
                 }
-                options.dashArray = lineDash.toString();
+                if (!isNullOrUndefined(lineDash)) {
+                    options.dashArray = lineDash.toString();
+                }
             } else {
                 if (!this.pdfViewer.designerMode) {
                     if ((shapeType === 'HandWrittenSignature' || shapeType === 'SignatureText' || shapeType === 'SignatureImage') || shapeType === 'Ink') {
@@ -1281,11 +1283,13 @@ export class Drawing {
                 options.stroke = borderColor;
                 options.strokeWidth = currentSelector.selectionBorderThickness === 1 ? 1 : currentSelector.selectionBorderThickness;
                 // eslint-disable-next-line max-len
-                let lineDash: number[] = currentSelector.selectorLineDashArray.length === 0 ? [6, 3] : currentSelector.selectorLineDashArray;
-                if (lineDash.length > 2) {
+                let lineDash: number[] = (!isNullOrUndefined(currentSelector.selectorLineDashArray) && (currentSelector.selectorLineDashArray.length === 0)) ? [6, 3] : currentSelector.selectorLineDashArray;
+                if (!isNullOrUndefined(lineDash) && lineDash.length > 2) {
                     lineDash = [lineDash[0], lineDash[1]];
                 }
-                options.dashArray = lineDash.toString();
+                if (!isNullOrUndefined(lineDash)) {
+                    options.dashArray = lineDash.toString();
+                }
             } else {
                 this.getBorderSelector(shapeType, options);
             }
@@ -2540,7 +2544,7 @@ export class Drawing {
             update = true;
             updateConnector = true;
         }
-        if (node.fontSize !== undefined) {
+        if (node.fontSize !== undefined  && actualObject.fontSize != node.fontSize) {
             actualObject.fontSize = node.fontSize;
             if ((actualObject.shapeAnnotationType === 'FreeText' || actualObject.shapeAnnotationType === 'SignatureText') && actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
                 // eslint-disable-next-line

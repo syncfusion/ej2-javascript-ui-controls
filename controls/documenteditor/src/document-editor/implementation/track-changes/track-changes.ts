@@ -74,6 +74,11 @@ export class Revision {
         }
         let blockInfo: ParagraphInfo = selection.getParagraphInfo(startPos);
         this.owner.editorModule.initHistory(isFromAccept ? 'Accept Change' : 'Reject Change');
+        let fieldBegin: FieldElementBox = selection.getHyperlinkField();
+        if (isFromAccept && this.revisionType === 'Deletion' && !isNullOrUndefined(fieldBegin) 
+            && this.range.indexOf(fieldBegin) !== -1 && this.range.indexOf(fieldBegin.fieldEnd) !== -1) {
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.isHyperlinkField = true;
+        }
         this.owner.editorHistoryModule.currentBaseHistoryInfo.markerData.push(this.owner.editorModule.getMarkerData(undefined, undefined, this));
         if (this.revisionType === 'Deletion') {
             blockInfo = selection.getParagraphInfo(this.owner.selectionModule.start);
@@ -251,6 +256,7 @@ export class Revision {
                     this.updateRevisionID();
                     this.removeRevisionFromPara(start, end);
                     if (!isNullOrUndefined(this.owner.editorHistoryModule)) {
+                        this.owner.editorHistoryModule.currentBaseHistoryInfo.isHyperlinkField = true;
                         let endInfo: ParagraphInfo = this.owner.selectionModule.getParagraphInfo(end);
                         let endIndex: string = this.owner.selectionModule.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
                         this.owner.editorHistoryModule.currentBaseHistoryInfo.endPosition = endIndex;

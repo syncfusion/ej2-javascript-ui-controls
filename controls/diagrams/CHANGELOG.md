@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.42 (2024-04-30)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I568786` - Overview now updates properly across all browser zoom levels and resolutions.
+
 ## 25.1.41 (2024-04-23)
 
 ### Diagram

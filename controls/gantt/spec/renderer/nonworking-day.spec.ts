@@ -1,17 +1,17 @@
 /**
  * Gantt base spec
  */
-import { Gantt, DayMarkers, Edit, Toolbar, ContextMenu, Sort, VirtualScroll,Selection } from '../../src/index';
+import { Gantt, DayMarkers, Edit, Toolbar, ContextMenu, Sort, VirtualScroll, Selection } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { baselineData,projectData  } from '../base/data-source.spec';
-import { createGantt, destroyGantt,triggerMouseEvent } from '../base/gantt-util.spec';
+import { baselineData, projectData, weekenddata } from '../base/data-source.spec';
+import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
+Gantt.Inject(DayMarkers, Edit, Toolbar, ContextMenu, Sort, VirtualScroll, Selection);
 
 describe('Gantt spec for non -working-day', () => {
     describe('Gantt base module', () => {
-        Gantt.Inject(DayMarkers);
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt({
@@ -59,17 +59,13 @@ describe('Gantt spec for non -working-day', () => {
                 projectEndDate: new Date('11/30/2017'),
             }, done);
         });
-        afterAll(() => {
-            destroyGantt(ganttObj);
-        });
         it('Non-working-Day Testing', () => {
             ganttObj.actionComplete = function (args: any): void {
                 if (args.requestType === "refresh") {
                     expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.nonworkingContainer}`)).toBe(null);
-                    expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.holidayContainer}`)).toBe(null); 
+                    expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.holidayContainer}`)).toBe(null);
                 }
             };
-            ganttObj.dataBind();
             expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.holidayElement}`)['style'].width).toBe('180px');
             expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.holidayElement}`).textContent).toBe('public holiday');
             expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.holidayElement}`).
@@ -82,10 +78,14 @@ describe('Gantt spec for non -working-day', () => {
             ganttObj.dataBind();
             ganttObj.holidays = [];
             ganttObj.dataBind();
-           });
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
     });
-        describe('Empty holidays', () => {
-        Gantt.Inject(DayMarkers);
+    describe('Empty holidays', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt({
@@ -97,7 +97,7 @@ describe('Gantt spec for non -working-day', () => {
                     startDate: 'StartDate',
                     duration: 'Duration',
                     progress: 'Progress',
-                    dependency:'Predecessor',
+                    dependency: 'Predecessor',
                     child: 'subtasks'
                 },
                 holidays: [
@@ -105,7 +105,7 @@ describe('Gantt spec for non -working-day', () => {
                         from: new Date('04/04/2019'),
                         to: new Date('04/04/2019'),
                         label: 'Local Holiday'
-                    } 
+                    }
                 ],
                 editSettings: {
                     allowAdding: true,
@@ -125,12 +125,9 @@ describe('Gantt spec for non -working-day', () => {
                 projectEndDate: new Date('05/30/2019'),
             }, done);
         });
-        afterAll(() => {
-            destroyGantt(ganttObj);
-        });
         it('Non-working-Day Testing', () => {
             ganttObj.actionComplete = function (args: any): void {
-                if(args.requestType === 'refresh') {
+                if (args.requestType === 'refresh') {
                     expect(ganttObj.currentViewData.length).toBe(2);
                 }
             };
@@ -155,25 +152,18 @@ describe('Gantt spec for non -working-day', () => {
                 }
             ];
         });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
     });
 });
 describe('874399 - weekend is not visible', function () {
-    Gantt.Inject(Edit, Toolbar,ContextMenu,Sort,Selection, VirtualScroll);
     let ganttObj: Gantt;
-    let data: Object[] = [
-        { TaskID: 1, TaskName: 'Project Initiation_1', StartDate: new Date('04/02/2019'), EndDate: new Date('04/21/2019') },
-        { TaskID: 2, TaskName: 'Identify Site location_1', StartDate: new Date('03/29/2019'), Duration: 6, Progress: 70, ParentId: 1 },
-        { TaskID: 3, TaskName: 'Perform Soil test_1', StartDate: new Date('04/02/2019'), Duration: 7, Progress: 70, ParentId: 1 },
-        { TaskID: 4, TaskName: 'Soil test approval_1', StartDate: new Date('04/02/2019'), Duration: 8, Progress: 70, Predecessor: '2', ParentId: 1 },
-        { TaskID: 5, TaskName: 'Project Estimation_1', StartDate: new Date('04/02/2019'), EndDate: new Date('04/21/2019') },
-        { TaskID: 6, TaskName: 'Develop floor plan for estimation_1', StartDate: new Date('04/04/2019'), Duration: 9, Progress: 70, ParentId: 5 },
-        { TaskID: 7, TaskName: 'List materials_1', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 70, ParentId: 5 },
-        { TaskID: 8, TaskName: 'Estimation approval_1', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 70, ParentId: 5 }
-    ];
-    
     beforeAll(function (done) {
         ganttObj = createGantt({
-            dataSource: data,
+            dataSource: weekenddata,
             enableContextMenu: true,
             taskFields: {
                 id: 'TaskID',
@@ -201,7 +191,7 @@ describe('874399 - weekend is not visible', function () {
                 { field: 'Duration', width: 90 },
                 { field: 'TaskType', visible: false }
             ],
-            enableTimelineVirtualization:true,
+            enableTimelineVirtualization: true,
             sortSettings: {
                 columns: [{ field: 'TaskID', direction: 'Ascending' },
                 { field: 'TaskName', direction: 'Ascending' }]
@@ -249,23 +239,20 @@ describe('874399 - weekend is not visible', function () {
             projectEndDate: new Date('07/06/2024')
         }, done);
     });
-    afterAll(function () {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
-    beforeEach((done: Function) => {
-        setTimeout(done, 1000);
-    });
-    it('editing startdate', () => { 
+    it('editing startdate', () => {
         ganttObj.dataBind();
         let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
         triggerMouseEvent(startDate, 'dblclick');
-        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate')as any).ej2_instances[0];
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate') as any).ej2_instances[0];
         input.value = new Date('03/04/2024');
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
         ganttObj.selectRow(0);
         expect(ganttObj.ganttChartModule.chartBodyContent.querySelector(`.${cls.weekend}`)['style'].left).toBe('0px');
     });
-});	
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
