@@ -26,6 +26,7 @@ export class ColumnChooser implements IAction {
     private flag: boolean;
     private timer: number;
     public getShowHideService: ShowHide;
+    private filterColumns: Column[] = [];
     private showColumn: string[] = [];
     private hideColumn: string[] = [];
     private changedColumns: string[] = [];
@@ -505,6 +506,8 @@ export class ColumnChooser implements IAction {
         this.showColumn = [];
         this.hideColumn = [];
         this.changedColumns = [];
+        this.filterColumns = [];
+        this.searchValue = '';
         this.hideDialog();
     }
 
@@ -569,7 +572,6 @@ export class ColumnChooser implements IAction {
 
     private columnChooserSearch(searchVal: string): void {
         let clearSearch: boolean = false;
-        let fltrCol: Column[];
         let okButton: Button;
         const buttonEle: HTMLElement = this.dlgDiv.querySelector('.e-footer-content');
         const selectedCbox: number = this.ulElement.querySelector('.e-check') &&
@@ -580,18 +582,18 @@ export class ColumnChooser implements IAction {
         }
         if (searchVal === '') {
             this.removeCancelIcon();
-            fltrCol = this.getColumns() as Column[];
+            this.filterColumns = this.getColumns() as Column[];
             clearSearch = true;
 
         } else {
-            fltrCol = new DataManager((this.getColumns() as Object[]) as JSON[]).executeLocal(new Query()
+            this.filterColumns = new DataManager((this.getColumns() as Object[]) as JSON[]).executeLocal(new Query()
                 .where('headerText', this.searchOperator, searchVal, true, this.parent.columnChooserSettings.ignoreAccent)) as Column[];
         }
 
-        if (fltrCol.length) {
+        if (this.filterColumns.length) {
             this.innerDiv.innerHTML = ' ';
             this.innerDiv.classList.remove('e-ccnmdiv');
-            this.innerDiv.appendChild(<HTMLElement>this.refreshCheckboxList(fltrCol));
+            this.innerDiv.appendChild(<HTMLElement>this.refreshCheckboxList(this.filterColumns));
             if (!clearSearch) {
                 this.addcancelIcon();
                 this.refreshCheckboxButton();
@@ -653,7 +655,7 @@ export class ColumnChooser implements IAction {
             }
             this.updateIntermediateBtn();
             const columnUid: string = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
-            const column: Column[] =  this.parent.getColumns();
+            const column: Column[] =  (this.searchValue && this.searchValue.length) ? this.filterColumns : this.parent.getColumns();
             if (columnUid === 'grid-selectAll') {
                 this.changedColumns = [];
                 this.unchangedColumns = [];

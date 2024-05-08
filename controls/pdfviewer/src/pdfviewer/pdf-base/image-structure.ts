@@ -125,7 +125,7 @@ export class ImageStructureBase {
     }
 
     private imageStream(): any {
-        let content: Uint8Array = _stringToBytes(this.m_imageStream.getString()) as Uint8Array;
+        let content: Uint8Array = _stringToBytes(this.m_imageStream.getString(), false, true) as Uint8Array;
         return content;
 
     }

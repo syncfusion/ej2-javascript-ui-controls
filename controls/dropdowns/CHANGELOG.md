@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.3 (2024-05-08)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I582752` - Issue with "Script error thrown in listbox when adding and removing items" has been resolved.
+
 ## 25.1.41 (2024-04-23)
 
 ### MultiSelect

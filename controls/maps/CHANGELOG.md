@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 25.1.42 (2024-04-30)
+## 25.2.3 (2024-05-08)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I580579` - Script errors will no longer be thrown when the markers in the Maps are disabled.
+
+## 25.1.41 (2024-04-23)
 
 ### Maps
 

@@ -5,7 +5,7 @@ import { ColumnModel } from './index';
  */
 export const columnArray: ColumnModel[] = [
     {
-        field: 'name', headerText: 'Name', minWidth: 120, isPrimaryKey : true,
+        field: 'name', headerText: 'Name', minWidth: 120,
         template: '<span class=\"e-fe-text\">${name}</span>',
         customAttributes: { class: 'e-fe-grid-name'}
     },

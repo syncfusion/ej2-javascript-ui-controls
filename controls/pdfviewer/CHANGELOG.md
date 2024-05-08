@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 25.2.3 (2024-05-08)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I51830`- Now, the form field signature does not shift upwards every time the document is saved.
+- `#I573912` - Now, the custom image signature does not appears bold when opening the saved document.
+- `#I576319` - Now, the `extractTextCompleted` event was triggered properly in client-side rendering.
+
 ## 25.1.42 (2024-04-30)
 
 ### PDF Viewer
@@ -12,6 +22,7 @@
 - `#I582426` - Now, the old JSON data will be imported in PDF Viewer without any issues.
 - `#I576350` - Now, the customer-provided document will be downloaded without any issues or script errors.
 - `#I576386` - Now, the script error will not occur after removing the `selectorLineDashArray` property.
+- `#I572623` - Now, the signature rendered properly after loading the customer-provided document in client-side rendering.
 
 ## 25.1.41 (2024-04-23)
 

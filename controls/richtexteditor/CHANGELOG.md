@@ -8,7 +8,25 @@
 
 #### Bug Fixes
 
+- `#I579856` - Now, Bold action works properly in RichTextEditor when `enterKey` is set to 'BR'.
+
+- `#I52134` - Now, the cursor position remains in the correct place when you use InsertHtml executeCommand to insert text into Rich Text Editor after the table.
+
+- `#I572493` - Now, added the new `requestType` property to the `imageUploadSuccess` event argument in Rich Text Editor.
+
+- `#I582707` - Now, RichTextEditor works properly when the font size icon is clicked in the toolbar.
+
+### RichTextEditor
+
+#### Bug Fixes
+
 - `#I581044` - Now, with the content pasted with a table as the last element, a newline will be inserted, and the focus will be maintained on a new line.
+
+- `#I573688` - Now, Bullet list into the Rich Text Editor when using `enterkey` as `BR` work's properly.
+
+- `#I579856` - Now, Bullet list not removed properly when using `enterKey` as `BR` in RichTextEditor work's properly.
+
+- `#I582707` - Now, a script error throws when clicking the font size toolbar in RichTextEditor works properly.
 
 ## 25.1.41 (2024-04-23)
 
@@ -18,9 +36,7 @@
 
 - `#I577917` - Now, The tooltips are destroyed when the dialog with the editor is closed by a keyboard action.
 
-- `#I52134`: Now, the cursor position remains in the correct place when you use InsertHtml executeCommand to insert text into Rich Text Editor after the table.
-
-- `#I572493`: Now, added the new `requestType` property to the `imageUploadSuccess` event argument in Rich Text Editor.
+- `#I577198` - Now, inserting the table into the RichTextEditor works properly by using the toolbar insert table.
 
 ## 25.1.40 (2024-04-16)
 

@@ -36,7 +36,13 @@ export class Marker {
         this.initialMarkerCluster = [];
         this.zoomedMarkerCluster = [];
     }
-
+    /**
+     * @private
+     * @returns {Maps} - Returns the instance of the map.
+     */
+    public getMapsInstance(): Maps{
+        return this.maps;
+    }
     public markerRender(maps: Maps, layerElement: Element, layerIndex: number, factor: number, type: string): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let templateFn: any;

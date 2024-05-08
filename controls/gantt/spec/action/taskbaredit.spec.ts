@@ -1704,7 +1704,7 @@ describe('Gantt taskbar edit action', () => {
             ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[9];
             ganttObj.editModule.taskbarEditModule.finalPredecessor = '5SS';
             triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[9].ganttProperties.predecessorsName).toBe('5SS+5 days');
+            expect(ganttObj.flatData[9].ganttProperties.predecessorsName).toBe('5SS');
         });
         it('Dependency editing - manual parent to child', () => {
             ganttObj.actionBegin = (args: any) => {

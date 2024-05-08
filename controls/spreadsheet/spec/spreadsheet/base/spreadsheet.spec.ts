@@ -2450,5 +2450,61 @@ describe('Spreadsheet base module ->', () => {
                 done();
             });
         });
+        describe('EJ2-881868', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Provide an argument in the setRowsHeight method to skip the row height assign for custom height applied rows', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.setRowsHeight(40, ['1:5', '10:15', 'Sheet2!1:20']);
+                expect(spreadsheet.sheets[0].rows[0].height).toBe(40);
+                expect(spreadsheet.sheets[0].rows[4].height).toBe(40);
+                expect(spreadsheet.sheets[0].rows[9].height).toBe(40);
+                expect(spreadsheet.sheets[0].rows[12].height).toBe(40);
+                expect(spreadsheet.sheets[0].rows[14].height).toBe(40);
+                expect(spreadsheet.sheets[1].rows[0].height).toBe(40);
+                expect(spreadsheet.sheets[1].rows[4].height).toBe(40);
+                expect(spreadsheet.sheets[1].rows[9].height).toBe(40);
+                expect(spreadsheet.sheets[1].rows[14].height).toBe(40);
+                expect(spreadsheet.sheets[1].rows[19].height).toBe(40);
+                spreadsheet.setRowsHeight(50, ['1:6', '10:16', 'Sheet2!18:24'], true);
+                expect(spreadsheet.sheets[0].rows[4].height).toBe(40);
+                expect(spreadsheet.sheets[0].rows[5].height).toBe(50);
+                expect(spreadsheet.sheets[0].rows[9].height).toBe(40);
+                expect(spreadsheet.sheets[0].rows[14].height).toBe(40);
+                expect(spreadsheet.sheets[0].rows[15].height).toBe(50);
+                expect(spreadsheet.sheets[1].rows[20].height).toBe(50);
+                expect(spreadsheet.sheets[1].rows[21].height).toBe(50);
+                expect(spreadsheet.sheets[1].rows[22].height).toBe(50);
+                expect(spreadsheet.sheets[1].rows[23].height).toBe(50);
+                done();
+            });
+            it('setRowsHeight method checking after setting skipCustomHeight to false', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.setRowsHeight(60, ['3:4', '12:15', 'Sheet2!6:10'], false);
+                expect(spreadsheet.sheets[0].rows[2].height).toBe(60);
+                expect(spreadsheet.sheets[0].rows[3].height).toBe(60);
+                expect(spreadsheet.sheets[0].rows[11].height).toBe(60);
+                expect(spreadsheet.sheets[0].rows[12].height).toBe(60);
+                expect(spreadsheet.sheets[0].rows[13].height).toBe(60);
+                expect(spreadsheet.sheets[0].rows[14].height).toBe(60);
+                expect(spreadsheet.sheets[1].rows[5].height).toBe(60);
+                expect(spreadsheet.sheets[1].rows[6].height).toBe(60);
+                expect(spreadsheet.sheets[1].rows[8].height).toBe(60);
+                expect(spreadsheet.sheets[1].rows[9].height).toBe(60);
+                done();
+            });
+            it('setRowHeight testing after providing skipCustomHeight argument', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.setRowHeight(70, 2, 0, undefined, true);
+                expect(spreadsheet.sheets[0].rows[2].height).toBe(60);
+                spreadsheet.setRowHeight(70, 2, 0, undefined, false);
+                expect(spreadsheet.sheets[0].rows[2].height).toBe(70);
+                done();
+            });
+        });
     });
 });

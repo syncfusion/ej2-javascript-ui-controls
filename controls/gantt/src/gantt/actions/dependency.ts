@@ -434,6 +434,7 @@ export class Dependency {
             if ((!ganttRecord.hasChildRecords && !this.parent.allowParentDependency) || this.parent.allowParentDependency) {
                 this.updatePredecessorHelper(ganttRecord, predecessorsCollection);
                 if (!ganttRecord.ganttProperties.isAutoSchedule && this.parent.editSettings.allowEditing) {
+                    this.parent.connectorLineEditModule['validatedOffsetIds'] = [];
                     this.parent.connectorLineEditModule['calculateOffset'](ganttRecord);
                 }
             }
@@ -936,15 +937,41 @@ export class Dependency {
                 }
                 if (validationOn !== 'predecessor' && this.parent.isValidationEnabled) {
                     this.validateChildGanttRecord(parentGanttRecord, record);
-                    if (record && record.hasChildRecords && this.isValidatedParentTaskID != record.ganttProperties.taskId) {
-                        this.updateChildItems(record);
-                        this.isValidatedParentTaskID = record.ganttProperties.taskId;
-                    }
-                    if (this.parent.editModule['editedRecord'] && this.parent.editModule['editedRecord'].hasChildRecords && !this.parent.editModule['editedRecord'].parentItem) {
-                        this.isValidatedParentTaskID = record.ganttProperties.taskId;
+                    if (this.parent.editModule['editedRecord'] && record) {
+                        const rootParent: IGanttData = parentGanttRecord.parentItem ? this.parent.connectorLineEditModule.getRootParent(parentGanttRecord): null;
+                        if (record.hasChildRecords && (!this.parent.editModule['editedRecord'].hasChildRecords ||
+                         (!record.parentItem && (!rootParent || (rootParent && rootParent.ganttProperties.taskId == this.parent.editModule['editedRecord'].ganttProperties.taskId)))) && this.isValidatedParentTaskID != record.ganttProperties.taskId) {
+                            this.updateChildItems(record);
+                            for (let i: number = 0; i < record.childRecords.length; i++) {
+                                let ganttProp: ITaskData = record.childRecords[i as number].ganttProperties;
+                                if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
+                                    for (let j: number = 0; j < ganttProp.predecessor.length; j++) {
+                                        let childRec: IGanttData;
+                                        if (ganttProp.predecessor[j as number].to != record.ganttProperties.taskId.toString()) {
+                                            childRec = this.parent.flatData[this.parent.ids.indexOf(ganttProp.predecessor[j as number].to)];
+                                        }
+                                        else {
+                                            childRec = this.parent.flatData[this.parent.ids.indexOf(ganttProp.predecessor[j as number].from)];
+                                        }
+                                        if (childRec) {
+                                            this.validatePredecessor(childRec, [], '');
+                                            if (childRec.hasChildRecords && this.parent.editModule['editedRecord'].hasChildRecords) {
+                                                this.updateChildItems(childRec);
+                                            }
+                                            this.isValidatedParentTaskID = childRec.ganttProperties.taskId;
+                                        }
+                                    }
+                                }
+                            }
+                            this.isValidatedParentTaskID = record.ganttProperties.taskId;
+                        }
+                        if (this.parent.editModule['editedRecord'].hasChildRecords && !this.parent.editModule['editedRecord'].parentItem) {
+                            this.isValidatedParentTaskID = record.ganttProperties.taskId;
+                        }
                     }
                 }
                 else if (!record.ganttProperties.isAutoSchedule && this.parent.UpdateOffsetOnTaskbarEdit) {
+                    this.parent.connectorLineEditModule['validatedOffsetIds'] = [];
                     this.parent.connectorLineEditModule['calculateOffset'](record);
                 }
                 if (parentGanttRecord.expanded === false || record.expanded === false) {
@@ -982,11 +1009,6 @@ export class Dependency {
                             this.updateChildItems(record);
                             this.isValidatedParentTaskID = record.ganttProperties.taskId;
                         }
-                    }
-                    else if ((!record.hasChildRecords && taskBarModule.taskBarEditAction == 'ChildDrag') ||
-                        (record.hasChildRecords && (taskBarModule.taskBarEditAction == 'ChildDrag' || taskBarModule.taskBarEditAction == 'ParentDrag'))) {
-                        this.updateChildItems(record);
-                        this.isValidatedParentTaskID = record.ganttProperties.taskId;
                     }
                     if (record.parentItem) {
                         this.parent.dataOperation.updateParentItems(record, true);
@@ -1089,9 +1111,6 @@ export class Dependency {
                     if (this.parent.isOnEdit && this.validatedChildItems.indexOf(childRecords[i as number]) === -1) {
                         this.validatedChildItems.push(childRecords[i as number]);
                     }
-                }
-                if (!this.parent.isLoad && childRecords[i as number].ganttProperties.predecessor && childRecords[i as number].ganttProperties.predecessor.length > 0) {
-                    this.validatePredecessor(childRecords[i as number],[], '');
                 }
             }
         }

@@ -9136,7 +9136,7 @@ export class Layout {
     //#region Table
 
     public layoutTable(table: TableWidget, startIndex: number): BlockWidget {
-        if (this.isFieldCode && !this.checkTableHasField(table)) {
+        if (this.isFieldCode && !this.checkTableHasField(table) && !this.isRelayout) {
             table.isFieldCodeBlock = true;
             return table;
         }
@@ -9871,6 +9871,9 @@ export class Layout {
                         if (!isNullOrUndefined(textElement)) {
                             const prevPageNum: string = textElement.text;
                             const paragraph: ParagraphWidget = fieldBegin.line.paragraph;
+                            if (!isNullOrUndefined(paragraph.containerWidget) && !(paragraph.containerWidget instanceof HeaderFooterWidget) && paragraph.containerWidget.indexInOwner === -1) {
+                                continue;
+                            }
                             if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page) && paragraph.bodyWidget.page.index !== -1) {
                                 if (regex.test(fieldCode.toLowerCase())) {
                                     let index: number = paragraph.bodyWidget.page.index + 1;
@@ -10597,7 +10600,9 @@ export class Layout {
                     if (startIndex > 0 && this.keepWithNext) {
                         this.viewer.updateClientAreaForBlock(paragraphWidget, true);
                         let nextParagraph: ParagraphWidget;
-                        if (nextBodyWidget.firstChild instanceof ParagraphWidget && nextBodyWidget.firstChild.equals(paragraphWidget)) {
+                        if (paragraphWidget instanceof TableWidget) {
+                            this.addTableWidget(this.viewer.clientActiveArea, [paragraphWidget]);
+                        } else if (nextBodyWidget.firstChild instanceof ParagraphWidget && nextBodyWidget.firstChild.equals(paragraphWidget)) {
                             nextParagraph = nextBodyWidget.firstChild;
                         } else {
                             nextParagraph = new ParagraphWidget();

@@ -17,7 +17,7 @@ import { NodeSelection } from '../../selection/selection';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { getTextNodesUnder, sanitizeHelper, getDefaultValue } from '../base/util';
-import { isIDevice } from '../../common/util';
+import { isIDevice, scrollToCursor } from '../../common/util';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { XhtmlValidation } from './xhtml-validation';
 import { ON_BEGIN } from './../../common/constant';
@@ -346,15 +346,7 @@ export class HtmlEditor {
                     return;
                 } else {
                     this.parent.notify(events.enterHandler, { args: e.args });
-                    const newRange: Range = this.parent.getRange();
-                    if (!isNullOrUndefined(newRange.startContainer) && this.parent.height !== 'auto' && newRange.startContainer.nodeName !== '#text'
-                        && !this.parent.iframeSettings.enable && (newRange.startContainer as Element).getBoundingClientRect().bottom > this.parent.element.getBoundingClientRect().bottom) {
-                        this.parent.element.querySelector('.e-rte-content').scrollTop += (newRange.startContainer as Element).getBoundingClientRect().bottom - this.parent.element.getBoundingClientRect().bottom;
-                    }
-                    else if (!isNullOrUndefined(newRange.startContainer) && this.parent.height === 'auto' && newRange.startContainer.nodeName !== '#text'
-                        && !this.parent.iframeSettings.enable && window.innerHeight < (newRange.startContainer as Element).getBoundingClientRect().top) {
-                        (newRange.startContainer as Element).scrollIntoView({ block: 'end', inline: 'nearest' });
-                    }
+                    scrollToCursor(this.parent.contentModule.getDocument(), this.parent.inputElement);
                 }
             }
         }

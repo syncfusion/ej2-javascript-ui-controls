@@ -2030,7 +2030,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         const itemsCount: number = this.getItems().length;
-        const isListboxEmpty: boolean = itemsCount === 0;
+        let isListboxEmpty: boolean = itemsCount === 0;
         const selectedItemValue: Element = this.list.querySelector('.' + dropDownBaseClasses.selected);
         items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
         let index: number;
@@ -2079,6 +2079,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             if (this.getModuleName() === 'listbox') {
                 this.updateActionCompleteData(li, item as { [key: string]: Object }, isListboxEmpty ? null : index);
+                isListboxEmpty = true;
             } else {
                 this.updateActionCompleteData(li, item as { [key: string]: Object }, index);
             }
@@ -2122,7 +2123,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                         }
                     }
                 } else {
-                    if (this.liCollections[index as number]) {
+                    if (this.liCollections[index as number] && this.liCollections[index as number].parentNode) {
                         this.liCollections[index as number].parentNode.insertBefore(liCollections[i as number], this.liCollections[index as number]);
                     } else {
                         this.ulElement.appendChild(liCollections[i as number]);

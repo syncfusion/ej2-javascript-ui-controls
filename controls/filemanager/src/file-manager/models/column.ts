@@ -212,6 +212,7 @@ export class Column extends ChildProperty<Column> {
     /**
      * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.
      *
+     * @deprecated
      * @default false
      */
     @Property(false)

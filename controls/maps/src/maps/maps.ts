@@ -938,7 +938,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.trigger(load, { maps: this });
             this.createSVG();
             this.findBaseAndSubLayers();
-            if (!isNullOrUndefined(this.markerModule)) {
+            if (!isNullOrUndefined(this.markerModule) && this.markerModule.getMapsInstance()) {
                 this.markerModule.initializeMarkerClusterList();
             }
             this.createSecondaryElement();

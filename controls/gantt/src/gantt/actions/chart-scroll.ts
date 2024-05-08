@@ -39,6 +39,11 @@ export class ChartScroll {
         EventHandler.add(this.element, 'scroll' , this.onScroll, this);
         this.parent.treeGrid.grid.on('showGanttShimmer', this.updateShimmer, this);
         this.parent.treeGrid.grid.on('removeGanttShimmer', this.removeShimmer, this);
+        this.element.addEventListener('wheel', (event) => {
+            if (event.deltaY !== 0) {
+                this.onWheelScroll(event);
+            }
+        });
     }
     /**
      * Unbind events
@@ -50,6 +55,7 @@ export class ChartScroll {
         this.parent.off('grid-scroll', this.gridScrollHandler);
         this.parent.treeGrid.grid.off('showGanttShimmer', this.updateShimmer);
         this.parent.treeGrid.grid.off('removeGanttShimmer', this.removeShimmer);
+        EventHandler.remove(this.element, 'wheel', this.onWheelScroll);
     }
     /**
      *
@@ -206,6 +212,20 @@ export class ChartScroll {
         this.isScrolling = setTimeout(function () {
             parent.hideSpinner();
         }, 200);
+    }
+    private onWheelScroll(event: WheelEvent): void {
+        event.preventDefault();
+        const delta = event.deltaY;
+        const scrollSpeed = 1;
+        const targetElement = this.element;
+        const gridElement = this.parent.treeGrid.element.querySelector('.e-content');
+        const scrollStep = delta * scrollSpeed;
+        const maxScrollTarget = targetElement.scrollHeight - targetElement.clientHeight;
+        const maxScrollGrid = gridElement.scrollHeight - gridElement.clientHeight;
+        const maxScroll = Math.min(maxScrollTarget, maxScrollGrid);
+        const limitedScrollStep = Math.max(-maxScroll, Math.min(maxScroll, scrollStep));
+        targetElement.scrollTop += limitedScrollStep;
+        gridElement.scrollTop += limitedScrollStep;
     }
     /**
      * Scroll event handler

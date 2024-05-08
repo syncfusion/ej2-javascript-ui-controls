@@ -534,4 +534,29 @@ describe(' HTML editor update toolbar ', () => {
             done();
        });
     });
+
+    describe('HTML Editor coverage issue ', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(()=> {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['RemoveLink']
+                },
+                value : "<a>Link</a>",
+                saveInterval: 0
+            });
+        });
+        it('Click the toolbar button', (done: Function) => {
+            const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+            const toolbarEle = document.querySelector('[title="Remove Link"]')
+            toolbarEle.dispatchEvent(event);
+            setTimeout(() => {
+                expect(rteObj.value === '<p><a>Link</a></p>').toBe(true);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+       });
+    });
 });

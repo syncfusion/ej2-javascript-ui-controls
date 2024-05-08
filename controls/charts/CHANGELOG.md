@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 25.2.3 (2024-05-08)
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I574491` - The right click function now works properly in the accumulation chart with the external mouse on the mac.
+
+### Chart
+
+#### Bug Fixes
+
+- `#I581265` - Now, the bar chart has been exported as a CSV file, and the CSV contains the appropriate data.
+
 ## 25.1.42 (2024-04-30)
 
 ### Accumulation Chart

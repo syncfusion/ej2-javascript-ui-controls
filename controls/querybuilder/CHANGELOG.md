@@ -2,7 +2,38 @@
 
 ## [Unreleased]
 
+## 25.2.3 (2024-05-08)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I553588` - Issue with `setRulesFromSql` method is not working while using a field name like `"Name = '|_fn { keyword ' kFinishedProduct '}_|'"` has been fixed.
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#F187657` - Provided the input event support for QueryBuilder numeric textbox value changes.
+- `#I585320` - Issue with Query builder dropdown list element removed when placed two query builder in same page while calling refresh method has been fixed.
+
 ## 25.1.42 (2024-04-30)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#F553588` - Issue with `setRulesFromSql` method is not working while using a field name like `"Name = '|_fn { keyword ' kFinishedProduct '}_|'"` has been fixed.
+
+## 25.1.40 (2024-04-16)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I578463` - Issue with popups height is not updated properly in QueryBuilder sub field has been fixed.
+
+## 25.1.38 (2024-04-02)
 
 ### QueryBuilder
 

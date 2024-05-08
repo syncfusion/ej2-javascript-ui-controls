@@ -939,6 +939,7 @@ export class Edit {
         if (this.parent.autoCalculateDateScheduling) {
             this.updateParentChildRecord(ganttRecord);
         }
+        this.parent.predecessorModule ? this.parent.predecessorModule.isValidatedParentTaskID = '' : "";
         if ((this.parent.isConnectorLineUpdate || (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'])) && this.parent.autoCalculateDateScheduling) {
             /* validating predecessor for updated child items */
             for (let i: number = 0; i < this.parent.predecessorModule.validatedChildItems.length; i++) {
@@ -951,7 +952,6 @@ export class Edit {
                     this.parent.predecessorModule.validatePredecessor(child, [], '');
                 }
             }
-            this.parent.predecessorModule.isValidatedParentTaskID = '';
             /** validating predecessor for current edited records */
             if (ganttRecord.ganttProperties.predecessor) {
                 this.parent.isMileStoneEdited = ganttRecord.ganttProperties.isMilestone;
@@ -964,6 +964,7 @@ export class Edit {
                 }
                 this.isValidatedEditedRecord = false;
             }
+            this.parent.predecessorModule.isValidatedParentTaskID = '';
             if (this.parent.allowParentDependency && this.parent.predecessorModule.isValidatedParentTaskID != ganttRecord.ganttProperties.taskId && ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
                 (args.action === "DrawConnectorLine")) {
                 this.parent.predecessorModule['updateChildItems'](ganttRecord);
@@ -995,6 +996,7 @@ export class Edit {
             }
         }
         if (this.parent.UpdateOffsetOnTaskbarEdit && this.parent.connectorLineEditModule && args.data) {
+           this.parent.connectorLineEditModule['validatedOffsetIds'] = [];
            this.parent.connectorLineEditModule['calculateOffset'](args.data);
         }
         this.parent.predecessorModule['validatedParentIds'] = [];

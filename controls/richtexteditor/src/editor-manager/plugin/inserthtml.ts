@@ -74,7 +74,7 @@ export class InsertHtml {
         range.startContainer === range.endContainer;
         const isCollapsed: boolean = range.collapsed;
         const nodes: Node[] = this.getNodeCollection(range, nodeSelection, node);
-        const closestParentNode: Node = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
+        const closestParentNode: Node = (node.nodeName.toLowerCase() === 'table') ? (!isNOU(nodes[0]) ? this.closestEle(nodes[0].parentNode, editNode) : range.startContainer) : nodes[0];
         if (closestParentNode && closestParentNode.nodeName === 'LI' && node.nodeName.toLowerCase() === 'table') {
             this.insertTableInList(range, node as HTMLTableElement, closestParentNode, nodes[0], nodeCutter);
             return;

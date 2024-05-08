@@ -1521,7 +1521,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * @private
      */
     public accumulationRightClick(event: MouseEvent | PointerEvent): boolean {
-        if (event.buttons === 2 || (<PointerEvent>event).pointerType === 'touch') {
+        if (event.buttons === 2 && (<PointerEvent>event).pointerType === 'touch') {
             event.preventDefault();
             event.stopPropagation();
             return false;

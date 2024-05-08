@@ -786,7 +786,7 @@ export class Toolbar {
                     DialogUtility.alert({
                         content: localizeValue.getConstant('Unsupported format'),
                         closeOnEscape: true, showCloseIcon: true,
-                        position: { X: 'Center', Y: 'Center' }
+                        position: { X: 'center', Y: 'center' }
                     }).enableRtl = this.container.enableRtl;
                 }
             }
@@ -833,7 +833,7 @@ export class Toolbar {
             DialogUtility.alert({
                 content: this.container.localObj.getConstant('Error in establishing connection with web server'),
                 closeOnEscape: true, showCloseIcon: true,
-                position: { X: 'Center', Y: 'Center' }
+                position: { X: 'center', Y: 'center' }
             }).enableRtl = this.container.enableRtl;
         } else {
             alert('Failed to load the file');

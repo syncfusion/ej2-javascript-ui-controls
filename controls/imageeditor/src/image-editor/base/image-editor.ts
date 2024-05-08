@@ -1140,10 +1140,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         if (this.cssClass) {classList = classList.concat(this.cssClass.replace(/\s+/g, ' ').trim().split(' ') ); }
         removeClass([this.element], classList);
         if (!this.element.getAttribute('class')) {this.element.removeAttribute('class'); }
+        this.unwireEvent();
         this.notify('toolbar', { prop: 'destroySubComponents', onPropertyChange: false });
         this.notify('destroyed', null);
         super.destroy();
-        this.unwireEvent();
         this.element.innerHTML = '';
     }
 

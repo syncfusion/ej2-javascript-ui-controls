@@ -306,6 +306,10 @@ export class ContextMenu {
                 (closest(target, '#' + this.parent.element.id + CLS.GRID_ID).getElementsByClassName(CLS.EMPTY).length !== 0)))) {
             this.disabledItems.push('SelectAll');
         }
+        else {
+            this.disabledItems = this.disabledItems.filter(item => item !== 'SelectAll');
+
+        }
         if (this.parent.selectedNodes.length === 0) {
             if (this.disabledItems.indexOf('Paste') === -1) {
                 this.disabledItems.push('Paste');

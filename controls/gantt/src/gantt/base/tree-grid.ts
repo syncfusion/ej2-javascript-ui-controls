@@ -586,6 +586,11 @@ export class GanttTreeGrid {
         const content: HTMLElement = this.parent.treeGrid.element.querySelector('.e-content');
         if (content) {
             EventHandler.add(content, 'scroll', this.scrollHandler, this);
+            content.addEventListener('wheel', (event) => {
+                if (event.deltaY !== 0) {
+                    this.gridonWheelScroll(event);
+                }
+            });
         }
         if (this.parent.isAdaptive) {
             EventHandler.add(this.parent.treeGridPane, 'click', this.treeGridClickHandler, this);
@@ -596,10 +601,25 @@ export class GanttTreeGrid {
             this.parent.treeGrid.element.querySelector('.e-content');
         if (content) {
             EventHandler.remove(content, 'scroll', this.scrollHandler);
+            EventHandler.remove(content, 'wheel', this.gridonWheelScroll);
         }
         if (this.parent.isAdaptive) {
             EventHandler.remove(this.parent.treeGridPane, 'click', this.treeGridClickHandler);
         }
+    }
+    private gridonWheelScroll(event: WheelEvent): void {
+        event.preventDefault();
+        const delta = event.deltaY;
+        const scrollSpeed = 1;
+        const targetElement = this.parent.treeGrid.element.querySelector('.e-content');
+        const chartElement = this.parent.ganttChartModule.scrollElement;
+        const scrollStep = delta * scrollSpeed;
+        const maxScrollTarget = targetElement.scrollHeight - targetElement.clientHeight;
+        const maxScrollGrid = chartElement.scrollHeight - chartElement.clientHeight;
+        const maxScroll = Math.min(maxScrollTarget, maxScrollGrid);
+        const limitedScrollStep = Math.max(-maxScroll, Math.min(maxScroll, scrollStep));
+        targetElement.scrollTop += limitedScrollStep;
+        chartElement.scrollTop += limitedScrollStep;
     }
     // eslint-disable-next-line
     private scrollHandler(e: WheelEvent): void {

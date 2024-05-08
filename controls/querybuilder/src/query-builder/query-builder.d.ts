@@ -341,6 +341,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private cloneGrpBtnClick;
     private isMiddleGroup;
     private cloneRuleBtnClick;
+    private isNumInput;
     /**
      * Triggers when the component is created.
      *
@@ -909,6 +910,8 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     lockGroup(groupID: string): void;
     private sqlParser;
     private parseSqlStrings;
+    private checkCondition;
+    private getSingleQuoteString;
     private checkLiteral;
     private checkNumberLiteral;
     private getOperator;
@@ -916,6 +919,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getLabelFromColumn;
     private getLabelFromField;
     private processParser;
+    private getValueFromParser;
     /**
      * Clone the Group
      *

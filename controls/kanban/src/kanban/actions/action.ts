@@ -245,6 +245,10 @@ export class Action {
                     }
                 });
             }
+            if (this.parent.kanbanData.length === 0 && targetRow.length === 0) {
+                removeClass([target], cls.COLLAPSED_CLASS);
+                target.setAttribute('aria-expanded', 'true');
+            }
             this.columnToggleArray.splice(this.columnToggleArray.indexOf(target.getAttribute('data-key')), 1);
             (this.parent.columns[colIndex as number] as Base<HTMLElement>).setProperties({ isExpanded: true }, true);
             target.querySelector('.e-header-icon').setAttribute('aria-label', target.getAttribute('data-key') + ' Expand');
@@ -280,6 +284,10 @@ export class Action {
                         collapasedText.style.height = (targetCol.getBoundingClientRect().height - 4) + 'px';
                     }
                 });
+            }
+            if (this.parent.kanbanData.length === 0 && targetRow.length === 0) {
+                addClass([target], cls.COLLAPSED_CLASS);
+                target.setAttribute('aria-expanded', 'false');
             }
             this.columnToggleArray.push(target.getAttribute('data-key'));
             (this.parent.columns[colIndex as number] as Base<HTMLElement>).setProperties({ isExpanded: false }, true);

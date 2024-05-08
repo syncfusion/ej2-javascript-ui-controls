@@ -3863,6 +3863,54 @@ describe('RTE CR issues ', () => {
         });
     });
   
+    describe('877787 - InsertHtml executeCommand deletes the entire content when we insert html by selection in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value:'testing the rich text editor',
+            });
+        });
+        it('insert html to selection', () => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0].childNodes[0], rteObj.inputElement.childNodes[0].childNodes[0], 12, 16)
+            rteObj.executeCommand('insertHTML', '<span>Test</span>');
+            expect(rteObj.inputElement.innerHTML === '<p>testing the <span>Test</span> text editor</p>').toBe(true);
+        });
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('875856 - Using indents on Numbered or Bulleted list turns into nested list in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: Element;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<ol style="list-style-image: none; list-style-type: upper-alpha;"><li>test1</li><li>test2</li><li>test3</li></ol>',
+                toolbarSettings: {
+                    items: ["Outdent",
+                        "Indent"]
+                }
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        it('indent and outdent', () => {
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement, rteObj.inputElement, 0, 1);
+            const item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Indent');
+            item.click();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement, rteObj.inputElement, 0, 1);
+            const item1: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Outdent');
+            item1.click();
+            expect(rteObj.inputElement.innerHTML === '<ol style="list-style-image: none; list-style-type: upper-alpha; margin-left: 20px;"><li>test1</li><li>test2</li><li>test3</li></ol>').toBe(true);
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+  
     describe('879054: InsertHtml executeCommand not inserts into the cursor position after inserting table in RichTextEditor ', () => {
         const selection: NodeSelection = new NodeSelection();
         let range: Range;
@@ -4003,6 +4051,51 @@ describe('RTE CR issues ', () => {
             destroy(rteObj);
             document.body.innerHTML = "";
             done();
+        });
+    });
+    describe("881308: Script error throws when inserting table into the RichTextEditor", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: '<p>test<a class="e-rte-anchor" href="http://link" title="http://link" target="_blank" aria-label="Open in new window">link</a></p><p>test</p><p><br></p>'
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+        it(' insert table ', (done) => {
+            rteObj.focusIn();
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            let node: Element[] = (rteObj as any).inputElement.querySelectorAll("p");
+            setCursorPoint(node[2], 0);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(function () {
+                let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("click", false, true);
+                target.dispatchEvent(clickEvent);
+                setTimeout(() => {
+                    expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
+                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
+                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
+                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
+                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
+                    target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+                    target.dispatchEvent(clickEvent);
+                    setTimeout(() => {
+                        let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                        expect(table.querySelectorAll('tr').length === 3).toBe(true);
+                        expect(table.querySelectorAll('td').length === 9).toBe(true);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
         });
     });
 });

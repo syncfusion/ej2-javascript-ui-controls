@@ -820,12 +820,13 @@ export class Edit implements IAction {
     public destroyForm(): void {
         this.destroyToolTip();
         const formObjects: FormValidator[] = [this.formObj, this.mFormObj, this.frFormObj, this.virtualFormObj];
+        const col: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel.filter((col: Column) => col.editTemplate);
         for (let i: number = 0; i < formObjects.length; i++) {
             if (formObjects[parseInt(i.toString(), 10)] && formObjects[parseInt(i.toString(), 10)].element
                 && !formObjects[parseInt(i.toString(), 10)].isDestroyed) {
                 formObjects[parseInt(i.toString(), 10)].destroy();
                 if (this.parent.isReact && this.parent.editSettings.mode === 'Dialog'
-                    && !isNullOrUndefined(this.parent.editSettings.template)) {
+                    && (!isNullOrUndefined(this.parent.editSettings.template) || col.length)) {
                     formObjects[parseInt(i.toString(), 10)].element.remove();
                 }
             }

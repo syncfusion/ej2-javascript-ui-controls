@@ -955,7 +955,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.closeMenu(null, e);
                     } else if (isOpen && isNullOrUndefined(ulIndex) && this.navIdx.length) {
                         this.closeMenu(null, e);
-                    } else if (isOpen && !this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed) {
+                    } else if (isOpen && !this.isMenu && isNullOrUndefined(ulIndex) && this.navIdx.length === 0 && !this.isMenusClosed) {
                         this.isMenusClosed = true;
                         this.closeMenu(0, e);
                     } else if (isOpen && this.isMenu && e && e.target &&
@@ -1606,7 +1606,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private menuHeaderClickHandler(e: MouseEvent | KeyboardEvent): void {
-        if (closest(e.target as Element, '.e-menu-wrapper').querySelector('ul.e-menu-parent').id !== this.element.id) {
+        const menuWrapper: Element = closest(e.target as Element, '.e-menu-wrapper');
+        if (menuWrapper && menuWrapper.querySelector('ul.e-menu-parent').id !== this.element.id) {
             return;
         }
         if (this.element.className.indexOf('e-hide-menu') > -1) {

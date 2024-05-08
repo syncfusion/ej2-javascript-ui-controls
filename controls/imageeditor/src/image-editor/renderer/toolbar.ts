@@ -651,27 +651,27 @@ export class ToolbarModule {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         const toolbarItems: ItemModel[] = [];
         if (isFrame) {
-            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('None') > -1)) {
+            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('None') > -1) || parent.toolbar.indexOf('Frame') > -1) {
                 toolbarItems.push({ id: id + '_none', prefixIcon: 'e-icons e-frame-none', cssClass: 'top-icon e-frame-none',
                     tooltipText: this.l10n.getConstant('None'), align: 'Center' });
             }
-            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Mat') > -1)) {
+            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Mat') > -1) || parent.toolbar.indexOf('Frame') > -1) {
                 toolbarItems.push({ id: id + '_mat', prefixIcon: 'e-icons e-frame-mat', cssClass: 'top-icon e-frame-mat',
                     tooltipText: this.l10n.getConstant('Mat'), align: 'Center' });
             }
-            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Bevel') > -1)) {
+            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Bevel') > -1) || parent.toolbar.indexOf('Frame') > -1) {
                 toolbarItems.push({ id: id + '_bevel', prefixIcon: 'e-icons e-frame-bevel', cssClass: 'top-icon e-frame-bevel',
                     tooltipText: this.l10n.getConstant('Bevel'), align: 'Center' });
             }
-            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Line') > -1)) {
+            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Line') > -1) || parent.toolbar.indexOf('Frame') > -1) {
                 toolbarItems.push({ id: id + '_line', prefixIcon: 'e-icons e-frame-line', cssClass: 'top-icon e-frame-line',
                     tooltipText: this.l10n.getConstant('Line'), align: 'Center' });
             }
-            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Inset') > -1)) {
+            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Inset') > -1) || parent.toolbar.indexOf('Frame') > -1) {
                 toolbarItems.push({ id: id + '_inset', prefixIcon: 'e-icons e-frame-inset', cssClass: 'top-icon e-frame-inset',
                     tooltipText: this.l10n.getConstant('Inset'), align: 'Center' });
             }
-            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Hook') > -1)) {
+            if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Hook') > -1) || parent.toolbar.indexOf('Frame') > -1) {
                 toolbarItems.push({ id: id + '_hook', prefixIcon: 'e-icons e-frame-hook', cssClass: 'top-icon e-frame-hook',
                     tooltipText: this.l10n.getConstant('Hook'), align: 'Center' });
             }
@@ -1110,7 +1110,7 @@ export class ToolbarModule {
     private renderAnnotationBtn(isContextualToolbar?: boolean): void {
         const parent: ImageEditor = this.parent; let isCustomized: boolean = false;
         const items: DropDownButtonItemModel[] = []; const id: string = parent.element.id;
-        const defItems: string[] = ['Ellipse', 'Arrow', 'Line', 'Rectangle', 'Pen', 'Path', 'Text'];
+        const defItems: string[] = ['Ellipse', 'Arrow', 'Line', 'Rectangle', 'Pen', 'Path', 'Text', 'Image'];
         if (parent.toolbar) {
             for (let i: number = 0; i < defItems.length; i++) {
                 if (parent.toolbar.indexOf(defItems[i as number]) !== -1) {
@@ -1140,7 +1140,7 @@ export class ToolbarModule {
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Text') > -1)) {
             items.push({ text: this.l10n.getConstant('Text'), id: 'text', iconCss: 'e-icons e-add-text' });
         }
-        if (isNullOrUndefined(parent.toolbar) || (!isNullOrUndefined(parent.toolbar) && parent.toolbar.indexOf('Image') > -1)) {
+        if (isNullOrUndefined(parent.toolbar) || !isCustomized  || (parent.toolbar && parent.toolbar.indexOf('Image') > -1)) {
             items.push({ text: this.l10n.getConstant('Image'), id: 'image', iconCss: 'e-icons e-image' });
         }
         const obj: Object = {freehandDrawSelectedId: null };

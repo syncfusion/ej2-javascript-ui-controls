@@ -534,8 +534,8 @@
   }
 
   .e-dropdown-popup.e-ie-crop-ddb-popup ul {
-    height: 250px;
-    overflow-y: scroll;
+    max-height: 250px;
+    overflow-y: auto;
   }
 
   .e-dropdown-popup.e-ie-ddb-popup {

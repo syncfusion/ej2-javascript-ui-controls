@@ -192,7 +192,7 @@ describe('Chart', () => {
                 let xAxisLabelCollection: HTMLElement = document.getElementById('containerAxisLabels0');
                 expect(xAxisLabelCollection.childNodes.length == 3).toBe(true);
                 let yAxisLabelCollection: HTMLElement = document.getElementById('containerAxisLabels1');
-                expect(yAxisLabelCollection.childNodes.length == 8).toBe(true);
+                expect(yAxisLabelCollection.childNodes.length == 9).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

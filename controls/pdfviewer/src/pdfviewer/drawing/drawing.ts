@@ -1209,7 +1209,7 @@ export class Drawing {
                 options.stroke = borderColor;
                 options.strokeWidth = currentSelector.selectionBorderThickness === 1 ? 1 : annotationSelector.selectionBorderThickness;
                 // eslint-disable-next-line max-len
-                let lineDash: number[] = (isNullOrUndefined(currentSelector.selectorLineDashArray) || currentSelector.selectorLineDashArray.length === 0) ? [6, 3] : currentSelector.selectorLineDashArray;
+                let lineDash: number[] = (isNullOrUndefined(annotationSelector.selectorLineDashArray) || annotationSelector.selectorLineDashArray.length === 0) ? [6, 3] : annotationSelector.selectorLineDashArray;
                 if (lineDash.length > 2) {
                     lineDash = [lineDash[0], lineDash[1]];
                 }
@@ -1219,7 +1219,7 @@ export class Drawing {
                 options.stroke = borderColor;
                 options.strokeWidth = currentSelector.selectionBorderThickness === 1 ? 1 : currentSelector.selectionBorderThickness;
                 // eslint-disable-next-line max-len
-                let lineDash: number[] = (!isNullOrUndefined(currentSelector.selectorLineDashArray) && (currentSelector.selectorLineDashArray.length === 0)) ? [6, 3] : currentSelector.selectorLineDashArray;
+                let lineDash: number[] = (isNullOrUndefined(currentSelector.selectorLineDashArray) || (currentSelector.selectorLineDashArray.length === 0)) ? [6, 3] : currentSelector.selectorLineDashArray;
                 if (!isNullOrUndefined(lineDash) && lineDash.length > 2) {
                     lineDash = [lineDash[0], lineDash[1]];
                 }

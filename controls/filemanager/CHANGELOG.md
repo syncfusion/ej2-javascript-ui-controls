@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.3 (2024-05-08)
+
+### FileManager
+
+#### Breaking Changes
+
+- The [`isPrimayKey`](https://ej2.syncfusion.com/documentation/api/file-manager/columnModel/#isprimarykey) property in the File Manager component `detailsViewSettings` has been marked as deprecated. It will continue to function as before, but it is recommended to avoid using it in new code as this usage is handled internally without declaring it in sample.
+
 ## 25.1.40 (2024-04-16)
 
 ### FileManager

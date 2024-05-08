@@ -6,7 +6,7 @@ import { IHtmlKeyboardEvent } from './../../editor-manager/base/interface';
 import { KeyboardEventArgs } from './../../rich-text-editor/actions/keyboard';
 import * as EVENTS from './../../common/constant';
 import { IUndoCallBack } from '../../common/interface';
-import { isIDevice, setEditFrameFocus } from '../../common/util';
+import { isIDevice, scrollToCursor, setEditFrameFocus } from '../../common/util';
 /**
  * `Undo` module is used to handle undo actions.
  */
@@ -195,6 +195,7 @@ export class UndoRedoManager {
             this.parent.editableElement.innerHTML = '';
             this.parent.editableElement.appendChild(removedContent.cloneNode(true));
             (this.parent.editableElement as HTMLElement).focus();
+            scrollToCursor(this.parent.currentDocument, this.parent.editableElement as HTMLElement);
             if (isIDevice()) {
                 setEditFrameFocus(this.parent.editableElement, (e as IHtmlSubCommands).selector);
             }
@@ -227,6 +228,7 @@ export class UndoRedoManager {
             this.parent.editableElement.innerHTML = '';
             this.parent.editableElement.appendChild(addedContent.cloneNode(true));
             (this.parent.editableElement as HTMLElement).focus();
+            scrollToCursor(this.parent.currentDocument, this.parent.editableElement as HTMLElement);
             if (isIDevice()) {
                 setEditFrameFocus(this.parent.editableElement, (e as IHtmlSubCommands).selector);
             }

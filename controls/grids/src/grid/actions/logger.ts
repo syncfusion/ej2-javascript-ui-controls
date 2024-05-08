@@ -170,15 +170,13 @@ export const detailLists: {[key: string]: ItemDetails} = {
             switch (name) {
             case 'freeze':
                 opt = {
-                    success: parent.allowGrouping || !isUndefined(parent.detailTemplate) || !isUndefined(parent.childGrid)
-                    || !isUndefined(parent.rowTemplate) || parent.enableVirtualization,
+                    success: !isUndefined(parent.detailTemplate) || !isUndefined(parent.childGrid),
                     options: { name: 'freeze' }
                 };
                 break;
             case 'virtualization':
                 opt = {
-                    success: !isUndefined(parent.detailTemplate) || !isUndefined(parent.childGrid) || parent.frozenRows !== 0
-                    || parent.frozenColumns !== 0,
+                    success: !isUndefined(parent.detailTemplate) || !isUndefined(parent.childGrid),
                     options: { name: 'virtualization' }
                 };
                 break;
@@ -194,15 +192,11 @@ export const detailLists: {[key: string]: ItemDetails} = {
             switch (name) {
             case 'freeze':
                 opt = 'Frozen rows and columns do not support the following features:\n' +
-                '* Virtualization\n' +
-                '* Row Template\n' +
                 '* Details Template\n' +
-                '* Hierarchy Grid\n' +
-                '* Grouping';
+                '* Hierarchy Grid\n';
                 break;
             case 'virtualization':
                 opt = 'Virtualization does not support the following features.\n' +
-                '* Freeze rows and columns.\n' +
                 '* Details Template.\n' +
                 '* Hierarchy Grid.\n';
                 break;

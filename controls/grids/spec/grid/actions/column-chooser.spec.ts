@@ -1030,5 +1030,4 @@ describe('Column chooser module', () => {
             gridObj = null;
         });
     });
-
 });

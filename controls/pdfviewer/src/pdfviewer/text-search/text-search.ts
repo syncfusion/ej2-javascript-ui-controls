@@ -1536,10 +1536,16 @@ export class TextSearch {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, this.pdfViewer.serverActionSettings.renderTexts);
         };
         if(this.pdfViewerBase.clientSideRendering){
-            this.pdfViewer.pdfRendererModule.getDocumentText(jsonObject).then((data:any)=>{
-                proxy.pdfTextSearchRequestOnSuccess(data, proxy, startIndex, endIndex);
-            });
+            let requestType: string = 'pdfTextSearchRequest';
+            this.pdfViewer.pdfRendererModule.getDocumentText(jsonObject, requestType);
         }
+    }
+
+    /**
+     * @private
+     */
+    public pdfTextSearchRequestSuccess(data: any, startIndex: number, endIndex: number){
+        this.pdfTextSearchRequestOnSuccess(data, this, startIndex, endIndex);
     }
 
     private pdfTextSearchRequestOnSuccess(data: any, proxy: TextSearch, startIndex: number, endIndex: number){

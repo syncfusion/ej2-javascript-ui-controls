@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 25.2.3 (2024-05-08)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I585515` - The issue with "script error throws when custom toolbar with frame option in image editor" has been resolved.
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "dropdown button `popup` has empty space when using toolbar property in ImageEditor" has been resolved.
+
+## 25.1.42 (2024-04-30)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I584239` - The issue with "Add Image dropdown item not displayed while using custom toolbar property as annotate" has been resolved.
+
 ## 25.1.40 (2024-04-16)
 
 ### Image Editor

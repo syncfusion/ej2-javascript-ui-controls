@@ -548,7 +548,10 @@ export class Link {
         if (isIDevice()) {
             (this as NotifyArgs).selection.restore();
         } else {
+            const x: number = window.scrollX;
+            const y: number = window.scrollY;
             ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
+            window.scrollTo(x,y);
         }
     }
 

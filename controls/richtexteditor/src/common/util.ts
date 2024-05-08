@@ -114,6 +114,9 @@ export function updateTextNode(value: string, enterAction?: string): string {
                 } else if (tableElm[i as number].classList.contains('e-rte-paste-onenote-table')) {
                     tableElm[i as number].classList.remove('e-rte-paste-onenote-table');
                     continue;
+                } else if (tableElm[i as number].classList.contains('e-rte-paste-html-table')) {
+                    tableElm[i as number].classList.remove('e-rte-paste-html-table');
+                    continue;
                 }
             }
         }
@@ -221,6 +224,53 @@ export function nestedListCleanUp(range: Range): void {
                     item.style.listStyleType = "none";
                 }
             });
+        }
+    }
+}
+
+/**
+ * Method to scroll the content to the cursor position
+ *
+ * @param {Document} document - specifies the document.
+ * @param {HTMLElement | HTMLBodyElement} inputElement - specifies the input element.
+ * @returns {void}
+ */
+export function scrollToCursor(
+    document: Document, inputElement: HTMLElement | HTMLBodyElement) : void {
+    const rootElement: HTMLElement = inputElement.nodeName === 'BODY' ?
+        inputElement.ownerDocument.defaultView.frameElement.closest('.e-richtexteditor') as HTMLElement :
+        inputElement.closest('.e-richtexteditor') as HTMLElement;
+    const height: string = rootElement.style.height;
+    if (document.getSelection().rangeCount === 0) {
+        return;
+    }
+    const range: Range = document.getSelection().getRangeAt(0);
+    const finalFocusElement: HTMLElement = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement as HTMLElement :
+        range.startContainer as HTMLElement;
+    const rect: DOMRect = finalFocusElement.getBoundingClientRect() as DOMRect;
+    const cursorTop: number = rect.top;
+    const cursorBottom: number = rect.bottom;
+    const rootRect : DOMRect = rootElement.getBoundingClientRect() as DOMRect;
+    const hasMargin: boolean = rootElement.querySelectorAll('.e-count-enabled, .e-resize-enabled').length > 0;
+    if (inputElement.nodeName === 'BODY') {
+        if (height === 'auto') {
+            if (window.innerHeight < cursorTop) {
+                finalFocusElement.scrollIntoView(false);
+            }
+        } else {
+            if (cursorTop > inputElement.getBoundingClientRect().height) {
+                finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+        }
+    } else {
+        if (height === 'auto') {
+            if (window.innerHeight < cursorTop) {
+                finalFocusElement.scrollIntoView({ block: 'end', inline: 'nearest' });
+            }
+        } else {
+            if (cursorBottom > rootRect.bottom) {
+                rootElement.querySelector('.e-rte-content').scrollTop += (cursorBottom - rootRect.bottom) + (hasMargin ? 20 : 0);
+            }
         }
     }
 }

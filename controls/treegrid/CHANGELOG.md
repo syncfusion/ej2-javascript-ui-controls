@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.42 (2024-04-30)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I582383` - Fixed script error that occurred when reloading the page while using persistence along with frozen column in treegrid.
+
 ## 25.1.41 (2024-04-23)
 
 ### Tree Grid

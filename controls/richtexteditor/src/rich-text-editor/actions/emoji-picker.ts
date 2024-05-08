@@ -787,7 +787,7 @@ export class EmojiPicker {
         const popupHeight: number = 330;
         let popupTop: number = cursorTop;
         const popupLeft: number = cursorLeft + rect.width;
-        if (rteEle.getBoundingClientRect().top < 0) {
+        if (rteEle.getBoundingClientRect().top < 0 && !this.parent.inlineMode.enable) {
             popupTop = popupTop + rteContent.getBoundingClientRect().top - toolbarHeight;
         }
         if (rect.top < popupHeight) {

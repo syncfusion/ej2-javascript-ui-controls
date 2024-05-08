@@ -146,4 +146,10 @@
       @include bigger-rtl-blank-icon;
     }
   }
+
+  .e-contextmenu-wrapper .e-menu-item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }

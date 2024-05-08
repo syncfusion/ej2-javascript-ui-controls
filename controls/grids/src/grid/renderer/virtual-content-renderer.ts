@@ -795,6 +795,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     private setVirtualPageQuery(args: { query: Query, skipPage: boolean }): void {
         const row: Element = this.parent.getContent().querySelector('.e-row');
+        if (this.requestType === 'virtualscroll' && this.vgenerator.currentInfo.blockIndexes) {
+            this.vgenerator.currentInfo = {};
+        }
         if (row && this.parent.isManualRefresh && this.currentInfo.blockIndexes && this.currentInfo.blockIndexes.length === 3) {
             this.vgenerator.startIndex = parseInt(row.getAttribute('data-rowindex'), 10);
             this.vgenerator.currentInfo = extend({}, this.currentInfo);

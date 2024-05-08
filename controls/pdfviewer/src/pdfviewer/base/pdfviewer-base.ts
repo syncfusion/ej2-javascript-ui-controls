@@ -5846,7 +5846,7 @@ export class PdfViewerBase {
                 if (isAnnotationRendered) {
                     // eslint-disable-next-line max-len
                     this.pdfViewer.annotationModule.renderAnnotations(pageIndex, data.shapeAnnotation, data.measureShapeAnnotation, data.textMarkupAnnotation, null, true);
-                } else {
+                } else if (!isNullOrUndefined(data.shapeAnnotation) || !isNullOrUndefined(data.measureShapeAnnotation) || !isNullOrUndefined(data.textMarkupAnnotation) || this.pdfViewer.annotationCollection.length > 0) {
                     // eslint-disable-next-line max-len
                     this.pdfViewer.annotationModule.renderAnnotations(pageIndex, data.shapeAnnotation, data.measureShapeAnnotation, data.textMarkupAnnotation);
                 }
@@ -7520,9 +7520,8 @@ export class PdfViewerBase {
                                         proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderTexts);
                                     };
                                     if (this.clientSideRendering) {
-                                        this.pdfViewer.pdfRendererModule.getDocumentText(jsonObject).then((data: any) => {
-                                            proxy.pageTextRequestOnSuccess(data, proxy, pageIndex);
-                                        });
+                                        let requestType: string = 'pageTextRequest';
+                                        this.pdfViewer.pdfRendererModule.getDocumentText(jsonObject, requestType);
                                     }
                                 }
 
@@ -7807,6 +7806,13 @@ export class PdfViewerBase {
         }
     }
 
+    /**
+    * @private
+    */
+    public pageTextRequestSuccess(data: any, pageIndex: number): void {
+        this.pageTextRequestOnSuccess(data, this , pageIndex);
+    }
+    
     private pageTextRequestOnSuccess(data: any, proxy: PdfViewerBase, pageIndex: number): void {
         while (typeof data !== 'object') {
             data = JSON.parse(data);
@@ -7874,10 +7880,16 @@ export class PdfViewerBase {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderTexts);
         };
         if (this.clientSideRendering) {
-            this.pdfViewer.pdfRendererModule.getDocumentText(jsonObject).then((data: any) => {
-                proxy.textRequestOnSuccess(data, proxy, pageIndex, annotationObject);
-            });
+            let requestType: string = 'textRequest';
+            this.pdfViewer.pdfRendererModule.getDocumentText(jsonObject, requestType, annotationObject);
         }
+    }
+
+    /**
+    * @private
+    */
+    public textRequestSuccess(data: any, pageIndex: number, annotationObject: any): void {
+        this.textRequestOnSuccess(data, this, pageIndex, annotationObject);
     }
 
     private textRequestOnSuccess(data: any, proxy: PdfViewerBase, pageIndex: number, annotationObject: any): void {

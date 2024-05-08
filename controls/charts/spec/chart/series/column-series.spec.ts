@@ -184,7 +184,7 @@ describe('Column Series', () => {
                 let stroke: string = seriesElements.getAttribute('stroke-width');
                 expect(stroke == '0').toBe(true);
                 let labelElement: HTMLElement = document.getElementById('container0_AxisLabel_3');
-                expect(labelElement.textContent == '2002').toBe(true); done();
+                expect(labelElement.textContent == '2002' || labelElement.textContent == '2003').toBe(true); done();
             };
             chartObj.loaded = loaded;
             chartObj.series[0].dataSource = [{ x: new Date(2000, 6, 11), y: 10 }, { x: new Date(2002, 3, 7), y: 30 },

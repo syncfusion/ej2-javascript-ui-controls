@@ -131,8 +131,7 @@ export class DetailsView {
                 allowResizing: this.parent.detailsViewSettings.columnResizing,
                 selectionSettings: {
                     type: this.parent.allowMultiSelection ? 'Multiple' : 'Single',
-                    checkboxMode: 'ResetOnRowClick',
-                    persistSelection: (this.parent.enableVirtualization) ? true : false
+                    checkboxMode: 'ResetOnRowClick'
                 },
                 enableRtl: this.parent.enableRtl,
                 pageSettings: { pageSize: 20 },

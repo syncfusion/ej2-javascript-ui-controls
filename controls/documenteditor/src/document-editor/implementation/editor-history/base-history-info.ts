@@ -637,6 +637,11 @@ export class BaseHistoryInfo {
             this.endPosition = undefined;
             // Use this property to skip deletion if already selected content deleted case.
             let isRemoveContent: boolean = false;
+            // Use this property to delete table or cell based on history action.
+            let isDeletecell: boolean = false;
+            if (this.action === 'DeleteCells') {
+                isDeletecell = true;
+            }
             if (this.endRevisionLogicalIndex && deletedNodes.length > 0) {
                 let currentPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(this.endRevisionLogicalIndex);
                 if (this.editorHistory.isUndoing || (this.editorHistory.isRedoing && insertTextPosition.isAtSamePosition(endTextPosition))) {
@@ -648,7 +653,7 @@ export class BaseHistoryInfo {
                     this.endIndex += this.paraInclude(currentPosition);
                 }
                 if (this.editorHistory.isUndoing || (this.editorHistory.isRedoing && !this.owner.selectionModule.isEmpty && deletedNodes.length > 0)) {
-                    this.owner.editorModule.deleteSelectedContents(sel, true);
+                    this.owner.editorModule.deleteSelectedContents(sel, true, isDeletecell);
                     isRemoveContent = true;
                 }
             }
@@ -710,11 +715,6 @@ export class BaseHistoryInfo {
             let isRedoAction: boolean = (this.editorHistory.isRedoing && !isRemoveContent);
             isRemoveContent = this.lastElementRevision ? false : isRemoveContent;
             this.revertModifiedNodes(deletedNodes, isRedoAction, isForwardSelection ? start : end, start === end, isForwardSelection ? end : start);
-            // Use this property to delete table or cell based on history action.
-            let isDeletecell: boolean = false;
-            if (this.action === 'DeleteCells') {
-                isDeletecell = true;
-            }
             if (isRemoveContent) {
                 this.removeContent(insertTextPosition, endTextPosition, isDeletecell);
             }
@@ -725,7 +725,7 @@ export class BaseHistoryInfo {
         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'Reject All' || this.editorHistory.currentHistoryInfo.action === 'Accept All' || this.editorHistory.currentHistoryInfo.action === 'Paste')) {
             updateSelection = true;
         }
-        if (!this.owner.trackChangesPane.isTrackingPageBreak && ((this.editorHistory.isUndoing || this.endRevisionLogicalIndex || this.action === 'RemoveRowTrack' || updateSelection) && isNullOrUndefined(this.editorHistory.currentHistoryInfo) || updateSelection) ||
+        if (this.action !== 'TrackingPageBreak' && ((this.editorHistory.isUndoing || this.endRevisionLogicalIndex || this.action === 'RemoveRowTrack' || updateSelection) && isNullOrUndefined(this.editorHistory.currentHistoryInfo) || updateSelection) ||
             ((this.action === 'InsertRowAbove' || this.action === 'Borders' || this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft' || this.action === 'InsertColumnRight' || this.action === 'Accept Change' || this.action === 'PasteColumn' || this.action === 'PasteRow' || this.action === 'PasteOverwrite' || this.action === 'PasteNested') && (this.editorHistory.isRedoing
                 || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
             if (this.action === 'RemoveRowTrack' && this.editorHistory.isRedoing) {
@@ -1190,7 +1190,14 @@ export class BaseHistoryInfo {
         if (this.editorHistory.isUndoing) {
             while (currentPara !== endPara) {
                 isSplittedWidget = false;
-                this.owner.editorModule.applyRevisionForCurrentPara(currentPara, startoffset, currentPara.getLength(), id, true);
+                let endOffset = 0;
+                if (!isNullOrUndefined(currentPara.previousSplitWidget)) {
+                    startoffset = (currentPara.previousSplitWidget as ParagraphWidget).getLength() + 1;
+                    endOffset = (currentPara.previousSplitWidget as ParagraphWidget).getLength() + currentPara.getLength();
+                } else {
+                    endOffset = currentPara.getLength();
+                }
+                this.owner.editorModule.applyRevisionForCurrentPara(currentPara, startoffset, endOffset, id, true);
                 //Correct the condition to get next widget instead of next widget of next splitted widget
                 currentPara = this.documentHelper.selection.getNextParagraphBlock(currentPara as BlockWidget);
                 if (!isNullOrUndefined(currentPara) && !isNullOrUndefined(currentPara.previousRenderedWidget) && currentPara.previousRenderedWidget instanceof ParagraphWidget && currentPara.previousRenderedWidget.nextSplitWidget && currentPara === endPara) {

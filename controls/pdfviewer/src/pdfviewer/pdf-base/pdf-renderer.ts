@@ -1,6 +1,6 @@
 import { PageRenderer, FormFieldsBase, AnnotationRenderer, PdfRenderedFields, SignatureBase, BookmarkStyles, BookmarkDestination, BookmarkBase, AnnotBounds } from './index';
 import { Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DataFormat, PdfAnnotationExportSettings, PdfBookmark, PdfBookmarkBase, PdfDocument, PdfPage, PdfRotationAngle, PdfTextStyle, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfDestination, PdfPermissionFlag,PdfFormFieldExportSettings,_bytesToString, _encode, PdfPageSettings } from '@syncfusion/ej2-pdf';
+import { DataFormat, PdfAnnotationExportSettings, PdfBookmark, PdfBookmarkBase, PdfDocument, PdfPage, PdfRotationAngle, PdfTextStyle, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfDestination, PdfPermissionFlag,PdfFormFieldExportSettings,_bytesToString, _encode, PdfPageSettings, PdfSignatureField, PdfForm } from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase } from '../index';
 import { Rect, Size } from '@syncfusion/ej2-drawings';
 
@@ -36,6 +36,7 @@ export class PdfRenderer {
     m_Signature: SignatureBase;
     m_annotationRenderer: AnnotationRenderer;
     private annotationDetailCollection: { [key: string]: Annotations; } = {};
+    private documentTextCollection: {[key: number]: PageTextData}[] = [];
     pageSizes: { [key: string]: Size; } = {};
     private m_zoomFactor: number;
     private m_isCompletePageSizeNotReceieved: boolean = true;
@@ -178,9 +179,23 @@ export class PdfRenderer {
             this.m_formFields.GetFormFields();
             pdfRenderedFormFields = this.m_formFields.PdfRenderedFormFields;
         }
-        if(this.m_formFields.m_isDigitalSignaturePresent){
-            this.digitialByteArray = this.loadedDocument.save();
-       }
+        if (this.m_formFields.m_isDigitalSignaturePresent) {
+            let digitalSignatureDoc: PdfDocument = new PdfDocument(documentData, '');
+            let loadedForm: PdfForm = digitalSignatureDoc.form;
+            if (!isNullOrUndefined(loadedForm) && !isNullOrUndefined(loadedForm._fields)) {
+                for (let i: number = 0; i < loadedForm.count; i++) {
+                    if (loadedForm.fieldAt(i) instanceof PdfSignatureField) {
+                        let signatureField: PdfSignatureField = loadedForm.fieldAt(i) as PdfSignatureField;
+                        if (signatureField.isSigned && this.m_formFields.showDigitalSignatureAppearance) {
+                            signatureField.flatten = true;
+                            this.pdfViewerBase.updateDocumentEditedProperty(true);
+                        }
+                    }
+                }
+            }
+            this.digitialByteArray = digitalSignatureDoc.save();
+            digitalSignatureDoc.destroy();
+        }
         // eslint-disable-next-line max-len
         return { pageCount: this.pageCount, pageSizes: this.pageSizes, uniqueId: documentId, PdfRenderedFormFields: pdfRenderedFormFields, RestrictionSummary : this.restrictionList, documentData: documentData, isDigitalSignaturePresent : this.m_formFields.m_isDigitalSignaturePresent, digitialSignatureFile: this.digitialByteArray? _encode(this.digitialByteArray): "", isTaggedPdf: isTaggedPdf, pageRotation: this.pageRotationCollection };
     }
@@ -1138,10 +1153,11 @@ export class PdfRenderer {
     }
 
     // eslint-disable-next-line max-len
-    private textExtraction(pageIndex: number, isLayout: boolean, isRenderText?: boolean): Promise<any> {
+    private textExtraction(pageIndex: number, isLayout: boolean, isRenderText?: boolean, jsonObject?: any, requestType?: string, annotationObject?: any): Promise<any> {
+        this.documentTextCollection = [];
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner)) {
-                this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'extractText', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: true });
+                this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'extractText', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: true, isRenderText: isRenderText, jsonObject: jsonObject, requestType: requestType, annotationObject: annotationObject });
             }
             else {
                 resolve(null);
@@ -1155,96 +1171,131 @@ export class PdfRenderer {
     public textExtractionOnmessage(event: any) {
         let extractedText: string = '';
         let textDataCollection: TextData[] = [];
-        return new Promise((resolve: Function, reject: Function) => {
-            if (event.data.message === 'textExtracted') {
-                const characterDetails: any = event.data.characterBounds;
-                for (let i: number = 0; i < characterDetails.length; i++) {
-                    if (!event.data.isLayout && (characterDetails[parseInt(i.toString(), 10)].Text as string).indexOf('\r') !== -1) {
-                        extractedText += '';
-                    }
-                    else {
-                        extractedText += characterDetails[parseInt(i.toString(), 10)].Text;
-                    }
-                    const cropBox: number[] = this.loadedDocument.getPage(event.data.pageIndex).cropBox;
-                    // eslint-disable-next-line max-len
-                    const bound: AnnotBounds = new AnnotBounds(this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].X), this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Y + cropBox[1]), this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Width), this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Height));
-                    textDataCollection.push(new TextData(characterDetails[parseInt(i.toString(), 10)].Text, bound));
+        if (event.data.message === 'textExtracted') {
+            const characterDetails: any = event.data.characterBounds;
+            for (let i: number = 0; i < characterDetails.length; i++) {
+                if (!event.data.isLayout && (characterDetails[parseInt(i.toString(), 10)].Text as string).indexOf('\r') !== -1) {
+                    extractedText += '';
                 }
-                let result: any = {};
-                if (event.data.isRenderText) {
-                    result.extractedTextDetails = { textDataCollection: textDataCollection, extractedText: extractedText };
-                    result.textBounds = event.data.textBounds;
-                    result.textContent = event.data.textContent;
-                    result.rotation = event.data.rotation;
-                    result.pageText = event.data.pageText;
-                    result.characterBounds = event.data.characterBounds;
+                else {
+                    extractedText += characterDetails[parseInt(i.toString(), 10)].Text;
                 }
-                else{
-                    result = { textDataCollection: textDataCollection, extractedText: extractedText };
-                }
-                resolve(result);
+                const cropBox: number[] = this.loadedDocument.getPage(event.data.pageIndex).cropBox;
+                // eslint-disable-next-line max-len
+                const bound: AnnotBounds = new AnnotBounds(this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].X), this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Y + cropBox[1]), this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Width), this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Height));
+                textDataCollection.push(new TextData(characterDetails[parseInt(i.toString(), 10)].Text, bound));
             }
-        });
+            let result: any = {};
+            if (event.data.isRenderText) {
+                result.extractedTextDetails = { textDataCollection: textDataCollection, extractedText: extractedText };
+                result.textBounds = event.data.textBounds;
+                result.textContent = event.data.textContent;
+                result.rotation = event.data.rotation;
+                result.pageText = event.data.pageText;
+                result.characterBounds = event.data.characterBounds;
+                result.isRenderText = event.data.isRenderText;
+                result.pageIndex = event.data.pageIndex;
+                result.jsonObject = event.data.jsonObject;
+                result.requestType = event.data.requestType;
+                result.annotationObject = event.data.annotationObject;
+            }
+            else {
+                result = { textDataCollection: textDataCollection, extractedText: extractedText, isRenderText: event.data.isRenderText, pageIndex: event.data.pageIndex, jsonObject: event.data.jsonObject, requestType: event.data.requestType, annotationObject: event.data.annotationObject };
+            }
+            let pageTextDataCollection: {[key: number]: PageTextData} = this.getPageTextDataCollection(result);
+            let documentTextCollection = this.getDocumentTextCollection(pageTextDataCollection);
+            if(!isNullOrUndefined(documentTextCollection)) {
+                if (documentTextCollection.requestType === 'pageTextRequest') {
+                    this.pdfViewerBase.pageTextRequestSuccess(documentTextCollection, documentTextCollection.pageIndex)
+                }
+                else if (documentTextCollection.requestType === 'textRequest') {
+                    this.pdfViewerBase.textRequestSuccess(documentTextCollection, documentTextCollection.pageIndex,documentTextCollection.annotationObject)
+                }
+                else if (documentTextCollection.requestType === 'pdfTextSearchRequest') {
+                    this.pdfViewer.textSearchModule.pdfTextSearchRequestSuccess(documentTextCollection, documentTextCollection.pageStartIndex, documentTextCollection.pageEndIndex);
+                }
+            }
+        }
     }
 
+    /**
+     * @private
+     */
+    public getPageTextDataCollection(textData: any): any{
+        let pageTextDataCollection: {[key: number]: PageTextData} = {};
+        if (!isNullOrUndefined(textData)){
+            let textDetails : any = textData;
+            if(textData.isRenderText){
+                textDetails = textData.extractedTextDetails;
+            }
+            // eslint-disable-next-line security/detect-object-injection
+            pageTextDataCollection[textData.pageIndex] = new PageTextData( new SizeBase(this.getPageSize(textData.pageIndex).width, this.getPageSize(textData.pageIndex).height), textDetails.textDataCollection, textDetails.extractedText);
+            if (textData.isRenderText){
+                // eslint-disable-next-line max-len
+                return({pageTextDataCollection: pageTextDataCollection, textBounds: textData.textBounds, textContent: textData.textContent, rotation: textData.rotation, characterBounds: textData.characterBounds, jsonObject: textData.jsonObject, requestType: textData.requestType, pageIndex: textData.pageIndex, annotationObject: textData.annotationObject});
+            }
+            else{
+                return(pageTextDataCollection);
+            }
+        }
+        else{
+            return(null);
+        }
+    }
+
+    /**
+     * @private
+     */
+    public getDocumentTextCollection(value: any): any {
+    let pageStartIndex: number = !isNullOrUndefined(value.jsonObject.pageStartIndex) ? value.jsonObject.pageStartIndex : value.jsonObject.pageIndex;
+    let pageEndIndex: number = !isNullOrUndefined(value.jsonObject.pageEndIndex) ? value.jsonObject.pageEndIndex : value.jsonObject.pageIndex + 1;
+    let pageCount: number = this.loadedDocument.pageCount;
+        if(!isNullOrUndefined(value)) {
+            this.documentTextCollection.push(value.pageTextDataCollection);
+            if (this.documentTextCollection.length === pageEndIndex - pageStartIndex){
+                return({ uniqueId : value.jsonObject.uniqueId,
+                    documentTextCollection : this.documentTextCollection,
+                    pageStartIndex : pageStartIndex,
+                    pageEndIndex : pageEndIndex,
+                    textBounds : value.textBounds,
+                    textContent : value.textContent,
+                    rotation : value.rotation,
+                    characterBounds : value.characterBounds,
+                    requestType: value.requestType,
+                    pageIndex: value.pageIndex,
+                    annotationObject: value.annotationObject 
+                });
+            }
+        }
+        else {
+            return(null);
+        }
+    }
+
+    /**
+     * @private
+     */
     public extractTextWithPageSize(pageIndex: number): Promise<{[key: number]: PageTextData}>{
         return new Promise((resolve: Function, reject: Function) => {
             resolve(this.extractTextDetailsWithPageSize(pageIndex));
         });
     }
 
-    private extractTextDetailsWithPageSize(pageIndex: number, isRenderText? : boolean): Promise<any>{
-        let pageTextDataCollection: {[key: number]: PageTextData} = {};
-        return new Promise((resolve: Function, reject: Function) => {
-            // eslint-disable-next-line max-len
-            this.textExtraction(pageIndex, true, isRenderText).then((textData: any) => {
-                if (!isNullOrUndefined(textData)){
-                    let textDetails : any = textData;
-                    if(isRenderText){
-                        textDetails = textData.extractedTextDetails;
-                    }
-                    // eslint-disable-next-line security/detect-object-injection
-                    pageTextDataCollection[pageIndex] = new PageTextData( new SizeBase(this.getPageSize(pageIndex).width, this.getPageSize(pageIndex).height), textDetails.textDataCollection, textDetails.extractedText);
-                    if (isRenderText){
-                        // eslint-disable-next-line max-len
-                        resolve({pageTextDataCollection: pageTextDataCollection, textBounds: textData.textBounds, textContent: textData.textContent, rotation: textData.rotation, characterBounds: textData.characterBounds});
-                    }
-                    else{
-                        resolve(pageTextDataCollection);
-                    }
-                }
-                else{
-                    resolve(null);
-                }
-            });
-        });
+    private extractTextDetailsWithPageSize(pageIndex: number, isRenderText?: boolean, jsonObject?: any, requestType?: string, annotationObject?: any): void {
+        let pageTextDataCollection: { [key: number]: PageTextData } = {};
+        this.textExtraction(pageIndex, true, isRenderText, jsonObject, requestType, annotationObject);
     }
 
     /**
      * @private
      */
-    public getDocumentText(jsonObject: any): Promise<any>{
+    public getDocumentText(jsonObject: any, requestType?: string, annotationObject?: any): void {
         let pageStartIndex: number = !isNullOrUndefined(jsonObject.pageStartIndex) ? jsonObject.pageStartIndex : jsonObject.pageIndex;
         let pageEndIndex: number = !isNullOrUndefined(jsonObject.pageEndIndex) ? jsonObject.pageEndIndex : jsonObject.pageIndex + 1;
         let pageCount: number = this.loadedDocument.pageCount;
-        let documentTextCollection: {[key: number]: PageTextData}[] = [];
-        return new Promise((resolve: Function, reject: Function) => {
-            for (let pageIndex: number = pageStartIndex; pageIndex < pageEndIndex; pageIndex++) {
-                this.extractTextDetailsWithPageSize(pageIndex, true).then((value: any) => {
-                    documentTextCollection.push(value.pageTextDataCollection);
-                    if (documentTextCollection.length === pageEndIndex - pageStartIndex){
-                        resolve({ uniqueId : jsonObject.uniqueId,
-                            documentTextCollection : documentTextCollection,
-                            pageStartIndex : pageStartIndex,
-                            pageEndIndex : pageEndIndex,
-                            textBounds : value.textBounds,
-                            textContent : value.textContent,
-                            rotation : value.rotation,
-                            characterBounds : value.characterBounds });
-                    }
-                });
-            }
-        });
+        for (let pageIndex: number = pageStartIndex; pageIndex < pageEndIndex; pageIndex++) {
+            this.extractTextDetailsWithPageSize(pageIndex, true, jsonObject, requestType, annotationObject);
+        }
     }
 }
 

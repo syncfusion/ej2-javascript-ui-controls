@@ -1082,6 +1082,7 @@ export class Editor {
                 this.owner.showComments = showComments;
                 this.owner.commentReviewPane.selectedTab = 0;
                 this.owner.commentReviewPane.addComment(commentWidget, isNewComment, selectComment);
+                this.owner.commentReviewPane.reviewTab.selectedItem = 0;
                 if (selectComment) {
                     this.owner.selectionModule.selectComment(commentWidget);
                 }
@@ -3489,6 +3490,14 @@ export class Editor {
                     } else if (currentRange instanceof WRowFormat) {
                         let rowWidget: TableRowWidget = (currentRange as WRowFormat).ownerBase;
                         let firstCell: TableCellWidget = rowWidget.childWidgets[0] as TableCellWidget;
+                        if (firstCell.childWidgets.length === 0) {
+                            for (let j = 1; j < rowWidget.childWidgets.length; j++) {
+                                if ((rowWidget.childWidgets[j] as TableCellWidget).childWidgets.length > 0) {
+                                    firstCell = rowWidget.childWidgets[j] as TableCellWidget;
+                                    break;
+                                }
+                            }
+                        }
                         let firstPara: ParagraphWidget = this.selection.getFirstParagraph(firstCell);
                         // Get the currentRange position to check (before or after) to insert table revision in order.
                         let editPosition: string;
@@ -6517,6 +6526,8 @@ export class Editor {
                     for (let paraIndex: number = 0; paraIndex < cellWidget.childWidgets.length; paraIndex++) {
                         if (cellWidget.childWidgets[paraIndex] instanceof ParagraphWidget) {
                             this.constructRevisionsForBlock(cellWidget.childWidgets[paraIndex] as ParagraphWidget, canConstructRevision);
+                        } else if (cellWidget.childWidgets[paraIndex] instanceof TableWidget) {
+                            this.constructRevisionsForTable(cellWidget.childWidgets[paraIndex] as TableWidget, true);
                         }
                     }
                 }
@@ -13063,6 +13074,7 @@ export class Editor {
                     }
                 } else if (revision.revisionType === 'Deletion') {
                     this.unlinkWholeRangeInRevision(rowFormat, revision);
+                    canInsertRevision = false;
                 }
             }
             if (canInsertRevision) {
@@ -13079,13 +13091,15 @@ export class Editor {
                 let cellWidget: TableCellWidget = row.childWidgets[i] as TableCellWidget;
                 for (let j: number = 0; j < cellWidget.childWidgets.length; j++) {
                     if (cellWidget.childWidgets[j] instanceof TableWidget) {
-                        this.trackInnerTable(cellWidget.childWidgets[i] as TableWidget, canremoveRow, updateHistory);
+                        this.trackInnerTable(cellWidget.childWidgets[j] as TableWidget, canremoveRow, updateHistory);
                     } else {
                         let paraWidget: ParagraphWidget = cellWidget.childWidgets[j] as ParagraphWidget;
 
                         // We used this boolean since for table tracking we should add removed nodes only for entire table not for every elements in the table
                         this.skipTableElements = true;
-                        this.insertRevisionForBlock(paraWidget, 'Deletion', undefined, undefined, true);
+                        if (canInsertRevision) {
+                            this.insertRevisionForBlock(paraWidget, 'Deletion', undefined, undefined, true);
+                        }
                         this.skipTableElements = false;
                     }
                 }
@@ -14257,7 +14271,7 @@ export class Editor {
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             let cellWidget: TableCellWidget = row.childWidgets[i] as TableCellWidget;
             for (let j: number = 0; j < cellWidget.childWidgets.length; j++) {
-                let paraWidget: ParagraphWidget = cellWidget.childWidgets[j] as ParagraphWidget;
+                let paraWidget: BlockWidget = cellWidget.childWidgets[j] as BlockWidget;
                 if (!isNullOrUndefined(paraWidget) && paraWidget instanceof ParagraphWidget) {
                     for (let lineIndex: number = 0; lineIndex < paraWidget.childWidgets.length; lineIndex++) {
                         let lineWidget: LineWidget = paraWidget.childWidgets[lineIndex] as LineWidget;
@@ -14271,6 +14285,11 @@ export class Editor {
                         }
                     }
                     this.unlinkRangeFromRevision(paraWidget.characterFormat, true);
+                } else if (!isNullOrUndefined(paraWidget) && paraWidget instanceof TableWidget) {
+                    for (let k = 0; k < paraWidget.childWidgets.length; k++) {
+                        let tableRow: TableRowWidget = paraWidget.childWidgets[k] as TableRowWidget;
+                        this.removeDeletedCellRevision(tableRow);
+                    }
                 }
             }
         }
@@ -17624,9 +17643,9 @@ export class Editor {
                     this.removeBlock(nextParagraph);
                     //this.combineRevisionOnDeleteParaMark(paragraph, prevLastLineIndex, elementIndex);
                     if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo.action !== "Insert") {
-                        if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && this.editorHistory.currentHistoryInfo.action == 'Accept All') {
-                            this.removeRevisionForBlock(nextParagraph, undefined, false, true);
-                        }
+                        // if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && this.editorHistory.currentHistoryInfo.action == 'Accept All') {
+                        //     this.removeRevisionForBlock(nextParagraph, undefined, false, true);
+                        // }
                         if (!skipHistoryCollection) {
                             this.addRemovedNodes(nextParagraph, isCombineLastBlock);
                         }
@@ -17757,6 +17776,9 @@ export class Editor {
             if (startPos.offset < endPos.offset && startPos.offset === selection.getParagraphLength(endPos.paragraph)) {
                 const nextBlock: BlockWidget = selection.getNextRenderedBlock(startPos.paragraph);
                 skipBackSpace = nextBlock instanceof TableWidget;
+                if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && (this.editorHistory.currentBaseHistoryInfo.action === 'Accept All' || this.editorHistory.currentBaseHistoryInfo.action === 'Accept Change')) {
+                    skipBackSpace = false;
+                }
             }
             //Handled specifically to remove paragraph completely (Delete behavior), if the selected paragraph is empty.
             if (endPos.offset === 1 && endPos.offset > selection.getParagraphLength(endPos.paragraph)

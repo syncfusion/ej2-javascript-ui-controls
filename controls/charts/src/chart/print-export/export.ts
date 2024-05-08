@@ -280,8 +280,8 @@ export class Export {
             let valueType: string = '';
             const currentIndex: number = index;
             let isXValue: boolean = false;
-            const axisName: string = this.axisCollection[axisCount as number] !== null ? this.axisCollection[axisCount as number].name === 'primaryXAxis' ? null : this.axisCollection[axisCount as number].name : '';
             for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
+                const axisName: string = this.axisCollection[axisCount as number] !== null ? (this.axisCollection[axisCount as number].name === 'primaryXAxis' || (this.axisCollection[axisCount as number].name === 'primaryYAxis' && this.series[seriesCount as number].type === 'Bar')) ? null : this.axisCollection[axisCount as number].name : '';
                 if (!isRangeNavigator && ((!isAccumulation && (axisName !==
                     (this.series[seriesCount as number] as SeriesModel | StockSeriesModel).xAxisName)) ||
                     !(this.series[seriesCount as number] as SeriesModel | AccumulationSeriesModel | StockSeriesModel).visible ||
@@ -355,10 +355,10 @@ export class Export {
                       isRangeNavigator: boolean, isAccumulation: boolean): number[][] {
         const xValues: number[][] = [];
         for (let axisCount: number = 0; axisCount < this.axisCollection.length; axisCount++) {
-            const xValue: number[] = [];
-            let axisName: string = this.axisCollection[axisCount as number] !== null ? this.axisCollection[axisCount as number].name === 'primaryXAxis' ? null : this.axisCollection[axisCount as number].name : '';
+            const xValue: number[] = [];            
             const valueType: string = isAccumulation ? '' : isRangeNavigator ? (controls[0] as RangeNavigator).valueType : this.axisCollection[axisCount as number].valueType;
             for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
+                const axisName: string = this.axisCollection[axisCount as number] !== null ? (this.axisCollection[axisCount as number].name === 'primaryXAxis' || (this.axisCollection[axisCount as number].name === 'primaryYAxis' && this.series[seriesCount as number].type === 'Bar')) ? null : this.axisCollection[axisCount as number].name : '';
                 if ((!isRangeNavigator && ((!isAccumulation && (axisName !==
                     (this.series[seriesCount as number] as SeriesModel | StockSeriesModel).xAxisName)) ||
                     !(this.series[seriesCount as number] as SeriesModel | AccumulationSeriesModel | StockSeriesModel).visible) ||
@@ -392,13 +392,13 @@ export class Export {
         let startIndex: number = 0;
         let index: number = 0;
         for (let axisCount: number = 0; axisCount < this.axisCollection.length; axisCount++) {
-            const axisName: string = this.axisCollection[axisCount as number] !== null ? this.axisCollection[axisCount as number].name === 'primaryXAxis' ? null : this.axisCollection[axisCount as number].name : '';
             const valueType: string = isAccumulation ? '' : isRangeNavigator ? (controls[0] as RangeNavigator).valueType : this.axisCollection[axisCount as number].valueType;
             for (let xValueLength: number = 0; xValueLength < xValues[axisCount as number].length; xValueLength++) {
                 index = startIndex ? startIndex : 1;
                 const cells: ExcelCell[] = [];
                 let isXValue: boolean = true;
                 for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
+                    const axisName: string = this.axisCollection[axisCount as number] !== null ? (this.axisCollection[axisCount as number].name === 'primaryXAxis' || (this.axisCollection[axisCount as number].name === 'primaryYAxis' && this.series[seriesCount as number].type === 'Bar')) ? null : this.axisCollection[axisCount as number].name : '';
                     if ((!isRangeNavigator && ((!isAccumulation &&
                         (this.series[seriesCount as number] as SeriesModel | StockSeriesModel).xAxisName !== axisName) ||
                         !(this.series[seriesCount as number] as SeriesModel | AccumulationSeriesModel | StockSeriesModel).visible) ||

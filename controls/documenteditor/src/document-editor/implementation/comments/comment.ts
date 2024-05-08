@@ -253,7 +253,7 @@ export class CommentReviewPane {
                     showCloseIcon: true,
                     closeOnEscape: true,
                     animationSettings: { effect: 'Zoom' },
-                    position: { X: 'Center', Y: 'Center' }
+                    position: { X: 'center', Y: 'center' }
                 });
             } else {
                 this.owner.documentHelper.currentSelectedComment = undefined;
@@ -470,8 +470,11 @@ export class CommentReviewPane {
     public discardComment(comment: CommentElementBox): void {
         if (comment) {
             if (this.owner.editorHistoryModule) {
-                this.owner.editorHistoryModule.undo();
-                this.owner.editorHistoryModule.redoStack.pop();
+                if (this.owner.editorHistoryModule.undoStack.length > 0
+                    && this.owner.editorHistoryModule.undoStack[this.owner.editorHistoryModule.undoStack.length - 1].action === 'InsertComment') {
+                    this.owner.editorHistoryModule.undo();
+                    this.owner.editorHistoryModule.redoStack.pop();
+                }
                 this.owner.editorModule.isSkipOperationsBuild = true;
                 this.owner.editorModule.deleteCommentInternal(comment);
                 this.owner.editorModule.isSkipOperationsBuild = false;

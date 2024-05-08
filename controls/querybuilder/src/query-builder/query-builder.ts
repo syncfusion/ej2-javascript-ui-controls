@@ -387,6 +387,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private cloneGrpBtnClick: boolean = false;
     private isMiddleGroup: boolean = false;
     private cloneRuleBtnClick: boolean = false;
+    private isNumInput: boolean;
     /**
      * Triggers when the component is created.
      *
@@ -1809,11 +1810,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private changeValue(i: number, args: ButtonChangeEventArgs | InputEventArgs | InputChangeEventArgs | CalendarChangeEventArgs): void {
         let element: Element;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (this.isNumInput && typeof (args as any).value === 'number') { this.isNumInput = false; return; }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((args as any).element && (args as any).element.classList.contains('e-multiselect')) {
             const multiSelectArgs: MultiSelectChangeEventArgs = args as MultiSelectChangeEventArgs;
             element = multiSelectArgs.element as Element;
         } else if (args.event) {
             element = args.event.target as Element;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } else if ((args as any).type === 'input' && (args as any).currentTarget) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            element = (args as any).currentTarget as Element;
         } else {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             element = (args as any).element;
@@ -1865,6 +1872,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             value = (getComponent(element as HTMLElement, 'multiselect') as MultiSelect).value as string[];
         } else {
             value = (<InputEventArgs | InputChangeEventArgs | CalendarChangeEventArgs>args).value;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((args as any).type === 'input' && (args as any).currentTarget) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                value = Number((args as any).currentTarget.value) as number;
+                const numericTextBoxObj: NumericTextBox = getInstance((args as any).currentTarget as HTMLElement, NumericTextBox) as NumericTextBox;
+                numericTextBoxObj.value = value;
+                this.isNumInput = true;
+            }
         }
         if ((args as InputChangeEventArgs).name === 'input' && this.immediateModeDelay) {
             window.clearInterval(this.timer);
@@ -2088,13 +2103,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const subFieldElem: Element = this.createElement('input', { attrs: { type: 'text', id: ruleId + '_subfilterkey' + this.subFilterCounter } });
         tempElem.appendChild(subFieldElem);
         const height: string = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
-        const subFieldData: string[] = Object.keys(this.selectedColumn.columns[0]);
         let ddlField: DropDownListModel;
         ddlField = {
             dataSource: this.selectedColumn.columns as { [key: string]: Object }[],
             fields: this.fields,
             placeholder: this.l10n.getConstant('SelectField'),
-            popupHeight: ((subFieldData.length > 5) ? height : 'auto'),
+            popupHeight: ((this.selectedColumn.columns.length > 5) ? height : 'auto'),
             change: this.changeField.bind(this),
             index: 0,
             open: this.popupOpen.bind(this, false)
@@ -2662,6 +2676,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             const numeric: NumericTextBox = new NumericTextBox(numericTxt);
             numeric.appendTo('#' + parentId + '_valuekey' + idx);
             numeric.element.setAttribute('aria-label', itemData.label + ' ' + 'Value');
+            numeric.element.oninput = this.changeValue.bind(this, idx);
         }
     }
     private processValueString(value: string, type: string): string[] | number[] {
@@ -3381,7 +3396,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.element.innerHTML = '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).portals && (this as any).portals.length) { this.clearQBTemplate(); }
-        popupElement = document.querySelectorAll('.qb-dropdownlist') as NodeListOf<HTMLElement>;
+        popupElement = document.querySelectorAll('.qb-dropdownlist.e-popup') as NodeListOf<HTMLElement>;
         if (popupElement) {
             for( i = 0; i < popupElement.length; i++) {
                 popupElement[i as number].remove();
@@ -5326,7 +5341,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         break;
                     }
                 }
+            } else if (sqlString[matchValue.length] && (sqlString[matchValue.length] !== ')') &&
+                       !this.checkCondition(sqlString, matchValue)) {
+                matchValue = this.getSingleQuoteString(sqlString, matchValue);
             }
+            // end
             this.parser.push(['String', matchValue]);
             return matchValue.length;
         }
@@ -5355,6 +5374,27 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             return matchValue.length;
         }
         return 1;
+    }
+    private checkCondition(sqlString: string, matchValue: string): boolean {
+        if (sqlString.slice(matchValue.length + 1, matchValue.length + 4)  === 'AND' ||
+        sqlString.slice(matchValue.length + 1, matchValue.length + 3) === 'OR') {
+            return true;
+        }
+        return false;
+    }
+    private getSingleQuoteString(sqlString: string, matchValue: string): string {
+        if (sqlString[matchValue.length] && (sqlString[matchValue.length] !== ')') &&
+                    !this.checkCondition(sqlString, matchValue) && sqlString[matchValue.length] !== ',') {
+            const tempStr: string = sqlString.replace(matchValue, '');
+            // eslint-disable-next-line
+            if (isNullOrUndefined(/^'((?:[^\\']+?|\\.|'')*)'(?!')/.exec(tempStr))) {
+                // eslint-disable-next-line
+                let parsedValue: string = /^((?:[^\\']+?|\\.|'')*)'(?!')/.exec(tempStr)[0];
+                matchValue += parsedValue;
+                matchValue = this.getSingleQuoteString(sqlString, matchValue);
+            }
+        }
+        return matchValue;
     }
     private checkLiteral(): boolean {
         const lastParser: string[] = this.parser[this.parser.length - 1];
@@ -5568,7 +5608,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (parser[i + 2][0] === 'Number') {
                         rule.type = 'number'; rule.value = Number(parser[i + 2][1]);
                     } else {
-                        rule.type = 'string'; rule.value = parser[i + 2][1] ? parser[i + 2][1].replace(/'/g, '') : parser[i + 2][1];
+                        rule.type = 'string';
+                        let val: string = parser[i + 2][1];
+                        if (val && val[0] === '\'') {
+                            val = val.substring(1, val.length - 1);
+                        }
+                        rule.value = val;
                     }
                     rule.type = this.getTypeFromColumn(rule);
                 }
@@ -5607,6 +5652,25 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
         return rules;
+    }
+
+    private getValueFromParser(parser: string[][], idx: number): {value: string, idx: number} {
+        let value: string = ''; let k: number;
+        for (k = idx; k < parser.length; k++) {
+            if (parser[k as number][0] !== 'String' || parser[k as number][1] === ',' || parser[k as number][1] === ', ') {
+                break;
+            } else {
+                if (value !== '') {
+                    idx += 1;
+                }
+                if (parser[k as number][1] !== null) {
+                    value += parser[k as number][1];
+                } else {
+                    value = null;
+                }
+            }
+        }
+        return {value: value, idx: idx};
     }
 
     /**

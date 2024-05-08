@@ -1051,6 +1051,405 @@ describe('CR:881509-L10n method locale not applied for dependency for days', () 
         expect(ganttObj.currentViewData[2].ganttProperties.predecessorsName).toBe("2FS+3 Dias");
     });
     afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('predecessor validation', () => {
+    let ganttObj: Gantt;
+    let datasource = [
+        {
+          TaskID: 1,
+          TaskName: 'Project Initiation',
+          StartDate: new Date('2024-02-01'),
+          subtasks: [
+            {
+              TaskID: 3,
+              TaskName: 'Perform Soil test',
+              StartDate: new Date('2024-02-01'),
+              Duration: 4,
+              Progress: 50,
+              dependency: '2',
+            },
+          ],
+        },
+        {
+          TaskID: 2,
+          TaskName: 'Identify Site location',
+          StartDate: new Date('2024-02-01'),
+          Duration: 4,
+          Progress: 50,
+          dependency: '1',
+        },
+      ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: datasource,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'dependency',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true
+            }, done);
+    });
+    it('Check date', () => {
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyy')).toBe('2/2/2024');
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+describe('CR:880619-Timeline does not render properly while predecessor offset value in negative values', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Initiation',
+            StartDate: new Date('2024-02-01'),
+            subtasks: [
+              {
+                TaskID: 2,
+                TaskName: 'Identify Site location',
+                StartDate: new Date('2024-02-01'),
+                Duration: 4,
+                Progress: 50,
+              },
+              {
+                TaskID: 3,
+                TaskName: 'Perform Soil test',
+                StartDate: new Date('2024-02-01'),
+                Duration: 4,
+                Progress: 50,
+                dependency: '7+2d',
+              },
+              {
+                TaskID: 4,
+                TaskName: 'Soil test approval',
+                StartDate: new Date('2024-02-01'),
+                Duration: 4,
+                Progress: 50,
+              },
+            ],
+          },
+          {
+            TaskID: 5,
+            TaskName: 'Project Estimation',
+            StartDate: new Date('2024-02-06'),
+            subtasks: [
+              {
+                TaskID: 6,
+                TaskName: 'Develop floor plan for estimation',
+                StartDate: new Date('2024-02-06'),
+                Duration: 3,
+                Progress: 50,
+              },
+              {
+                TaskID: 7,
+                TaskName: 'List materials',
+                StartDate: new Date('2024-02-06'),
+                Duration: 3,
+                Progress: 50,
+              },
+              {
+                TaskID: 8,
+                TaskName: 'Estimation approval',
+                StartDate: new Date('2024-02-06'),
+                Duration: 3,
+                Progress: 50,
+                dependency: '7SF-5 days',
+              },
+            ],
+        }
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+        dataSource: data,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            child: 'subtasks',
+            dependency: 'dependency'
+        },
+        editSettings: {
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        highlightWeekends: true,
+        timelineSettings: {
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        height: '550px',
+            }, done);
+    });
+    it('Checking timeline start date', () => {
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe("01/21/2024");
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+describe('CR:881509-L10n method locale not applied for dependency for days', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 2,
+                    Progress: 30, 
+                },
+                {
+                    TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4, Predecessor: '2FS+3Days'
+                },
+                {
+                    TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 1, Progress: 30
+                },
+            ]
+        }
+      ];
+    beforeAll((done: Function) => {
+        L10n.load({
+            'pt-BR': {
+                gantt: {
+                  emptyRecord: 'Sem registros para exibir',
+                  segments: 'Partes',
+                  id: 'ID',
+                  name: 'Nome',
+                  startDate: 'Data de início',
+                  endDate: 'Data de fim',
+                  duration: 'Duração',
+                  progress: 'Progresso',
+                  dependency: 'Dependência',
+                  notes: 'Notas',
+                  baselineStartDate: 'Data de início da linha de base',
+                  baselineEndDate: 'Data de fim da linha de base',
+                  type: 'Tipo',
+                  offset: 'Offset',
+                  resourceName: 'Nome do recurso',
+                  resourceID: 'ID do recurso',
+                  day: 'Dia',
+                  hour: 'Hora',
+                  minute: 'Minuto',
+                  days: 'Dias',
+                  hours: 'Horas',
+                  minutes: 'Minutos',
+                  generalTab: 'Aba geral',
+                  customTab: 'Aba customizada',
+                  writeNotes: 'Escrever notas',
+                  addDialogTitle: 'Adicionar',
+                  editDialogTitle: 'Editar',
+                  add: 'Adicionar',
+                  edit: 'Editar',
+                  update: 'Atualizar',
+                  delete: 'Deletar',
+                  cancel: 'Cancelar',
+                  search: 'Procurar',
+                  task: 'Tarefa',
+                  tasks: 'Tarefas',
+                  zoomIn: '+ Zoom',
+                  zoomOut: '- Zoom',
+                  zoomToFit: 'Centralizar',
+                  expandAll: 'Expandir todos',
+                  collapseAll: 'Colapsar todos',
+                  nextTimeSpan: '',
+                  prevTimeSpan: '',
+                  saveButton: 'Salvar',
+                  taskBeforePredecessor_FS:
+                    'Você moveu “{0}” para iniciar antes do fim de “{1}” e as duas tarefas já estão relacionadas. Como resultado a relação não pode ser feita. Selecione uma das seguintes ações para prosseguir',
+                  taskAfterPredecessor_FS:
+                    'Você moveu “{0}” para iniciar após o fim de “{1}” e as duas tarefas já estão relacionadas. Como resultado a relação não pode ser feita. Selecione uma das seguintes ações para prosseguir',
+                  taskBeforePredecessor_SS:
+                    'Você moveu “{0}” para iniciar antes do início de “{1}” e as duas tarefas já estão relacionadas. Como resultado a relação não pode ser feita. Selecione uma das seguintes ações para prosseguir',
+                  taskAfterPredecessor_SS:
+                    'Você moveu “{0}” para iniciar após o início de “{1}” e as duas tarefas já estão relacionadas. Como resultado a relação não pode ser feita. Selecione uma das seguintes ações para prosseguir',
+                  taskBeforePredecessor_FF:
+                    'Você moveu “{0}” para terminar antes do fim de “{1}” e as duas tarefas já estão relacionadas. Como resultado a relação não pode ser feita. Selecione uma das seguintes ações para prosseguir',
+                  taskAfterPredecessor_FF:
+                    'Você moveu “{0}” para terminar após do fim de “{1}” e as duas tarefas já estão relacionadas. Como resultado a relação não pode ser feita. Selecione uma das seguintes ações para prosseguir',
+                  taskBeforePredecessor_SF:
+                    'Você moveu “{0}” para terminar antes do início de “{1}” e as duas tarefas já estão relacionadas. Como resultado a relação não pode ser feita. Selecione uma das seguintes ações para prosseguir',
+                  taskAfterPredecessor_SF:
+                    'Você moveu “{0}” para terminar após o início de “{1}” e as duas tarefas já estão relacionadas. Como resultado a relação não pode ser feita. Selecione uma das seguintes ações para prosseguir',
+                  okText: 'Ok',
+                  confirmDelete: 'Você tem certeza que deseja deletar esse registro?',
+                  from: 'de',
+                  to: 'para',
+                  taskLink: 'Relacionar tarefa',
+                  lag: 'Atraso',
+                  start: 'Começar',
+                  finish: 'Finalizar',
+                  enterValue: 'Entre Com o Valor',
+                  taskInformation: 'Informação da Tarefa',
+                  deleteTask: 'Deletar Tarefa',
+                  deleteDependency: 'Deletar Dependência',
+                  convert: 'Converter',
+                  save: 'Salvar',
+                  above: 'Acima',
+                  below: 'Abaixo',
+                  child: 'Filha',
+                  milestone: 'Milestone',
+                  toTask: 'Para Tarefa',
+                  toMilestone: 'Para Milestone',
+                  eventMarkers: 'Marcadores de Evento',
+                  leftTaskLabel: 'Título da Tarefa a Esquerda',
+                  rightTaskLabel: 'Título da Tarefa a Direita',
+                  timelineCell: 'Célula da Timeline',
+                  confirmPredecessorDelete: 'Você realmetne deseja remover a dependência?',
+                  changeScheduleMode: 'Alterar Modo do Cronograma',
+                  subTasksStartDate: 'Data de Início da Subtarefa',
+                  subTasksEndDate: 'Data Final da Subtarefa',
+                  scheduleStartDate: 'Data de Início do Cronograma',
+                  scheduleEndDate: 'Data Final do Cronograma',
+                  auto: 'Auto',
+                  manual: 'Manual',
+                  excelExport: 'Exportação de Excel',
+                  csvExport: 'Exportação de CSV',
+                  pdfExport: 'Exportação de PDF',
+                  unit: 'Unidade',
+                  work: 'Trabalho',
+                  taskType: 'Tipo de tarefa',
+                  unassignedTask: 'Tarefa não atribuída',
+                  group: 'Grupo',
+                },
+                grid: {},
+              },
+          });
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                allowSorting: true,
+                taskFields: {
+                    id: "TaskID",
+                    name: "TaskName",
+                    startDate: "StartDate",
+                    endDate: "EndDate",
+                    duration: "Duration",
+                    progress: "Progress",
+                    dependency: "Predecessor",
+                    child: "subtasks"
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                locale: 'pt-BR',
+                allowUnscheduledTasks: true,
+            }, done);
+    });
+    it('Checking the prdedecessor day locale format', () => {
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessorsName).toBe("2FS+3 Dias");
+    });
+    afterAll(() => {
         destroyGantt(ganttObj);
     });
 });

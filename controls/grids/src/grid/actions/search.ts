@@ -28,6 +28,29 @@ export class Search implements IAction {
     }
 
     /**
+     * Checks if the input string contains non-numeric characters.
+     * 
+     * @param input The string to be checked for non-numeric characters.
+     * @returns `true` if the input string contains non-numeric characters, `false` otherwise.
+     */
+    private hasNonNumericCharacters(searchString: string): boolean {
+        let decimalFound: boolean = false;
+        for (const char of searchString) {
+            if ((char < '0' || char > '9') && char !== '.') {
+                return true;
+            }
+            if (char === '.') {
+                if (decimalFound) {
+                    // If decimal is found more than once, it's not valid
+                    return true;
+                }
+                decimalFound = true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Searches Grid records by given key.
      *
      * > You can customize the default search action by using [`searchSettings`](./searchsettings/).
@@ -44,7 +67,7 @@ export class Search implements IAction {
         }
         if (searchString !== gObj.searchSettings.key) {
             // Check searchString is number and parseFloat to remove trailing zeros
-            gObj.searchSettings.key = !isNaN(parseFloat(searchString)) ? parseFloat(searchString).toString() : searchString.toString();
+            gObj.searchSettings.key = (searchString !== "" && !this.hasNonNumericCharacters(searchString)) ? parseFloat(searchString).toString() : searchString.toString();
             gObj.dataBind();
         } else if (this.refreshSearch) {
             gObj.refresh();

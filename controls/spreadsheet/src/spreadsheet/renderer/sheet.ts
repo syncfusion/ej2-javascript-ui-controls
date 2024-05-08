@@ -789,8 +789,8 @@ export class SheetRender implements IRenderer {
                         this.refreshPrevMerge(range[2] + 1, indexes[1]);
                     }
                 }
-                if (firstcell && ((firstcell as HTMLTableCellElement).colSpan > 1 || (firstcell as HTMLTableCellElement).rowSpan > 1)) {
-                    this.cellRenderer.refresh(indexes[0] + (range[2] - range[0]) + 1, indexes[1], null, firstcell);
+                if (firstcell) {
+                    this.refreshFirstCell(indexes[0] + (range[2] - range[0]) + 1, indexes[1], firstcell);
                 }
             } else if (model.rowSpan > 1) {
                 const prevTopIdx: number = range[2] + 1;
@@ -807,6 +807,13 @@ export class SheetRender implements IRenderer {
                 currTopIdx : 0, null, colIndex)) as HTMLTableCellElement;
         if (td) {
             this.cellRenderer.refresh(prevTopIdx, colIndex, null, td);
+        }
+    }
+
+    private refreshFirstCell(rowIdx: number, colIdex: number, firstcell?: Element): void {
+        const cell: CellModel = getCell(rowIdx, colIdex, this.parent.getActiveSheet(), false, true);
+        if (cell.rowSpan < 0 || cell.colSpan < 0) {
+            this.cellRenderer.refresh(rowIdx, colIdex, null, firstcell);
         }
     }
 
@@ -827,8 +834,8 @@ export class SheetRender implements IRenderer {
                         }
                     }
                 }
-                if (firstcell && ((firstcell as HTMLTableCellElement).colSpan >= 1 || (firstcell as HTMLTableCellElement).rowSpan >= 1)) {
-                    this.cellRenderer.refresh(indexes[0], indexes[1] + (range[3] - range[1]) + 1, null, firstcell);
+                if (firstcell) {
+                    this.refreshFirstCell(indexes[0], indexes[1] + (range[3] - range[1]) + 1, firstcell)
                 }
             }
             else if (model.colSpan > 1) {

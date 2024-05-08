@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.3 (2024-05-08)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I570803` - Tree Grid and Gantt chart side was not synchronized issue has been fixed.
+
 ## 25.1.42 (2024-04-30)
 
 ### GanttChart

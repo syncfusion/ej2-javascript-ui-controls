@@ -249,7 +249,7 @@ export class ToolbarRenderer implements IRenderer {
                             alignEle = alignEle.parentElement;
                         }
                         const alignStyle: string = window.getComputedStyle(alignEle as HTMLElement).textAlign;
-                        if ((args.items[0 as number] as any).command === 'Alignments') {
+                        if ((args.items[0 as number] as IDropDownItemModel).command === 'Alignments') {
                             if ((args.items[0 as number].text === 'Align Left' && (alignStyle === 'left') || alignStyle === 'start')) {
                                 addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
                                 break;
@@ -272,7 +272,7 @@ export class ToolbarRenderer implements IRenderer {
                     //image preselect
                     const closestNode: HTMLElement = startNode.closest('img');
                     const imageEle: HTMLElement = closestNode ? closestNode : startNode.querySelector('img');
-                    if ((args.items[0 as number] as any).command === 'Images') {
+                    if ((args.items[0 as number] as IDropDownItemModel).command === 'Images') {
                         if (!isNOU(imageEle)) {
                             let index: number;
                             if (imageEle.classList.contains('e-imgleft') || imageEle.classList.contains('e-imginline')) {
@@ -288,7 +288,7 @@ export class ToolbarRenderer implements IRenderer {
                         }
                     }
                     //Formats preselect
-                    if ((args.items[0 as number] as any).command === 'Formats' || (args.items[0 as number] as any).command === 'Font') {
+                    if ((args.items[0 as number] as IDropDownItemModel).command === 'Formats' || (args.items[0 as number] as IDropDownItemModel).command === 'Font') {
                         const fontName: string[] = [];
                         const formats: string[] = [];
                         this.parent.format.types.forEach((item: IDropDownItemModel): void => {
@@ -309,8 +309,8 @@ export class ToolbarRenderer implements IRenderer {
                             divNode.innerHTML = dropDown.content.trim();
                             if ((divNode.textContent.trim() !== ''
                                 && args.element.childNodes[index as number].textContent.trim() === divNode.textContent.trim()) ||
-                                (((args.items[0 as number] as any).command === 'Formats' && !isNOU(toolbarStatus.formats) && this.parent.format.types[index as number].value.toLowerCase() === toolbarStatus.formats.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.format.types[index as number].cssClass))
-                                    || ((args.items[0 as number] as any).command === 'Font' && !isNOU(toolbarStatus.fontname) && this.parent.fontFamily.items[index as number].value.toLowerCase() === toolbarStatus.fontname.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.fontFamily.items[index as number].cssClass)))
+                                (((args.items[0 as number] as IDropDownItemModel).command === 'Formats' && !isNOU(toolbarStatus.formats) && this.parent.format.types[index as number].value.toLowerCase() === toolbarStatus.formats.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.format.types[index as number].cssClass))
+                                    || ((args.items[0 as number] as IDropDownItemModel).subCommand === 'FontName' && (args.items[0 as number] as IDropDownItemModel).command === 'Font' && !isNOU(toolbarStatus.fontname) && !isNOU(this.parent.fontFamily.items[index as number]) && this.parent.fontFamily.items[index as number].value.toLowerCase() === toolbarStatus.fontname.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.fontFamily.items[index as number].cssClass)))
                             ) {
                                 if (!(args.element.childNodes[index as number] as HTMLElement).classList.contains('e-active')) {
                                     addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
@@ -389,9 +389,9 @@ export class ToolbarRenderer implements IRenderer {
                     const listElem: Element = startNode.closest('LI');
                     const currentLiElem: HTMLElement = !isNOU(listElem) ? listElem.parentElement : null;
                     if (!isNOU(currentLiElem) && (currentLiElem.nodeName === 'OL' || currentLiElem.nodeName === 'UL')) {
-                        if (currentLiElem.nodeName === 'UL' && (args.items[0 as number] as any).subCommand === 'NumberFormatList') {
+                        if (currentLiElem.nodeName === 'UL' && (args.items[0 as number] as IDropDownItemModel).subCommand === 'NumberFormatList') {
                             addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
-                        } else if (currentLiElem.nodeName === 'OL' && (args.items[0 as number] as any).subCommand === 'BulletFormatList') {
+                        } else if (currentLiElem.nodeName === 'OL' && (args.items[0 as number] as IDropDownItemModel).subCommand === 'BulletFormatList') {
                             addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
                         } else {
                             let currentListStyle: string = currentLiElem.style.listStyleType.split('-').join('').toLocaleLowerCase();

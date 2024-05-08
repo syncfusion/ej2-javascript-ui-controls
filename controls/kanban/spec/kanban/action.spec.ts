@@ -1345,6 +1345,33 @@ describe('Action module', () => {
         });
     });
 
+    describe('882869 - Toggle columns not working properly when there is no cards in the Kanban', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open', allowToggle: true, isExpanded: true },
+                    { headerText: 'In Progress', keyField: 'InProgress', allowToggle: true, isExpanded: true },
+                    { headerText: 'Testing', keyField: 'Testing', allowToggle: true, isExpanded: true },
+                    { headerText: 'Done', keyField: 'Close', allowToggle: true, isExpanded: true }
+                ],
+            };
+            kanbanObj = util.createKanban(model, [], done);
+        });
+        afterAll((done) => {
+            util.destroy(kanbanObj);
+            done();
+        });
+        it('Columns toggle when you click the toggle icon.', (done) => {
+            let toggle = kanbanObj.element.querySelector(".e-kanban-table.e-header-table .e-header-cells");
+            (toggle.querySelector(".e-column-expand") as HTMLElement).click();
+            expect(toggle.classList.contains("e-collapsed")).toEqual(true);
+            (toggle.querySelector(".e-column-collapse") as HTMLElement).click();
+            expect(toggle.classList.contains("e-collapsed")).toEqual(false);
+            done();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

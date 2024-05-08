@@ -517,6 +517,8 @@
 
       .e-content table {
         margin-bottom: 10px;
+        border-collapse: collapse;
+        empty-cells: show;
       }
 
       .e-content pre {
@@ -891,7 +893,7 @@
     margin-right: 5px;
     display: inline-block;
     float: none;
-    max-width: calc(100% - (2 * 5px));
+    max-width: 100%;
     padding: 1px;
     vertical-align: bottom;
   }
@@ -974,11 +976,6 @@
 
   .e-img-caption.e-rte-img-caption.e-imgbreak {
     display: contents;
-  }
-
-  .e-rte-table {
-    border-collapse: collapse;
-    empty-cells: show;
   }
 
   .e-rte-table td,

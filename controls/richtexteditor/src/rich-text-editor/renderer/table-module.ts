@@ -650,9 +650,12 @@ export class Table {
         if (proxy.editdlgObj) {
             proxy.editdlgObj.hide();
         }
+        const x: number = window.scrollX;
+        const y: number = window.scrollY;
         proxy.parent.formatter.process(
             proxy.parent, selectionObj.args, (selectionObj.args as ClickEventArgs).originalEvent, value);
         (proxy.contentModule.getEditPanel() as HTMLElement).focus();
+        window.scrollTo(x,y);
         proxy.parent.on(events.mouseDown, proxy.cellSelect, proxy);
     }
 

@@ -199,6 +199,9 @@ export function PdfiumRunner(): void {
                 (data as any).message = 'textExtracted';
                 (data as any).isLayout = event.data.isLayout;
                 (data as any).isRenderText = event.data.isRenderText;
+                (data as any).jsonObject = event.data.jsonObject;
+                (data as any).requestType = event.data.requestType;
+                (data as any).annotationObject = event.data.annotationObject;
                 ctx.postMessage(data);
             }
             else if (event.data.message === 'renderThumbnail') {

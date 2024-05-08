@@ -1416,14 +1416,18 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} rowIndex - Specifies the row index. If not specified, it will consider the first row.
      * @param {number} sheetIndex - Specifies the sheetIndex. If not specified, it will consider the active sheet.
      * @param {boolean} edited - Specifies the boolean value.
+     * @param {boolean} skipCustomRow - When this parameter is enabled, the method will skip updating the row height if it has already been modified and its 'customHeight' property is set to true.
      * @returns {void} - Set the height of row.
      */
-    public setRowHeight(height: number | string = 20, rowIndex: number = 0, sheetIndex?: number, edited?: boolean): void {
+    public setRowHeight(height: number | string = 20, rowIndex: number = 0, sheetIndex?: number, edited?: boolean, skipCustomRow?: boolean): void {
         const sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex as number];
         if (sheet) {
             const mIndex: number = rowIndex;
-            const rowHeight: string = (typeof height === 'number') ? height + 'px' : height;
             rowIndex = isNullOrUndefined(rowIndex) ? getCellIndexes(sheet.activeCell)[0] : rowIndex;
+            if (skipCustomRow && sheet.rows[rowIndex as number] && sheet.rows[rowIndex as number].customHeight) {
+                return;
+            }
+            const rowHeight: string = (typeof height === 'number') ? height + 'px' : height;
             const setRowModel: Function = (): void => {
                 setRowHeight(sheet, mIndex, parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0);
                 sheet.rows[mIndex as number].customHeight = true;
@@ -1475,13 +1479,14 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * * Multiple rows range: ['1:100']
      * * Multiple rows with discontinuous range - ['1:10', '15:25', '30:40']
      * * Multiple rows with different sheets - ['Sheet1!1:50', 'Sheet2!1:50', 'Sheet3!1:50'].
+     * @param {boolean} skipCustomRows - When this parameter is enabled, it will skip updating the heights of rows where the height has already been modified, and its 'customHeight' property is set to true.
      * @returns {void}
      */
-    public setRowsHeight(height: number = 20, ranges?: string[]): void {
+    public setRowsHeight(height: number = 20, ranges?: string[], skipCustomRows?: boolean): void {
         if (!ranges) {
             ranges = [`${1}:${this.getActiveSheet().usedRange.rowIndex + 1}`];
         }
-        this.setSize(height, ranges, (idx: string) => Number(idx) - 1, this.setRowHeight.bind(this));
+        this.setSize(height, ranges, (idx: string) => Number(idx) - 1, this.setRowHeight.bind(this), skipCustomRows);
     }
 
     /**
@@ -1503,7 +1508,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.setSize(width, ranges, (headerText: string) => getColIndex(headerText), this.setColWidth.bind(this));
     }
 
-    private setSize(width: number, ranges: string[], getIndex: Function, updateSize: Function): void {
+    private setSize(width: number, ranges: string[], getIndex: Function, updateSize: Function, skipCustomRows?: boolean): void {
         let sheetIdx: number; let rangeArr: string[]; let startIdx: number; let endIdx: number;
         ranges.forEach((range: string): void => {
             if (range.includes('!')) {
@@ -1521,7 +1526,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 startIdx = endIdx = getIndex(range);
             }
             for (let idx: number = startIdx; idx <= endIdx; idx++) {
-                updateSize(width, idx, sheetIdx);
+                updateSize(width, idx, sheetIdx, false, skipCustomRows);
             }
         });
     }

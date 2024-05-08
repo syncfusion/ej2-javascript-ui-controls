@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { PdfDocument, PdfPage, PdfForm, PdfTextBoxField, PdfFormFieldVisibility, PdfTextAlignment, PdfSignatureField, PdfField, PdfFreeTextAnnotation, PdfFontFamily, PdfStandardFont, PdfAnnotationFlag, PdfRubberStampAnnotation, PdfImage, PdfBitmap, PdfGraphics, PdfGraphicsState, PdfFontStyle as FontStyle, PdfCheckBoxField, PdfComboBoxField, PdfListBoxField, PdfListFieldItem, PdfRadioButtonListField, PdfRadioButtonListItem, PdfRotationAngle, PdfFontStyle, PdfFont, PdfTemplate, PdfInkAnnotation, PdfTrueTypeFont, PdfAnnotationCollection, PdfAnnotation, _PdfReference, _PdfDictionary} from '@syncfusion/ej2-pdf';
+import { PdfDocument, PdfPage, PdfForm, PdfTextBoxField, PdfFormFieldVisibility, PdfTextAlignment, PdfSignatureField, PdfField, PdfFreeTextAnnotation, PdfFontFamily, PdfStandardFont, PdfAnnotationFlag, PdfRubberStampAnnotation, PdfImage, PdfBitmap, PdfGraphics, PdfGraphicsState, PdfFontStyle as FontStyle, PdfCheckBoxField, PdfComboBoxField, PdfListBoxField, PdfListFieldItem, PdfRadioButtonListField, PdfRadioButtonListItem, PdfRotationAngle, PdfFontStyle, PdfFont, PdfTemplate, PdfInkAnnotation, PdfTrueTypeFont, PdfAnnotationCollection, PdfAnnotation, _PdfReference, _PdfDictionary, _PdfPath} from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase, PageRenderer } from '../index';
 import { getArialFontData } from '../pdf-base/fontData';
 import { Rect } from '@syncfusion/ej2-drawings';
@@ -826,18 +826,22 @@ export class FormFieldsBase {
             let minimumY: number = -1;
             let maximumX: number = -1;
             let maximumY: number = -1;
-
+            let drawingPath: _PdfPath = new _PdfPath();
             for (let p = 0; p < stampObjects.length; p++) {
-                const value = stampObjects[parseInt(p.toString(), 10)];
+                let val: any = stampObjects[parseInt(p.toString(), 10)];
+                drawingPath._addLine(val.x, val.y, 0, 0);
+            }
+            for (let p: number = 0; p <  drawingPath._points.length; p+=2) {
+                const value = drawingPath._points[parseInt(p.toString(), 10)];
                 if (minimumX == -1) {
-                    minimumX = value.x;
-                    minimumY = value.y;
-                    maximumX = value.x;
-                    maximumY = value.x;
+                    minimumX = value[0];
+                    minimumY = value[1];
+                    maximumX = value[0];
+                    maximumY = value[1];
                 }
                 else {
-                    let point1: number = value.x;
-                    let point2: number = value.y; 0
+                    let point1: number = value[0];
+                    let point2: number = value[1];
                     if (minimumX >= point1) {
                         minimumX = point1;
                     }

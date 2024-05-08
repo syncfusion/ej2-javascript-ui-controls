@@ -5,7 +5,7 @@ import { Revision } from './track-changes';
 import { CommentReviewPane } from '../comments';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButtonModel, DropDownButton, MenuEventArgs, ItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget, TableRowWidget, TableWidget, BlockWidget, HeaderFooterWidget } from '../viewer/page';
+import { TextElementBox, ElementBox, ImageElementBox, FieldElementBox, TextFormField, DropDownFormField, CheckBoxFormField, ParagraphWidget, TableRowWidget, TableWidget, BlockWidget, HeaderFooterWidget, ChartElementBox } from '../viewer/page';
 import { WRowFormat, WCharacterFormat, SelectionSectionFormat } from '../index';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary, HeaderFooterType } from '../../base/index';
@@ -944,7 +944,7 @@ export class ChangesSingleView {
                 toSkip = false;
                 continue;
             }
-            if (toSkip) {
+            if (toSkip || element instanceof ChartElementBox) {
                 continue;
             }
             if (element instanceof FieldElementBox && element.fieldType === 0) {

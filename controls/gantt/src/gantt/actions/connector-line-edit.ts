@@ -24,6 +24,7 @@ export class ConnectorLineEdit {
     /** @private */
     public childRecord: IGanttData = null;
     private dateValidateModule: DateProcessor;
+    private validatedOffsetIds: string[] = [];
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
         this.dateValidateModule = this.parent.dateValidationModule;
@@ -703,6 +704,7 @@ export class ConnectorLineEdit {
         if (parentId) {
             const record = this.parent.getRecordByID(parentId);
             if (record && record.ganttProperties && record.ganttProperties.predecessor) {
+                this.parent.connectorLineEditModule['validatedOffsetIds'] = [];
                 this.calculateOffset(record);
                 const predecessors = record.ganttProperties.predecessor;
                 predecessors.forEach(predecessor => {
@@ -813,7 +815,9 @@ export class ConnectorLineEdit {
                 if (validPredecessor) {
                     if (validPredecessor.length > 0) {
                         validPredecessor.forEach((element) => {
-                            this.calculateOffset(this.parent.getRecordByID(element.to))
+                            if (this.validatedOffsetIds.indexOf(element.to) == -1) {
+                               this.calculateOffset(this.parent.getRecordByID(element.to))
+                            }
                         });
                     }
                 }
@@ -823,6 +827,22 @@ export class ConnectorLineEdit {
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, record);
             this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, record);
             this.parent.setRecordValue('predecessorsName', predecessorString, record.ganttProperties, true);
+            if (this.validatedOffsetIds.indexOf(record.ganttProperties.taskId.toString()) == -1) {
+              this.validatedOffsetIds.push(record.ganttProperties.taskId.toString());
+            }
+            if (record.hasChildRecords) {
+                for (let i: number = 0; i < record.childRecords.length; i++) {
+                    if (this.validatedOffsetIds.indexOf(record.childRecords[i as number].ganttProperties.taskId.toString()) == -1 && record.childRecords[i as number].ganttProperties.predecessor && record.childRecords[i as number].ganttProperties.predecessor.length > 0) {
+                        this.calculateOffset(record.childRecords[i as number]);
+                    }
+                }
+            }
+            else if (record.parentItem) {
+                let parentItem: IGanttData = this.parent.getRecordByID(record.parentItem.taskId);
+                if (this.validatedOffsetIds.indexOf(parentItem.ganttProperties.taskId.toString()) == -1 && parentItem.ganttProperties.predecessor && parentItem.ganttProperties.predecessor.length > 0) {
+                    this.calculateOffset(parentItem);
+                }
+            }
         }
     }
     /**

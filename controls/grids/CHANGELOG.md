@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+## 25.2.3 (2024-05-08)
+
+### Grid
+
+#### Bug fixes
+
+- `#I581295`- Resolved the warning message that was thrown when using the Freeze property with `virtualization` in grid.
+- `#I578930` - The focus issue related to Excel Filter has been fixed. As of now, when you cancel the custom filter option in Excel filter, the focus stays on the current column.
+
 ## 25.1.42 (2024-04-30)
+
+### Grid
+
+#### Bug fixes
+
+- `#FB52421`- Frozen grid virtual scrolling displays blank page after reorder is resolved.
+- `#FB52497`- Column chooser `SelectAll` option not working properly has been fixed.
+
+## 25.1.41 (2024-04-23)
 
 ### Grid
 

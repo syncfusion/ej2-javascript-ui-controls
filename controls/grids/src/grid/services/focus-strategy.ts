@@ -931,6 +931,7 @@ export class FocusStrategy {
             { event: 'start-add', handler: this.clearIndicator },
             { event: 'sorting-complete', handler: this.restoreFocus },
             { event: 'filtering-complete', handler: this.filterfocus },
+            { event: 'custom-filter-close', handler: this.filterfocus },
             { event: 'grouping-complete', handler: this.restoreFocusWithAction },
             { event: 'ungrouping-complete', handler: this.restoreFocusWithAction },
             { event: event.batchAdd, handler: this.refMatrix },

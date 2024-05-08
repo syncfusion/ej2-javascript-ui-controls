@@ -3757,11 +3757,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
     private setFrozenCount(): void {
         const persist3: string = 'setFrozenCount';
-        this.grid[`${persist3}`].apply(this);
+        this.grid[`${persist3}`].apply(this.grid);
     }
     private splitFrozenCount(columns: Column[]): void {
         const persist4: string = 'splitFrozenCount';
-        this.grid[`${persist4}`].apply(this, [columns]);
+        this.grid[`${persist4}`].apply(this.grid, [columns]);
     }
     private isFrozenGrid(): boolean {
         return this.grid.isFrozenGrid();

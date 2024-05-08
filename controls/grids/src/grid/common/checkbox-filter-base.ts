@@ -438,6 +438,10 @@ export class CheckBoxFilterBase {
             }
             this.parent.notify(events.filterMenuClose, { field: this.options.field });
             this.unWireEvents();
+            if (this.parent.isReact && this.options.column.filter && typeof (this.options.column.filter.itemTemplate) !== 'string'
+             && (this.options.column.filter.type === 'CheckBox' || this.options.column.filter.type === 'Excel')) {
+                this.dialogObj.element.querySelector('.e-dlg-content').innerHTML = '';
+            }
             this.dialogObj.destroy();
             if (this.dlg && this.dlg.parentElement) {
                 remove(this.dlg);
@@ -489,6 +493,9 @@ export class CheckBoxFilterBase {
         }
         if (this.options.column.showColumnMenu) {
             this.parent.notify(events.afterFilterColumnMenuClose, {});
+        }
+        if (!isNullOrUndefined((this.parent as IGrid).focusModule)) {
+            (this.parent as IGrid).focusModule.filterfocus();
         }
     }
 

@@ -180,11 +180,13 @@ export class Merge {
                 cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet);
                 const mergeCount: number = (mergeArgs.range[2] - args.rowIdx) + 1 -
                     this.parent.hiddenCount(args.rowIdx, mergeArgs.range[2]);
-                if (mergeCount > 1) {
+                if (mergeCount >= 1) {
                     this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
-                    args.td.rowSpan = mergeCount;
-                    args.td.style.display = '';
-                } else if (mergeCount === 1) {
+                    if (mergeCount === 1) {
+                        args.td.removeAttribute('rowspan');
+                    } else {
+                        args.td.rowSpan = mergeCount;
+                    }
                     args.td.style.display = '';
                 }
             }
@@ -208,11 +210,13 @@ export class Merge {
                 cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet);
                 const mergeCount: number = (mergeArgs.range[3] - args.colIdx) + 1 - this.parent.hiddenCount(
                     args.colIdx, mergeArgs.range[3], 'columns');
-                if (mergeCount > 1) {
+                if (mergeCount >= 1) {
                     this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
-                    args.td.colSpan = mergeCount;
-                    args.td.style.display = '';
-                } else if (mergeCount === 1) {
+                    if (mergeCount === 1) {
+                        args.td.removeAttribute('colspan');
+                    } else {
+                        args.td.colSpan = mergeCount;
+                    }
                     args.td.style.display = '';
                 }
             }

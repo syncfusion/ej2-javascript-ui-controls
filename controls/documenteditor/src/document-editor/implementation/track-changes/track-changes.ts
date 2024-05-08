@@ -129,6 +129,7 @@ export class Revision {
         if (this.owner.editorHistoryModule) {
             if (this.owner.trackChangesPane.isTrackingPageBreak) {
                 this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'TrackingPageBreak';
+                this.owner.trackChangesPane.isTrackingPageBreak = false;
             }
             let editorHistory: EditorHistory = this.owner.editorHistoryModule;
             if (editorHistory.currentHistoryInfo && (editorHistory.currentHistoryInfo.action === 'Accept All' || editorHistory.currentHistoryInfo.action === 'Reject All')) {
@@ -344,11 +345,11 @@ export class Revision {
             this.owner.editorModule.removeFieldInBlock(currentRow, true);
             // Before destroying the table row widget, delete the content control element from the row.
             this.owner.editorModule.removeFieldInBlock(currentRow, undefined, true);
-            currentRow.destroy();
+            //currentRow.destroy();
             if (tableWidget.childWidgets.length === 0) {
                 this.owner.selectionModule.editPosition = this.owner.selectionModule.getHierarchicalIndex(tableWidget, '0');
                 this.owner.editorModule.removeBlock(tableWidget);
-                tableWidget.destroy();
+                //tableWidget.destroy();
             } else {
                 this.owner.editorModule.updateTable(tableWidget, true);
             }

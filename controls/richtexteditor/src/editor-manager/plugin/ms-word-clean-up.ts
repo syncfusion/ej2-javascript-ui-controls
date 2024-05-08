@@ -72,9 +72,9 @@ export class MsWordPaste {
         const patern3: RegExp =
             /(class="?Mso|class='?Mso|class="?Xl|class='?Xl|class=Xl|style="[^"]*\bmso-|style='[^']*\bmso-|w:WordDocument)/gi;
         const pattern4: RegExp = /style='mso-width-source:/i;
+        const source: string = this.findSource(elm);
         if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent) || patern3.test(tempHTMLContent) ||
             pattern4.test(tempHTMLContent)) {
-            const source: string = this.findSource(elm);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
             this.addListClass(elm);
             listNodes = this.cleanUp(elm, listNodes);
@@ -98,7 +98,7 @@ export class MsWordPaste {
             }
             e.callBack(elm.innerHTML, this.cropImageDimensions, source);
         } else {
-            e.callBack(elm.innerHTML);
+            e.callBack(elm.innerHTML, null, source);
         }
     }
 
