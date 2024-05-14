@@ -650,6 +650,10 @@ export class EventBase {
                 this.parent.removeSelectedClass();
             }
         } else if (!closest(element as Element, '.' + cls.POPUP_OPEN)) {
+            if (this.parent.uiStateValues.isTapHold && closest(element, '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS)) {
+                return;
+            }
+            this.parent.uiStateValues.isTapHold = false;
             this.removeSelectedAppointmentClass();
             this.parent.selectedElements = [];
         }
@@ -659,7 +663,7 @@ export class EventBase {
         const isReadOnly: boolean = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] as boolean : false;
         EventHandler.add(element, 'click', this.eventClick, this);
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
-            EventHandler.add(element, 'touchstart', this.eventTouchClick, this);
+            EventHandler.add(element, 'touchend', this.eventTouchClick, this);
             EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
         }
         if (!this.parent.activeViewOptions.readonly && !isReadOnly && !isPreventCrud) {
@@ -673,6 +677,10 @@ export class EventBase {
     }
 
     private eventTouchClick(e: Event): void {
+        if (this.parent.uiStateValues.isTouchScroll || this.parent.uiStateValues.isTapHold || this.parent.uiStateValues.action) {
+            this.parent.uiStateValues.isTouchScroll = this.parent.uiStateValues.isTapHold = false;
+            return;
+        }
         setTimeout(() => this.isDoubleTapped = false, 250);
         e.preventDefault();
         if (this.isDoubleTapped) {
@@ -782,7 +790,7 @@ export class EventBase {
         if (this.parent.quickPopup) {
             this.parent.quickPopup.quickPopupHide(true);
         }
-        if (eventData.type === 'touchstart') {
+        if (eventData.type === 'touchend') {
             this.activeEventData(eventData, true);
         }
         this.removeSelectedAppointmentClass();
@@ -1092,8 +1100,8 @@ export class EventBase {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.eventTemplateName;
             const templateId: string = scheduleId + viewName + 'eventTemplate';
-            const templateName: string = 'eventTemplate' + (isResourceEventTemplate &&
-                this.parent.currentView.indexOf('Year') === -1 ? '_' + resIndex : '');
+            const templateName: string = isResourceEventTemplate && this.parent.currentView.indexOf('Year') === -1 ?
+                this.parent.getEventTemplateName(resIndex) : 'eventTemplate';
             templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false);
         } else {
             const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });

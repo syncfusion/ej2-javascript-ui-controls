@@ -145,13 +145,14 @@ export class Export {
         showSpinner(parent.element);
         parent.element.style.opacity = '0.5';
         const tempCanvas: HTMLCanvasElement = this.exportToCanvas();
+        const imagetype: string = (type === 'jpeg') ? 'image/jpeg' : 'image/png';
         // eslint-disable-next-line @typescript-eslint/tslint/config
         tempCanvas.toBlob(function(blob){
             const blobUrl: string = URL.createObjectURL(blob);
             proxy.downloadImg(blobUrl, fileName + '.' + type);
             hideSpinner(parent.element);
             parent.element.style.opacity = '1';
-        }, 'image/png');
+        }, imagetype);
     }
 
     private exportToCanvas(object?: Object): HTMLCanvasElement {

@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I539772` - Appointment drag and drop issue in iPad is fixed.
+- `#I522699` - The issue with touch scrolling through appointments, which was caused by interference from the drag and drop and resize feature, has been resolved in touch devices. Drag and resize operations are only enabled after a tap-hold action.
+- `#I583762` - The issue with `refreshTemplates` caused alignment issues in date header has been resolved.
+
 ## 25.2.3 (2024-05-08)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I582520` - The issue with `scrollToResource` not working in the month view has been resolved.
+
+## 25.1.42 (2024-04-30)
 
 ### Schedule
 

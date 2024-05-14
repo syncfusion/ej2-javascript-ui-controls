@@ -352,6 +352,7 @@ export class MaskedDateTime {
                     this.previousDate = new Date(newDateValue.getFullYear(), newDateValue.getMonth(), newDateValue.getDate());
                     this.isMonthPart = true;
                     this.monthTypeCount = this.monthTypeCount + 1;
+                    this.isLeadingZero = false;
                 } else {
                     newDateValue.setMonth(0);
                     this.isLeadingZero = true;
@@ -666,7 +667,7 @@ export class MaskedDateTime {
                 break;
             case 'a':
             case 'aa':
-                result =  proxy.maskDateValue.getHours() < 12 ? periodString[periodkeys[0]] : periodString[periodkeys[1]] ;
+                result =  proxy.maskDateValue.getHours() < 12 ? periodString['am'] : periodString['pm'] ;
                 break;
             case 'z':
             case 'zz':

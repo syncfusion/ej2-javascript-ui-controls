@@ -602,9 +602,11 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         const label: Element = wrapper.getElementsByTagName('label')[0];
-        EventHandler.remove(label, 'mousedown', this.labelMouseDownHandler);
-        EventHandler.remove(label, 'mouseup', this.labelMouseUpHandler);
-        EventHandler.remove(label, 'mouseleave', this.labelMouseLeaveHandler);
+        if (label) {
+            EventHandler.remove(label, 'mousedown', this.labelMouseDownHandler);
+            EventHandler.remove(label, 'mouseup', this.labelMouseUpHandler);
+            EventHandler.remove(label, 'mouseleave', this.labelMouseLeaveHandler);
+        }
         const formElem: HTMLFormElement = <HTMLFormElement>closest(this.element, 'form');
         if (formElem) {
             EventHandler.remove(formElem, 'reset', this.formResetHandler);

@@ -230,33 +230,62 @@ export class SpatialSearch {
      * @param {IGroupable} node - provide the options value.
      * @private
      */
-    public updateBounds(node: IGroupable): boolean {
+    public updateBounds(node: IGroupable, isSwimLane?: boolean): boolean {
         let modified: boolean = false;
-        if (node === this.topElement) {
-            this.pageTop = Number.MAX_VALUE;
-            this.topElement = null;
-            this.findTop(this.parentQuad);
-            modified = true;
-        }
-        if (node === this.leftElement) {
-            this.pageLeft = Number.MAX_VALUE;
-            this.leftElement = null;
-            this.findLeft(this.parentQuad);
-            modified = true;
-        }
-        if (node === this.rightElement) {
-            this.pageRight = -Number.MAX_VALUE;
-            this.rightElement = null;
-            this.findRight(this.parentQuad);
-            modified = true;
-        }
-        if (node === this.bottomElement) {
-            this.pageBottom = -Number.MAX_VALUE;
-            this.bottomElement = null;
-            this.findBottom(this.parentQuad);
-            modified = true;
+        //879088: Swimalane exception when drag and dropped from palette
+        if (isSwimLane) {
+            if (this.topElement && node.id === this.topElement.id) {
+                modified = this.updateTop();
+            }
+            if (this.leftElement && node.id === this.leftElement.id) {
+                modified = this.updateLeft();
+            }
+            if (this.rightElement && node.id === this.rightElement.id) {
+                modified = this.updateRight();
+            }
+            if (this.bottomElement && node.id === this.bottomElement.id) {
+                modified = this.updateBottom();
+            }
+        } else {
+            if (node === this.topElement) {
+                modified = this.updateTop();
+            }
+            if (node === this.leftElement) {
+                modified = this.updateLeft();
+            }
+            if (node === this.rightElement) {
+                modified = this.updateRight();
+            }
+            if (node === this.bottomElement) {
+                modified = this.updateBottom();
+            }
         }
         return modified;
+    }
+
+    private updateTop() {
+        this.pageTop = Number.MAX_VALUE;
+        this.topElement = null;
+        this.findTop(this.parentQuad);
+        return true;
+    }
+    private updateBottom() {
+        this.pageBottom = -Number.MAX_VALUE;
+        this.bottomElement = null;
+        this.findBottom(this.parentQuad);
+        return true;
+    }
+    private updateLeft() {
+        this.pageLeft = Number.MAX_VALUE;
+        this.leftElement = null;
+        this.findLeft(this.parentQuad);
+        return true;
+    }
+    private updateRight() {
+        this.pageRight = -Number.MAX_VALUE;
+        this.rightElement = null;
+        this.findRight(this.parentQuad);
+        return true;
     }
 
     private findBottom(quad: Quad): void {

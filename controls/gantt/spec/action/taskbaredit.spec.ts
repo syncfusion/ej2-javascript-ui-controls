@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD, ContextMenu } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue,crDialogEditData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { falseLine } from '../../src/gantt/base/css-constants';
@@ -5479,5 +5479,59 @@ describe('Incorrect offset update while dragging taskbar - CR 544540', () => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
+        });
+    });
+    describe('CR-882787 Dependency ', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: crDialogEditData,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'taskId',
+                        name: 'taskName',
+                        startDate: 'startDate',
+                        endDate: 'endDate',
+                        dependency: 'predecessor',
+                        child: 'subTasks',
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                        'PrevTimeSpan', 'NextTimeSpan'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    enableTimelineVirtualization: true,
+                    enableVirtualization: true,
+                    showColumnMenu: false,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    height: '550px',
+                }, done);
+        });
+        it('Checking updated value', () => {
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#'+ganttObj.element.id+ 'GanttTaskTableBody > tr:nth-child(13) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[12].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/04/2022');
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
         });
     });

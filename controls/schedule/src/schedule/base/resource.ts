@@ -888,8 +888,9 @@ export class ResourceBase {
     public getResourceRenderDates(): Date[] {
         // eslint-disable-next-line prefer-spread
         const resourceDates: Date[] = [].concat.apply([], this.lastResourceLevel.map((e: TdData) => e.renderDates));
+        const time = resourceDates.map((dateObj: Date) => dateObj.getTime());
         const removeDuplicateDates: CallbackFunction = (dateColl: Date[]) => dateColl.filter((date: Date, index: number, dates: Date[]) =>
-            dates.map((dateObj: Date) => dateObj.getTime()).indexOf(date.getTime()) === index);
+            time.indexOf(date.getTime()) === index);
         const renderDates: Date[] = removeDuplicateDates(resourceDates);
         renderDates.sort((a: Date, b: Date) => a.getTime() - b.getTime());
         return renderDates;
@@ -1051,7 +1052,8 @@ export class ResourceBase {
                     index = (resource.dataSource as Record<string, any>[]).map((e: Record<string, any>) => e[resource.idField]).indexOf(id);
                 }
             }
-            const offsetTarget: Element = this.parent.element.querySelector(`.${cls.HEADER_ROW_CLASS}:nth-child(${levelIndex + 1})`);
+            const offsetTarget: Element = this.parent.currentView === 'Month' ? this.parent.element.querySelector(`.${cls.DATE_HEADER_WRAP_CLASS} tbody tr:nth-child(${levelIndex + 1})`)
+                : this.parent.element.querySelector(`.${cls.HEADER_ROW_CLASS}:nth-child(${levelIndex + 1})`);
             const offset: number[] = [].slice.call(offsetTarget.children).map((node: HTMLElement) => node.offsetLeft);
             scrollElement.scrollLeft = offset[parseInt(index.toString(), 10)];
         }

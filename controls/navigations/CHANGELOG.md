@@ -2,13 +2,22 @@
 
 ## [Unreleased]
 
-## 25.2.3 (2024-05-08)
+## 25.2.4 (2024-05-14)
 
-### Menu
+### ContextMenu
 
 #### Bug Fixes
 
-- `#I582079` - The issue with "Context Menu position issue occurs when using multilevel submenus" has been resolved.
+- `#I582079` - The issue with "context menu position issue occurs when using multilevel submenus" has been resolved.
+- `#F187892` - The issue with "context menu overlapping when using a touch screen device" has been resolved.
+
+## 25.2.3 (2024-05-08)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I580119` - The issue with "context menu item text is too large causing it to override the next item" has been resolved.
 
 ## 25.1.42 (2024-04-30)
 

@@ -35,10 +35,11 @@ export class ScheduleTouch {
     }
 
     private scrollHandler(e: ScrollEventArgs): void {
-        if (this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action || !this.parent.allowSwiping ||
-            (e.originalEvent && <HTMLElement>e.originalEvent.target &&
-                ((<HTMLElement>e.originalEvent.target).classList.contains(cls.APPOINTMENT_CLASS) ||
-                    closest(e.originalEvent.target as HTMLElement, '.' + cls.APPOINTMENT_CLASS)) && !this.parent.isAdaptive)) {
+        const blockSwipe: boolean = !this.parent.isAdaptive && e.originalEvent && e.originalEvent.target &&
+            !isNullOrUndefined(closest(e.originalEvent.target as HTMLElement, '.' + cls.APPOINTMENT_CLASS));
+        this.parent.uiStateValues.isTouchScroll = blockSwipe && e.originalEvent.type === 'touchmove' && !this.parent.uiStateValues.action;
+        if (blockSwipe || this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action || !this.parent.allowSwiping ||
+            this.parent.uiStateValues.isTapHold) {
             return;
         }
         if (!this.timeStampStart) {
@@ -94,7 +95,8 @@ export class ScheduleTouch {
     }
 
     private swipeHandler(e: SwipeEventArgs): void {
-        if (!this.isScrollTriggered || this.parent.uiStateValues.action || !this.parent.allowSwiping) { return; }
+        if (!this.isScrollTriggered || this.parent.uiStateValues.action || !this.parent.allowSwiping ||
+            this.parent.uiStateValues.isTapHold) { return; }
         this.isScrollTriggered = false;
         const swipeDate: Date = e.swipeDirection === 'Left' ?
             this.parent.activeView.renderDates[0] : this.parent.activeView.renderDates.slice(-1)[0];
@@ -121,10 +123,26 @@ export class ScheduleTouch {
 
     private tapHoldHandler(e: TapEventArgs): void {
         const target: Element = closest((e.originalEvent.target as Element), '.' + cls.APPOINTMENT_CLASS);
-        if (!isNullOrUndefined(target) && this.parent.isAdaptive) {
-            this.parent.quickPopup.tapHoldEventPopup(e.originalEvent);
-            return;
+        if (!isNullOrUndefined(target)) {
+            this.parent.uiStateValues.isTapHold = true;
+            if (this.parent.isAdaptive) {
+                if (Browser.isIos) {
+                    EventHandler.add(this.element, 'touchend', this.preventEventClick, this);
+                }
+                this.parent.quickPopup.tapHoldEventPopup(e.originalEvent);
+            } else if (['Agenda', 'MonthAgenda', 'Year'].indexOf(this.parent.currentView) < 0) {
+                this.parent.selectedElements = [];
+                this.parent.eventBase.getSelectedEventElements(target);
+                if (this.parent.resizeModule && closest(e.originalEvent.target as Element, '.' + cls.EVENT_RESIZE_CLASS)) {
+                    this.parent.resizeModule.resizeStart(e.originalEvent as any);
+                }
+            }
         }
+    }
+
+    private preventEventClick(e: Event): void {
+        e.preventDefault();
+        EventHandler.remove(this.element, 'touchend', this.preventEventClick);
     }
 
     private renderPanel(clsName: string, nextPrevType: string): void {

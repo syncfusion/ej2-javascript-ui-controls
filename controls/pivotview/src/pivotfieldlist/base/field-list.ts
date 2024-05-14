@@ -855,9 +855,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this)),
             enableOptimizedRendering: this.pivotGridModule && (this.pivotGridModule.enableVirtualization &&
-                this.pivotGridModule.virtualScrollSettings && this.pivotGridModule.virtualScrollSettings.allowSinglePage)
+                this.pivotGridModule.virtualScrollSettings && this.pivotGridModule.virtualScrollSettings.allowSinglePage),
+            requestType: 'string',
         };
-        this.request.open('POST', this.dataSourceSettings.url, true);
+        if (this.request.readyState === XMLHttpRequest.UNSENT || this.request.readyState === XMLHttpRequest.OPENED) {
+            this.request.withCredentials = false;
+        }
         const params: BeforeServiceInvokeEventArgs = {
             request: this.request,
             dataSourceSettings: JSON.parse(this.getPersistData()).dataSourceSettings,
@@ -890,10 +893,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             params.memberName = observedArgs.memberName;
             params.sortItem = observedArgs.sortItem;
         });
-        this.request.withCredentials = false;
+        this.request.open('POST', this.dataSourceSettings.url, true);
         this.request.onreadystatechange = this.onSuccess.bind(this);
-        this.request.setRequestHeader('Content-type', 'application/json');
-        this.request.send(JSON.stringify(params));
+        if(params.internalProperties.requestType === 'string'){
+            this.request.setRequestHeader('Content-type', 'application/json');
+            this.request.send(JSON.stringify(params));
+        } else if(params.internalProperties.requestType === 'base64'){
+            this.request.setRequestHeader('Content-type', 'application/octet-stream');
+            this.request.send(btoa(JSON.stringify(params)))
+        };
     }
 
     private onSuccess(): void {

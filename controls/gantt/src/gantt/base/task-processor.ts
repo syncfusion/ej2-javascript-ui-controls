@@ -1291,7 +1291,7 @@ export class TaskProcessor extends DateProcessor {
                     return ((this.getTimeDifference(sDate, eDate, true) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
                 }
                 else {
-                    if (ganttData.durationUnit === "day" && ganttData.duration < 1 && isNullOrUndefined(this.parent.taskFields.duration)) {
+                    if (ganttData.durationUnit === "day" && ganttData.duration < 1) {
                         return (ganttData.duration * this.parent.perDayWidth);
                     }
                     else {
@@ -1317,7 +1317,12 @@ export class TaskProcessor extends DateProcessor {
                 return (this.parent.perDayWidth);
             }
             else {
-                return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+                if (this.parent.isInDst(sDate) || this.parent.isInDst(eDate)) {
+                    return ((this.getTimeDifference(sDate, eDate, true)  / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+                }
+                else {
+                    return ((this.getTimeDifference(sDate, eDate)  / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+                }
             }
         }
     }
@@ -1356,8 +1361,16 @@ export class TaskProcessor extends DateProcessor {
         const timelineStartDate: Date = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
                 ? new Date((this.parent.timelineModule['dateByLeftValue'](leftValueForStartDate)).toString()) : new Date(this.parent.timelineModule.timelineStartDate);
         if (timelineStartDate) {
-            let leftValue: number =  (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
-            if(this.parent.isInDst(timelineStartDate) && !this.parent.isInDst(startDate) && (this.parent.timelineModule.topTier == 'Hour' || this.parent.timelineModule.bottomTier == 'Hour')) {
+            let leftValue: number;
+            if (this.parent.isInDst(startDate) && !this.parent.isInDst(timelineStartDate)) {
+                const timeZoneOffset = timelineStartDate.getTimezoneOffset();
+                const newTimelineStartDate = new Date(timelineStartDate.getTime() + timeZoneOffset * 60 * 1000);
+                leftValue = (date.getTime() - newTimelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+            }
+            else {
+                leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+            }
+            if (this.parent.isInDst(timelineStartDate) && !this.parent.isInDst(startDate) && (this.parent.timelineModule.topTier == 'Hour' || this.parent.timelineModule.bottomTier == 'Hour')) {
                 leftValue = leftValue - this.parent.timelineSettings.timelineUnitSize;
             }
             return leftValue;
@@ -1758,19 +1771,22 @@ export class TaskProcessor extends DateProcessor {
         const resources: Object[] = [];
         if (typeof (resourceIdCollection) == "string" && resourceIdCollection !== "") {
             let resource: any;
-            resourceData.forEach((resourceInfo: any) => {
-                if (resourceIdCollection === resourceInfo[this.parent.resourceFields.name as any]) {
-                    let resourceName:any = resourceInfo[this.parent.resourceFields.name as any];
-                    resource = [resourceInfo]
+            const resourceIds: string = data[this.parent.taskFields.resourceInfo].split(',');
+            if (resourceIds.length === 0) {
+                resourceData.forEach((resourceInfo: any) => {
+                    if (resourceIdCollection === resourceInfo[this.parent.resourceFields.name as any]) {
+                        let resourceName: any = resourceInfo[this.parent.resourceFields.name as any];
+                        resource = [resourceInfo]
+                    }
+                });
+                const ganttDataResource: Object = extend({}, resource[0]);
+                resources.push(ganttDataResource);
+                if (!isNullOrUndefined(resourceUnitMapping) && !isNullOrUndefined(resourceIdCollection[resourceUnitMapping as string])) {
+                    ganttDataResource[resourceUnitMapping as string] = resourceIdCollection[resourceUnitMapping as string];
                 }
-            });
-            const ganttDataResource: Object = extend({}, resource[0]);
-            resources.push(ganttDataResource);
-            if (!isNullOrUndefined(resourceUnitMapping) && !isNullOrUndefined(resourceIdCollection[resourceUnitMapping as string])) {
-                ganttDataResource[resourceUnitMapping as string] = resourceIdCollection[resourceUnitMapping as string];
-            }
-            if (!isNullOrUndefined(resourceGroup) && !isNullOrUndefined(resourceIdCollection[resourceGroup as string])) {
-                ganttDataResource[resourceGroup as string] = resourceIdCollection[resourceGroup as string];
+                if (!isNullOrUndefined(resourceGroup) && !isNullOrUndefined(resourceIdCollection[resourceGroup as string])) {
+                    ganttDataResource[resourceGroup as string] = resourceIdCollection[resourceGroup as string];
+                }
             }
         } else {
             for (let count: number = 0; count < resourceIdCollection.length; count++) {

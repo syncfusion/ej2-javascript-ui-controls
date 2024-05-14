@@ -720,6 +720,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private resetFilteredData: boolean= false;
     private preventSetCurrentData: boolean = false;
     private virtualCustomData: { [key: string]: string | Object };
+    private isSelectAllLoop: boolean = false;
     private enableRTL(state: boolean): void {
         if (state) {
             this.overAllWrapper.classList.add(RTL_CLASS);
@@ -1421,6 +1422,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             if (this.enableVirtualization && (this.viewPortInfo.endIndex != 0) && !this.virtualSelectAll) {
                 return this.virtualFilterQuery(filterQuery);
+            }
+            if(this.virtualSelectAll){
+                return query ? query.take(this.maximumSelectionLength).requiresCount(): this.query ? this.query.take(this.maximumSelectionLength).requiresCount() : new Query().take(this.maximumSelectionLength).requiresCount();
             }
             return query ? query : this.query ? this.query : new Query();
         }
@@ -2874,7 +2878,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             dropDownBaseClasses.selected;
         if (index !== -1) {
             const currentValue: string | number | boolean = this.allowObjectBinding ? getValue(((this.fields.value) ? this.fields.value : ''), value) : value;
-            const element: HTMLElement = this.findListElement(this.list, 'li', 'data-value', currentValue);
+            const element: HTMLElement = this.virtualSelectAll ? null : this.findListElement(this.list, 'li', 'data-value', currentValue);
             const val: FieldSettingsModel = this.getDataByValue(value) as FieldSettingsModel;
             const eventArgs: RemoveEventArgs = {
                 e: eve,
@@ -3058,7 +3062,7 @@ export class MultiSelect extends DropDownBase implements IInput {
 
         if ((this.allowObjectBinding && !this.isObjectInArray(value, this.value)) || (!this.allowObjectBinding && (this.value as string[]).indexOf(currentValue as string) < 0)) {
             this.setProperties({ value: <[number | string]>[].concat([], this.value, [currentValue]) }, true);
-            if (this.enableVirtualization) {
+            if (this.enableVirtualization && !this.isSelectAllLoop) {
                 let data: string = this.viewWrapper.innerHTML
                 let temp: string;
                 data += (this.value.length === 1) ? '' : this.delimiterChar + ' ';
@@ -3895,7 +3899,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!this.enableVirtualization) {
             this.listData = this.mainData;
         }
-        if (!isNullOrUndefined(this.hiddenElement)) {
+        if (!isNullOrUndefined(this.hiddenElement) && !this.enableVirtualization) {
             this.hiddenElement.innerHTML = '';
         }
         if (!isNullOrUndefined(this.value)) {
@@ -3932,7 +3936,27 @@ export class MultiSelect extends DropDownBase implements IInput {
                             let textValues: string = this.text != null && this.text != "" ? this.text + ',' + temp : temp;
                             data += temp + delimiterChar + ' ';
                             text.push(textValues);
-                            hiddenElementContent += `<option selected value="${valueItem}">${index}</option>`;
+                            hiddenElementContent = this.hiddenElement.innerHTML;
+                            if ((e && e.currentTarget && (e.currentTarget as any).classList.contains('e-chips-close')) || (e && ((e as KeyboardEventArgs).key === 'Backspace'))) {
+                                var item = (e.target as any).parentElement.getAttribute('data-value');
+                                if ((e as KeyboardEventArgs).key === 'Backspace') {
+                                    const lastChild = this.hiddenElement.lastChild;
+                                    if (lastChild) {
+                                        this.hiddenElement.removeChild(lastChild);
+                                    }
+                                }
+                                else {
+                                    this.hiddenElement.childNodes.forEach((option: HTMLOptionElement) => {
+                                        if (option.value === item) {
+                                            option.parentNode.removeChild(option);
+                                        }
+                                    });
+                                }
+                                hiddenElementContent = this.hiddenElement.innerHTML;                        
+                            }
+                            else {
+                                hiddenElementContent += "<option selected value=\"" + value + "\">" + index + "</option>";
+                            }
                             break;
                         }
                         else{
@@ -4843,14 +4867,14 @@ export class MultiSelect extends DropDownBase implements IInput {
         let li: HTMLElement[] & NodeListOf<Element>;
         if (!isNullOrUndefined(this.list)) {
             li = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll(state ?
-                'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
-                'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
+                'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide):not(.e-virtual-list)' :
+                'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide):not(.e-virtual-list)');
         }
         if (this.value && this.value.length && event && event.target
         && closest(event.target as Element, '.e-close-hooker') && this.allowFiltering) {
             li = <HTMLElement[] & NodeListOf<Element>>this.mainList.querySelectorAll(state ?
-                'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
-                'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
+                'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide):not(.e-virtual-list)' :
+                'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide):not(.e-virtual-list)');
         }
         if (this.enableGroupCheckBox && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)) {
             let target: Element = <Element>(event ? (this.groupTemplate ? closest(event.target as Element, '.e-list-group-item') : event.target ) : null);
@@ -4908,8 +4932,114 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.addValidInputClass();
     }
+
+    protected virtualSelectionAll(state: boolean, li: NodeListOf<HTMLElement>| HTMLElement[], event: MouseEvent | KeyboardEventArgs): void {
+        let index: number = 0;
+        let length: number = li.length;
+        let count: number = this.maximumSelectionLength;
+        if (state) {
+            length = this.virtualSelectAllData && this.virtualSelectAllData.length != 0 ? this.virtualSelectAllData.length : length;
+            this.listData = this.virtualSelectAllData;
+            const ulElement = this.createListItems(this.virtualSelectAllData.slice(0, 30) as { [key: string]: Object }[], this.fields)
+            const firstItems = ulElement.querySelectorAll('li')
+            const fragment = document.createDocumentFragment();
+            firstItems.forEach((node: HTMLElement) => {
+                fragment.appendChild(node.cloneNode(true));
+              });
+            li.forEach((node: HTMLElement) => {
+                fragment.appendChild(node.cloneNode(true));
+              });
+            const concatenatedNodeList: NodeListOf<HTMLElement>| HTMLElement[] = fragment.childNodes as NodeListOf<HTMLElement>;
+
+            if (this.virtualSelectAllData instanceof Array) {
+                while (index < length && index <= 50 && index < count) {
+                    this.isSelectAllTarget = (length === index + 1);
+                    if (concatenatedNodeList[index as number]) {
+                        let value: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(concatenatedNodeList[index as number].getAttribute('data-value')) : this.getFormattedValue(concatenatedNodeList[index as number].getAttribute('data-value'));
+                        if(((!this.allowObjectBinding && this.value && (this.value as string[]).indexOf(value as string) >= 0) || (this.allowObjectBinding && this.indexOfObjectInArray(value, this.value) >= 0))){
+                            index++
+                            continue;   
+                        }
+                        this.updateListSelection(concatenatedNodeList[index as number], event, length - index);
+                    }
+                    else {
+                        let value = getValue((this.fields.value) ? this.fields.value : '', this.virtualSelectAllData[index as number]);
+                        value = this.allowObjectBinding ? this.getDataByValue(value) : value;
+                        if(((!this.allowObjectBinding && this.value && (this.value as string[]).indexOf(value as string) >= 0) || (this.allowObjectBinding && this.indexOfObjectInArray(value, this.value) >= 0))){
+                            index++
+                            continue;
+                        }
+                        if (this.value && value != null && Array.isArray(this.value) && ((!this.allowObjectBinding && this.value.indexOf(value as never) < 0) || (this.allowObjectBinding && !this.isObjectInArray(value, this.value)))) {
+                            this.dispatchSelect(value, event , null, false, length);
+                        }
+                    }
+                    index++;
+                }
+                if (length > 50) {
+                    setTimeout(
+                        (): void => {
+                            if (this.virtualSelectAllData && this.virtualSelectAllData.length > 0) {
+                                (this.virtualSelectAllData as any[]).map((obj: any) => {
+                                    if (this.value && obj[this.fields.value] != null && Array.isArray(this.value) && ((!this.allowObjectBinding && this.value.indexOf(obj[this.fields.value] as never) < 0) || (this.allowObjectBinding && !this.isObjectInArray(obj[this.fields.value], this.value)))) {
+                                        this.dispatchSelect(obj[this.fields.value], event , null, false, length);
+                                    }
+                                });
+                            }
+                            this.updatedataValueItems(event);
+                            this.isSelectAllLoop = false;
+                            if (!this.changeOnBlur) {
+                                this.updateValueState(event, this.value, this.tempValues);
+                                this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
+                            }
+                            this.updateHiddenElement();
+                            if (this.popupWrapper && li[index - 1] && li[index - 1].classList.contains('e-item-focus')) {
+                                const selectAllParent = document.getElementsByClassName('e-selectall-parent')[0];
+                                if (selectAllParent && selectAllParent.classList.contains('e-item-focus')) {
+                                    li[index - 1].classList.remove('e-item-focus');
+                                }
+                            }
+                        },
+                        0
+                    );
+                }
+            }
+        }
+        else {
+            if (this.virtualSelectAllData && this.virtualSelectAllData.length > 0) {
+                (this.virtualSelectAllData as any[]).map((obj: any) => {
+                    this.virtualSelectAll = true;
+                    this.removeValue(this.value[index as number], event, this.value.length - index);
+                });
+            }
+            this.updatedataValueItems(event);
+            if (!this.changeOnBlur) {
+                this.updateValueState(event, this.value, this.tempValues);
+                this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
+            }
+            this.updateHiddenElement();
+            this.value = [];
+            this.virtualSelectAll = false;
+            if (!isNullOrUndefined(this.viewPortInfo.startIndex) && !isNullOrUndefined(this.viewPortInfo.endIndex)) {
+                this.notify("setCurrentViewDataAsync", {
+                    component: this.getModuleName(),
+                    module: "VirtualScroll",
+                });
+            }
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const virtualTrackElement = this.list.getElementsByClassName('e-virtual-ddl')[0] as any;
+        if (virtualTrackElement) {
+            (virtualTrackElement).style = this.GetVirtualTrackHeight();
+        }
+        this.UpdateSkeleton();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const virtualContentElement = this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any;
+        if (virtualContentElement) {
+            (virtualContentElement).style = this.getTransformValues();
+        }
+    }
     private updateValue(event: MouseEvent | KeyboardEventArgs, li : NodeListOf<HTMLElement>| HTMLElement[], state: boolean): void {
-        const length: number = li.length;
+        let length: number = li.length;
         const beforeSelectArgs: ISelectAllEventArgs = {
             event: event,
             items: state ? li as HTMLLIElement[] : [],
@@ -4929,101 +5059,15 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             if (!beforeSelectArgs.preventSelectEvent) {
                 if (this.enableVirtualization) {
-                    if (state) {
-                        this.virtualSelectAll = true;
+                    this.virtualSelectAll = true;
+                    this.virtualSelectAllState = state;
+                    this.CurrentEvent = event;
+                    if(!this.virtualSelectAllData){
                         this.resetList(this.dataSource, this.fields, new Query());
-                        if (this.virtualSelectAllData instanceof Array) {
-                            for (var i = 0; i < this.virtualSelectAllData.length; i++) {
-                                if (li[this.skeletonCount + i]) {
-                                    let value: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(li[this.skeletonCount + i].getAttribute('data-value')) : this.getFormattedValue(li[this.skeletonCount + i].getAttribute('data-value'));
-                                    if(((!this.allowObjectBinding && this.value && (this.value as string[]).indexOf(value as string) === 1) || (this.allowObjectBinding && this.indexOfObjectInArray(value, this.value) === 1))){
-                                        continue;
-                                    }
-                                    this.updateListSelection(li[this.skeletonCount + i], event, length - i);
-                                }
-                                else {
-                                    if (this.fields) {
-                                        let value = getValue(this.fields.value, this.virtualSelectAllData[i as number]);
-                                        value = this.allowObjectBinding ? this.getDataByValue(value) : value;
-                                        if(((!this.allowObjectBinding && this.value && (this.value as string[]).indexOf(value as string) === 1) || (this.allowObjectBinding && this.indexOfObjectInArray(value, this.value) === 1))){
-                                            continue;
-                                        }
-                                        if (this.value && value != null && Array.isArray(this.value) && ((!this.allowObjectBinding && this.value.indexOf(value as never) < 0) || (this.allowObjectBinding && !this.isObjectInArray(value, this.value)))) {
-                                            this.dispatchSelect(value, event , null, false, length);
-                                        }
-                                    }
-                                }
-                            }
-                            if (this.virtualSelectAllData && this.value.length != this.virtualSelectAllData.length && this.virtualItemStartIndex != 0) {
-                                if (this.virtualItemStartIndex > this.itemCount) {
-                                    for (var i = 0; i < this.itemCount; i++) {
-                                        if (this.fields) {
-                                            let value = getValue(this.fields.value, this.virtualSelectAllData[i as number]);
-                                            value = this.allowObjectBinding ? this.getDataByValue(value) : value;
-                                            if (this.value && value != null && Array.isArray(this.value) && ((!this.allowObjectBinding && this.value.indexOf(value as never) < 0) || (this.allowObjectBinding && !this.isObjectInArray(value, this.value)))) {
-                                                this.setProperties({ value: <[number | string | object]>[].concat([], this.value, this.allowObjectBinding ? [this.virtualSelectAllData[i as number]] : [value]) }, true);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                for (var i = 0; i < this.virtualItemStartIndex; i++) {
-                                    if (this.fields) {
-                                        var value = getValue(this.fields.value, this.virtualSelectAllData[i as number]);
-                                        value = this.allowObjectBinding ? this.getDataByValue(value) : value;
-                                        if (Array.isArray(this.value) && ((!this.allowObjectBinding && this.value.indexOf(value as never) < 0) || (this.allowObjectBinding && !this.isObjectInArray(value, this.value)))) {
-                                            this.setProperties({ value: <[number | string | object]>[].concat([], this.value, this.allowObjectBinding ? [this.virtualSelectAllData[i as number]] : [value]) }, true);
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
                     }
-                    else {
-                        while (index < this.value.length && index <= 50 && index < count && this.value.length > 0) {
-                            this.removeValue(this.value[index as number], event, this.value.length - index);
-                            index++;
-                        }
-                        if (length > 50) {
-                            setTimeout(
-                                (): void => {
-                                    while (index < this.value.length && index < count && this.value.length > 0) {
-                                        this.removeValue(value[index as number], event, this.value.length - index);
-                                        index++;
-                                    }
-                                    this.updatedataValueItems(event);
-                                    if (!this.changeOnBlur) {
-                                        this.updateValueState(event, this.value, this.tempValues);
-                                        this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
-                                    }
-                                    this.updateHiddenElement();
-                                },
-                                0
-                            );
-                        }
-                        this.value = [];
-                        this.virtualSelectAll = false;
-                        if (!isNullOrUndefined(this.viewPortInfo.startIndex) && !isNullOrUndefined(this.viewPortInfo.endIndex)) {
-                            this.notify("setCurrentViewDataAsync", {
-                                component: this.getModuleName(),
-                                module: "VirtualScroll",
-                            });
-                        }
+                    if(this.virtualSelectAllData){
+                        this.virtualSelectionAll(state,li,event);
                     }
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const virtualTrackElement = this.list.getElementsByClassName('e-virtual-ddl')[0] as any;
-                    if (virtualTrackElement) {
-                        (virtualTrackElement).style = this.GetVirtualTrackHeight();
-                    }
-                    this.UpdateSkeleton();
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const virtualContentElement = this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any;
-                    if (virtualContentElement) {
-                        (virtualContentElement).style = this.getTransformValues();
-                    }
-
                 }
                 else {
                     while (index < length && index <= 50 && index < count) {
@@ -5112,7 +5156,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.updateValueState(event, this.value, this.tempValues);
                 this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
             }
-            this.updateHiddenElement();
+            if((this.enableVirtualization && this.value && this.value.length > 0) || !this.enableVirtualization){
+                this.updateHiddenElement();
+            }
         }
     }
 
@@ -5213,7 +5259,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             this.selectAllItem(state, event);
         }
-        this.virtualSelectAll = false;
+        if (!(this.dataSource instanceof DataManager) || (this.dataSource instanceof DataManager && this.virtualSelectAllData)) {
+            this.virtualSelectAll = false;
+        }
     }
     /**
      * Get the properties to be maintained in the persisted state.

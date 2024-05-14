@@ -11305,6 +11305,50 @@ describe('Tab Control', () => {
         });
     });
 
+    describe('Changing tab items dynamically ', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('checking selected item', () => {
+            let items: TabItemModel[] = [
+                { header: { 'text': 'item1' }, content: 'Content1' },
+                { header: { 'text': 'item2' }, content: 'Content2' }
+            ];
+            tab = new Tab({
+                items: items
+            });
+            tab.appendTo('#ej2Tab');
+            const element: HTMLElement = tab.element;
+            expect(element.querySelectorAll('.e-toolbar-item').length).toBe(2);
+            const button: HTMLButtonElement = document.createElement('button');
+            button.innerText = 'Change Items';
+            document.body.appendChild(button);
+            button.addEventListener('click', () => {
+                items = [
+                    { header: { 'text': 'item3' }, content: 'Content3' },
+                    { header: { 'text': 'item4' }, content: 'Content4' },
+                    { header: { 'text': 'item5' }, content: 'Content5' },
+                ];
+                tab.items = items;
+                tab.selectedItem = 2;
+                tab.dataBind();
+                expect(element.querySelectorAll('.e-toolbar-item').length).toBe(3);
+                expect(tab.selectedItem).toBe(2);
+            });
+            button.click();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

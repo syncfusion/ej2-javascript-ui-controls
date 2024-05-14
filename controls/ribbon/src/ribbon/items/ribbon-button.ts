@@ -49,7 +49,11 @@ export class RibbonButton {
             created: btnSettings.created
         }, buttonEle);
         if (btnSettings.htmlAttributes) {
-            setCustomAttributes(buttonEle, btnSettings.htmlAttributes);
+            const htmlAttr: { [key: string]: string } = { ...btnSettings.htmlAttributes };
+            if (htmlAttr.id) {
+                delete htmlAttr.id;
+            }
+            setCustomAttributes(buttonEle, htmlAttr);
         }
         buttonEle.onclick = (e: Event) => {
             if (btnSettings.clicked) { btnSettings.clicked.call(this, e); }

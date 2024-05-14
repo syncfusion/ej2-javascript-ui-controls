@@ -33,6 +33,13 @@ export class RibbonCheckBox {
         });
         itemEle.appendChild(inputEle);
         const checkBoxSettings: RibbonCheckBoxSettingsModel = item.checkBoxSettings;
+        let htmlAttr: { [key: string]: string } = {};
+        if (checkBoxSettings.htmlAttributes) {
+            htmlAttr = { ...checkBoxSettings.htmlAttributes };
+            if (htmlAttr.id) {
+                delete htmlAttr.id;
+            }
+        }
         new CheckBox({
             locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
@@ -43,7 +50,7 @@ export class RibbonCheckBox {
             labelPosition: checkBoxSettings.labelPosition,
             disabled: item.disabled,
             created: checkBoxSettings.created,
-            htmlAttributes: checkBoxSettings.htmlAttributes,
+            htmlAttributes: htmlAttr,
             change: (e: ChangeEventArgs) => {
                 if (checkBoxSettings.change) { checkBoxSettings.change.call(this, e); }
             }

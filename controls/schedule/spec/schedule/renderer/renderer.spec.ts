@@ -174,6 +174,58 @@ describe('Data module', () => {
         });
     });
 
+    describe('refreshTemplate checking', () => {
+        let schObj: Schedule;
+        const dateHeaderTemplate: string = '<span>~${getDateHeaderText(data.date)}~</span>';
+
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2020, 0, 4),
+                width: '800px',
+                group: { resources: ['Owners'] },
+                resources: [
+                    {
+                        field: 'OwnerId', name: 'Owners',
+                        dataSource: [
+                            { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' },
+                            { Text: 'Nancy', Id: 4, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 5, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 6, GroupID: 1, Color: '#7499e1' }
+                        ]
+                    }
+                ],
+                dateHeaderTemplate: dateHeaderTemplate,
+                timeScale: { enable: true, interval: 360, slotCount: 2 },
+                views: [
+                    { option: 'TimelineDay', interval: 3 },
+                    { option: 'Month' },
+                ],
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('refresh templates testing after scrolling in TimelineDay view', (done: DoneFn) => {
+            schObj.element.querySelector('.e-content-wrap').scrollLeft = 292;
+            schObj.refreshTemplates('dateHeaderTemplate');
+            expect(schObj.element.querySelector('.e-date-header-wrap').scrollLeft).toEqual(schObj.element.querySelector('.e-content-wrap').scrollLeft);
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+            done();
+        });
+
+        it('refresh templates testing after scrolling in Month view', (done: DoneFn) => {
+            schObj.element.querySelector('.e-content-wrap').scrollLeft = 292;
+            schObj.refreshTemplates('dateHeaderTemplate');
+            expect(schObj.element.querySelector('.e-date-header-wrap').scrollLeft).toEqual(schObj.element.querySelector('.e-content-wrap').scrollLeft);
+            done();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

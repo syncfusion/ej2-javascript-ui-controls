@@ -36,7 +36,11 @@ export class Resize extends ActionBase {
         }
     }
 
-    private resizeStart(e: MouseEvent & TouchEvent): void {
+    public resizeStart(e: MouseEvent & TouchEvent): void {
+        if (e && e.type === 'touchstart' && (!this.parent.uiStateValues.isTapHold ||
+            !closest(e.target as Element, '.' + cls.APPOINTMENT_BORDER))) {
+            return;
+        }
         this.actionObj.action = 'resize';
         this.actionObj.slotInterval = this.parent.activeViewOptions.timeScale.interval / this.parent.activeViewOptions.timeScale.slotCount;
         this.actionObj.interval = this.actionObj.slotInterval;
@@ -101,6 +105,9 @@ export class Resize extends ActionBase {
     }
 
     private resizing(e: MouseEvent & TouchEvent): void {
+        if (e && e.type === 'touchmove') {
+            e.preventDefault();
+        }
         if (this.parent.quickPopup) {
             this.parent.quickPopup.quickPopupHide();
         }
@@ -292,7 +299,7 @@ export class Resize extends ActionBase {
         this.removeCloneElementClasses();
         this.removeCloneElement();
         this.actionClass('removeClass');
-        this.parent.uiStateValues.action = false;
+        this.parent.uiStateValues.action = this.parent.uiStateValues.isTapHold = false;
         const resizeArgs: ResizeEventArgs = { cancel: false, data: this.getChangedData(), element: this.actionObj.element, event: e };
         this.parent.trigger(event.resizeStop, resizeArgs, (resizeEventArgs: ResizeEventArgs) => {
             if (resizeEventArgs.cancel) {

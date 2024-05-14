@@ -65,7 +65,11 @@ export class RibbonDropDown {
             select: dropDownSettings.select
         }).appendTo(buttonEle);
         if (dropDownSettings.htmlAttributes) {
-            setCustomAttributes(buttonEle, dropDownSettings.htmlAttributes);
+            const htmlAttr: { [key: string]: string } = { ...dropDownSettings.htmlAttributes };
+            if (htmlAttr.id) {
+                delete htmlAttr.id;
+            }
+            setCustomAttributes(buttonEle, htmlAttr);
         }
     }
     /**

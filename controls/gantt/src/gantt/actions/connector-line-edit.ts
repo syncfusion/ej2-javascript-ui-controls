@@ -23,6 +23,7 @@ export class ConnectorLineEdit {
     public predecessorIndex: number = null;
     /** @private */
     public childRecord: IGanttData = null;
+    private validatedId:{ id: any, value: any }[] = [];
     private dateValidateModule: DateProcessor;
     private validatedOffsetIds: string[] = [];
     constructor(ganttObj?: Gantt) {
@@ -700,15 +701,32 @@ export class ConnectorLineEdit {
             this.processPredecessors(connectedTaskId)
         }
     }
+    private compareArrays(arr1: any, arr2: any): any {
+        if (arr1.length !== arr2.length) {
+            return false;
+        }
+        const str1 = JSON.stringify(arr1);
+        const str2 = JSON.stringify(arr2);
+        return str1 === str2;
+    }
     private processPredecessors(parentId: any): void {
         if (parentId) {
             const record = this.parent.getRecordByID(parentId);
             if (record && record.ganttProperties && record.ganttProperties.predecessor) {
                 this.parent.connectorLineEditModule['validatedOffsetIds'] = [];
                 this.calculateOffset(record);
+                let isIdInclude: boolean = true;
+                let matchedObject = this.validatedId.find(item => item.id === record.ganttProperties.taskId);
+                if (matchedObject) {
+                    let predecessorArray = matchedObject.value;
+                    let areArraysEqual = this.compareArrays(predecessorArray, record.ganttProperties.predecessor);
+                    if (areArraysEqual) {
+                        isIdInclude = false
+                    }
+                }
                 const predecessors = record.ganttProperties.predecessor;
                 predecessors.forEach(predecessor => {
-                    if (record.ganttProperties.taskId == predecessor.from) {
+                    if (record.ganttProperties.taskId == predecessor.from && isIdInclude) {
                         this.processPredecessors(predecessor.to)
                     }
                 });

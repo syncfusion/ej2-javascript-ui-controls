@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I579605` - Now, the editor scrolls to the cursor position after pasting content into the editor.
+
+- `#I581468` - Now, improved the alignment of the pasted images and table content from the new outlook.
+
+- `I566845` - Now, when pasting images from `FSNotes`, the image is uploaded properly to the server in the Rich Text Editor.
+
+- `I564770` - Now, the list type is applied properly to both the parent and the nest list while applying indents in the Rich Text Editor.
+
 ## 25.1.42 (2024-04-30)
 
 ### RichTextEditor

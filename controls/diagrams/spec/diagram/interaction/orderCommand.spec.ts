@@ -950,7 +950,7 @@ describe('Order commands for Multiple selection', () => {
     it('Multi-select the nodes and perform sendToBack', (done: Function) => {
         diagram.select([diagram.nodes[0], diagram.nodes[1]]);
         diagram.sendToBack();
-        expect(diagram.nodes[0].zIndex === -1 && diagram.nodes[1].zIndex === -3).toBe(true);
+        expect(diagram.nodes[0].zIndex === 1 && diagram.nodes[1].zIndex === -1).toBe(true);
         done();
     });
 });

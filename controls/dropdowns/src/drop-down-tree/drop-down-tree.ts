@@ -2359,10 +2359,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     focusedElement.focus();
                     addClass([focusedElement], ['e-node-focus']);
                 }
-                if (this.checkSelectAll && this.checkBoxElement) {
-                    const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
-                    this.changeState(wrap, 'check');
-                    this.checkSelectAll = false;
+                if (this.treeObj.checkedNodes.length > 0) {
+                    const nodes: NodeList = this.treeObj.element.querySelectorAll('li');
+                    const checkedNodes: NodeList = this.treeObj.element.querySelectorAll('li[aria-checked=true]');
+                    if((checkedNodes.length === nodes.length || this.checkSelectAll) && this.checkBoxElement){
+                        const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
+                        this.changeState(wrap, 'check');
+                        this.checkSelectAll = false;
+                    }
                 }
                 if (this.allowFiltering) {
                     removeClass([this.inputWrapper], [INPUTFOCUS]);

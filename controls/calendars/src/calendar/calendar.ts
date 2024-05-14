@@ -2076,6 +2076,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (!multiSelection && !isNullOrUndefined(tableBodyElement.querySelector('.' + FOCUSEDDATE))) {
             removeClass([tableBodyElement.querySelector('.' + FOCUSEDDATE)], FOCUSEDDATE);
         }
+        if (!multiSelection && !isNullOrUndefined(tableBodyElement.querySelector('.' + FOCUSEDCELL))) {
+            removeClass([tableBodyElement.querySelector('.' + FOCUSEDCELL)], FOCUSEDCELL);
+        }
         if (multiSelection) {
             const copyValues: Date[] = this.copyValues(values);
             const collection: Element[] = Array.prototype.slice.call(this.tableBodyElement.querySelectorAll('td'));

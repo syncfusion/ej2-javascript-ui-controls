@@ -7027,28 +7027,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const layer: LayerModel = this.commandHandler.getObjectLayer(connector.id);
             this.initConnectors(connector, layer);
         }
-        //EJ2-867308 - sendBackward and moveForward not working as intended
-        //The zindex values for nodes and connectors are set correctly in zindextable based on the order of it
-        let originalZIndexTable: object = {};  // New variable to store original zIndex values
-        // Store original zIndex values for visible nodes
-        for (let i:number = 0; i < this.layers.length; i++) {
-            let layer = this.layers[parseInt(i.toString(), 10)] as Layer;
-            if (layer.visible) {
-                const zIndexValues: string[] = Object.keys(layer.zIndexTable).map(key => layer.zIndexTable[`${key}`]);
-                for (let j:number = 0;j < zIndexValues.length; j++) {
-                    let nodeId:string = zIndexValues[parseInt(j.toString(), 10)];
-                    let element:NodeModel|ConnectorModel = this.nameTable[`${nodeId}`];
-                    if (element) {
-                        originalZIndexTable[element.id] = element.zIndex;
-                    }
-                }
-            }
-        }
-        // Sort nodes and connectors based on zIndex
-        const sortedNodeIds: string[] = Object.keys(originalZIndexTable).sort((a, b) => originalZIndexTable[`${a}`] - originalZIndexTable[`${b}`]);
-        for (let i:number = 0; i < this.layers.length; i++) {
-            (this.layers[parseInt(i.toString(), 10)] as Layer).zIndexTable  = sortedNodeIds;
-        }
         if (isBlazor() && canCloneObject) {
             for (const obj of this.nodes) {
                 updateNodeObject.push(cloneObject(obj, undefined, undefined, true));
@@ -12352,7 +12330,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         this.spatialSearch.removeFromAQuad(obj.wrapper);
-        const modified: boolean = this.spatialSearch.updateBounds(obj.wrapper);
+        const isSwimLane: boolean = (obj as NodeModel).shape.type === 'SwimLane' ? true : false;
+        const modified: boolean = this.spatialSearch.updateBounds(obj.wrapper, isSwimLane);
         if (modified && !this.preventDiagramUpdate) {
             this.updatePage();
         }

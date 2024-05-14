@@ -71,7 +71,11 @@ export class RibbonSplitButton {
             }
         }, buttonEle);
         if (splitButtonSettings.htmlAttributes) {
-            setCustomAttributes(buttonEle, splitButtonSettings.htmlAttributes);
+            const htmlAttr: { [key: string]: string } = { ...splitButtonSettings.htmlAttributes };
+            if (htmlAttr.id) {
+                delete htmlAttr.id;
+            }
+            setCustomAttributes(buttonEle, htmlAttr);
         }
         const dropdownEle: HTMLElement = buttonEle.parentElement.querySelector('.e-dropdown-btn');
         dropdownEle.onkeydown = (e: KeyboardEventArgs) => {

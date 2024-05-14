@@ -339,7 +339,7 @@ export class DOMNode {
     public unWrap(element: Element): Element[] {
         const parent: Element = element.parentNode as Element;
         let unWrapNode: Element[] = [];
-        while (element.firstChild) {
+        while (element.firstChild && (element.previousSibling !== this.parent.querySelector('.e-mention-chip') || element.textContent !== ' ')) {
             unWrapNode.push(element.firstChild as Element);
             parent.insertBefore(element.firstChild, element);
         }

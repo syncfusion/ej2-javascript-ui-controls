@@ -2528,11 +2528,11 @@ export class CommandHandler {
                 const layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
                 const zIndexTable: {} = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).zIndexTable;
                 let layerObjects = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).objects;
-                let minZindex = 0;
+                let minZindex = null;
                 let targetId = '';
                 for(let i:number = 0;i<layerObjects.length;i++){
                     let obj = this.diagram.nameTable[layerObjects[parseInt(i.toString(), 10)]];
-                    if(obj.zIndex < minZindex){
+                    if(minZindex === null || obj.zIndex < minZindex){
                         minZindex = obj.zIndex;
                         targetId = obj.id;
                     }
@@ -2795,10 +2795,10 @@ export class CommandHandler {
                 const zIndexTable: {} = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).zIndexTable;
                 const undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
                 let layerObjects = (this.diagram.layers[parseInt(layerNum.toString(), 10)] as Layer).objects;
-                let maxZindex = 0;
+                let maxZindex = null;
                 for(let i:number = 0;i<layerObjects.length;i++){
                     let obj = this.diagram.nameTable[layerObjects[parseInt(i.toString(), 10)]];
-                    if(obj.zIndex > maxZindex){
+                    if(maxZindex === null || obj.zIndex > maxZindex){
                         maxZindex = obj.zIndex;
                     }
                 }
@@ -6166,7 +6166,9 @@ Remove terinal segment in initial
         const preventNodesUpdate: Boolean = this.diagram.preventNodesUpdate;
         const expand: boolean = node.isExpanded;
         this.diagram.preventNodesUpdate = true;
-        this.diagram.preventConnectorsUpdate = true;
+        //Bug 883244: After expand and collapse the compex hierarchical layout, the connector are not rendered properly.
+        // Removed the preventConnectorsUpdate property to update the connector properly while performing expand and collapse.
+        // this.diagram.preventConnectorsUpdate = true;
         this.expandCollapse(node, expand, this.diagram);
         node.isExpanded = expand;
         const fixedNode: string = this.diagram.layout.fixedNode;
@@ -6181,7 +6183,7 @@ Remove terinal segment in initial
             if(isBlazor()) {
                 this.canUpdateTemplate = true;
             }
-            if(this.layoutAnimateModule.setIntervalObject.length > 0){
+            if(this.layoutAnimateModule && this.layoutAnimateModule.setIntervalObject.length > 0){
                 this.layoutAnimateModule.stopCurrentAnimation(this.objectStore[0],diagram,node);
                 this.objectStore = [];
             }
@@ -6191,7 +6193,7 @@ Remove terinal segment in initial
         this.canUpdateTemplate = false;
         this.diagram.blazorActions &= ~BlazorAction.expandNode;
         this.diagram.preventNodesUpdate = preventNodesUpdate;
-        this.diagram.preventConnectorsUpdate = false;
+        // this.diagram.preventConnectorsUpdate = false;
 
         if (this.diagram.layoutAnimateModule && this.diagram.organizationalChartModule && !canLayout) {
             this.diagram.allowServerDataBinding = false;

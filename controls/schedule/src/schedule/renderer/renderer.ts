@@ -24,11 +24,17 @@ export class Render {
 
     private initializeLayout(viewName: View): void {
         if (this.parent.activeView) {
-            const templates: string[] = [
-                'cellTemplate', 'eventTemplate', 'tooltipTemplate', 'majorSlotTemplate', 'minorSlotTemplate',
+            let templates: string[] = [
+                'cellTemplate', 'tooltipTemplate', 'majorSlotTemplate', 'minorSlotTemplate',
                 'headerTooltipTemplate', 'dateHeaderTemplate', 'dayHeaderTemplate', 'monthHeaderTemplate',
                 'headerIndentTemplate', 'resourceHeaderTemplate', 'cellHeaderTemplate', 'dateRangeTemplate'
             ];
+            if (this.parent.activeEventTemplates.length > 0) {
+                templates = templates.concat(this.parent.activeEventTemplates);
+                this.parent.activeEventTemplates = [];
+            } else {
+                templates.push('eventTemplate');
+            }
             this.parent.resetTemplates(templates);
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();

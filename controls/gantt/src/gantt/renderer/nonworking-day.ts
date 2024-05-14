@@ -168,7 +168,7 @@ export class NonWorkingDay {
                 let sDate: Date = new Date(startDate);
                 sDate.setDate(sDate.getDate() +1);
                 if (sDate.getTimezoneOffset() != this.parent.timelineModule.timelineStartDate.getTimezoneOffset() && !this.weekendWidthUpdated) {
-                    if (this.parent.timelineModule.bottomTier == 'Hour' && this.parent.timelineSettings.bottomTier.count === 1) {
+                    if (this.parent.timelineModule.bottomTier == 'Hour' && this.parent.timelineModule.customTimelineSettings.bottomTier.count === 1) {
                         width = width - this.parent.timelineSettings.timelineUnitSize;
                         this.weekendWidthUpdated = true;
                     }

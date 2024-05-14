@@ -1361,6 +1361,71 @@ describe('Ribbon Items', () => {
             //Check split button
             expect(document.querySelector('#largepaste').getAttribute('data-id')).toBe('largepaste');
         });
+        it('Using htmlAttributes id Large item break in simplified mode', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        header: "Large items",
+                        groupIconCss: 'e-icons e-paste',
+                        showLauncherIcon: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    content: 'Paste',
+                                    cssClass: 'test-css',
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                    close: () => { isCloseCalled = true; },
+                                    htmlAttributes: { id: 'item1' }
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                dropDownSettings: {
+                                    content: 'Table',
+                                    iconCss: 'e-icons e-table',
+                                    cssClass: 'test-css',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ],
+                                    close: () => { isCloseCalled = true; },
+                                    htmlAttributes: { id: 'item2' }
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                cssClass: 'test-css',
+                                buttonSettings: {
+                                    clicked: () => {
+                                        outputEle.innerText = ("Large " + "Cut Clicked");
+                                    },
+                                    content: 'cut',
+                                    iconCss: 'e-icons e-cut',
+                                    htmlAttributes: { id: 'item3' }
+                                }
+                            }]
+                        },]
+                    }]
+                }]
+            }, ribbonEle);
+            //splitbutton
+            expect(document.querySelector('#item1_container').classList.contains('e-ribbon-large-item')).toBe(true);
+            //dropdown
+            expect(document.querySelector('#item2_container').classList.contains('e-ribbon-large-item')).toBe(true);
+            //button
+            expect(document.querySelector('#item3_container').classList.contains('e-ribbon-large-item')).toBe(true);
+            //check large item change to medium item in simplified mode
+            ribbon.setProperties({ activeLayout: RibbonLayout.Simplified });
+            expect(document.querySelector('#item1_container').classList.contains('e-ribbon-medium-item')).toBe(true); 
+            expect(document.querySelector('#item2_container').classList.contains('e-ribbon-medium-item')).toBe(true);
+            expect(document.querySelector('#item3_container').classList.contains('e-ribbon-medium-item')).toBe(true);
+        });
     });
     describe('Overflow items interaction', () => {   
 

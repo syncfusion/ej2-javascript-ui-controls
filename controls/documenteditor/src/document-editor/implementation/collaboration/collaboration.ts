@@ -344,9 +344,9 @@ export class CollaborativeEditingHandler {
             }
             if (action.operations[i].action === 'Delete' || action.operations[i].action === 'Format') {
                 //Update endOffset
-                if (action.operations[i].action === 'Delete') {
+                // if (action.operations[i].action === 'Delete') {
                     this.documentEditor.selectionModule.isEndOffset = true;
-                }
+                // }
                 endOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset + action.operations[i].length, false, false, false);
                 this.documentEditor.selectionModule.isEndOffset = false;
                 // Code for Comparing the offset calculated using old approach and optimized approach
@@ -363,7 +363,9 @@ export class CollaborativeEditingHandler {
                 this.documentEditor.selectionModule.select(startOffset, endOffset);
             }
             if (!isNullOrUndefined(op2.markerData)) {
-                this.documentEditor.editorModule.revisionData = [];
+                if(!isNullOrUndefined(op2.markerData.revisionForFootnoteEndnoteContent) || !isNullOrUndefined(op2.markerData.revisionId)) {
+                    this.documentEditor.editorModule.revisionData = [];
+                }
                 if (!isNullOrUndefined(op2.markerData.revisionForFootnoteEndnoteContent)) {
                     this.documentEditor.editorModule.revisionData.push(op2.markerData.revisionForFootnoteEndnoteContent);
                 }
@@ -670,7 +672,7 @@ export class CollaborativeEditingHandler {
                     this.insertCellFormat(op2.format);
                 }
             }
-            this.documentEditor.editorModule.revisionData = [];
+            this.documentEditor.editorModule.revisionData = undefined;
             if(this.documentEditor.enableTrackChanges != trackingCurrentValue) {
                 this.documentEditor.skipSettingsOps  = true;
                 this.documentEditor.enableTrackChanges = trackingCurrentValue;
@@ -932,7 +934,7 @@ export class CollaborativeEditingHandler {
     }
     private transformSection(action: string, operation1: Operation, operation2: number): number[] {
         if (action === 'Insert') {
-            if (operation1.offset <= operation2) {
+            if (operation1.offset < operation2) {
                 return [operation1.offset, operation2 + operation1.length];
             }
             // else if (operation1.offset > operation2.offset) {
@@ -1283,6 +1285,9 @@ export class CollaborativeEditingHandler {
         for (let i: number = 0; i < operations.length; i++) {
             if (operations[i].text === CONTROL_CHARACTERS.Row) {
                 if (!isNullOrUndefined(operations[i].markerData)) {
+                    if(isNullOrUndefined(this.documentEditor.editorModule.revisionData)) {
+                        this.documentEditor.editorModule.revisionData = [];
+                    }
                     this.documentEditor.editorModule.revisionData.push(operations[i].markerData);
                 }
                 rows++;
@@ -1298,7 +1303,7 @@ export class CollaborativeEditingHandler {
             }
         }
         this.documentEditor.editorModule.insertTable(rows, columns);
-        this.documentEditor.editorModule.revisionData = [];
+        this.documentEditor.editorModule.revisionData = undefined;
     }
     private buildRow(operations: Operation[]): void {
         let rowData: any;
@@ -1335,6 +1340,9 @@ export class CollaborativeEditingHandler {
         for (let i: number = 0; i < operations.length; i++) {
             if (operations[i].text === CONTROL_CHARACTERS.Row) {
                 if (!isNullOrUndefined(operations[i].markerData)) {
+                    if(isNullOrUndefined(this.documentEditor.editorModule.revisionData)) {
+                        this.documentEditor.editorModule.revisionData = [];
+                    }
                     this.documentEditor.editorModule.revisionData.push(operations[i].markerData);
                 }
                 insertRow++;
@@ -1345,7 +1353,7 @@ export class CollaborativeEditingHandler {
         cellDatas = [];
         paragraphDatas = [];
         characterDatas = [];
-        this.documentEditor.editorModule.revisionData = [];
+        this.documentEditor.editorModule.revisionData = undefined;
     }
     private buildCell(operation: Operation, paraFormt: string, charFormat: string): void {
         let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(operation.offset, false, false, true);

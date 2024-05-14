@@ -589,7 +589,7 @@ export class DialogEdit {
         for (let i: number = 0; i < items.length; i++) {
             const element: HTMLElement = items[i as number].content as HTMLElement;
             let id: string = element.id;
-            if (!isNullOrUndefined(id) || id !== '') {
+            if (!isNullOrUndefined(id)  || id !== '' ) {
                 id = id.replace(ganttObj.element.id, '');
                 id = id.replace('TabContainer', '');
                 if (id === 'General') {
@@ -2081,9 +2081,11 @@ export class DialogEdit {
     private renderGeneralTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
         const addFields: any = [];
+        let getId: any;
         const itemModel: Object = this.beforeOpenArgs[itemName as string];
         const divElement: HTMLElement = this.createFormElement('e-edit-form-row', ganttObj.element.id
             + '' + itemName + 'TabContainer');
+        getId = divElement.id;
         for (const key of Object.keys(itemModel)) {
             if (this.parent.columnByField[key as string].visible === false) {
                 continue;
@@ -2092,6 +2094,9 @@ export class DialogEdit {
             const inputModel: { [key: string]: Record<string, unknown> } = itemModel[key as string];
             divElement.appendChild(this.renderInputElements(inputModel, column));
             addFields.push(key)
+        }
+        if (getId !== divElement.id) {
+            divElement.id = getId
         }
         const tabIndex: number = this.getDialogTabIndex('General');
        let fields: any = []
@@ -2924,7 +2929,7 @@ export class DialogEdit {
         for (let i: number = 0; i < items.length; i++) {
             const element: HTMLElement = items[i as number].content as HTMLElement;
             let id: string = element.id;
-            if (!isNullOrUndefined(id) || id !== '') {
+            if (!isNullOrUndefined(id) || id !== '' ) {
                 id = id.replace(ganttObj.element.id, '');
                 id = id.replace('TabContainer', '');
                 if (id === 'General') {

@@ -385,7 +385,6 @@ export class QuickPopups {
 
     public tapHoldEventPopup(e: Event): void {
         const target: Element = closest(<HTMLElement>e.target, '.' + cls.APPOINTMENT_CLASS);
-        this.isMultipleEventSelect = false;
         this.parent.selectedElements = [];
         this.isMultipleEventSelect = true;
         this.parent.eventBase.getSelectedEventElements(target);

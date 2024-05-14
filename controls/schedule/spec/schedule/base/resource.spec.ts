@@ -1120,6 +1120,19 @@ describe('Schedule Resources', () => {
             schObj.scrollToResource(1, 'Categories');
             expect(conWrap.scrollTop).toBeGreaterThanOrEqual(59);
         });
+        it('Checking scroll to resource method on Month view', () => {
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+            schObj.scrollToResource(1, 'Categories');
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(0);
+            schObj.scrollToResource('2', 'Projects');
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(504);
+            schObj.group.resources = ['Projects'];
+            schObj.group.byDate = true;
+            schObj.dataBind();
+            schObj.scrollToResource('2', 'Projects');
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(108);
+        });
     });
 
     describe('EJ2-55924-Resource appointments are rendered in default appointment colors', () => {

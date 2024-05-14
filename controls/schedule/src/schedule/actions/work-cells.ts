@@ -37,6 +37,13 @@ export class WorkCellInteraction {
             this.parent.eventWindow.openEditor(this.parent.activeCellsData as unknown as Record<string, any>, 'Add');
             return;
         }
+        const isWorkCell: boolean = target.classList.contains(cls.WORK_CELLS_CLASS) ||
+            target.classList.contains(cls.ALLDAY_CELLS_CLASS);
+        if (this.parent.uiStateValues.isTapHold && !this.parent.uiStateValues.action && isWorkCell) {
+            this.parent.uiStateValues.isTapHold = false;
+            this.parent.eventBase.removeSelectedAppointmentClass();
+            this.parent.selectedElements = [];
+        }
         const navigateEle: Element = closest((e.target as Element), '.' + cls.NAVIGATE_CLASS);
         const navigateView: View = this.parent.getNavigateView();
         const sameView: boolean = this.parent.currentView === navigateView;
@@ -52,8 +59,6 @@ export class WorkCellInteraction {
                 closest((e.target as Element), '.' + cls.MORE_INDICATOR_CLASS))) {
                 return;
             }
-            const isWorkCell: boolean = target.classList.contains(cls.WORK_CELLS_CLASS) ||
-                target.classList.contains(cls.ALLDAY_CELLS_CLASS);
             if (isWorkCell && e.shiftKey && e.which === 1 && this.parent.keyboardInteractionModule) {
                 this.parent.keyboardInteractionModule.onMouseSelection(e);
                 return;
@@ -133,7 +138,7 @@ export class WorkCellInteraction {
             return true;
         }
         target = closest((e.target as Element), '.' + cls.HEADER_CELLS_CLASS);
-        if (this.parent.activeView.isTimelineView() && !isNullOrUndefined(target)) {
+        if (this.parent.activeView && this.parent.activeView.isTimelineView() && !isNullOrUndefined(target)) {
             return true;
         }
         return false;

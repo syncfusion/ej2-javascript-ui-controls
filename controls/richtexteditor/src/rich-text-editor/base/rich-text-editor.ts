@@ -79,6 +79,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private isResizeInitialized: boolean;
     private isValueChangeBlurhandler: boolean;
     private displayTempElem: HTMLElement;
+    private beforeRenderClassValue: string;
     /**
      * @hidden
      * @deprecated
@@ -1328,6 +1329,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.persistData();
         setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
         attributes(this.element, { role: 'application', 'aria-label' : 'Rich Text Editor' });
+        this.beforeRenderClassValue = this.element.getAttribute('class');
     }
 
     private persistData (): void {
@@ -2221,6 +2223,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.isDestroyed || !this.isRendered) {
             return;
         }
+        this.element.className = this.beforeRenderClassValue;
+        this.removeHtmlAttributes();
+        this.removeAttributes();
+        this.beforeRenderClassValue = null;
         if (!isNOU(this.timeInterval)) {
             clearInterval(this.timeInterval);
             this.timeInterval = null;
@@ -2283,8 +2289,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 }
             }
         }
-        this.removeHtmlAttributes();
-        this.removeAttributes();
         super.destroy();
         this.isRendered = false;
     }
@@ -2318,6 +2322,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.element.removeAttribute('aria-disabled');
         this.element.removeAttribute('role');
         this.element.removeAttribute('tabindex');
+        this.element.removeAttribute('aria-label');
     }
 
     private destroyDependentModules(): void {

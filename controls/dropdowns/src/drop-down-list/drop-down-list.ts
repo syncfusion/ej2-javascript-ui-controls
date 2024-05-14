@@ -2829,7 +2829,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.popupContentElement.setAttribute('id','no-record');
                 }
                 this.inputElement.setAttribute('aria-expanded', 'true');
-                this.inputElement.setAttribute('aria-controls', this.element.id );
+                this.inputElement.setAttribute('aria-controls', this.element.id + '_popup' );
                 const inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
                 addClass([inputParent], [dropDownListClasses.inputFocus]);
                 const animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
@@ -3364,6 +3364,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private destroyPopup(): void {
         this.isPopupOpen = false;
         this.isFilterFocus = false;
+        this.inputElement.removeAttribute('aria-controls');
         if(this.popupObj)
         {
             this.popupObj.destroy();
@@ -3456,7 +3457,6 @@ export class DropDownList extends DropDownBase implements IInput {
             attributes(this.targetElement(), { 'aria-label': this.getModuleName()});
             this.inputElement.setAttribute('aria-label', this.getModuleName());
             this.inputElement.setAttribute('aria-expanded', 'false');
-            this.inputElement.setAttribute('aria-controls', this.element.id + '_popups');
         }
         attributes(this.targetElement(), this.getAriaAttributes());
         this.updateDataAttribute(this.htmlAttributes);

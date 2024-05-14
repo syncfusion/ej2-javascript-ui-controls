@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 25.2.3 (2024-05-08)
+## 25.1.42 (2024-04-30)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#F52893` - Fixed issue with pasting number values with a "-" in the NumericTextBox.
 
 ### Uploader
 

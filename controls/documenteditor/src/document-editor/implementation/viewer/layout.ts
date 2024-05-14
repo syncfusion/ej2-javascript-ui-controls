@@ -8058,6 +8058,13 @@ export class Layout {
             else {
                 lineHeight = lineWidget.height;
             }
+            if (!isNullOrUndefined(paragraphWidget.associatedCell) && paragraphWidget.associatedCell.index === 0 && paragraphWidget.index === 0
+                && isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousSplitWidget) && isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousWidget)
+                && paragraphWidget.paragraphFormat.keepWithNext) {
+                moveEntireBlock = true;
+                lineWidget = paragraphWidget.childWidgets[0] as LineWidget;
+                return paragraphWidget;
+            }
             if ((isMultiColumnSplit && count >= lineIndexInCell) || bottom < lineBottom + height + lineHeight || isCellSplit) {
                 if (paragraphWidget.paragraphFormat.keepLinesTogether && (paragraphWidget.index !== 0 ||
                     (paragraphWidget.index === 0 && !isNullOrUndefined(paragraphWidget.associatedCell.ownerRow.previousWidget)))) {

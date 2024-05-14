@@ -3078,9 +3078,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             enableDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this)),
             enableOptimizedRendering: this.enableVirtualization && this.virtualScrollSettings &&
-                this.virtualScrollSettings.allowSinglePage
+                this.virtualScrollSettings.allowSinglePage,
+            requestType: 'string',
         };
-        this.request.open('POST', this.dataSourceSettings.url, true);
+        if (this.request.readyState === XMLHttpRequest.UNSENT || this.request.readyState === XMLHttpRequest.OPENED) {
+            this.request.withCredentials = false;
+        }
         const params: BeforeServiceInvokeEventArgs = {
             request: this.request,
             dataSourceSettings: JSON.parse(this.getPersistData()).dataSourceSettings,
@@ -3116,15 +3119,20 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             params.excelExportProperties = observedArgs.excelExportProperties;
             params.exportAllPages = observedArgs.exportAllPages;
         });
-        this.request.withCredentials = false;
+        this.request.open('POST', this.dataSourceSettings.url, true);
         this.request.onreadystatechange = this.onSuccess.bind(this, params.excelExportProperties);
         if (params.action === 'onExcelExport' || params.action === 'onCsvExport') {
             this.request.responseType = 'blob';
         } else {
             this.request.responseType = '';
         }
-        this.request.setRequestHeader('Content-type', 'application/json');
-        this.request.send(JSON.stringify(params));
+        if(params.internalProperties.requestType === 'string'){
+            this.request.setRequestHeader('Content-type', 'application/json');
+            this.request.send(JSON.stringify(params));
+        } else if(params.internalProperties.requestType === 'base64'){
+            this.request.setRequestHeader('Content-type', 'application/octet-stream');
+            this.request.send(btoa(JSON.stringify(params)))
+        };
     }
 
     private getChartSettings(): string {
@@ -3518,6 +3526,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             case 'allowDrillThrough':
             case 'editSettings':
             case 'allowDataCompression':
+                if (newProp.dataSourceSettings && ((!isNullOrUndefined(newProp.dataSourceSettings.dataSource) &&
+                    this.clonedDataSet !== newProp.dataSourceSettings.dataSource && newProp.dataSourceSettings.groupSettings) ||
+                    (Object.keys(newProp.dataSourceSettings).length === 1 && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource'
+                        && this.dataSourceSettings.groupSettings.length > 0))) {
+                    this.clonedDataSet = newProp.dataSourceSettings.dataSource as IDataSet[];
+                    this.updateGroupingReport(this.dataSourceSettings.groupSettings, 'Date');
+                }
                 if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                     && newProp.dataSourceSettings.groupSettings && this.dataType === 'pivot') {
                     this.updateGroupingReport(newProp.dataSourceSettings.groupSettings, 'Date');
@@ -3546,10 +3561,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             this.olapEngineModule.fieldListData = undefined;
                             this.olapEngineModule.isEmptyData = true;
                         }
-                    }
-                    if (this.dataSourceSettings.groupSettings.length > 0) {
-                        this.clonedDataSet = newProp.dataSourceSettings.dataSource as IDataSet[];
-                        this.updateGroupingReport(this.dataSourceSettings.groupSettings, 'Date');
                     }
                     this.showWaitingPopup();
                     this.notify(events.initialLoad, {});
@@ -3852,13 +3863,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 addClass([this.chart.element], cls.PIVOTCHART_LTR);
             }
         }
-        if (this.showFieldList || this.showGroupingBar || this.allowNumberFormatting || this.allowCalculatedField ||
-            this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
-            this.notify(events.uiUpdate, this);
-            if (this.pivotFieldListModule && this.allowDeferLayoutUpdate) {
-                this.pivotFieldListModule.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
-            }
-        }
         if (this.enableVirtualization) {
             this.virtualscrollModule = new VirtualScroll(this);
         }
@@ -3884,6 +3888,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.renderModule.render(true);
         } else if (this.grid) {
             remove(this.grid.element);
+        }
+        if (this.showFieldList || this.showGroupingBar || this.allowNumberFormatting || this.allowCalculatedField ||
+            this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
+            this.notify(events.uiUpdate, this);
+            if (this.pivotFieldListModule && this.allowDeferLayoutUpdate) {
+                this.pivotFieldListModule.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+            }
         }
         if (this.allowConditionalFormatting) {
             this.applyFormatting(this.pivotValues);
@@ -5246,7 +5257,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             return;
         }
         let ele: Element = null;
-        const axis: string = (target.parentElement.classList.contains(cls.ROWSHEADER) || target.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
+        const axis: string = ((target.parentElement && target.parentElement.classList.contains(cls.ROWSHEADER)) || target.classList.contains(cls.ROWSHEADER)) ? 'row' : 'column';
         ele = axis === 'column' ? closest(target, 'th') : closest(target, 'td');
         if (axis === 'column' && !ele && this.gridSettings.selectionSettings.mode !== 'Row') {
             ele = closest(target, 'td');

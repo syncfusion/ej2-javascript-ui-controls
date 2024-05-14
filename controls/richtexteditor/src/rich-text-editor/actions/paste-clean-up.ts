@@ -755,6 +755,28 @@ export class PasteCleanup {
             this.cropImageHandler(this.parent.inputElement);
         }
     }
+    private convertBlobToBase64(element: HTMLElement): void {
+        const imgElem: NodeListOf<HTMLImageElement> = element.querySelectorAll('img');
+        for (let i: number = 0; i < imgElem.length; i++) {
+            if (imgElem[i as number].getAttribute('src') &&
+                imgElem[i as number].getAttribute('src').startsWith("blob")) {
+                let blobImageUrl: string = imgElem[i as number].getAttribute('src');
+                let img: HTMLImageElement = new Image();
+                const onImageLoadEvent = () => {
+                    let canvas: HTMLCanvasElement = document.createElement('canvas');
+                    let ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    let base64String: string = canvas.toDataURL('image/png');
+                    (imgElem[i as number] as HTMLImageElement).src = base64String;
+                    img.removeEventListener('load', onImageLoadEvent);
+                };
+                img.src = blobImageUrl;
+                img.addEventListener('load', onImageLoadEvent);
+            }
+        }
+    }
     private cropImageHandler(element: HTMLElement): void {
         const allImgElm: NodeListOf<HTMLImageElement> = element.querySelectorAll('.e-img-cropped');
         if (allImgElm.length > 0) {
@@ -792,9 +814,19 @@ export class PasteCleanup {
                 }
             }
         } else {
-            this.imgUploading(this.parent.inputElement);
-            if (this.parent.iframeSettings.enable) {
-                this.parent.updateValue();
+            if (!isNullOrUndefined(this.parent.insertImageSettings.saveUrl) && !isNullOrUndefined(this.parent.insertImageSettings.path) && !isNullOrUndefined(this.parent.inputElement.querySelectorAll("img")) && this.parent.inputElement.querySelectorAll("img")[0].src.startsWith("blob")) {
+                this.convertBlobToBase64(this.parent.inputElement);
+                setTimeout(() => {
+                    this.imgUploading(this.parent.inputElement);
+                    if (this.parent.iframeSettings.enable) {
+                        this.parent.updateValue();
+                    }
+                }, 20);
+            } else {
+                this.imgUploading(this.parent.inputElement);
+                if (this.parent.iframeSettings.enable) {
+                    this.parent.updateValue();
+                }
             }
         }
     }

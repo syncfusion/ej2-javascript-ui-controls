@@ -1568,7 +1568,7 @@ export class Selection extends BaseSelection {
      */
     public selectionAndDrag(chart: Chart, target: Element, eventType: string): void {
         const insideMoving: boolean = withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect);
-        if (insideMoving) {
+        if (insideMoving && !this.chart.enableCanvas) {
             if (this.rectGrabbing && !this.resizing) {
                 this.draggedRectMoved(chart, this.dragRect, true, target);
             } else if (this.dragging && !this.resizing) {

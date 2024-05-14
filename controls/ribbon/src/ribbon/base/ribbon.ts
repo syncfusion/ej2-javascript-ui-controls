@@ -2994,7 +2994,13 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             type === 'collection' ? constants.COLLECTION_ID : constants.ITEM_ID;
         for (let i: number = 0; i < list.length; i++) {
             const listitem: ribbonItemPropsList = list[parseInt(i.toString(), 10)];
-            if (!listitem.id) { listitem.setProperties({ id: initId + key + (this.idIndex++) }, true); }
+            if (!listitem.id) {
+                let htmlAttrID: string;
+                if (type === 'item') {
+                    htmlAttrID = this.hasHtmlAtrrID(listitem);
+                }
+                listitem.setProperties({ id: htmlAttrID ? htmlAttrID : initId + key + (this.idIndex++) }, true);
+            }
             switch (type) {
             case 'tab':
                 listitem.setProperties({ groups: this.checkID(listitem.groups, 'group', listitem.id) }, true);
@@ -3010,6 +3016,29 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
         }
         return list;
+    }
+
+    private hasHtmlAtrrID(listItem: RibbonItemModel): string {
+        let id: string = '';
+        if (listItem.buttonSettings.htmlAttributes.id) {
+            id = listItem.buttonSettings.htmlAttributes.id;
+        }
+        else if (listItem.checkBoxSettings.htmlAttributes.id) {
+            id = listItem.checkBoxSettings.htmlAttributes.id;
+        }
+        else if (listItem.colorPickerSettings.htmlAttributes.id) {
+            id = listItem.colorPickerSettings.htmlAttributes.id;
+        }
+        else if (listItem.comboBoxSettings.htmlAttributes.id) {
+            id = listItem.comboBoxSettings.htmlAttributes.id;
+        }
+        else if (listItem.dropDownSettings.htmlAttributes.id) {
+            id = listItem.dropDownSettings.htmlAttributes.id;
+        }
+        else if (listItem.splitButtonSettings.htmlAttributes.id) {
+            id = listItem.splitButtonSettings.htmlAttributes.id;
+        }
+        return id;
     }
 
     private updateCommonProperty(commonProp: commonProperties): void {

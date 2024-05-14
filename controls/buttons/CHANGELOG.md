@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### Checkbox
+
+#### Bug Fixes
+
+- The issue with "Script error thrown in CheckBox `unWireEvents` method" has been resolved.
+
 ## 25.1.39 (2024-04-09)
 
 ### Checkbox

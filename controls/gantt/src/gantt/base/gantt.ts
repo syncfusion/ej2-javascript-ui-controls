@@ -3541,7 +3541,7 @@ export class Gantt extends Component<HTMLElement>
             thWidth = (thElements[n as number] as HTMLElement).style.width;
             const divElement: HTMLElement = createElement('div', {
                 className: 'e-line-container-cell',
-                styles: (this.enableRtl?'right:' + (leftPos + 1) : 'left:' + leftPos) + 'px'
+                styles: (this.enableRtl ? 'right:' + (leftPos + 1) : 'left:' + (leftPos != -1 ? (leftPos + 0.3) : leftPos)) + 'px'
             });
             containerDiv.appendChild(divElement);
         }

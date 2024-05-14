@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I587459` - The issue with "Image size increased" has been resolved.
+
 ## 25.2.3 (2024-05-08)
 
 ### Image Editor

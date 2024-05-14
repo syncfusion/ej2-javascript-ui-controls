@@ -1574,7 +1574,7 @@ export class Annotation {
                             // eslint-disable-next-line max-len
                             this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, actionObject.annotation.shapeAnnotationType, 'delete');
                         }
-                        this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                        this.pdfViewer.clearSelection((!isNullOrUndefined(this.pdfViewerBase.activeElements.activePageID) && !isNaN(this.pdfViewerBase.activeElements.activePageID)) ? this.pdfViewerBase.activeElements.activePageID : actionObject.annotation.pageIndex);
                         this.pdfViewer.remove(actionObject.annotation);
                         this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
                         // eslint-disable-next-line
@@ -3824,6 +3824,10 @@ export class Annotation {
             if (eventTarget) {
                 // eslint-disable-next-line
                 pageString = eventTarget.id.split('_text_')[1] || eventTarget.id.split('_textLayer_')[1] || eventTarget.id.split('_annotationCanvas_')[1] || eventTarget.id.split('_pageDiv_')[1];
+            }
+            else if ((!isNullOrUndefined(this.pdfViewerBase.annotationEvent)) && (!isNullOrUndefined(this.pdfViewerBase.annotationEvent.target))) {
+                // eslint-disable-next-line
+                pageString = this.pdfViewerBase.annotationEvent.target.id.split('_textLayer_')[1]
             }
         }
         // eslint-disable-next-line

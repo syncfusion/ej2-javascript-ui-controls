@@ -463,6 +463,9 @@ export class FormFieldsBase {
         textbox.toolTip = isNullOrUndefined(formFieldAttributes.tooltip) ? "" : formFieldAttributes.tooltip;
         textbox.color = [formFieldAttributes.fontColor.r, formFieldAttributes.fontColor.g, formFieldAttributes.fontColor.b];
         textbox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 && formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
+            textbox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
+        }
         textbox.border.width = formFieldAttributes.thickness;
         textbox.multiLine = formFieldAttributes.Multiline;
         let pdfFontStyle: PdfFontStyle = this.getFontStyle(formFieldAttributes);
@@ -526,6 +529,9 @@ export class FormFieldsBase {
             comboBox.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g, formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
         }
         comboBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 && formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
+            comboBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
+        }
         comboBox.border.width = formFieldAttributes.thickness;
         comboBox.color = [formFieldAttributes.fontColor.r, formFieldAttributes.fontColor.g, formFieldAttributes.fontColor.b];
         if (!isFieldRotated) {
@@ -557,6 +563,9 @@ export class FormFieldsBase {
             checkBoxField.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g, formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
         }
         checkBoxField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 && formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
+            checkBoxField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
+        }
         checkBoxField.border.width = formFieldAttributes.thickness;
         checkBoxField.toolTip = isNullOrUndefined(formFieldAttributes.tooltip) ? "" : formFieldAttributes.tooltip;
         if (!isFieldRotated) {
@@ -613,6 +622,9 @@ export class FormFieldsBase {
             listBox.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g, formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
         }
         listBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 && formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
+            listBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
+        }
         listBox.border.width = formFieldAttributes.thickness;
         const pdfFontStyle: PdfFontStyle = this.getFontStyle(formFieldAttributes);
         listBox._dictionary.set('FontStyle', pdfFontStyle);
@@ -662,6 +674,9 @@ export class FormFieldsBase {
                 isRequired = true;
             }
             radioButtonItem.borderColor = [radiobuttonItem.borderColor.r, radiobuttonItem.borderColor.g, radiobuttonItem.borderColor.b];
+            if (radiobuttonItem.borderColor.r == 0 && radiobuttonItem.borderColor.g == 0 && radiobuttonItem.borderColor.b == 0 && radiobuttonItem.borderColor.a == 0) {
+                radioButtonItem.borderColor = [radiobuttonItem.borderColor.r, radiobuttonItem.borderColor.g, radiobuttonItem.borderColor.b, radiobuttonItem.borderColor.a];
+            }
             radioButtonItem.border.width = radiobuttonItem.thickness;
             radioButtonItem.backColor = [radiobuttonItem.backgroundColor.r, radiobuttonItem.backgroundColor.g, radiobuttonItem.backgroundColor.b];
             if (radiobuttonItem.backgroundColor.r == 0 && radiobuttonItem.backgroundColor.g == 0 && radiobuttonItem.backgroundColor.b == 0 && radiobuttonItem.backgroundColor.a == 0) {
@@ -701,6 +716,9 @@ export class FormFieldsBase {
             signatureField._dictionary.set("InitialField", true)
         }
         signatureField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 && formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
+            signatureField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
+        }
         signatureField.border.width = formFieldAttributes.thickness;
         if (formFieldAttributes.visibility === "hidden") {
             signatureField.visible = false;

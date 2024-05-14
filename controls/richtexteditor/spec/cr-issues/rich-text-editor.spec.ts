@@ -4098,4 +4098,86 @@ describe('RTE CR issues ', () => {
             }, 500);
         });
     });
+
+    describe('883844: When using the Refresh method, RichTextEditor doesnot get refreshed to initial rendering', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: [ 'FullScreen','Bold', 'Italic', 'Underline', 'StrikeThrough', 'SuperScript', 'SubScript', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'LowerCase', 'UpperCase', '|',
+                    'Formats', 'Alignments', '|', 'NumberFormatList', 'BulletFormatList', '|',
+                    'Outdent', 'Indent', '|', 'CreateLink', 'Image', 'FileManager', 'Video', 'Audio', 'CreateTable', '|', 'FormatPainter', 'ClearFormat',
+                    '|', 'EmojiPicker', 'Print', '|',
+                    'SourceCode','|', 'Undo', 'Redo']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should remove the classnames properly when using refresh method.', () => {
+            editor.focusIn();
+            const toolbarElems:NodeListOf<HTMLElement> = editor.element.querySelectorAll('.e-toolbar-item');
+            toolbarElems[0].click();
+            expect(editor.element.classList.contains('e-rte-full-screen')).toBe(true);
+            editor.refresh();
+            expect(editor.element.classList.contains('e-rte-full-screen')).not.toBe(true);
+        });
+    });
+  
+    describe('882579 - Pasted Blob images are not uploaded to the server in RichTextEditor', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                pasteCleanupSettings: {
+                    keepFormat: true
+                },
+                insertImageSettings: {
+                    saveUrl: "https://services.syncfusion.com/js/production/api/FileUploader/Save",
+                    path: "../Images/"
+                },
+            });
+        });
+        afterAll((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Convert the absolute link into base64 format and paste it into the Rich Text Editor.', (done: DoneFn) => {
+            editor.focusIn();
+            let blobImageLink: string;
+            let clipBoardData = '<p><img alt="Logo" src="https://cdn.syncfusion.com/content/images/home-v1/home/webp/home-banner-v6.webp" class="e-rte-image e-imginline"></p>';
+            let element = createElement("DIV");
+            element.innerHTML = clipBoardData;
+            function urlToBlobUrl(url: string) {
+                return fetch(url)
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.blob();
+                    })
+                    .then(function (blob) {
+                        return URL.createObjectURL(blob);
+                    });
+            }
+            let imageUrl = element.querySelector("img").getAttribute("src");
+            urlToBlobUrl(imageUrl)
+                .then(function (blobUrl) {
+                    blobImageLink = blobUrl;
+                });
+            setTimeout(function () {
+                element.querySelector("img").src = blobImageLink;
+                let dataTransfer = new DataTransfer();
+                dataTransfer.setData('text/html', element.innerHTML);
+                let pasteEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+                editor.onPaste(pasteEvent);
+                setTimeout(function () {
+                    expect(editor.inputElement.querySelector('img').src.includes("base64")).toBe(true);
+                    done();
+                }, 100);
+            }, 300);
+        });
+    });
 });

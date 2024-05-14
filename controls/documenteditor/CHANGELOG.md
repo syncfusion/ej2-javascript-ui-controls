@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#F187485` - Resolved the issue of Form Field dialog always pops up upon double clicking anywhere within the word document.
+- `#I575901` - Resolved the table divided to next page.
+- `#I560985` - Resolved table cell split issue in the attached document.
+- `#F187818` - Resolved the document collapse issue while undoing.
+
 ## 25.1.42 (2024-04-30)
 
 ### DocumentEditor

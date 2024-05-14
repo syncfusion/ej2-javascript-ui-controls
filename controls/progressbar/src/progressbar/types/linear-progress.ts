@@ -297,7 +297,7 @@ export class Linear {
                     center = (progress.enableRtl) ? (progress.progressRect.x + progress.progressRect.width - progressWidth / 2) :
                         (progress.progressRect.x + progressWidth / 2);
                     pos = (progress.enableRtl) ? (center <= defaultPos) : (center >= defaultPos);
-                    posX = center;
+                    posX = (progressWidth < textSize.width / 2) ? defaultPos : center;
                 } else {
                     far = (progress.enableRtl) ?
                         ((progress.progressRect.x + progress.progressRect.width - progressWidth) + textSize.width / 2) :

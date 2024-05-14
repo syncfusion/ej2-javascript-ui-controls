@@ -409,7 +409,7 @@ export class MonthEvent extends EventBase {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.eventTemplateName;
             const templateId: string = scheduleId + viewName + 'eventTemplate';
-            const eventTemplate: string = 'eventTemplate' + (this.isResourceEventTemplate ? '_' + resIndex : '');
+            const eventTemplate: string = this.isResourceEventTemplate ? this.parent.getEventTemplateName(resIndex) : 'eventTemplate';
             templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, eventTemplate, templateId, false);
         } else {
             const eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;

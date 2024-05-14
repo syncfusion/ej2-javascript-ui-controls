@@ -2,12 +2,25 @@
 
 ## [Unreleased]
 
-## 25.2.3 (2024-05-08)
+## 25.2.4 (2024-05-14)
 
 ### Diagram
 
 #### Bug Fixes
 
+- `#I579409` - Now, the connectors updated properly in complex hierarchical tree while performing expand and collapse.
+- `#I582187` - Now, the order commands working properly when we set zIndex at initial rendering.
+- `#I585972` - Now, the overview rectangle updated properly while double clicking the overview canvas.
+- `#F186044` - Now, the fill color for phases applied properly while adding phases at runtime.
+- `#I52018` - Now, While SwimLane dragged from palette and deletion does not throw console exception.
+
+## 25.1.42 (2024-04-30)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#572526` - Now, Adding child to group node using addChildToGroup method is working properly.
 - `#I568786` - Overview now updates properly across all browser zoom levels and resolutions.
 
 ## 25.1.41 (2024-04-23)

@@ -387,6 +387,48 @@ describe('Touch functionalities', () => {
         });
     });
 
+    describe('866131 - iOS appointment tap hold operation', () => {
+        const iOSUserAgent: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) ' +
+            'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1';
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Event',
+            StartTime: new Date(2024, 4, 10, 10),
+            EndTime: new Date(2024, 4, 10, 12),
+            IsAllDay: false
+        }];
+        beforeAll((done: DoneFn) => {
+            Browser.userAgent = iOSUserAgent;
+            const schOptions: ScheduleModel = {
+                width: 300, currentView: 'Day',
+                selectedDate: new Date(2024, 4, 10), allowDragAndDrop: false,
+            };
+            schObj = createSchedule(schOptions, data, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('taphold appointment selection', () => {
+            schObj.isAdaptive = true;
+            const target: Element = schObj.element.querySelector('.e-appointment');
+            const e: any = {};
+            e.originalEvent = new TouchEvent('touchstart', { cancelable: true, bubbles: true });
+            target.dispatchEvent(e.originalEvent);
+            (schObj.scheduleTouchModule as any).tapHoldHandler(e);
+            const popup: HTMLElement = document.body.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(popup.classList.contains('e-popup-open')).toBeTruthy();
+            e.originalEvent = new TouchEvent('touchend', { cancelable: true, bubbles: true });
+            target.dispatchEvent(e.originalEvent);
+            (schObj.scheduleTouchModule as any).preventEventClick(e.originalEvent);
+            expect(popup.classList.contains('e-popup-open')).toBeTruthy();
+            expect(popup.querySelector('.e-subject').textContent).toEqual('Event');
+            (popup.querySelector('.e-close') as HTMLButtonElement).click();
+            expect(popup.classList.contains('e-popup-close')).toBeTruthy();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

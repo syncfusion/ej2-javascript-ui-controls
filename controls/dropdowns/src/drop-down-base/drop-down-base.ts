@@ -309,7 +309,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected preventPopupOpen: boolean = true;
     protected setCurrentView: boolean;
     protected customFilterQuery: Query;
-    protected virtualSelectAllData: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+    protected virtualSelectAllState: boolean = false;
+    protected CurrentEvent: KeyboardEventArgs | MouseEvent = null;
+    protected virtualSelectAllData: { [key: string]: Object }[] | string[] | number[] | boolean[];
     protected firstItem: string | number | boolean | object;
     protected virtualListInfo: VirtualInfo = {
         currentPageNumber: null,
@@ -1133,8 +1135,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     if(!isWhereExist){
                                         this.remoteDataCount = (e as any).count;
                                     }
-                                    this.dataCount = (e as any).count;
-                                    this.totalItemCount = (e as any).count;
+                                    
+                                    this.dataCount = !this.virtualSelectAll ? (e as any).count : this.dataCount;
+                                    this.totalItemCount = !this.virtualSelectAll ? (e as any).count : this.totalItemCount;
                                     ulElement = this.renderItems(listItems, fields);
                                     this.appendUncheckList = false;
                                     this.onActionComplete(ulElement, listItems, e);
@@ -1160,6 +1163,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     if (this.isVirtualizationEnabled) {
                                         this.getFilteringSkeletonCount();
                                     }
+                                    if(this.virtualSelectAll && this.virtualSelectAllData){
+                                        this.virtualSelectionAll(this.virtualSelectAllState, this.liCollections, this.CurrentEvent);
+                                        this.virtualSelectAllState = false;
+                                        this.CurrentEvent = null;  
+                                        this.virtualSelectAll = false;                                 }
                                 }
                             });
                         }).catch((e: Object) => {
@@ -1211,11 +1219,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                 }
                             }
                         }
-                        if(isReOrder && (!(this.dataSource instanceof DataManager) && !this.isCustomDataUpdated)){
+                        if(isReOrder && (!(this.dataSource instanceof DataManager) && !this.isCustomDataUpdated) && !this.virtualSelectAll){
                             // eslint-disable @typescript-eslint/no-explicit-any
                              this.dataCount = this.totalItemCount = this.virtualSelectAll ? (listItems as any).length : (listItems as any).count;
                         }
-                        listItems = this.isVirtualizationEnabled && !this.virtualSelectAll ? (listItems as any).result : listItems;
+                        listItems = this.isVirtualizationEnabled ? (listItems as any).result : listItems;
                         // eslint-enable @typescript-eslint/no-explicit-any
                         const localDataArgs: { [key: string]: Object } = { cancel: false, result: listItems };
                         this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
@@ -1252,6 +1260,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         // Used this method in component side.
     }
     protected updatePopupState(): void {
+        // Used this method in component side.
+    }
+    protected virtualSelectionAll(state: boolean, li: NodeListOf<HTMLElement>| HTMLElement[], event: MouseEvent | KeyboardEventArgs): void {
         // Used this method in component side.
     }
     protected updateRemoteData(): void {
@@ -1479,7 +1490,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
      * @returns {HTMLElement} Return the ul li list items.
      */
-    private createListItems(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement {
+    protected createListItems(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement {
         if (dataSource) {
             if (fields.groupBy || this.element.querySelector('optgroup')) {
                 if (fields.groupBy) {
@@ -1794,10 +1805,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     protected getIndexByValueFilter(value: string | number | boolean): number {
         let index: number;
-        const listItems: HTMLElement = this.renderItems(this.selectData as { [key: string]: Object }[], this.fields);
-        if (listItems && listItems.children) {
-            for (let i: number = 0; i < listItems.children.length; i++) {
-                if (!isNullOrUndefined(value) && listItems.children[i as number].getAttribute('data-value') === value.toString()) {
+        const listItems: NodeListOf<Element> = this.renderItems(this.selectData as { [key: string]: Object }[], this.fields).querySelectorAll('li' + ':not(.e-list-group-item)');
+        if (listItems) {
+            for (let i: number = 0; i < listItems.length; i++) {
+                if (!isNullOrUndefined(value) && listItems[i as number].getAttribute('data-value') === value.toString()) {
                     index = i;
                     break;
                 }

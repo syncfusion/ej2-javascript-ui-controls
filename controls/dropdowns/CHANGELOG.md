@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I585791` - Resolved the SelectAll checkbox uncheck issue after closing and opening the Dropdown Tree component.
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#I580648` - Issue with "The dropdownlist not retrieving the proper index when grouping with allow filtering" has been resolved.
+
+- `#I581098` - Fixed issue where aria-controls was not maintained when popup was in closed state.
+
 ## 25.2.3 (2024-05-08)
 
 ### ListBox

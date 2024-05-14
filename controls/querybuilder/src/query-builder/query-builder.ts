@@ -19,7 +19,7 @@ import { Tooltip, createSpinner, showSpinner, hideSpinner, TooltipEventArgs } fr
 import { compile as templateCompiler } from '@syncfusion/ej2-base';
 
  type ReturnType = { result: Object[], count: number, aggregates?: Object };
- type ruleObj = { condition: string, not: boolean, isLocked: boolean };
+ type ruleObj = { condition: string, not: boolean, isLocked?: boolean };
 
 /**
  * Defines the Columns of Query Builder
@@ -185,9 +185,9 @@ export class Rule extends ChildProperty<Rule> {
     /**
      * Specifies whether rule is locked or not.
      *
-     * @default false
+     * @default null
      */
-    @Property(false)
+    @Property(null)
     public isLocked: boolean;
 }
 /**
@@ -4184,7 +4184,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const ruleCondtion: string = currentRule.condition;
         const notCondition: boolean = currentRule.not;
         const ruleColl: RuleModel [] = extend([], currentRule.rules, [], true) as RuleModel [];
-        const rule: RuleModel = this.getRuleCollection({condition: ruleCondtion, rules: ruleColl, not: notCondition}, true);
+        const rule: RuleModel = !isNullOrUndefined(currentRule.isLocked) ?
+            this.getRuleCollection({condition: ruleCondtion, rules: ruleColl, not: notCondition, isLocked: currentRule.isLocked}, true) : 
+            this.getRuleCollection({condition: ruleCondtion, rules: ruleColl, not: notCondition}, true);
         return rule;
     }
     private getRuleCollection(rule: RuleModel, isValidRule: boolean): RuleModel {
@@ -4214,11 +4216,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             if ((this.isRefreshed && this.enablePersistence) || (rule.field !== '' && rule.operator !== '' && (rule.value !== '' &&
             rule.value !== undefined)) || (customObj && customObj.isQuestion)) {
-                const condition: string = rule.condition;
-                rule = {
-                    'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value,
-                    'isLocked': rule.isLocked
-                };
+                const condition: string = rule.condition; const lockedRule: boolean = rule.isLocked;
+                rule = { 'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value };
+                if (!isNullOrUndefined(lockedRule)) {
+                    rule.isLocked = lockedRule;
+                }
                 if (condition) {
                     rule.condition = condition;
                 }
@@ -4247,10 +4249,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else if ((isNullOrUndefined(rule.condition)) && isNullOrUndefined(rule.rules)) {
                 rule = {};
             } else {
+                const isLocked: boolean = rule.isLocked;
                 if (this.enableNotCondition) {
-                    rule = { 'condition': rule.condition, 'rules': rule.rules, 'not': rule.not, 'isLocked': rule.isLocked };
+                    rule = { 'condition': rule.condition, 'rules': rule.rules, 'not': rule.not };
                 } else {
-                    rule = { 'condition': rule.condition, 'rules': rule.rules, 'isLocked': rule.isLocked };
+                    rule = { 'condition': rule.condition, 'rules': rule.rules };
+                }
+                if (!isNullOrUndefined(isLocked)) {
+                    rule.isLocked = isLocked;
                 }
                 if (customObj) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4288,6 +4294,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             rule = {condition: this.rule.condition, rules: this.rule.rules, not: this.rule.not};
         } else {
             rule = {condition: this.rule.condition, rules: this.rule.rules};
+        }
+        if (!isNullOrUndefined(this.rule.isLocked)) {
+            rule.isLocked = this.rule.isLocked;
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.rule as any).custom) {

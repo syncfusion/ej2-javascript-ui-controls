@@ -298,6 +298,11 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
 
     /**
      * Triggers when the value of the NumericTextBox changes.
+     * The change event of the NumericTextBox component will be triggered in the following scenarios:
+     * * Changing the previous value using keyboard interaction and then focusing out of the component.
+     * * Focusing on the component and scrolling within the input.
+     * * Changing the value using the spin buttons.
+     * * Programmatically changing the value using the value property.
      *
      * @event change
      */

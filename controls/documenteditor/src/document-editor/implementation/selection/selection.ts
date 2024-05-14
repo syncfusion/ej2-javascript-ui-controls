@@ -7518,8 +7518,13 @@ export class Selection {
         if (this.isModifyingSelectionInternally) {
             return;
         }
-        if (this.documentHelper.isFormFillProtectedMode && isSelectionChanged && !this.isFormatUpdated && !this.documentHelper.isTextFormEmpty && !this.owner.documentHelper.layout.isRelayout) {
+        if (this.documentHelper.formFields.length > 0) {
             this.currentFormField = this.getCurrentFormField();
+        } else {
+            this.currentFormField = undefined;
+        }
+        if (!isNullOrUndefined(this.previousSelectedFormField) && isNullOrUndefined(this.previousSelectedFormField.fieldSeparator)) {
+            this.previousSelectedFormField = this.currentFormField;
         }
         if (!this.skipFormatRetrieval) {
             this.retrieveCurrentFormatProperties();
@@ -10864,7 +10869,11 @@ export class Selection {
      * @param revision
      * @returns {void}
      */
-    public selectRevision(revision: Revision): void {
+    public selectRevision(revision: Revision, startPosition?: TextPosition, endPosition?: TextPosition): void {
+        let isSelect: boolean = false;
+        if(isNullOrUndefined(startPosition) && isNullOrUndefined(endPosition)) {
+            isSelect = true;
+        }
         if (!isNullOrUndefined(revision) && revision.range.length > 0) {
             let firstElement: any = revision.range[0];
             let lastElement: any = revision.range[revision.range.length - 1];
@@ -10878,7 +10887,9 @@ export class Selection {
                 this.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
                 this.selectPosition(this.start, this.end);
             } else if (firstElement && lastElement) {
-                let startPosition: TextPosition = new TextPosition(this.owner);
+                if(isNullOrUndefined(startPosition)) {
+                    startPosition = new TextPosition(this.owner);
+                }
                 let offset: number = 0;
                 if (firstElement instanceof WCharacterFormat) {
                     let currentPara: ParagraphWidget = firstElement.ownerBase as ParagraphWidget;
@@ -10910,7 +10921,9 @@ export class Selection {
                     }
                     startPosition.setPositionForLineWidget(firstElement.line, offset);
                 }
-                let endPosition: TextPosition = new TextPosition(this.owner);
+                if(isNullOrUndefined(endPosition)) {
+                    endPosition = new TextPosition(this.owner);
+                }
                 if (lastElement instanceof WCharacterFormat) {
                     let currentPara: ParagraphWidget = lastElement.ownerBase as ParagraphWidget;
                     const splittedWidgets = currentPara.getSplitWidgets();
@@ -10937,7 +10950,9 @@ export class Selection {
                     startPosition = endPosition;
                     endPosition = curentPosition;
                 }
-                this.selectPosition(startPosition, endPosition);
+                if(isSelect) {
+                    this.selectPosition(startPosition, endPosition);
+                }
             }
         }
     }

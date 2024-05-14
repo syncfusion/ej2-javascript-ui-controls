@@ -2230,6 +2230,7 @@ export class FormDesigner {
                 obj.formFieldAnnotationType = formFieldType;
                 obj.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
                 obj.backgroundColor = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).backgroundColor) ? (options as unknown as SignatureIndicatorSettings).backgroundColor : "#daeaf7ff";
+                obj.borderColor = !isNullOrUndefined((options as TextFieldSettings).borderColor) ? (options as TextFieldSettings).borderColor : '#303030';
                 obj.fontSize = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).fontSize) ? (options as unknown as SignatureIndicatorSettings).fontSize : 10;
                 (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
                 obj.name = !isNullOrUndefined(options.name) ? options.name : 'Signature' + this.formFieldIndex;
@@ -2246,6 +2247,7 @@ export class FormDesigner {
                 obj.formFieldAnnotationType = formFieldType;
                 obj.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height };
                 obj.backgroundColor = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).backgroundColor) ? (options as unknown as SignatureIndicatorSettings).backgroundColor : "#daeaf7ff";
+                obj.borderColor = !isNullOrUndefined((options as TextFieldSettings).borderColor) ? (options as TextFieldSettings).borderColor : '#303030';
                 obj.fontSize = !isNullOrUndefined((options as unknown as SignatureIndicatorSettings).fontSize) ? (options as unknown as SignatureIndicatorSettings).fontSize : 10;
                 obj.thickness = !isNullOrUndefined((options as any).thickness) ? (options as any).thickness : 1;
                 (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
@@ -3821,7 +3823,20 @@ export class FormDesigner {
         inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
         let background = obj.backgroundColor ? obj.backgroundColor : '#FFE48559';
         background = this.getSignatureBackground(background);
-        inputElement.style.backgroundColor = isPrint ? 'transparent' : background;
+        if (obj.isTransparent && obj.borderColor === '#ffffffff') {
+            inputElement.style.backgroundColor = 'transparent';
+            inputElement.style.borderColor = 'transparent';
+            if (inputElement.firstElementChild) {
+                (inputElement.firstElementChild as HTMLElement).style.borderColor = 'transparent';
+            }
+        }
+        else {
+            inputElement.style.backgroundColor = isPrint ? 'transparent' : background;
+            inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+            if (inputElement.firstElementChild) {
+                (inputElement.firstElementChild as HTMLElement).style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
+            }
+        }
         inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
         if (obj.isReadonly) {
             if (!isNullOrUndefined(inputElement.firstElementChild)) {

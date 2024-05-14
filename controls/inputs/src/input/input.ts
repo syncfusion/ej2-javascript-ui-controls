@@ -485,6 +485,9 @@ export namespace Input {
         if (args.properties.showClearButton) {
             unWireClearBtnEvents(args.element, button)
         }
+        if (!isNullOrUndefined(args.buttons)) {
+            _internalRipple(false, null, args.buttons as any);
+        }
         unwireFloatingEvents(args.element);
         if (!isNullOrUndefined(args.element)) {
             delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers
@@ -890,13 +893,13 @@ export namespace Input {
         <NodeListOf<Element> & Element[]>container.querySelectorAll('.e-input-group-icon') : argsButton;
         if ( isRipple && buttons.length > 0) {
             for ( let index: number = 0 ; index < buttons.length; index++ ) {
-                buttons[parseInt(index.toString())].addEventListener('mousedown', _onMouseDownRipple , false);
-                buttons[parseInt(index.toString())].addEventListener('mouseup', _onMouseUpRipple , false);
+                buttons[parseInt(index.toString())].addEventListener('mousedown', _onMouseDownRipple, false);
+                buttons[parseInt(index.toString())].addEventListener('mouseup', _onMouseUpRipple, false);
             }
         } else if (buttons.length > 0) {
             for ( let index: number = 0 ; index < buttons.length; index++ ) {
-                buttons[parseInt(index.toString())].removeEventListener('mousedown', _onMouseDownRipple, this);
-                buttons[parseInt(index.toString())].removeEventListener('mouseup', _onMouseUpRipple, this);
+                buttons[parseInt(index.toString())].removeEventListener('mousedown', _onMouseDownRipple);
+                buttons[parseInt(index.toString())].removeEventListener('mouseup', _onMouseUpRipple);
             }
         }
     }

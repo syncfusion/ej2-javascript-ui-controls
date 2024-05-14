@@ -458,10 +458,6 @@ export class DocumentHelper {
     /**
      * @private
      */
-    public isTextFormEmpty: boolean = false;
-    /**
-     * @private
-     */
     public isScrollHandler: boolean = false;
     /**
      * @private

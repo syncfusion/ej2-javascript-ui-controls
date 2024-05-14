@@ -271,6 +271,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private defaultOption: boolean;
     private timer: number;
     private currentTarget: Element;
+    private isCmenuHover: boolean;
     /**
      * Triggers while rendering each menu item.
      *
@@ -955,7 +956,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.closeMenu(null, e);
                     } else if (isOpen && isNullOrUndefined(ulIndex) && this.navIdx.length) {
                         this.closeMenu(null, e);
-                    } else if (isOpen && !this.isMenu && isNullOrUndefined(ulIndex) && this.navIdx.length === 0 && !this.isMenusClosed) {
+                    } else if (isOpen && !this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed && !this.isCmenuHover) {
                         this.isMenusClosed = true;
                         this.closeMenu(0, e);
                     } else if (isOpen && this.isMenu && e && e.target &&
@@ -1507,6 +1508,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private moverHandler(e: MouseEvent): void {
         const trgt: Element = e.target as Element;
         this.liTrgt = trgt;
+        if (!this.isMenu) this.isCmenuHover = true;
         const cli: Element = this.getLI(trgt);
         const wrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : this.getWrapper();
         const hdrWrapper: Element = this.getWrapper(); const regex: RegExp = new RegExp('-ej2menu-(.*)-popup'); let ulId: string;
@@ -1556,6 +1558,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             this.isClosed = false;
         }
+        if (!this.isMenu) this.isCmenuHover = false;
     }
     private removeStateWrapper(): void {
         if (this.liTrgt) {
@@ -1676,9 +1679,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             }
                             this.isClosed = true;
                             this.keyType = 'click';
-                            if (this.showItemOnClick) { this.setLISelected(cli); }
+                            if (this.showItemOnClick) { this.setLISelected(cli); if (!this.isMenu) this.isCmenuHover = true; }
                             this.closeMenu(culIdx + 1, e);
-                            if (this.showItemOnClick) { this.setLISelected(cli); }
+                            if (this.showItemOnClick) { this.setLISelected(cli); if (!this.isMenu) this.isCmenuHover = false; }
                         }
                     }
                     if (!this.isClosed) {
@@ -2123,7 +2126,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private end(ul: HTMLElement, isMenuOpen: boolean): void {
         if (isMenuOpen) {
-            ul.style.display = 'block';
+            if (this.isMenu || !Browser.isDevice) ul.style.display = 'block';
             ul.style.maxHeight = '';
             this.triggerOpen(ul);
             if (ul.querySelector('.' + FOCUSED)) {

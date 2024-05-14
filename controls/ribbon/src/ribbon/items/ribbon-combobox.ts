@@ -35,6 +35,13 @@ export class RibbonComboBox {
         });
         itemEle.appendChild(inputEle);
         const comboBoxSettings: RibbonComboBoxSettingsModel = item.comboBoxSettings;
+        let htmlAttr: { [key: string]: string } = {};
+        if (comboBoxSettings.htmlAttributes) {
+            htmlAttr = { ...comboBoxSettings.htmlAttributes };
+            if (htmlAttr.id) {
+                delete htmlAttr.id;
+            }
+        }
         new ComboBox({
             locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
@@ -66,7 +73,7 @@ export class RibbonComboBox {
             width: comboBoxSettings.width,
             beforeOpen: comboBoxSettings.beforeOpen,
             open: comboBoxSettings.open,
-            htmlAttributes: comboBoxSettings.htmlAttributes,
+            htmlAttributes: htmlAttr,
             close: (e: PopupEventArgs) => {
                 if (comboBoxSettings.close) { comboBoxSettings.close.call(this, e); }
             },

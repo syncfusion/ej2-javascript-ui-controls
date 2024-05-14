@@ -102,7 +102,14 @@ export class AnnotationBase {
                     else if (xAxis.valueType.indexOf('Category') > -1) {
                         const xAnnotation: string =  xAxis.valueType === 'DateTimeCategory' ? ((annotation.x as Date).getTime()).toString() :
                                                                                             <string>annotation.x;
-                        if (xAxis.labels.indexOf(xAnnotation) < 0) {
+                        if (typeof xAnnotation === 'object') {
+                            for (let i = 0; i < xAxis.labels.length; i++) {
+                                if (xAxis.labels[i as number].toString() == annotation.x.toString()) {
+                                    xValue = i;
+                                }
+                            }
+                        }
+                        else if (xAxis.labels.indexOf(xAnnotation) < 0) {
                             return false;
                         } else {
                             xValue = xAxis.labels.indexOf(xAnnotation);

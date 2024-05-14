@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.41 (2024-04-23)
+
+### Ribbon
+
+#### Bug Fixes
+
+- `#F575011` - Now the script issue raised while interacting a non-active Ribbon items using `updateItem` method has been resolved.
+
 ## 25.1.35 (2024-03-15)
 
 ### Ribbon

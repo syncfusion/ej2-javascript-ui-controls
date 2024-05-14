@@ -983,7 +983,7 @@ export class PdfRenderer {
         settings.dataFormat = dataFormat;
         if (isObjects) {
             exportFormFieldObject = this.loadedDocument.exportFormData(settings);
-            return _bytesToString(exportFormFieldObject);
+            return _bytesToString(exportFormFieldObject, true);
         } else {
             fileName = this.changeFileExtension(this.pdfViewer.fileName, this.fileFormat(dataFormat));
             return "data:application/json;base64," + _encode(this.loadedDocument.exportFormData(settings));

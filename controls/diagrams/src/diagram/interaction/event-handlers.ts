@@ -49,7 +49,7 @@ import { InputArgs } from '@syncfusion/ej2-inputs';
 import { Rect } from '../primitives/rect';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from './../primitives/matrix';
 import { LayerModel } from '../diagram/layer-model';
-import { ITouches, ActiveLabel } from '../objects/interface/interfaces';
+import { ITouches, ActiveLabel, View } from '../objects/interface/interfaces';
 import { removeRulerMarkers, drawRulerMarkers, getRulerSize, updateRuler } from '../ruler/ruler';
 import { canContinuousDraw, canDrawOnce } from '../utility/constraints-util';
 import { SelectorModel } from '../objects/node-model';
@@ -69,6 +69,7 @@ import { Tooltip } from '@syncfusion/ej2-popups';
 import { isBlazor } from '@syncfusion/ej2-base';
 import { BlazorTooltip } from '../blazor-tooltip/blazor-Tooltip';
 import { PathPort, PointPort } from '../objects/port';
+import { Overview } from '../../overview/overview';
 
 
 /**
@@ -237,6 +238,16 @@ export class DiagramEventHandler {
             this.diagram.transformLayers();
             if (this.diagram.rulerSettings.showRulers) {
                 updateRuler(this.diagram);
+            }
+            if(this.diagram.views.length > 1) {
+            //884316 - updating overview after window resize
+                for (const temp of this.diagram.views) {
+                    const view: View = this.diagram.views[`${temp}`];
+                    if ((view instanceof Overview)) {
+                        //Calling onproperty change method to update overview.
+                        (view as Overview).onPropertyChanged({sourceID: (view as Overview).sourceID},{});
+                    }
+                }
             }
         }
     }
@@ -1145,7 +1156,10 @@ export class DiagramEventHandler {
                 const phases: PhaseModel = { id: randomId(), offset: offset, header: { annotation: {
                     content: actualShape.phases[0].header  === undefined ? "Phase" : actualShape.phases[0].header.annotation.content,
                     style: actualShape.phases[0].header === undefined ? {} : actualShape.phases[0].header.annotation.style
-                } } } as PhaseModel;
+                } } 
+                ,//882239 - Fill color not applied properly while adding phase at runtime
+                style: actualShape.phases[0] === undefined ? {} : actualShape.phases[0].style } as PhaseModel;
+               
                 this.diagram.addPhases(swimlaneNode, [phases]);
             } else {
                 //const laneHeight: number = actualShape.lanes[0].header.height;

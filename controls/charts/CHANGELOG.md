@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I585297` - Tooltips in polar and radar series now render properly without console errors.
+- `#I532022` - Now, axis labels will render properly without any cutting off.
+- `#I585033` - Now, datetime annotations render properly.
+
 ## 25.2.3 (2024-05-08)
 
 ### Accumulation Chart

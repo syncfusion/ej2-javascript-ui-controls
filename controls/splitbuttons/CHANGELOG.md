@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### ButtonGroup
+
+#### Bug Fixes
+
+- Issue in "box shadow correction while clicking single or multiple selection mode buttons" has been resolved.
+
 ## 25.1.38 (2024-04-02)
 
 ### DropDownButton

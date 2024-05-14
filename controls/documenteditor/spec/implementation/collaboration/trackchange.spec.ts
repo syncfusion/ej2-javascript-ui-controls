@@ -121,7 +121,7 @@ describe('Enable track changes in collaborative editing', () => {
         editor.editorModule.onBackSpace();
         expect(argsEle.operations[0].markerData).toBeDefined();
         expect(argsEle.operations[0].markerData.revisionType).toBe('Deletion');
-        expect(argsEle.operations[0].markerData.splittedRevisions.length).toBe(4);
+        expect(argsEle.operations[0].markerData.revisionId).toBeDefined();
     });
 
     it('Selection with insert', () => {
@@ -180,7 +180,7 @@ describe('Enable track changes in collaborative editing', () => {
     });
 
     it('Combination of backing in revision', () => {
-        console.log('Backspace the insert revision');
+        console.log('Combination of backing in revision');
         let argsEle: ContainerContentChangeEventArgs;
         editor.contentChange = function (args: ContainerContentChangeEventArgs) {
             if (args.operations.length > 0) {
@@ -220,5 +220,59 @@ describe('Enable track changes in collaborative editing', () => {
         expect(argsEle.operations[1].offset).toBe(3);
         expect(argsEle.operations[1].markerData.revisionId).toBeDefined();
         expect(argsEle.operations[1].markerData.revisionType).toBe('Deletion');
+    });
+
+    it('Combination of multiple paragraph and table selection delete', () => {
+        console.log('Combination of multiple paragraph and table selection delete');
+        let argsEle: ContainerContentChangeEventArgs;
+        editor.contentChange = function (args: ContainerContentChangeEventArgs) {
+            if (args.operations.length > 0) {
+                argsEle = args;
+            }
+        }
+        editor.openBlank();
+        editor.enableTrackChanges = false;
+        editor.editorModule.insertText('Syncfusion Software');
+        editor.editorModule.insertTable(2,2);
+        editor.selectionModule.select('0;2;0', '0;2;0');
+        editor.editorModule.insertText('Syncfusion Software');
+        editor.enableTrackChanges = true;
+        editor.selectionModule.select('0;0;0', '0;2;19');
+        editor.editorModule.onBackSpace();
+        //Add revison to last paragraph
+        expect(argsEle.operations[0].length).toBe(19);
+        expect(argsEle.operations[0].action).toBe('Format');
+        expect(argsEle.operations[0].offset).toBe(32);
+        //Add revison to first row
+        expect(argsEle.operations[1].length).toBe(4);
+        expect(argsEle.operations[1].action).toBe('Format');
+        expect(argsEle.operations[1].offset).toBe(22);
+        expect(argsEle.operations[1].type).toBe('RemoveRowTrack');
+        //Add revison to second row
+        expect(argsEle.operations[2].length).toBe(4);
+        expect(argsEle.operations[2].action).toBe('Format');
+        expect(argsEle.operations[2].offset).toBe(27);
+        expect(argsEle.operations[2].type).toBe('RemoveRowTrack');
+        //Add revison to first paragraph
+        expect(argsEle.operations[3].length).toBe(19);
+        expect(argsEle.operations[3].action).toBe('Format');
+        expect(argsEle.operations[3].offset).toBe(1);
+    });
+    it('Insert text inside the cell', () => {
+        console.log('Insert text inside the cell');
+        let argsEle: ContainerContentChangeEventArgs;
+        editor.contentChange = function (args: ContainerContentChangeEventArgs) {
+            if (args.operations.length > 0) {
+                argsEle = args;
+            }
+        }
+        editor.openBlank();
+        editor.enableTrackChanges = true;
+        editor.editor.insertTable(2, 2);
+        editor.editor.insertText('s');
+        expect(argsEle.operations[0].length).toBe(1);
+        expect(argsEle.operations[0].action).toBe('Insert');
+        expect(argsEle.operations[0].offset).toBe(4);
+        expect(argsEle.operations[0].markerData).toBeDefined();
     });
 });

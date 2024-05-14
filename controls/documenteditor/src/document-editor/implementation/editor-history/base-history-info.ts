@@ -257,7 +257,9 @@ export class BaseHistoryInfo {
                     }
                 }
             // }
-            this.splitOperationForDelete(start, end);
+            if(!this.owner.enableTrackChanges) {
+                this.splitOperationForDelete(start, end);
+            }
             // Code for Comparing the offset calculated using old approach and optimized approach
             // throwCustomError(this.newStartIndex !== this.startIndex, "New StartIndex " + this.newStartIndex + " and old StartIndex " + this.startIndex + " doesnot match");
             // throwCustomError(this.newEndIndex !== this.endIndex, "New EndIndex " + this.newEndIndex + " and old EndIndex " + this.endIndex + " doesnot match");
@@ -810,8 +812,11 @@ export class BaseHistoryInfo {
         this.lastElementRevision = this.checkAdjacentNodeForMarkedRevision(this.lastElementRevision);
         let currentRevision: TextPosition = this.retrieveEndPosition(this.lastElementRevision);
         let blockInfo: ParagraphInfo = this.owner.selectionModule.getParagraphInfo(currentRevision);
-        const isLastChild = (blockInfo.paragraph == this.owner.editor.getLastParaForBodywidgetCollection(blockInfo.paragraph));
-        if(blockInfo.paragraph.getLength() == blockInfo.offset && !blockInfo.paragraph.isInsideTable && !isLastChild) {
+        let isLastChild = (blockInfo.paragraph == this.owner.editor.getLastParaForBodywidgetCollection(blockInfo.paragraph));
+        if (blockInfo.paragraph.isInsideTable && blockInfo.paragraph == this.owner.selection.getLastParagraph(blockInfo.paragraph.associatedCell)) {
+            isLastChild = true;
+        }
+        if (blockInfo.paragraph.getLength() == blockInfo.offset && !isLastChild) {
             blockInfo.offset++;
         }
         this.endRevisionLogicalIndex = this.owner.selectionModule.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
@@ -1961,9 +1966,9 @@ export class BaseHistoryInfo {
                 let revision: Revision = this.owner.editorModule.retrieveRevisionInOder(widget);
                 let currentUser: string = this.owner.currentUser === '' ? 'Guest user' : this.owner.currentUser;
                 if (revision.revisionType === 'Insertion' && revision.author !== currentUser) {
-                    this.revisionOperation.push(this.getFormatOperation(widget));
+                    this.revisionOperation.push(this.getFormatOperation());
                 } else if (revision.revisionType === 'Insertion') {
-                    let operation: Operation = this.getDeleteOperation(this.action, undefined, undefined)
+                    let operation: Operation = this.getDeleteOperation('Delete', undefined, undefined)
                     this.revisionOperation.push(operation);
                     endIndex -= operation.length;
                 } else if (revision.revisionType === 'Deletion') {
@@ -2002,9 +2007,13 @@ export class BaseHistoryInfo {
                 position.setPositionParagraph(widget.childWidgets[0] as LineWidget, 0);
                 this.startIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(position);
                 let length: number = this.owner.selectionModule.getBlockLength(undefined, widget, 0, { done: false }, true, undefined, undefined);
-                this.endIndex = this.startIndex + length;
-                this.revisionOperation.push(this.getDeleteOperation(this.action, undefined, this.getRemovedText(widget)));
-                endIndex -= length;
+                let currentUser: string = this.owner.currentUser === '' ? 'Guest user' : this.owner.currentUser;
+                let revision: Revision = this.owner.editorModule.retrieveRevisionInOder((widget.childWidgets[0] as LineWidget).children[0]);
+                if (currentUser === revision.author) {
+                    this.endIndex = this.startIndex + length;
+                    this.revisionOperation.push(this.getDeleteOperation(this.action, undefined, this.getRemovedText(widget)));
+                    endIndex -= length;
+                }
             } else {
                 for (let i: number = 0; i < widget.childWidgets.length; i++) {
                     for (let j: number = 0; j < (widget.childWidgets[i] as LineWidget).children.length; j++) {
@@ -2033,18 +2042,16 @@ export class BaseHistoryInfo {
 
         this.startIndex = startIndex;
         this.endIndex = endIndex;
-        if (this.revisionOperation.length > 0) {
-            operations.push(...this.revisionOperation);
-            this.revisionOperation = [];
+        for(let i: number = 0; i < this.revisionOperation.length; i++) {
+            if(this.revisionOperation[i].action == 'Format' && isNullOrUndefined(this.revisionOperation[i].markerData)) {
+                this.revisionOperation[i].markerData = this.markerData.pop();
+            }
+            operations.push(this.revisionOperation[i]);
         }
         for (let i = this.removedNodes.length - 1; i >= 0; i--) {
             let element: ElementBox = this.removedNodes[i] as ElementBox;
             if (element instanceof TextElementBox || element instanceof ImageElementBox || element instanceof FieldElementBox || element instanceof BookmarkElementBox) {
                 if (element.removedIds.length === 0) {
-                    if (this.markerData.length > 0 && this.markerData[0].revisionType !== 'Insertion') {
-                        let markerData = this.markerData.shift();
-                        this.markerData.push(markerData);
-                    }
                     let operation = this.getFormatOperation();
                     if (!isNullOrUndefined(operation.markerData)) {
                         for (let j: number = 0; j < this.markerData.length; j++) {
@@ -2052,7 +2059,9 @@ export class BaseHistoryInfo {
                                 if (isNullOrUndefined(operation.markerData.splittedRevisions)) {
                                     operation.markerData.splittedRevisions = [];
                                 }
-                                operation.markerData.splittedRevisions.push(this.markerData[j]);
+                                if (this.checkValidRevision(this.markerData[j].revisionId)) {
+                                    operation.markerData.splittedRevisions.push(this.markerData[j]);
+                                }
                                 this.markerData.splice(j, 1);
                                 j--;
                             }
@@ -2068,11 +2077,29 @@ export class BaseHistoryInfo {
                     let operation: Operation = this.getDeleteOperation(this.action);
                     operation.markerData.isAcceptOrReject = this.isAcceptOrReject;
                     operations.push(operation);
+                    let position: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.insertPosition);
+                    if (!position.isAtParagraphStart) {
+                        //When accept the delete revision if paragraph is not start then paragraph is combining.
+                        let endIndex: number = this.endIndex;
+                        this.endIndex = this.startIndex;
+                        operations.push(this.getDeleteOperation('Delete'));
+                        this.endIndex = endIndex;
+                    }
+                    break;
                 } else if ((element as ParagraphWidget).characterFormat.revisions.length === 0) {
-                    let markerData = this.markerData.shift();
-                    this.markerData.push(markerData);
                     let operation: Operation = this.getFormatOperation();
-                    operation.markerData.splittedRevisions = this.markerData.slice();
+                    for (let j: number = 0; j < this.markerData.length; j++) {
+                        if (this.markerData[j].revisionType === 'Deletion') {
+                            if (isNullOrUndefined(operation.markerData.splittedRevisions)) {
+                                operation.markerData.splittedRevisions = [];
+                            }
+                            if (this.checkValidRevision(this.markerData[j].revisionId)) {
+                                operation.markerData.splittedRevisions.push(this.markerData[j]);
+                            }
+                            this.markerData.splice(j, 1);
+                            j--;
+                        }
+                    }
                     this.markerData = [];
                     operations.push(operation);
                     break;
@@ -2080,6 +2107,14 @@ export class BaseHistoryInfo {
             }
         }
         return operations;
+    }
+    private checkValidRevision(revisionID: string): boolean {
+        for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
+            if (this.owner.revisions.changes[i].revisionID === revisionID) {
+                return true;
+            }
+        }
+        return false;
     }
     /**
      * @private
@@ -2487,7 +2522,6 @@ export class BaseHistoryInfo {
                 if (this.editorHistory.isUndoing) {
                     if (this.isRemovedNodes && this.editorHistory.isUndoing) {
                         operations = this.cellOperation.slice();
-                        this.cellOperation = [];
                         let operationCollection: Operation[] = this.getDeleteContent(action);
                         if (isNullOrUndefined(operationCollection[0].markerData)) {
                             operationCollection[0].markerData = { isSkipTracking: true }
@@ -2495,9 +2529,13 @@ export class BaseHistoryInfo {
                         operations.push(...operationCollection);
                     }
                 } else {
-                    if (this.removedNodes.length > 0 && this.removedNodes[0] instanceof TableWidget) {
-                        // this.afterInsertTableRrevision();
-                        operations = this.cellOperation.slice();
+                    if (this.removedNodes.length > 0) {
+                        if (this.cellOperation.length > 0) {
+                            operations.push(...this.cellOperation);
+                        } else {
+                            operations = this.revisionOperation.slice();
+                            this.getTrackchangesOperation(operations);
+                        }
                     }
                 }
                 break;
@@ -2683,8 +2721,40 @@ export class BaseHistoryInfo {
                 break;
         }
         this.cellOperation = [];
+        this.revisionOperation = [];
         this.isRemovedNodes = false;
         return operations;
+    }
+    private getTrackchangesOperation(operations: Operation[]): void {
+        let markerInfo: MarkerInfo[] = this.markerData;
+        for (let i: number = markerInfo.length - 1; i >= 0; i--) {
+            if (!isNullOrUndefined(markerInfo[i].revisionId)) {
+                let revision: Revision = this.getRevision(markerInfo[i].revisionId);
+                if (revision && revision.range.length > 0) {
+                    if (revision.range[0] instanceof WRowFormat) {
+                        operations.push(this.buildRowOperationForTrackChanges((revision.range[0] as WRowFormat).ownerBase, 'RemoveRowTrack'));
+                    } else {
+                        let startPosition: TextPosition = new TextPosition(this.owner);
+                        let endPosition: TextPosition = new TextPosition(this.owner);
+                        this.owner.selection.selectRevision(revision, startPosition, endPosition);
+                        this.startIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(startPosition);
+                        this.endIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(endPosition);
+                        operations.push(this.getFormatOperation(undefined));
+                    }
+                } else {
+                    this.owner.editorModule.removeMarkerInfoRevision(markerInfo[i].revisionId, markerInfo);
+                }
+            }
+        }
+    }
+    private getRevision(revisionId: string): Revision {
+        for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
+            let revision: string = this.owner.revisions.changes[i].revisionID;
+            if (revision === revisionId) {
+                return this.owner.revisions.changes[i];
+            }
+        }
+        return undefined;
     }
     /**
      * @private
@@ -3362,17 +3432,19 @@ export class BaseHistoryInfo {
     /**
      * @private
      */
-    public buildRowOperationForTrackChanges(row: TableRowWidget, action?: Action) {
-        let paragraphInfo: ParagraphInfo = { 'paragraph':  null, 'offset': 0 };
+    public buildRowOperationForTrackChanges(row: TableRowWidget, action?: Action): Operation {
+        let paragraphInfo: ParagraphInfo = { 'paragraph': null, 'offset': 0 };
         let length: number = 0;
         let offset: number = this.owner.selectionModule.getPositionInfoForHeaderFooter(paragraphInfo, { position: 0, done: false }, row).position;
         this.startIndex = offset;
-        for(let j: number = 0; j < row.childWidgets.length; j++) {
+        for (let j: number = 0; j < row.childWidgets.length; j++) {
             length += this.owner.selectionModule.calculateCellLength(row.childWidgets[j] as TableCellWidget) + 1;
         }
         this.tableRelatedLength = length;
         this.insertedText = CONTROL_CHARACTERS.Row;
-        this.cellOperation.push(this.getFormatOperation(undefined, action));
+        let operation: Operation = this.getFormatOperation(undefined, action);
+        this.insertedText = '';
+        return operation;
     }
 
     private buildCellOperation(cell: TableCellWidget, action: Action, isCellInserted: boolean): Operation[] {

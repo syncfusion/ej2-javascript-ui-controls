@@ -651,6 +651,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
                 bounds.x = svgRect.x;
                 bounds.y = svgRect.y;
             }
+            //Bug 884239: Overview rectangle not updated properly while double-clicking the overview canvas.
+            this.actionName === 'pan' ? this.updateOverviewrect(-bounds.x, -bounds.y, bounds.width, bounds.height) : 
             this.updateOverviewrect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
     }

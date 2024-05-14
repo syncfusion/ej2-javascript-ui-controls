@@ -3956,3 +3956,71 @@ describe('Unschedule task date changes', () => {
         destroyGantt(ganttObj);       
     });
 });
+describe('CR:883567: Taskbar duration is not calculated', () => {
+    let ganttObj: Gantt;
+    let data= [
+        {
+            TaskID: 1,
+            TaskName: 'Final Product',
+            StartDate: new Date('04/04/2019'),
+            EndDate: new Date('04/05/2019'),
+            Duration: 0.89,
+            Predecessor: '2FS'
+        },
+        {
+            TaskID: 2,
+            TaskName: 'Final Product',
+            StartDate: new Date('04/04/2019'),
+            EndDate: new Date('04/05/2019'),
+            Duration: 0.5
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                allowSelection: true,
+                gridLines: 'Both',
+                height: '450px',
+                treeColumnIndex: 1,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                },
+                splitterSettings: {
+                    position: "35%"
+                },
+                allowUnscheduledTasks: true,
+            }, done);
+    });
+    it('Checking taskbar width',()=>{
+        expect(ganttObj.currentViewData[0].ganttProperties.width).toBe(29.37);
+        expect(ganttObj.currentViewData[1].ganttProperties.width).toBe(16.5);
+    }); 
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});

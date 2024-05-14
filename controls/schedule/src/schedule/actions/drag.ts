@@ -46,7 +46,6 @@ export class DragAndDrop extends ActionBase {
             abort: '.' + cls.EVENT_RESIZE_CLASS,
             clone: true,
             isDragScroll: true,
-            enableTapHold: this.parent.isAdaptive as boolean,
             enableTailMode: (this.parent.eventDragArea) ? true : false,
             cursorAt: (this.parent.eventDragArea) ? { left: -20, top: -20 } : { left: 0, top: 0 },
             dragArea: this.dragArea,
@@ -66,6 +65,10 @@ export class DragAndDrop extends ActionBase {
     }
 
     private dragHelper(e: Record<string, any>): HTMLElement {
+        if (e.sender && e.sender.type === 'touchmove' && (!this.parent.uiStateValues.isTapHold ||
+            !e.element.classList.contains(cls.APPOINTMENT_BORDER))) {
+            return null;
+        }
         this.setDragActionDefaultValues();
         this.actionObj.element = e.element as HTMLElement;
         this.actionObj.action = 'drag';
@@ -274,6 +277,9 @@ export class DragAndDrop extends ActionBase {
     }
 
     private drag(e: MouseEvent & TouchEvent): void {
+        if ((e as Record<string, any>).event && (e as Record<string, any>).event.type === 'touchmove') {
+            (e as Record<string, any>).event.preventDefault();
+        }
         if (this.parent.quickPopup) {
             this.parent.quickPopup.quickPopupHide(true);
         }
@@ -362,7 +368,7 @@ export class DragAndDrop extends ActionBase {
         clearInterval(this.actionObj.scrollInterval);
         this.actionObj.scrollInterval = null;
         this.actionClass('removeClass');
-        this.parent.uiStateValues.action = false;
+        this.parent.uiStateValues.action = this.parent.uiStateValues.isTapHold = false;
         if (this.isAllowDrop(e)) {
             return;
         }

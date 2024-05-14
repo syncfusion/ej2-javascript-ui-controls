@@ -928,6 +928,7 @@ export class Edit {
                     args.index = position === 'before' ? index : index + 1;
                 }
                 if (this.parent.editSettings.newRowPosition === 'Bottom') {
+                    level = 0;
                     const dataSource: Object[] = <Object[]>(this.parent.grid.dataSource instanceof DataManager ?
                         this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource);
                     args.index = dataSource.length;

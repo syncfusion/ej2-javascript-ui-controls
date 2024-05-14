@@ -80,12 +80,17 @@ export class ExcelExport {
         if (!isNullOrUndefined(excelExportProperties)) {
             this.isCollapsedStatePersist = (excelExportProperties as TreeGridExcelExportProperties).isCollapsedStatePersist;
         }
+        if (!isNullOrUndefined(excelExportProperties) && !isNullOrUndefined(excelExportProperties.dataSource)
+            && !isNullOrUndefined(excelExportProperties.dataSource instanceof DataManager)) {
+            return this.parent.grid.excelExportModule.Map(this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
+        }
         return new Promise((resolve: Function) => {
             const dm: DataManager = this.isLocal() && !(dataSource instanceof DataManager) ? new DataManager(dataSource)
                 : <DataManager>this.parent.dataSource;
             let query: Query = new Query();
             if (!this.isLocal()) {
                 query = this.generateQuery(query);
+                query.queries = this.parent.grid.getDataModule().generateQuery().queries;
                 setValue('query', query, property);
             }
             this.parent.trigger(event.beforeExcelExport, extend(property, excelExportProperties));

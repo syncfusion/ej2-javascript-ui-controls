@@ -168,7 +168,7 @@ export interface RuleModel {
     /**
      * Specifies whether rule is locked or not.
      *
-     * @default false
+     * @default null
      */
     isLocked?: boolean;
 

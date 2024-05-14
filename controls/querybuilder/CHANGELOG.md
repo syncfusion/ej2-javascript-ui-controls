@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I585876` - Removing the isLocked property from query builder rules when the rule/group is not locked / unlocked.
+
 ## 25.2.3 (2024-05-08)
 
 ### QueryBuilder

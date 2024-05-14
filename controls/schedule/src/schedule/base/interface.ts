@@ -566,6 +566,8 @@ export interface UIStateArgs {
     isPreventTimezone?: boolean;
     isPreventEventRefresh?: boolean;
     scheduleHeight?: number;
+    isTapHold?: boolean;
+    isTouchScroll?: boolean;
 }
 
 /**

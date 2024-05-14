@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I575320`- Now, the Form Fields data does not wrongly appear when exporting.
+- `#I583505`- Now, the Export annotations is properly working when drawing the annotation outside page boundaries.
+- `#I581452` - Now, the form field background and border color are set to transparent properly.
+- `#I585089` - Now, the annotation selector is properly removed when undoing annotations in select mode. 
+
 ## 25.2.3 (2024-05-08)
 
 ### PDF Viewer

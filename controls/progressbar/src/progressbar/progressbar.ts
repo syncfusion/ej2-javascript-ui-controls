@@ -27,6 +27,7 @@ import { ProgressAnimation } from './utils/progress-animation';
 export class ProgressBar extends Component<HTMLElement> implements INotifyPropertyChanged {
     constructor(options?: ProgressBarModel, element?: string | HTMLElement) {
         super(options, element);
+        ProgressBar.Inject(ProgressTooltip);
     }
     /**
      * type of the progress bar
@@ -442,7 +443,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /** @private */
     public scaleY: number = 1;
     /** ProgressTooltip module to use tooltip */
-    public progressTooltipModule: ProgressTooltip = new ProgressTooltip(this);
+    public progressTooltipModule: ProgressTooltip;
     /** @private */
     public initialClipRect: Rect;
 
@@ -928,7 +929,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         }
         if (this.tooltip.enable) {
             modules.push({
-                member: 'Tooltip',
+                member: 'ProgressTooltip',
                 args: [this]
             });
         }

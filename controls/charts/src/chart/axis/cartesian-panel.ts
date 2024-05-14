@@ -927,7 +927,7 @@ export class CartesianAxisLayoutPanel {
             case 'Shift':
                 if ((i === 0 || (isInverse && i === len - 1)) && options.y > rect.y + rect.height) {
                     options.y = pointY = rect.y + rect.height;
-                } else if (((i === len - 1) || (isInverse && i === 0)) && (options.y < rect.y)) {
+                } else if (((i === len - 1) || (isInverse && i === 0)) && (options.y <= rect.y)) {
                     options.y = pointY = rect.y + elementSize.height * 0.5;
                 }
                 break;

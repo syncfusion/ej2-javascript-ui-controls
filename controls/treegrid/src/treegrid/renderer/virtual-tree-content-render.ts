@@ -439,8 +439,14 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             }
             if (firsttdinx === 0) {
                 this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
-                    scrollArgs.offset.top - (outBuffer * this.parent.getRowHeight()) + 10 : 0;
-            } else {
+                   scrollArgs.offset.top - (outBuffer * this.parent.getRowHeight()) + rowHeight : 0;
+            }
+            else if (this.parent.getFrozenColumns() > 0) {
+                scrollArgs.offset.top = scrollArgs.offset.top + 80;
+                this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
+                    scrollArgs.offset.top - (outBuffer * rowHeight) + 10 : 0;
+            }
+            else {
                 this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
                     scrollArgs.offset.top - (outBuffer * rowHeight) + 10 : 0;
             }
@@ -477,6 +483,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 {
                     if (this.parent.allowRowDragAndDrop) {
                         this.translateY = scrollArgs.offset.top -  rowHeight * 2;
+                    }
+                    else if (this.parent.getFrozenColumns() > 0) {
+                        this.translateY = scrollArgs.offset.top - ((rowHeight * 2) + this.parent.pageSettings.pageSize);
                     }
                     else {
                         this.translateY = scrollArgs.offset.top;

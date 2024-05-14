@@ -114,7 +114,7 @@ export class ChartData {
                     return point;
                 }
             }
-            if ((series.dragSettings.enable && series.isRectSeries) || (series.isRectSeries && series.marker.visible)) {
+            if ((series.dragSettings.enable && series.isRectSeries) || (series.isRectSeries && series.marker.visible && this.chart.chartAreaType !== 'PolarRadar')) {
                 if (this.isPointInThresholdRegion(x, y, point, rect, series)) {
                     this.insideRegion = true;
                     return point;

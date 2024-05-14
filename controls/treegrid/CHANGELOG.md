@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 25.2.4 (2024-05-14)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I585348` - Record gets disappeared when adding new record in last page issue has been fixed.
+- `#I575018` - Resolved `frozenColumns` with virtualization leads to missing records on scrolling.
+- `#F187800` - Resolved exception on passing the `collpaseRow` and `expandRow` method without parameters.
+- `#F53252` - Fixed issue where newly added row to the bottom was indented to the selected child record.
+- `#F53285` - Fixed issue where server request was not updated properly during export with filtering and sorting action in remote data.
+- `#F53846` - Fixed issue where unnecessary requests were being sent for custom local data source during excel export in remote data sample.
+- `#F53930` - Fixed a script error that occurred when navigating through cells using the keyboard after updating the state in the treegrid.
+- `#F54026` - Fixed a bug where a warning message was being thrown after injecting freeze modules when frozen was enabled.
+
 ## 25.1.42 (2024-04-30)
 
 ### Tree Grid

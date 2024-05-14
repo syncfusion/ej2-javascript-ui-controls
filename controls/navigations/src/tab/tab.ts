@@ -2484,7 +2484,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @private
      */
     public onPropertyChanged(newProp: TabModel, oldProp: TabModel): void {
-        for (const prop of Object.keys(newProp)) {
+        let sortedKeys = Object.keys(newProp).sort(function (a, b) {
+            if (a === 'items') return -1;
+            if (b === 'items') return 1;
+            return 0;
+        });
+        for (const prop of sortedKeys) {
             switch (prop) {
                 case 'width':
                     setStyle(this.element, { width: formatUnit(newProp.width) });

@@ -222,6 +222,10 @@ export class Month extends ViewBase implements IRenderer {
         remove(this.element.querySelector('tbody tr'));
         this.renderHeader();
         this.parent.notify(event.contentReady, {});
+        const dateHeader: HTMLElement = (this.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS) as HTMLElement);
+        if (dateHeader) {
+            dateHeader.scrollLeft = this.parent.uiStateValues.left;
+        }
     }
 
     private wireCellEvents(element: Element): void {

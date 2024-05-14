@@ -366,7 +366,7 @@ export class HistoryInfo extends BaseHistoryInfo {
                     let tocOperations: Operation[] = currentHistory.getActionInfo();
                     operations.push(...tocOperations);
                 }
-                if (this.editorHistory.isUndoing) {
+                if (this.editorHistory.isUndoing && operations.length > 0) {
                     let lastelement: Operation = operations.pop();
                     operations.unshift(lastelement);
                 }

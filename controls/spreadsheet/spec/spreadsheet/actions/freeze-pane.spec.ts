@@ -1,5 +1,5 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
-import { filterData } from '../util/datasource.spec';
+import { defaultData, filterData } from '../util/datasource.spec';
 import { SheetModel, getRangeAddress, Spreadsheet } from "../../../src/index";
 
 describe('Freeze pane ->', () => {
@@ -71,5 +71,36 @@ describe('Freeze pane ->', () => {
         expect(sheet.frozenRows).toBe(0);
         expect(sheet.frozenColumns).toBe(0);
         done();
+    });
+});
+describe('CR-Issues ->', () => {
+    let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+    let sheet: SheetModel;
+    describe('EJ2-882771 ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }], frozenColumns: 3, frozenRows: 5 }],
+                scrollSettings: { enableVirtualization: false }
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Cell selection is misaligned due to UI not properly rendered when deleting a column on the freeze pane and finite mode applied sheet with virtualization is set to false', (done: Function) => {
+            sheet = helper.getInstance().getActiveSheet();
+            expect(sheet.paneTopLeftCell).toBe('D6');
+            helper.invoke('delete', [3, 3, 'Column']);
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [0, 3]);
+                expect(td.textContent).toBe('Price');
+                td = helper.invoke('getCell', [0, 4]);
+                expect(td.textContent).toBe('Amount');
+                td = helper.invoke('getCell', [0, 5]);
+                expect(td.textContent).toBe('Discount');
+                td = helper.invoke('getCell', [0, 6]);
+                expect(td.textContent).toBe('Profit');
+                done();
+            });
+        });
     });
 });

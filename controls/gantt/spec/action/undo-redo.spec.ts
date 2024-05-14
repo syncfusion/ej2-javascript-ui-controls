@@ -2,7 +2,7 @@
  * Gantt sort spec
  */
 import { Gantt, Sort,UndoRedo,Edit,Toolbar, RowDD,Filter, ContextMenu, ContextMenuClickEventArgs } from '../../src/index';
-import { projectData, projectData1 } from '../base/data-source.spec';
+import { projectData, projectData1, resourceDataUndo, resourceResourcesUndo } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
@@ -999,6 +999,106 @@ describe('Gantt undoredo support', () => {
             };
             ganttObj.convertToMilestone('2');
             done()
+        });
+    });
+    describe('cell edit for undo redo module', () => {
+        Gantt.Inject(Sort, UndoRedo, Edit, Toolbar, RowDD, ContextMenu);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: resourceDataUndo,
+                    resources: resourceResourcesUndo,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        work: 'work',
+                        type: 'taskType',
+                        resourceInfo: 'resources'
+                    },
+                    taskType: 'FixedWork',
+                    resourceFields: {
+                        id: 'resourceId',
+                        name: 'resourceName',
+                        unit: 'unit'
+                    },
+                    enableUndoRedo: true,
+                    undoRedoActions: [
+                        'Sorting',
+                        'Add',
+                        'ColumnReorder',
+                        'ColumnResize',
+                        'ColumnState',
+                        'Delete',
+                        'Edit',
+                        'Filtering',
+                        'Indent',
+                        'Outdent',
+                        'NextTimeSpan',
+                        'PreviousTimeSpan',
+                        'RowDragAndDrop',
+                        'Search',
+                    ],
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    columns: [
+                        { field: 'TaskID', visible: false },
+                        { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                        { field: 'resources', headerText: 'Resources', width: '160' },
+                        { field: 'work', width: '110' },
+                        { field: 'Duration', width: '100' },
+                        { field: 'taskType', headerText: 'Task Type', width: '110' }
+                    ],
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Undo', 'Redo'],
+                    splitterSettings: {
+                        position: "50%",
+                        // columnIndex: 4
+                    },
+                    gridLines: "Both",
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        showTooltip: true,
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/28/2019'),
+                    projectEndDate: new Date('07/28/2019'),
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('edit taskname column', () => {
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+            input.value = 'TaskName updated';
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(element, 'click');
+            expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('TaskName updated');
+            ganttObj.undo();
+            setTimeout(() => {
+                expect(ganttObj.currentViewData[1].ganttProperties.taskName).toBe('Identify site location');
+            }, 100);        
         });
     });
 });

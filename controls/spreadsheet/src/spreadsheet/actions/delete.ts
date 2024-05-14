@@ -33,10 +33,10 @@ export class Delete {
             }
         } else if (args.activeSheetIndex === this.parent.activeSheetIndex) {
             const sheet: SheetModel = this.parent.getActiveSheet();
+            const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
             if (args.modelType === 'Row') {
                 if (!this.parent.scrollSettings.enableVirtualization || args.startIndex <= this.parent.viewport.bottomIndex) {
                     if (this.parent.scrollSettings.enableVirtualization) {
-                        const frozenRow: number = this.parent.frozenRowCount(sheet);
                         if (args.startIndex < getCellIndexes(sheet.paneTopLeftCell)[0]) {
                             this.parent.updateTopLeftCell(
                                 skipHiddenIdx(sheet, args.startIndex - 1 < frozenRow ? frozenRow : args.startIndex - 1, true) - frozenRow,
@@ -68,15 +68,18 @@ export class Delete {
                             }
                         }
                     } else {
-                        this.parent.renderModule.refreshUI(
-                            { skipUpdateOnFirst: true, refresh: 'Row', rowIndex: this.parent.viewport.topIndex, colIndex: 0 });
-                        this.parent.selectRange(sheet.selectedRange);
+                        if (frozenRow || frozenCol) {
+                            this.parent.renderModule.refreshSheet(false, false, true);
+                        } else {
+                            this.parent.renderModule.refreshUI(
+                                { skipUpdateOnFirst: true, refresh: 'Row', rowIndex: this.parent.viewport.topIndex, colIndex: 0 });
+                            this.parent.selectRange(sheet.selectedRange);
+                        }
                     }
                 }
             } else {
                 if (args.refreshSheet !== false && (!this.parent.scrollSettings.enableVirtualization ||
                     args.startIndex <= this.parent.viewport.rightIndex)) {
-                    const frozenCol: number = this.parent.frozenColCount(sheet);
                     if (this.parent.scrollSettings.enableVirtualization) {
                         if (args.startIndex < getCellIndexes(sheet.paneTopLeftCell)[1]) {
                             this.parent.updateTopLeftCell(
@@ -106,10 +109,14 @@ export class Delete {
                             }
                         }
                     } else {
-                        this.parent.renderModule.refreshUI(
-                            { skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0, colIndex: this.parent.viewport.leftIndex,
-                            insertDelete: true });
-                        this.parent.selectRange(sheet.selectedRange);
+                        if (frozenRow || frozenCol) {
+                            this.parent.renderModule.refreshSheet(false, false, true);
+                        } else {
+                            this.parent.renderModule.refreshUI(
+                                { skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0, colIndex: this.parent.viewport.leftIndex,
+                                    insertDelete: true });
+                            this.parent.selectRange(sheet.selectedRange);
+                        }
                     }
                 }
                 delete args.refreshSheet;

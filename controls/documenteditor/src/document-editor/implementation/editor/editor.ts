@@ -202,7 +202,7 @@ export class Editor {
     /**
      * @private
      */
-    public revisionData: MarkerInfo[] = [];
+    public revisionData: MarkerInfo[] = undefined;
     /**
      * @private
      */
@@ -2244,12 +2244,10 @@ export class Editor {
             let rex: RegExp = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
             if (resultText.length > 0 && resultText.replace(rex, '') === '') {
                 resultText = '';
-                this.documentHelper.isTextFormEmpty = true;
                 this.selection.selectFieldInternal(inline);
             }
             let maxLength: number = (inline.formFieldData as TextFormField).maxLength;
             if (maxLength !== 0 && resultText.length >= maxLength) {
-                this.documentHelper.isTextFormEmpty = false;
                 return;
             }
         }
@@ -2339,7 +2337,7 @@ export class Editor {
                 span.line = (insertPosition.paragraph as ParagraphWidget).childWidgets[0] as LineWidget;
                 span.margin = new Margin(0, 0, 0, 0);
                 span.line.children.push(span);
-                this.setCharFormatForCollaborativeEditing(insertFormat);
+                this.setCharFormatForCollaborativeEditing(span.characterFormat);
                 if (this.owner.enableTrackChanges) {
                     if (span.paragraph.characterFormat.revisions.length > 0) {
 
@@ -2508,7 +2506,6 @@ export class Editor {
                 this.reLayout(selection);
             }
             this.documentHelper.isTextInput = false;
-            this.documentHelper.isTextFormEmpty = false;
         }
         this.updateXmlMappedContentControl();
         if (!isReplace && isRemoved && (text === ' ' || text === '\t' || text === '\v')) {
@@ -2906,8 +2903,8 @@ export class Editor {
                         let lastElementRevision: Revision = currentElement.revisions[currentElement.revisions.length - 1];
                         isNew = false;
                         if (firstEleRevision !== lastElementRevision) {
-                            this.clearAndUpdateRevisons(firstEleRevision.range, lastElementRevision, lastElementRevision.range.indexOf(elementBox) + 1);
-                            this.owner.revisions.remove(firstEleRevision);
+                            this.clearAndUpdateRevisons(lastElementRevision.range, firstEleRevision, 0, true);
+                            this.owner.revisions.remove(lastElementRevision);
                         }
                     }
                 }
@@ -3041,14 +3038,14 @@ export class Editor {
      */
     /* eslint-disable @typescript-eslint/no-explicit-any */
     public insertRevision(item: any, type: RevisionType, author?: string, date?: string, spittedRange?: object[], skip?: boolean, parseRevisionId?: string): Revision {
-        if(this.isRemoteAction && this.revisionData.length == 0 && !this.documentHelper.owner.parser.isPaste) {
+        if (this.isRemoteAction && isNullOrUndefined(this.revisionData) && !this.documentHelper.owner.parser.isPaste) {
             return undefined;
         }
         let revisionId: string;
         if (!isNullOrUndefined(parseRevisionId)) {
             revisionId = parseRevisionId;
         }
-        if (this.revisionData.length > 0) {
+        if (!isNullOrUndefined(this.revisionData) && this.revisionData.length > 0) {
             let newRevisionData: MarkerInfo = this.revisionData.pop();
             author = newRevisionData.author;
             date = newRevisionData.date;
@@ -3068,12 +3065,12 @@ export class Editor {
                 let rowFormat: WRowFormat = cellWidget.ownerRow.rowFormat;
                 let matchedRevisions: Revision[] = this.getMatchedRevisionsToCombine(rowFormat.revisions, type);
                 if (matchedRevisions.length > 0) {
+                    if (!isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.markerData.length === 0) {
+                        this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(undefined, undefined, matchedRevisions[0]));
+                    }
                     for (let i: number = 0; i < matchedRevisions.length; i++) {
                         item.revisions.splice(0, 0, matchedRevisions[i]);
                         matchedRevisions[i].range.push(item);
-                        // if (!isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo) {
-                        //     this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(undefined, undefined, matchedRevisions[i]));
-                        // }
                     }
                     return undefined;
                 }
@@ -3127,7 +3124,7 @@ export class Editor {
      * @param index - index at which to be included in the revision range
      * @returns {void}
      */
-    private clearAndUpdateRevisons(range: object[], revision: Revision, index: number): void {
+    private clearAndUpdateRevisons(range: object[], revision: Revision, index: number, isReverse?: boolean): void {
         if(revision.range.filter(range => range instanceof WCharacterFormat)) {
             index += 1;
         }
@@ -3136,7 +3133,7 @@ export class Editor {
                 let currentElement: ElementBox = (range[i] as ElementBox);
                 currentElement.revisions.splice(currentElement.revisions.length - 1, 1);
                 currentElement.revisions.push(revision);
-                revision.range.splice(index + i, 0, currentElement);
+                revision.range.splice(isReverse ? i : index + i, 0, currentElement);
                 this.owner.trackChangesPane.updateCurrentTrackChanges(revision);
             }
         }
@@ -3294,7 +3291,7 @@ export class Editor {
     //     }
     //     return isCombined;
     // }
-    private combineElementRevision(currentElementRevisions: Revision[], elementToCombine: Revision[]): void {
+    private combineElementRevision(currentElementRevisions: Revision[], elementToCombine: Revision[], isReverse?: boolean): void {
         for (let i: number = 0; i < currentElementRevisions.length; i++) {
             for (let j: number = 0; j < elementToCombine.length; j++) {
                 let currentRevision: Revision = currentElementRevisions[i];
@@ -3307,14 +3304,28 @@ export class Editor {
                         item.revisions.splice(item.revisions.indexOf(revisionToCombine), 1);
                         revisionToCombine.range.splice(0, 1);
                         this.owner.trackChangesPane.updateCurrentTrackChanges(revisionToCombine);
-                        currentRevision.range.push(item);
+                        isReverse ? currentRevision.range.splice(k, 0, item) : currentRevision.range.push(item);
                         this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
                         item.revisions.push(currentRevision);
                     }
                     if (revisionToCombine.range.length === 0) {
                         this.owner.revisions.remove(revisionToCombine);
+                        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+                            this.removeMarkerInfoRevision(revisionToCombine.revisionID, this.editorHistory.currentBaseHistoryInfo.markerData);
+                        }
                     }
                 }
+            }
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public removeMarkerInfoRevision(revisionID: string, markerInfo: MarkerInfo[]): void {
+        for (let i: number = 0; i < markerInfo.length; i++) {
+            if (!isNullOrUndefined(markerInfo[i].revisionId) && markerInfo[i].revisionId === revisionID) {
+                markerInfo.splice(markerInfo.indexOf(markerInfo[i]), 1);
             }
         }
     }
@@ -3356,8 +3367,11 @@ export class Editor {
             let start: TextPosition = this.selection.start.clone();
             let end: TextPosition = this.selection.end.clone();
             this.documentHelper.layout.clearListElementBox(widget);
-            const isLastChild: boolean = (widget == this.getLastParaForBodywidgetCollection(widget));
+            let isLastChild: boolean = (widget == this.getLastParaForBodywidgetCollection(widget));
             let nextParagraph: ParagraphWidget = this.selection.getNextParagraphBlock(widget);
+            if (widget.isInsideTable && widget == this.selection.getLastParagraph(widget.associatedCell)) {
+                isLastChild = true;
+            }
             if (!isLastChild && !widget.isInsideTable && !(isNullOrUndefined(nextParagraph) && widget.isEmpty())) {
                 // Added the condition to remove section if current and next para have different section indexes if selection is covered till the end of section.
                 if (!isNullOrUndefined(nextParagraph) && !nextParagraph.isInsideTable && widget.bodyWidget.sectionIndex !== nextParagraph.bodyWidget.sectionIndex) {
@@ -3386,7 +3400,7 @@ export class Editor {
             }
             if(lastLine.children.length > 0) {
                 const lastEle = lastLine.children[lastLine.children.length - 1];
-                this.combineElementRevision(lastEle.revisions, widget.characterFormat.revisions);
+                this.combineElementRevision(widget.characterFormat.revisions, lastEle.revisions, true);
             }
             this.selection.editPosition = editPostion;
             this.selection.start.setPositionInternal(start);
@@ -13083,9 +13097,6 @@ export class Editor {
                     this.editorHistory.currentBaseHistoryInfo.action = 'RemoveRowTrack';
                 }
                 this.insertRevision(rowFormat, 'Deletion');
-                if (this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack') {
-                    this.editorHistory.currentBaseHistoryInfo.buildRowOperationForTrackChanges(rowFormat.ownerBase, 'RemoveRowTrack');
-                }
             }
             for (let i: number = 0; i < row.childWidgets.length; i++) {
                 let cellWidget: TableCellWidget = row.childWidgets[i] as TableCellWidget;

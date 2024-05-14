@@ -56,7 +56,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.parent.uiStateValues.top = target.scrollTop;
         }
         this.parent.uiStateValues.left = target.scrollLeft;
-        if (!isNullOrUndefined(this.parent.quickPopup)) {
+        if (!isNullOrUndefined(this.parent.quickPopup) && !this.parent.uiStateValues.isTapHold) {
             this.parent.quickPopup.quickPopupHide();
         }
         this.setPersistence();
@@ -423,6 +423,10 @@ export class VerticalView extends ViewBase implements IRenderer {
         remove(this.element.querySelector('tbody tr'));
         this.renderHeader();
         this.parent.notify(event.contentReady, {});
+        const dateHeader: HTMLElement = (this.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS) as HTMLElement);
+        if (dateHeader) {
+            dateHeader.scrollLeft = this.parent.uiStateValues.left;
+        }
     }
 
     public renderLayout(type: string): void {

@@ -559,7 +559,7 @@ describe('Check the bringToFront and sendToBack functionality', () => {
     });
     it('Checking the after calling the sendToBack function', (done: Function) => {
         expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node1');
-        expect((diagram.activeLayer as any).zIndexTable[-1]).toBe('node2');
+        expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node2');
         expect((diagram.activeLayer as any).zIndexTable[2]).toBe('connector1');
         expect((diagram.activeLayer as any).zIndexTable[3]).toBe('connector2');
         done();
@@ -665,7 +665,7 @@ describe('Check the bringToFront and sendToBack functionality in native node ren
         done();
     });
     it('Checking the after calling the sendToBack function in native node', (done: Function) => {
-        expect((diagram.activeLayer as any).zIndexTable[-1]).toBe('node3');
+        expect((diagram.activeLayer as any).zIndexTable[0]).toBe('node3');
         expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node2');
         expect((diagram.activeLayer as any).zIndexTable[3]).toBe('connector1');
         expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node4');
@@ -769,7 +769,7 @@ describe('Check the bringToFront and sendToBack functionality in HTML node rende
         done();
     });
     it('Checking the after calling the sendToBack function in HTML Node', (done: Function) => {
-        expect((diagram.activeLayer as any).zIndexTable[-1]).toBe('node3');
+        expect((diagram.activeLayer as any).zIndexTable[0]).toBe('node3');
         expect((diagram.activeLayer as any).zIndexTable[1]).toBe('node2');
         expect((diagram.activeLayer as any).zIndexTable[3]).toBe('connector1');
         expect((diagram.activeLayer as any).zIndexTable[4]).toBe('node4');

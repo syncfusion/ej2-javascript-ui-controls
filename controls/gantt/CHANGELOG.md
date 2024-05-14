@@ -2,11 +2,21 @@
 
 ## [Unreleased]
 
-## 25.2.3 (2024-05-08)
+## 25.2.4 (2024-05-14)
 
 ### GanttChart
 
 #### Bug fixes
+
+- `#I583075` - Duration is not calculated properly issue has been fixed.
+- `#I578781` - Delay in update of multiple dependency task issue has been fixed.
+- `#I574986` - Console error occurs while adding segments via dialog in Gantt issue has been fixed.
+- `#I585348` - Record gets disappeared when adding new record in last page issue has been fixed.
+- `#I565931` - Taskbar render outside the grid line and bottom tier misalign issue has been fixed.
+- `#F187977` - The script error caused by multiple resources assigned to a single task issue has been resolved.
+- `#I580459` - When Germany `timezone` use, alignment issue occurs in weekend highlight and taskbar issue has been fixed.
+
+## 25.2.3 (2024-05-08)
 
 - `#I570803` - Tree Grid and Gantt chart side was not synchronized issue has been fixed.
 

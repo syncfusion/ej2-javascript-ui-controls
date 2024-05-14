@@ -665,6 +665,12 @@ export class FormFields {
             let borderColor: any = currentData['BorderColor'];
             let borderRGB: string = 'rgba(' + borderColor.R + ',' + borderColor.G + ',' + borderColor.B + ',' + 1 + ')';
             borderRGB = this.rgbaToHex(borderRGB);
+            if (currentData.IsTansparentBorderColor === true) {
+                borderRGB = "rgba(0,0,0,0)";
+            }
+            else if (borderRGB === '#000000ff') {
+                borderRGB = '#daeaf7ff';
+            }
             let borderWidth: number = currentData['BorderWidth'];
             this.selectedIndex = [];
             let fieldProperties: any = {

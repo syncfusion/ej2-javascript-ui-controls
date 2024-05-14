@@ -153,6 +153,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public scrollLeft: number;
     public isPrinting: boolean;
     public adaptiveGroupIndex: number = 0;
+    public activeEventTemplates: string[];
 
     // Schedule Options
     /**
@@ -1168,6 +1169,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    public getEventTemplateName(resIndex: number): string {
+        const templateName: string = 'eventTemplate_' + resIndex;
+        if (this.activeEventTemplates.indexOf(templateName) < 0) {
+            this.activeEventTemplates.push(templateName);
+        }
+        return templateName;
+    }
+
     /**
      * Method to render react templates
      *
@@ -1773,6 +1782,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.resourceCollection = [];
         this.currentAction = null;
         this.selectedElements = [];
+        this.activeEventTemplates = [];
         this.setViewOptions();
     }
 
@@ -2278,7 +2288,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     private onScheduleResize(): void {
         if (isNullOrUndefined(this.activeView) || ((this.isAdaptive || util.isMobile()) && document.activeElement
-            && document.activeElement.classList.contains(cls.SUBJECT_CLASS))) {
+            && document.activeElement.classList.contains(cls.SUBJECT_CLASS)) || this.uiStateValues.isTapHold) {
             return;
         }
         if (this.virtualScrollModule && this.activeView.isTimelineView()) {

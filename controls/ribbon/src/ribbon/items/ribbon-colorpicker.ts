@@ -74,7 +74,11 @@ export class RibbonColorPicker {
             select: colorPickerSettings.select
         }, inputEle);
         if (colorPickerSettings.htmlAttributes) {
-            setCustomAttributes(inputEle, colorPickerSettings.htmlAttributes);
+            const htmlAttr: { [key: string]: string } = { ...colorPickerSettings.htmlAttributes };
+            if (htmlAttr.id) {
+                delete htmlAttr.id;
+            }
+            setCustomAttributes(inputEle, htmlAttr);
         }
         const wrapper: HTMLElement = colorPicker.element.parentElement;
         EventHandler.add(wrapper, 'mouseenter', this.toggleWrapperHover.bind(this, wrapper, true), this);
