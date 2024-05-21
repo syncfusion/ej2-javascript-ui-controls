@@ -1343,7 +1343,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (this.allowFiltering && !this.enableVirtualization && this.getModuleName() !== 'autocomplete') {
             let value = this.getItemData().value;
-            let filterIndex: number = this.getIndexByValueFilter(value);
+            let filterIndex: number = this.getIndexByValueFilter(value, this.actionCompleteData.ulElement);
             if (!isNullOrUndefined(filterIndex)) {
                 this.activeIndex = filterIndex;
             }
@@ -1697,7 +1697,7 @@ export class DropDownList extends DropDownBase implements IInput {
             value = 'null';
         }
         if (this.allowFiltering && !this.enableVirtualization && this.getModuleName() !== 'autocomplete') {
-            let filterIndex = this.getIndexByValueFilter(value);
+            let filterIndex = this.getIndexByValueFilter(value, this.actionCompleteData.ulElement);
             if (!isNullOrUndefined(filterIndex)) {
                 this.activeIndex = filterIndex;
             }
@@ -1739,7 +1739,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.inputElement.style.display = 'block';
         }
         if (!isNullOrUndefined(dataItem.value) && !this.enableVirtualization && this.allowFiltering) {
-            this.activeIndex = this.getIndexByValueFilter(dataItem.value);
+            this.activeIndex = this.getIndexByValueFilter(dataItem.value, this.actionCompleteData.ulElement);
         }
         const clearIcon: string = dropDownListClasses.clearIcon;
         const isFilterElement: boolean = this.isFiltering() && this.filterInput && (this.getModuleName() === 'combobox');
@@ -3212,6 +3212,14 @@ export class DropDownList extends DropDownBase implements IInput {
         this.keyboardEvent = null;
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.isActive = false;
+        if (this.getModuleName() === 'dropdownlist') {
+            Input.destroy({
+                element: this.filterInput,
+                floatLabelType: this.floatLabelType,
+                properties: {placeholder: this.filterBarPlaceholder},
+                buttons: this.clearIconElement as any,
+            }, this.clearIconElement as HTMLElement);
+        }
         this.filterInputObj = null;
         this.isDropDownClick = false;
         this.preventAutoFill = false;
@@ -3242,6 +3250,11 @@ export class DropDownList extends DropDownBase implements IInput {
             }
             if(this.allowFiltering && this.getModuleName() === 'dropdownlist'){
                 this.filterInput.removeAttribute('aria-activedescendant');
+                this.filterInput.removeAttribute('aria-disabled');
+                this.filterInput.removeAttribute('role');
+                this.filterInput.removeAttribute('autocomplete');
+                this.filterInput.removeAttribute('autocapitalize');
+                this.filterInput.removeAttribute('spellcheck');
             }
             this.filterInput = null;
         }
@@ -3676,8 +3689,8 @@ export class DropDownList extends DropDownBase implements IInput {
      */
     public onPropertyChanged(newProp: DropDownListModel, oldProp: DropDownListModel): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!isNullOrUndefined(newProp.dataSource) && !this.isTouched && (isNullOrUndefined(newProp.value) && isNullOrUndefined(newProp.index)) && !isNullOrUndefined(this.preselectedIndex)) {
-            newProp.index = this.preselectedIndex;
+        if (!isNullOrUndefined(newProp.dataSource) && !this.isTouched && (isNullOrUndefined(newProp.value) && isNullOrUndefined(newProp.index)) && !isNullOrUndefined(this.preselectedIndex) && !isNullOrUndefined(this.index)) {
+            newProp.index = this.index;
         }
         if (!isNullOrUndefined(newProp.value) || !isNullOrUndefined(newProp.index)) {
             this.isTouched = true;
@@ -4119,6 +4132,12 @@ export class DropDownList extends DropDownBase implements IInput {
             Input.calculateWidth(this.inputElement, this.inputWrapper.container);
         }
     }
+    public removeAllChildren = function (element: any) {
+        while (element.children[0]) {
+            this.removeAllChildren(element.children[0]);
+            element.removeChild(element.children[0]);
+        }
+    };
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
      *
@@ -4164,10 +4183,12 @@ export class DropDownList extends DropDownBase implements IInput {
             this.inputWrapper.container.parentElement.insertBefore(this.element, this.inputWrapper.container);
             detach(this.inputWrapper.container);
         }
-        this.hiddenElement = null;
+        delete this.hiddenElement;
         this.filterInput = null;
-        this.inputWrapper = null;
         this.keyboardModule = null;
+        if (!isNullOrUndefined(this.ulElement)) {
+             this.removeAllChildren(this.ulElement);
+        }
         this.ulElement = null;
         this.list = null;
         this.clearIconElement = null
@@ -4191,10 +4212,12 @@ export class DropDownList extends DropDownBase implements IInput {
         Input.destroy({
             element: this.inputElement,
             floatLabelType: this.floatLabelType,
-            properties: this.properties
+            properties: this.properties,
+            buttons: this.inputWrapper.container.querySelectorAll('.e-input-group-icon')[0] as any,
         }, this.clearButton );
         this.clearButton = null;
         this.inputElement = null;
+        this.inputWrapper = null;
         super.destroy();
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-returns-description */

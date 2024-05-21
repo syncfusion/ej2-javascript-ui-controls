@@ -1041,7 +1041,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.value)) {
             this.tempValues = this.allowObjectBinding ? this.value.slice() : <string[]>this.value.slice();
         }
-        let customValue: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(value) : this.getFormattedValue(value);
+        let customValue: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(this.getFormattedValue(value)) : this.getFormattedValue(value);
         if (this.allowCustomValue && (value !== 'false' && customValue === false || (!isNullOrUndefined(customValue) &&
             customValue.toString() === 'NaN'))) {
             customValue = value;
@@ -2598,7 +2598,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.removeChipSelection();
                 this.addChipSelection(temp, e);
             }
-            const currentChip: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(selectedElem.getAttribute('data-value')) : selectedElem.getAttribute('data-value');
+            const currentChip: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(this.getFormattedValue(selectedElem.getAttribute('data-value'))) : selectedElem.getAttribute('data-value');
             this.removeValue(currentChip, e);
             this.makeTextBoxEmpty();
         }
@@ -2783,7 +2783,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.enabled && !this.readonly) {
             const element: HTMLElement = (<HTMLElement>e.target).parentElement;
             const customVal: string | number | boolean = element.getAttribute('data-value');
-            let value: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(customVal) : this.getFormattedValue(customVal);
+            let value: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(this.getFormattedValue(customVal)) : this.getFormattedValue(customVal);
             if (this.allowCustomValue && (( customVal !== 'false' && value === false ) ||
             (!isNullOrUndefined(value) && value.toString() === 'NaN'))) {
                 value = customVal;
@@ -2879,7 +2879,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (index !== -1) {
             const currentValue: string | number | boolean = this.allowObjectBinding ? getValue(((this.fields.value) ? this.fields.value : ''), value) : value;
             const element: HTMLElement = this.virtualSelectAll ? null : this.findListElement(this.list, 'li', 'data-value', currentValue);
-            const val: FieldSettingsModel = this.getDataByValue(value) as FieldSettingsModel;
+            const val: FieldSettingsModel = this.allowObjectBinding ? value as object : this.getDataByValue(value) as FieldSettingsModel;
             const eventArgs: RemoveEventArgs = {
                 e: eve,
                 item: <HTMLLIElement>element,
@@ -3060,7 +3060,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         let currentValue: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(value) : value;
 
-        if ((this.allowObjectBinding && !this.isObjectInArray(value, this.value)) || (!this.allowObjectBinding && (this.value as string[]).indexOf(currentValue as string) < 0)) {
+        if ((this.allowObjectBinding && !this.isObjectInArray(this.getDataByValue(value), this.value)) || (!this.allowObjectBinding && (this.value as string[]).indexOf(currentValue as string) < 0)) {
             this.setProperties({ value: <[number | string]>[].concat([], this.value, [currentValue]) }, true);
             if (this.enableVirtualization && !this.isSelectAllLoop) {
                 let data: string = this.viewWrapper.innerHTML
@@ -4167,7 +4167,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     protected updateListSelection(li: Element, e: MouseEvent | KeyboardEventArgs, length?: number): void {
         const customVal: string | number | boolean = li.getAttribute('data-value');
-        let value: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(customVal) : this.getFormattedValue(customVal);
+        let value: string | number | boolean | object = this.allowObjectBinding ? this.getDataByValue(this.getFormattedValue(customVal)) : this.getFormattedValue(customVal);
         if (this.allowCustomValue && ((customVal !== 'false' && value === false) ||
             (!isNullOrUndefined(value) && value.toString() === 'NaN'))) {
             value = customVal;

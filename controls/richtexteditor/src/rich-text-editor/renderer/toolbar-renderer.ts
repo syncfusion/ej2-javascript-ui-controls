@@ -490,8 +490,6 @@ export class ToolbarRenderer implements IRenderer {
             target: colorPicker.element.parentElement, cssClass: css,
             enablePersistence: this.parent.enablePersistence, enableRtl: this.parent.enableRtl,
             beforeOpen: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
-                colorPicker.inline = true;
-                colorPicker.dataBind();
                 if (proxy.parent.readonly || !proxy.parent.enabled) {
                     dropDownArgs.cancel = true; return;
                 }
@@ -618,14 +616,18 @@ export class ToolbarRenderer implements IRenderer {
         const colorPicker: ColorPicker = new ColorPicker({
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
-            inline: false,
-            value: '#fff',
+            inline: true,
+            value: null,
+            cssClass : ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER) + ' ' + args.cssClass + ' ' + 'e-rte-picker-init',
             created: () => {
                 const value: string = (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default;
-                colorPicker.setProperties({ value: value });
+                colorPicker.cssClass = ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER) + ' ' + args.cssClass;
+                colorPicker.value = value;
             },
             mode: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.mode : proxy.parent.fontColor.mode),
             modeSwitcher: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.modeSwitcher : proxy.parent.fontColor.modeSwitcher),
+            presetColors: (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode : this.parent.fontColor.colorCode,
+            columns: (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns,
             beforeTileRender: (args: PaletteTileEventArgs) => {
                 args.element.classList.add(CLS_COLOR_PALETTE);
                 args.element.classList.add(CLS_CUSTOM_TILE);
@@ -669,10 +671,6 @@ export class ToolbarRenderer implements IRenderer {
             }
         });
         colorPicker.isStringTemplate = true;
-        colorPicker.columns = (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns;
-        colorPicker.presetColors = (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode :
-            this.parent.fontColor.colorCode;
-        colorPicker.cssClass = ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_PICKER : CLS_FONT_COLOR_PICKER) + ' ' + args.cssClass;
         colorPicker.createElement = this.parent.createElement;
         colorPicker.appendTo(document.getElementById(args.target) as HTMLElement);
         return colorPicker;

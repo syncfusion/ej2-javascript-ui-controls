@@ -1,5 +1,5 @@
 import * as CONSTANT from './../base/constant';
-import { append, detach, createElement, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { append, detach, createElement, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
 import { NodeSelection } from './../../selection/index';
 import { selfClosingTags } from '../../common/config';
 import { getLastTextNode } from '../../common/util';
@@ -684,6 +684,105 @@ export class DOMNode {
             return (selection.focusNode as HTMLElement).querySelectorAll('img');
         }
         return null;
+    }
+    /**
+     * Method to wrap the inline and text node with block node.
+     *
+     * @param {HTMLElement} node - specifies the element sent to wrap the node around it with block nodes.
+     * @param {string} wrapperElement - specifies which block nodes to wrap around.
+     * @returns {HTMLElement} - returns the wrapped element.
+     * @hidden
+     * @deprecated
+     */
+    public gatherElementsAround(node: HTMLElement, wrapperElement: string): HTMLElement {
+        const newWrapElem: HTMLElement = createElement(wrapperElement);
+        // Insert the new div element before the current node.
+        let currentNode: HTMLElement | null = node.previousSibling as HTMLElement;
+        const currentNodeParent: HTMLElement = node.parentElement;
+        if (currentNodeParent.className === 'e-editor-select-start') {
+            currentNodeParent.parentNode.insertBefore(newWrapElem, currentNodeParent);
+        } else if (currentNodeParent) {
+            currentNodeParent.insertBefore(newWrapElem, node);
+        }
+        let i: number = 0;
+        while (currentNode !== null && currentNode.nodeName !== 'BR' &&
+            !this.isBlockNode(currentNode as HTMLElement)) {
+            const prevSibling: HTMLElement = currentNode.previousSibling as HTMLElement;
+            if (currentNode.nodeType === 3 || currentNode.nodeType === 1) {
+                if (i === 0) {
+                    newWrapElem.appendChild(currentNode);
+                } else {
+                    newWrapElem.insertBefore(currentNode, newWrapElem.firstChild);
+                }
+            }
+            currentNode = prevSibling;
+            i++;
+        }
+        // Add the current node to the new div
+        newWrapElem.appendChild(node);
+        // Gather text and inline elements after the currentNode
+        currentNode = newWrapElem.nextSibling as HTMLElement ? newWrapElem.nextSibling as HTMLElement :
+            newWrapElem.parentElement.nextSibling as HTMLElement;
+        while (currentNode !== null && currentNode.nodeName !== 'BR' &&
+            !this.isBlockNode(currentNode as HTMLElement)) {
+            const nextSibling: HTMLElement | null = currentNode.nextSibling as HTMLElement ?
+                currentNode.nextSibling as HTMLElement : currentNode.parentElement.nextSibling as HTMLElement;
+            if (currentNode.nodeType === 3 || currentNode.nodeType === 1) {
+                newWrapElem.appendChild(currentNode);
+            }
+            currentNode = nextSibling;
+        }
+        return newWrapElem;
+    }
+    /**
+     * Method to convert all the inline nodes between the selection to block nodes.
+     *
+     * @param {Node[]} selectedNodes - specifies the nodes of the start and end selection.
+     * @param {boolean} fromList - specifies if the method is called from list module.
+     * @returns {Node[]} - returns the selected list of elements as block nodes.
+     * @hidden
+     * @deprecated
+     */
+    public convertToBlockNodes(selectedNodes: Node[], fromList: boolean): Node[] {
+        if (selectedNodes.length > 1) {
+            let i: number = 0;
+            let currentSelectedNode: HTMLElement = selectedNodes[0] as HTMLElement;
+            while (!isNOU(currentSelectedNode)) {
+                if (currentSelectedNode.nodeName === 'BR') {
+                    const nextNode: Node = currentSelectedNode.nextSibling;
+                    detach(currentSelectedNode);
+                    currentSelectedNode = nextNode as HTMLElement;
+                }
+                if (!isNOU(currentSelectedNode)) {
+                    if (fromList) {
+                        selectedNodes[i as number] = currentSelectedNode.nodeName === 'LI' || this.isBlockNode(currentSelectedNode) ?
+                            currentSelectedNode :
+                            this.gatherElementsAround(currentSelectedNode as HTMLElement, (fromList ? 'p' : 'div'));
+                    } else {
+                        selectedNodes[i as number] = !this.isBlockNode(selectedNodes[i as number] as HTMLElement) ?
+                            this.gatherElementsAround(currentSelectedNode as HTMLElement, (fromList ? 'p' : 'div')) :
+                            selectedNodes[i as number];
+                    }
+                    const currentProcessNode: Node = selectedNodes[i as number].nodeName === 'LI' ? selectedNodes[i as number].parentElement : selectedNodes[i as number];
+                    const currentElementCheckNode: HTMLElement = currentProcessNode.nodeName === '#text' ? currentProcessNode.parentElement : currentProcessNode as HTMLElement;
+                    currentSelectedNode = !isNOU(currentElementCheckNode.querySelector('.e-editor-select-end')) ||
+                        !isNOU(closest(currentSelectedNode, '.e-editor-select-end')) ?
+                        null : currentProcessNode.nextSibling as HTMLElement;
+                    if (currentSelectedNode === null && !isNOU(currentProcessNode.nextSibling) && currentProcessNode.nextSibling.nodeName === 'BR') {
+                        detach(currentProcessNode.nextSibling);
+                    }
+                }
+                i++;
+            }
+        } else {
+            if (!this.isBlockNode(selectedNodes[0] as HTMLElement)) {
+                selectedNodes[0] = this.gatherElementsAround(selectedNodes[0] as HTMLElement, (fromList ? 'p' : 'div'));
+                if (!isNOU(selectedNodes[0].nextSibling) && (selectedNodes[0].nextSibling.nodeName === 'BR')) {
+                    detach(selectedNodes[0].nextSibling);
+                }
+            }
+        }
+        return selectedNodes;
     }
     /**
      * blockNodes method

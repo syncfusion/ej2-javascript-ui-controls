@@ -144,12 +144,13 @@ export class EditorManager {
         case 'alignments':
             this.observer.notify(CONSTANT.ALIGNMENT_TYPE, {
                 subCommand: value, event: event, callBack: callBack,
-                selector: selector,
-                value: exeValue
+                selector: selector, value: exeValue, enterAction: enterAction
             });
             break;
         case 'indents':
-            this.observer.notify(CONSTANT.INDENT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
+            this.observer.notify(CONSTANT.INDENT_TYPE, {
+                subCommand: value, event: event, callBack: callBack,
+                selector: selector, enterAction: enterAction });
             break;
         case 'links':
             this.observer.notify(CONSTANT.LINK, { command: command, value: value, item: exeValue, event: event, callBack: callBack });

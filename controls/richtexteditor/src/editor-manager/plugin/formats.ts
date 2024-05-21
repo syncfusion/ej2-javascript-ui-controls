@@ -56,8 +56,8 @@ export class Formats {
                 }
             }
         }
-        if (e.enterAction !== 'BR' && !isNOU(range.startContainer) && !isNOU(range.startContainer.parentElement) && range.startContainer === range.endContainer && range.startContainer.nodeName === '#text' && range.startContainer.parentElement.classList.contains("e-content") && range.startContainer.parentElement.isContentEditable) {
-            let pTag = createElement(e.enterAction as string);
+        if (e.enterAction !== 'BR' && !isNOU(range.startContainer) && !isNOU(range.startContainer.parentElement) && range.startContainer === range.endContainer && range.startContainer.nodeName === '#text' && range.startContainer.parentElement.classList.contains('e-content') && range.startContainer.parentElement.isContentEditable) {
+            const pTag: HTMLElement = createElement(e.enterAction as string);
             range.startContainer.parentElement.insertBefore(pTag, range.startContainer);
             pTag.appendChild(range.startContainer);
             this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 1);

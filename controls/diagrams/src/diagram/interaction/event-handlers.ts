@@ -978,6 +978,9 @@ export class DiagramEventHandler {
                     }
                 }
                 if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
+                    //Bug 884946: Undo redo not working for swimlane child node's label edit.
+                    //committed to remove the diagram actions public method when actual object is inside swimlane.
+                    let isInsideLane = this.isSwimlaneChild(this.diagram.selectedObject.actualObject);
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
                     if(this.commandHandler.isTargetSubProcess(this.diagram.selectedObject.actualObject) && (this.diagram.selectedObject.actualObject as Node).parentId === ''){
                         this.swapProcessChildInDom(this.diagram.element.id+'_diagramLayer', this.diagram.selectedObject.actualObject);
@@ -986,7 +989,7 @@ export class DiagramEventHandler {
                     // EJ2-42605 - Annotation undo redo not working properly if the line routing is enabled committed by sivakumar sekar
                     // committed to remove the diagram actions public method when line routing is enabled
                     // eslint-disable-next-line
-                    if ((this.diagram.diagramActions & DiagramAction.PublicMethod) && (this.diagram.constraints & DiagramConstraints.LineRouting)) {
+                    if ((this.diagram.diagramActions & DiagramAction.PublicMethod) && (this.diagram.constraints & DiagramConstraints.LineRouting) || isInsideLane) {
                         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PublicMethod;
                     }
                 }
@@ -1034,6 +1037,19 @@ export class DiagramEventHandler {
             this.updateAnnotation(this.diagram.selectedItems);
         }
         this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter();// end the corresponding tool
+    }
+    //To check whether the node is child of swimlane or not.
+    private isSwimlaneChild(node: NodeModel): boolean {
+        if (node.shape && node.shape.type !== 'SwimLane') {
+            var parent = this.diagram.nameTable[(node as Node).parentId];
+            if (!parent) {
+                return false;
+            }
+            var swimlane = parent.parentId ? this.diagram.nameTable[parent.parentId] : parent;
+            return swimlane && swimlane.shape && swimlane.shape.type === 'SwimLane';
+        } else {
+            return false;
+        }
     }
     // To wrap connector annotation text based on the connector length.
     private updateAnnotation (selectedItems: SelectorModel){

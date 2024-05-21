@@ -409,12 +409,12 @@ describe('Grouping module => ', () => {
             expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(28);
 
             // EJ2-59755 - Screen Reader not announcing the state of the expand and collapse icon properly
-            expect(expandElem[0].firstElementChild.getAttribute('title')).toBe('expanded');
+            expect(expandElem[0].firstElementChild.getAttribute('title')).toBe('Expanded');
 
             gridObj.groupModule.expandCollapseRows(expandElem[0]);
 
             // EJ2-59755 - Screen Reader not announcing the state of the expand and collapse icon properly
-            expect(expandElem[0].firstElementChild.getAttribute('title')).toBe('collapsed');
+            expect(expandElem[0].firstElementChild.getAttribute('title')).toBe('Collapsed');
             
             expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(27);
             gridObj.groupModule.expandCollapseRows(expandElem[0]);
@@ -1788,7 +1788,7 @@ describe('EJ2-62665 Collapse icon is read as expanded by NVDA Reader => ', () =>
     });
     it('Expand collapse icon check', () => {
        gridObj.groupModule.collapseAll();
-       expect((gridObj.getContent().querySelectorAll('tr')[0].querySelector('td').firstElementChild).getAttribute('title')).toBe('collapsed');
+       expect((gridObj.getContent().querySelectorAll('tr')[0].querySelector('td').firstElementChild).getAttribute('title')).toBe('Collapsed');
     });
     afterAll(() => {
         destroy(gridObj);

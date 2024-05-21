@@ -269,7 +269,7 @@ export class StampAnnotation {
     /**
      * @private
      */
-    public renderStampAnnotImage(stampAnnotations: any, pageNumber: number, canvass?: any, isImport?: boolean,  isAnnotOrderAction?: boolean): void {
+    public renderStampAnnotImage(stampAnnotations: any, pageNumber: number, canvass?: any, isImport?: boolean,  isAnnotOrderAction?: boolean, isNeedToReorderCollection?: boolean, orderNumber?: number): void {
         let Appearance: any = stampAnnotations['Apperarance'];
         let position: any = stampAnnotations['Rect'];
         let opacity: any = stampAnnotations['Opacity'];
@@ -291,7 +291,7 @@ export class StampAnnotation {
                         // eslint-disable-next-line max-len
                         stampAnnotations.AnnotationSettings = stampAnnotations.AnnotationSettings ? stampAnnotations.AnnotationSettings : proxy.pdfViewer.customStampSettings.annotationSettings;
                         // eslint-disable-next-line max-len
-                        proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate, rotationAngle, opacity, canvass, true, stampAnnotations);
+                        proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate, rotationAngle, opacity, canvass, true, stampAnnotations, null, isNeedToReorderCollection, orderNumber);
                     };
                     image.src = imageData;
                 }
@@ -738,7 +738,7 @@ export class StampAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public renderCustomImage(position: any, pageIndex: any, image: any, currentDate: any, modifiedDate: any, RotationAngle: any, opacity: any, canvas?: any, isExistingStamp?: boolean, annotation?: any, annotName?: string) {
+    public renderCustomImage(position: any, pageIndex: any, image: any, currentDate: any, modifiedDate: any, RotationAngle: any, opacity: any, canvas?: any, isExistingStamp?: boolean, annotation?: any, annotName?: string, isNeedToReorderCollection?: boolean, orderNumber?: number) {
         let annot: PdfAnnotationBaseModel;
         let annotationObject: IStampAnnotation = null;
         let annotationName: string;
@@ -838,7 +838,7 @@ export class StampAnnotation {
                 // eslint-disable-next-line max-len
                 annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings, customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: isCommentsLock, isMaskedImage: annotation.IsMaskedImage, customStampName: annotation.CustomStampName, template: isTemplate ? annotation.template : null, templateSize: annotation ? annotation.templateSize : 0
             };
-            this.storeStampInSession(pageIndex, annotationObject);
+            this.storeStampInSession(pageIndex, annotationObject, isNeedToReorderCollection, orderNumber);
             annot.comments = this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author);
             annot.review = { state: annotation.State, stateModel: annotation.StateModel, author: author, modifiedDate: modifiedDate };
             if (this.isAddAnnotationProgramatically) {
@@ -1174,7 +1174,7 @@ export class StampAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public storeStampInSession(pageNumber: number, annotation: IStampAnnotation): any {
+    public storeStampInSession(pageNumber: number, annotation: IStampAnnotation, isNeedToReorderCollection?: boolean, orderNumber?: number): any {
         // eslint-disable-next-line
         let sessionSize: any = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
         let currentAnnotation: any = Math.round(JSON.stringify(annotation).length / 1024);
@@ -1193,7 +1193,7 @@ export class StampAnnotation {
             storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_stamp'];
         }
         if (!storeObject) {
-            this.pdfViewer.annotationModule.storeAnnotationCollections(annotation, pageNumber);
+            this.pdfViewer.annotationModule.storeAnnotationCollections(annotation, pageNumber, isNeedToReorderCollection, orderNumber);
             let shapeAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
             shapeAnnotation.annotations.push(annotation);
             index = shapeAnnotation.annotations.indexOf(annotation);
@@ -1206,7 +1206,7 @@ export class StampAnnotation {
                 window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_stamp', annotationStringified);
             }
         } else {
-            this.pdfViewer.annotationModule.storeAnnotationCollections(annotation, pageNumber);
+            this.pdfViewer.annotationModule.storeAnnotationCollections(annotation, pageNumber, isNeedToReorderCollection, orderNumber);
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
             if (!this.pdfViewerBase.isStorageExceed) {
                 window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_stamp');

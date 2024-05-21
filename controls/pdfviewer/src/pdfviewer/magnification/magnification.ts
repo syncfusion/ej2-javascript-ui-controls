@@ -585,7 +585,9 @@ export class Magnification {
         if (this.imageObjects) {
             for (let j: number = 0; j < this.imageObjects.length; j++) {
                 if (this.imageObjects[j]) {
+                    this.imageObjects[j].src = '';
                     this.imageObjects[j].onload = null;
+                    this.imageObjects[j].onerror = null;
                 }
             }
             this.imageObjects = [];
@@ -847,6 +849,9 @@ export class Magnification {
             const pageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
             const oldCanvas: HTMLElement = this.pdfViewerBase.getElement('_oldCanvas_' + i);
             if (oldCanvas) {
+                (oldCanvas as HTMLImageElement).src = '';
+                oldCanvas.onload = null;
+                oldCanvas.onerror = null;
                 oldCanvas.parentNode.removeChild(oldCanvas);
             }
             if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
@@ -1041,11 +1046,18 @@ export class Magnification {
                                     const pageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + i);
                                     for (let k: number = 0; k < oldCanvases.length; k++) {
                                         let tileImgId: string[] = oldCanvases[k].id.split('_');
-                                        if (parseFloat(tileImgId[tileImgId.length - 3]) != this.pdfViewerBase.getZoomFactor())
+                                        if (parseFloat(tileImgId[tileImgId.length - 3]) != this.pdfViewerBase.getZoomFactor()){
+                                            (oldCanvases[parseInt(k.toString(), 10)] as HTMLImageElement).src = '';
+                                            (oldCanvases[parseInt(k.toString(), 10)] as HTMLImageElement).onload = null;
+                                            (oldCanvases[parseInt(k.toString(), 10)] as HTMLImageElement).onerror = null;
                                             pageCanvas.removeChild(oldCanvases[k]);
+                                        }
                                     }
                                     const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + this.pdfViewer.element.id + '_oldCanvas"]');
                                     for (let j: number = 0; j < oldPageDiv.length; j++) {
+                                        (oldPageDiv[parseInt(j.toString(), 10)] as HTMLImageElement).src = '';
+                                        (oldPageDiv[parseInt(j.toString(), 10)] as HTMLImageElement).onload = null;
+                                        (oldPageDiv[parseInt(j.toString(), 10)] as HTMLImageElement).onerror = null;
                                         pageDiv.removeChild(oldPageDiv[j]);
                                     }
                                 }
@@ -1107,30 +1119,6 @@ export class Magnification {
                             for (let index: number = aElement.length - 1; index >= 0; index--) {
                                 aElement[index].parentNode.removeChild(aElement[index]);
                             }
-                        }
-                        if (textLayer) {
-                            textLayer.style.width = width + 'px';
-                            textLayer.style.height = height + 'px';
-                            if (this.pdfViewer.textSelectionModule) {
-                                if (this.isPinchZoomed) {
-                                    textLayer.style.display = 'none';
-                                } else if (this.isMagnified) {
-                                    const lowerValue: number = ((pageNumber - 2) === 0) ? 0 : (pageNumber - 2);
-                                    // eslint-disable-next-line max-len
-                                    const higherValue: number = ((pageNumber) === (this.pdfViewerBase.pageCount)) ? (this.pdfViewerBase.pageCount - 1) : (pageNumber + 1);
-                                    if ((lowerValue <= i) && (i <= higherValue) && ((this.pdfViewer.textSelectionModule.isTextSelection && isSelectionAvailable) || this.pdfViewerBase.textLayer.getTextSearchStatus() || this.pdfViewerBase.isInitialPageMode)) {
-                                        this.pdfViewerBase.textLayer.resizeTextContentsOnZoom(i);
-                                        if (this.pdfViewer.textSelectionModule.isTextSelection && isSelectionAvailable) {
-                                            this.pdfViewer.textSelectionModule.applySelectionRangeOnScroll(i);
-                                        }
-                                    } else {
-                                        textLayer.style.display = 'none';
-                                    }
-                                } else {
-                                    textLayer.style.display = 'block';
-                                }
-                            }
-                            this.pdfViewerBase.applyElementStyles(textLayer, i);
                         }
                         const adornerSvg: HTMLElement = getDiagramElement(this.pdfViewer.element.id + '_textLayer_' + i);
                         if (adornerSvg) {

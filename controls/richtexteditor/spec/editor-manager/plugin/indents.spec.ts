@@ -265,4 +265,38 @@ describe('Indents plugin', () => {
             detach(elem);
         });
     });
+
+    describe('873565 - Indent not working when enter key is configured as BR', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let endNode: HTMLElement;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true">Content 1&nbsp;<strong>line</strong><br><strong class="startFocus">Content 2 line</strong><br><strong class="endFocus">Content 3&nbsp;</strong>line<br>Content 4&nbsp;<strong>line</strong></div>`
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        it('Checking the indent when BR configured', () => {
+            startNode = editNode.querySelector('.startFocus');
+            endNode = editNode.querySelector('.endFocus').nextSibling as HTMLElement;
+            editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode, 3, 3);
+            editorObj.execCommand("Indents", 'Indent', null, null, null, null, null, 'BR');
+            expect(editNode.innerHTML === `Content 1&nbsp;<strong>line</strong><br><div style="margin-left: 20px;"><strong class="startFocus">Content 2 line</strong></div><div style="margin-left: 20px;"><strong class="endFocus">Content 3&nbsp;</strong>line</div>Content 4&nbsp;<strong>line</strong>`).toBe(true);
+        });
+
+        it('Checking the indent with bold in the content ', () => {
+            editNode.innerHTML = `Content 1 line<br>Content 2&nbsp;<strong class="startFocus">line&nbsp;</strong>extended<br>Content 3 line<br class="endFocus">Content 4 line`;
+            startNode = editNode.querySelector('.startFocus').nextSibling as HTMLElement;
+            endNode = editNode.querySelector('.endFocus').nextSibling as HTMLElement;
+            editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 3, 3);
+            editorObj.execCommand("Indents", 'Indent', null, null, null, null, null, 'BR');
+            expect(editNode.innerHTML === `Content 1 line<br><div style="margin-left: 20px;">Content 2&nbsp;<strong class="startFocus">line&nbsp;</strong>extended</div><div style="margin-left: 20px;">Content 3 line</div><div style="margin-left: 20px;">Content 4 line</div>`).toBe(true);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
 });

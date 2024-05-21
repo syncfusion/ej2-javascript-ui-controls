@@ -1741,9 +1741,7 @@ describe('RTE CR issues ', () => {
             const tileItems: NodeList = ( row[0] as HTMLElement ).querySelectorAll('.e-tile');
             ( tileItems[9] as HTMLElement ).click();
             // Background color
-            (document.querySelectorAll('.e-control.e-colorpicker')[1] as any).ej2_instances[0].inline = true;
-            (document.querySelectorAll('.e-control.e-colorpicker')[1] as any).ej2_instances[0].dataBind();
-            ( document.body.querySelector('.e-apply') as HTMLElement).click();
+            (rteObject.element.querySelector('.e-background-color') as HTMLElement).click();
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
             ( fontDropItems[6] as HTMLElement ).click(); // Apply Font size
@@ -4178,6 +4176,159 @@ describe('RTE CR issues ', () => {
                     done();
                 }, 100);
             }, 300);
+        });
+    });
+    describe('885141: RichTextEditor creates P tag after pressing enter key on UL element on selection of DIV as enteraction in EnterKey Configuration', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<ul><li><div>one</div></li><li><div>two</div></li><li><div class="test">three</div></li></ul><div></div>',
+                enterKey: 'DIV',
+                toolbarSettings: {
+                    items:['UnorderedList']
+                }
+            });
+        });
+        it('Deselect the "Bulleted List" and add the DIV to the Deselected list item', () => {
+            rteObj.dataBind();
+            let divElement: HTMLElement = rteObj.inputElement.querySelector('.test');
+           setCursorPoint(divElement, 0);
+           rteObj.executeCommand('insertUnorderedList');
+           let targetElm: HTMLElement=rteObj.element.querySelector(".e-toolbar-item button");
+           targetElm.click();
+           expect(rteObj.inputElement.innerHTML === '<ul><li><div>one</div></li><li><div>two</div></li></ul><div class="test test">three</div><div><br></div>').toBe(true); 
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('883222 - Tab key press on selected paragraph deletes the entire line in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', keyCode: 9, target: document.body };
+        let ShiftTab: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9, key: 'Tab', keyCode: 9, target: document.body };
+        let domSelection: NodeSelection = new NodeSelection();
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<p>hello world this is me</p>`,
+                enableTabKey: true,
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                undoRedoTimer: 0
+            });
+        });
+        it('Select and apply tab key and Shift tab key  ', () => {
+            let startElement = rteObj.inputElement.querySelector('p');
+            domSelection.setSelectionText(document, startElement.childNodes[0], startElement.childNodes[0], 0, 20);
+            (rteObj as any).keyDown(keyBoardEvent);
+            startElement = rteObj.inputElement.querySelector('p');
+            expect(startElement.style.marginLeft === '20px').toBe(true);
+            (rteObj as any).keyDown(ShiftTab);
+            expect(startElement.style.marginLeft === '').toBe(true);
+        });
+        it('Select and apply tab key and Shift tab key when enterkey as BR other than startContainer offset ', () => {
+            rteObj.enterKey='BR';
+            let startElement = rteObj.inputElement.querySelector('p');
+            domSelection.setSelectionText(document, startElement.childNodes[0], startElement.childNodes[0], 5, 20);
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect(startElement.innerHTML==='hello&nbsp;&nbsp;&nbsp;&nbsp;me').toBe(true);
+        });
+        it('Select and apply tab key for blocknodes and shift + tab ', () => {
+            rteObj.value=`<p id='one'><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in the
+            client side. Customer easy to edit the contents and get the HTML content for
+            the displayed content. A rich text editor control provides users with a toolbar
+            that helps them to apply rich text formats to the text entered in the text
+            area. </p><p id='two'><b>Functional
+            Specifications/Requirements:</b></p>`;
+            rteObj.dataBind();
+            let startElement = rteObj.inputElement.querySelector('#one');
+            let endElement = rteObj.inputElement.querySelector('#two');
+            domSelection.setSelectionText(document, startElement.childNodes[0], endElement.childNodes[0], 0, 1);
+            rteObj.keyDown(keyBoardEvent);
+            let val=rteObj.inputElement.querySelectorAll('p');
+            expect(val[0].style.marginLeft==='20px');
+            expect(val[1].style.marginLeft==='20px');
+            expect(val[2].style.marginLeft==='20px');
+            rteObj.keyDown(keyBoardEvent);
+            val=rteObj.inputElement.querySelectorAll('p');
+            expect(val[0].style.marginLeft).toBe('40px');
+            expect(val[0].style.marginLeft).toBe('40px');
+            expect(val[0].style.marginLeft).toBe('40px');
+            rteObj.keyDown(ShiftTab);
+            val=rteObj.inputElement.querySelectorAll('p');
+            expect(val[0].style.marginLeft).toBe('20px');
+            expect(val[0].style.marginLeft).toBe('20px');
+            expect(val[0].style.marginLeft).toBe('20px');
+            rteObj.keyDown(ShiftTab);
+            val=rteObj.inputElement.querySelectorAll('p');
+            expect(val[0].style.marginLeft).toBe('');
+            expect(val[1].style.marginLeft).toBe('');
+            expect(val[2].style.marginLeft).toBe('');
+        });
+        it('Select and apply tab key for blocknodes when enter Key as BR ', () => {
+            rteObj.value=`<p id='one'><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in the
+            client side. Customer easy to edit the contents and get the HTML content for
+            the displayed content. A rich text editor control provides users with a toolbar
+            that helps them to apply rich text formats to the text entered in the text
+            area. </p><p id='two'><b>Functional
+            Specifications/Requirements:</b></p>`;
+            rteObj.enterKey='BR';
+            rteObj.dataBind();
+            let startElement = rteObj.inputElement.querySelector('#one');
+            let endElement = rteObj.inputElement.querySelector('#two');
+            domSelection.setSelectionText(document, startElement.childNodes[0], endElement.childNodes[0], 0, 1);
+            rteObj.keyDown(keyBoardEvent);
+            let val=rteObj.inputElement.querySelectorAll('p');
+            expect(val[0].style.marginLeft).toBe('20px');
+            expect(val[0].style.marginLeft).toBe('20px');
+            expect(val[0].style.marginLeft).toBe('20px');
+            rteObj.keyDown(ShiftTab);
+            val=rteObj.inputElement.querySelectorAll('p');
+            expect(val[0].style.marginLeft).toBe('');
+            expect(val[1].style.marginLeft).toBe('');
+            expect(val[2].style.marginLeft).toBe('');
+        });
+        it('Select and apply tab key and using undo and redo', (done) => {
+            let startElement = rteObj.inputElement.querySelector('p');
+            domSelection.setSelectionText(document, startElement.childNodes[0], startElement.childNodes[0], 0, 20);
+            (rteObj as any).keyDown(keyBoardEvent);
+            (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(() => {
+                startElement = rteObj.inputElement.querySelector('p');
+                expect(startElement.style.marginLeft === '').toBe(true);
+                (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+                setTimeout(() => {
+                    startElement = rteObj.inputElement.querySelector('p');
+                    expect(startElement.style.marginLeft === '20px').toBe(true);
+                    done();
+                  }, 100);
+            }, 100);
+        });
+        it('Select and apply tab key in list', () => {
+        rteObj.value=`<ol><li><p>Provide
+        the tool bar support, it’s also customizable.</p></li><li ><p id='one'>Options
+        to get the HTML elements with styles.</p></li><li><p>Support
+        to insert image from a defined path.</p></li><li id='two'><p>Footer
+        elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol>`;
+        rteObj.dataBind();
+        let startElement = rteObj.inputElement.querySelector('#one');
+        let endElement = rteObj.inputElement.querySelector('#two');
+        domSelection.setSelectionText(document, startElement.childNodes[0], endElement.childNodes[0], 6, 1);
+        (rteObj as any).keyDown(keyBoardEvent);
+        let value=rteObj.inputElement.querySelector('ol');
+        expect(value.innerHTML==='<li><p>Provide\n        the tool bar support, it’s also customizable.</p></li><li><p id="one">Option&nbsp;&nbsp;&nbsp;&nbsp;</p></li><li id="two"></li>').toBe(true)
+        rteObj.value=`<p id='one'><b>Functional Specifications/Requirements:</b></p><ol><li><p>Provide the tool bar support, it’s also customizable.</p></li><li><p id='two'>Options to get the HTML elements with styles.</p></li></ol>`;
+        rteObj.dataBind();
+        startElement = rteObj.inputElement.querySelector('#one');
+        endElement = rteObj.inputElement.querySelector('#two');
+        domSelection.setSelectionText(document, startElement.childNodes[0], endElement.childNodes[0], 0, 1);
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(rteObj.value==='<p id="one"><b>Functional Specifications/Requirements:</b></p><ol><li><p>Provide the tool bar support, it’s also customizable.</p></li><li><p id="two">Options to get the HTML elements with styles.</p></li></ol>').toBe(true);
+        });
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
         });
     });
 });

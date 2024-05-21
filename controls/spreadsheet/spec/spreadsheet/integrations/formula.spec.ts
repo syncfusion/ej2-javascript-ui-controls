@@ -11893,6 +11893,19 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
+        describe('EJ2-885263 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('The ROUNDDOWN function returns the wrong result when performing actions with decimal values->', (done: Function) => {
+                helper.edit('A1', '=ROUNDDOWN(62427.81-41400.08,2)');
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('21027.73');
+                done();
+            });
+        });   
     });
     describe('Stability ->', () => {
         describe('SUM Formula', () => {

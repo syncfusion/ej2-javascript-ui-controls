@@ -2344,8 +2344,20 @@ export interface BeforeDataBoundArgs {
     result?: Object[];
     /** Defines the data count. */
     count?: number;
-    /** Defines the cancel option value. */
-    cancel?: boolean;
+    /** Defines the aggregate values*/
+    aggregates?: Object[];
+    /** Defines the action of the argument*/
+    actionArgs?: Object;
+    /** Defines the query for data*/
+    query?: Query;
+    /** Defines the name of the event*/
+    name?: string;
+    /**Defines the actual result and count of the data */
+    actual?: Object;
+    /**Defines the request type */
+    request?: string;
+    /**Defines the selected records */
+    virtualSelectRecords?: VirtualInfo;
 }
 
 /**

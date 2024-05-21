@@ -2060,7 +2060,7 @@ export class OlapEngine {
     }
 
     private performRowSorting(valCollection: { [key: string]: Element }, valueSortData: ValueSortInfo): void {
-        if (this.enableSort && this.tupRowInfo.length > 0) {
+        if ((this.enableSort || this.enableValueSorting) && this.tupRowInfo.length > 0) {
             const rowCount: number = this.pivotValues.length;
             const lvlGrouping: { [key: number]: { [key: string]: IAxisSet[] } } = {};
             const measureObjects: { [key: string]: IAxisSet[] } = {};

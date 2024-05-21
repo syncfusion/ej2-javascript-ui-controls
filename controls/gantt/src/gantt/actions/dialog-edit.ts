@@ -588,7 +588,7 @@ export class DialogEdit {
         const items: TabItemModel[] = tabModel.items;
         for (let i: number = 0; i < items.length; i++) {
             const element: HTMLElement = items[i as number].content as HTMLElement;
-            let id: string = element.id;
+            let id: string = element.getAttribute("id");
             if (!isNullOrUndefined(id)  || id !== '' ) {
                 id = id.replace(ganttObj.element.id, '');
                 id = id.replace('TabContainer', '');
@@ -2928,7 +2928,7 @@ export class DialogEdit {
         const items: TabItemModel[] = tabModel.items;
         for (let i: number = 0; i < items.length; i++) {
             const element: HTMLElement = items[i as number].content as HTMLElement;
-            let id: string = element.id;
+            let id: string = element.getAttribute("id");
             if (!isNullOrUndefined(id) || id !== '' ) {
                 id = id.replace(ganttObj.element.id, '');
                 id = id.replace('TabContainer', '');

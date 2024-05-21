@@ -100,7 +100,7 @@ export class ChartScroll {
     public getTimelineLeft(): number {
         let tLeft : number;
         let ganttElement: HTMLElement = this.parent.element;
-        let resultantWidth: number = this.parent.timelineModule.wholeTimelineWidth - ganttElement.offsetWidth * 3;
+        let resultantWidth: number = this.parent.timelineModule.wholeTimelineWidth > (ganttElement.offsetWidth * 3) ? this.parent.timelineModule.wholeTimelineWidth - ganttElement.offsetWidth * 3 : 0;
         if (this.element.scrollLeft == (this.parent.enableRtl ? -resultantWidth : resultantWidth)) {
             tLeft = this.element.scrollLeft;
         } else {

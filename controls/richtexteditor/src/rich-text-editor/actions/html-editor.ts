@@ -312,26 +312,54 @@ export class HtmlEditor {
             this.deleteCleanup(e, currentRange);
         }
         if (args.keyCode === 9 && this.parent.enableTabKey) {
+            this.parent.formatter.saveData(e);
             if (!isNOU(args.target) && isNullOrUndefined(closest(args.target as Element, '.e-rte-toolbar'))) {
                 const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
                 const parentNode: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
                 if (!((parentNode[0].nodeName === 'LI' || closest(parentNode[0] as HTMLElement, 'li') ||
                     closest(parentNode[0] as HTMLElement, 'table')) && range.startOffset === 0)) {
                     args.preventDefault();
-                    if (!args.shiftKey) {
-                        InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
-                        this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
-                    } else if (this.rangeCollection.length > 0 &&
-                        this.rangeCollection[this.rangeCollection.length - 1].startContainer.textContent.length === 4) {
-                        const textCont: Node = this.rangeCollection[this.rangeCollection.length - 1].startContainer;
-                        this.nodeSelectionObj.setSelectionText(
-                            this.contentRenderer.getDocument(), textCont, textCont, 0, textCont.textContent.length);
-                        InsertHtml.Insert(this.contentRenderer.getDocument(), document.createTextNode(''));
-                        this.rangeCollection.pop();
+                    const selection: Range = this.contentRenderer.getDocument().getSelection().getRangeAt(0);
+                    let alignmentNodes: Node[] = this.parent.formatter.editorManager.domNode.blockNodes();
+                    if (this.parent.enterKey === 'BR') {
+                        if (selection.startOffset !== selection.endOffset && selection.startOffset === 0) {
+                            let save: NodeSelection = this.nodeSelectionObj.save(range, this.contentRenderer.getDocument());
+                            this.parent.formatter.editorManager.domNode.setMarker(save);
+                            alignmentNodes = this.parent.formatter.editorManager.domNode.blockNodes();
+                            (this.parent.formatter.editorManager as EditorManager).domNode.convertToBlockNodes(alignmentNodes, false);
+                            this.marginTabAdd(args.shiftKey, alignmentNodes);
+                            save = (this.parent.formatter.editorManager as EditorManager).domNode.saveMarker(save);
+                            save.restore();
+                        }
+                        else {
+                            InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
+                            this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
+                        }
+                    } else {
+                        if (!args.shiftKey) {
+                            if (selection.startOffset !== selection.endOffset && selection.startOffset === 0) {
+                                this.marginTabAdd(args.shiftKey, alignmentNodes);
+                            }
+                            else {
+                                InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
+                                this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
+                            }
+                        } else if (this.rangeCollection.length > 0 &&
+                            this.rangeCollection[this.rangeCollection.length - 1].startContainer.textContent.length === 4) {
+                            const textCont: Node = this.rangeCollection[this.rangeCollection.length - 1].startContainer;
+                            this.nodeSelectionObj.setSelectionText(
+                                this.contentRenderer.getDocument(), textCont, textCont, 0, textCont.textContent.length);
+                            InsertHtml.Insert(this.contentRenderer.getDocument(), document.createTextNode(''));
+                            this.rangeCollection.pop();
+                        } else {
+                            this.marginTabAdd(args.shiftKey, alignmentNodes);
+                        }
                     }
                 }
             }
+            this.parent.formatter.saveData(e);
         }
+
         if (((e as NotifyArgs).args as KeyboardEventArgs).action === 'space' ||
             ((e as NotifyArgs).args as KeyboardEventArgs).action === 'enter' ||
             ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 13) {
@@ -994,5 +1022,29 @@ export class HtmlEditor {
         e.callBack(this.parent.formatter.editorManager.nodeSelection.getRange(
             this.parent.contentModule.getDocument()
         ).toString());
+    }
+
+    private marginTabAdd(val: boolean, alignmentNodes: Node[]): void {
+        for (let index: number = 0; index < alignmentNodes.length; index++) {
+            const element: HTMLElement = alignmentNodes[index as number] as HTMLElement;
+            if (element.closest('li')) {
+                continue;
+            }
+            if (element.style.marginLeft) {
+                let count: number = parseInt(element.style.marginLeft, 10);
+                if (val) {
+                    count -= 20;
+                } else {
+                    count += 20;
+                }
+                element.style.marginLeft = count.toString() + 'px';
+                if (element.style.marginLeft === '0px'){
+                    element.removeAttribute('style');
+                }
+            }
+            else if (!val) {
+                element.style.marginLeft = '20px';
+            }
+        }
     }
 }

@@ -21,7 +21,7 @@ export class Selection {
         this.addEventListener();
     }
     /**
-     * For binding events to selection module
+     * For binding events to selection module.
      *
      * @returns {void}
      */
@@ -31,7 +31,7 @@ export class Selection {
         }
     }
     /**
-     * For removing events from selection modue
+     * For removing events from selection module.
      *
      * @returns {void}
      */
@@ -106,7 +106,7 @@ export class Selection {
     }
 
     /**
-     * Selects the element in the map
+     * Selects the element in the map.
      *
      * @param {Element} targetElement - Specifies the target element.
      * @param {number} layerIndex - Specifies the index of the layer.
@@ -129,7 +129,7 @@ export class Selection {
     }
 
     /**
-     * Public method for selection
+     * Public method for selection.
      *
      * @param {number} layerIndex - Specifies the index of the layer.
      * @param {string} name - Specifies the name.
@@ -146,7 +146,7 @@ export class Selection {
         }
     }
     /**
-     * Method for selection
+     * Method for selection.
      *
      * @param {Element} targetElement - Specifies the target element
      * @param {any} shapeData - Specifies the shape data

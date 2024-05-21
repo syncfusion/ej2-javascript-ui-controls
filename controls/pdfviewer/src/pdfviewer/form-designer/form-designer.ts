@@ -3259,6 +3259,23 @@ export class FormDesigner {
      */
     public deleteFormField(formFieldId: string | object, addAction: boolean = true): void {
         let formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
+        if (isNullOrUndefined(formField) && formFieldId) {
+            let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+            let FormfieldsData: any = JSON.parse(data);
+            this.pdfViewer.formFieldCollection = this.pdfViewer.formFieldCollection.filter(field => (formFieldId as any).id !== field.id);
+            for (let i: number = 0; i < this.pdfViewer.formFieldCollections.length; i++) {
+                if ((formFieldId as any).id === this.pdfViewer.formFieldCollections[i].id) {
+                    for (let j: number = 0; j < FormfieldsData.length; j++) {
+                        if ((formFieldId as any).name == FormfieldsData[j].FieldName) {
+                            FormfieldsData.splice(j, 1);
+                            this.pdfViewer.formFieldCollections.splice(i, 1);
+                            let stringify: any = JSON.stringify(FormfieldsData);
+                            window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_formfields', stringify);
+                        }
+                    }
+                }
+            }
+        }
         if (formField) {
             this.clearSelection(formFieldId);
             this.pdfViewer.remove(formField);
@@ -3416,7 +3433,10 @@ export class FormDesigner {
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         let sessiondata : string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
-        let sessionformFields: any = JSON.parse(sessiondata);
+        let sessionformFields: any
+        if (!isNullOrUndefined(sessiondata)) {
+            sessionformFields = JSON.parse(sessiondata);
+        }
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[i].Key.split("_")[0] === annotationId) {
                 formFieldsData.splice(i, 1);

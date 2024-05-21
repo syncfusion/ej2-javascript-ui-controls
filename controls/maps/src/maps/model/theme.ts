@@ -314,7 +314,7 @@ export namespace DarkTheme {
 }
 
 /**
- * Method to get the theme style
+ * Method to get the theme style.
  *
  * @param {MapsTheme} theme - Specifies the theme.
  * @returns {IThemeStyle} - Returns the theme style.

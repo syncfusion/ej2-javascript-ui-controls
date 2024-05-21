@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { PdfViewer } from '../index';
 import { PdfViewerBase, PdfAnnotationBaseModel } from '../index';
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined} from '@syncfusion/ej2-base';
 import { AjaxHandler } from '../index';
 import { DiagramHtmlElement } from "../drawing/html-element";
 /**
@@ -154,6 +154,7 @@ export class Print {
         imageData.data.set(value);
         canvasContext.putImageData(imageData, 0, 0);
         let imageUrl: string = canvas.toDataURL();
+        this.pdfViewerBase.releaseCanvas(canvas);
         let data = ({ image: imageUrl, pageNumber: pageIndex, uniqueId: this.pdfViewerBase.documentId, pageWidth: width });
         this.printSuccess(data, pageWidth, pageHeight, pageIndex);
     }
@@ -400,7 +401,9 @@ export class Print {
                                     // eslint-disable-next-line
                                     let font: any = currentData.fontFamily;
                                     this.applyPosition(htmlElement, bounds, font, heightRatio, widthRatio, true, currentData.zoomValue, currentData.pageNumber - 1);
-                                    targetField.appendChild(htmlElement);
+                                    if (!isNullOrUndefined(bounds) && bounds.Width > 0 && bounds.Height > 0) {
+                                        targetField.appendChild(htmlElement);
+                                    }
                                 }
                             }
                         }

@@ -1613,4 +1613,94 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('884946-Undo redo not working for swimlane child nodes label edit', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramSwimUndo' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'swimlane',
+                    shape: {
+                        type: 'SwimLane',
+                        header: {
+                            annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                            height: 50, style: { fontSize: 11 },
+                            orientation: 'Horizontal',
+                        },
+                        lanes: [
+                            {
+                                id: 'stackCanvas1',
+                                header: {
+                                    annotation: { content: 'CUSTOMER' }, width: 50,
+                                    style: { fontSize: 11 }
+                                },
+                                height: 100,
+                                children: [
+                                    {
+                                        id: 'Order',
+                                        annotations: [
+                                            {
+                                                content: 'ORDER',
+                                                style: { fontSize: 11 }
+                                            }
+                                        ],
+                                        margin: { left: 60, top: 20 },
+                                        height: 40, width: 100
+                                    }
+                                ],
+                            },
+                        ],
+                        phases: [
+                            {
+                                id: 'phase1', offset: 170,
+                                header: { content: { content: 'Phase' } }
+                            },
+                        ],
+                        phaseSize: 20,
+                    },
+                    offsetX: 420, offsetY: 270,
+                    height: 100,
+                    width: 650
+                },
+            ];
+            diagram = new Diagram({
+                width: '1000px', height: '530px', nodes: nodes,
+            });
+            diagram.appendTo('#diagramSwimUndo');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking Undo Redo - After editing swimlane child node label', (done: Function) => {
+            let child:NodeModel = diagram.getObject('Order');
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let x = child.offsetX;
+            let y = child.offsetY;
+            mouseEvents.clickEvent(diagramCanvas, x, y);
+            mouseEvents.dblclickEvent(diagramCanvas, x + 20, y);
+            let textBox = document.getElementById(diagram.element.id + '_editBox');
+            (textBox as HTMLInputElement).value = 'Order1';
+            mouseEvents.clickEvent(diagramCanvas, x + 300, y);
+            let annotation = child.annotations[0].content;
+            diagram.undo();
+            let annotation2 = child.annotations[0].content;
+            diagram.redo();
+            let annotation3 = child.annotations[0].content;
+            expect(annotation2 === 'ORDER' && annotation === 'Order1' && annotation3 === 'Order1').toBe(true);
+            done();
+        });
+    });
 });

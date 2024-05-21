@@ -176,6 +176,7 @@ export function PdfiumRunner(): void {
             (data as any).annotName = event.data.AnnotName;
             (data as any).rubberStampAnnotationPageNumber = event.data.rubberStampAnnotationPageNumber;
             (data as any).annotationOrder = event.data.annotationOrder;
+            (data as any).collectionOrder = event.data.collectionOrder;
             ctx.postMessage(data);
         }
         if (documentDetails) {

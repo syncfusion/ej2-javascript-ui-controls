@@ -189,6 +189,7 @@ export class TextLayer {
                     }
                 }
             }
+            this.pdfViewerBase.releaseCanvas(canvasElement as HTMLCanvasElement);
         }
     }
     /**
@@ -246,6 +247,7 @@ export class TextLayer {
                 // EJ2-855106- Optimize performance by eliminating unnecessary getBoundingClientRect usage in this method.
                 this.resizeExcessDiv(textLayer, textDiv);
             }
+            this.pdfViewerBase.releaseCanvas(canvasElement as HTMLCanvasElement);
         } else {
             textLayer.parentElement.removeChild(textLayer);
         }

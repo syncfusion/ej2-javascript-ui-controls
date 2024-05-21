@@ -32,13 +32,12 @@ export class Annotations {
     }
 
     /**
-     * To create annotation elements
+     * To create annotation elements.
      *
      * @param {HTMLElement} parentElement - Specifies the parent element in the map.
      * @param {Annotation} annotation -  Specifies the options for customizing the annotation element in maps.
      * @param {number} annotationIndex - Specifies the index of the annotation.
      * @returns {void}
-     *
      * @private
      */
     public createAnnotationTemplate(parentElement: HTMLElement, annotation: Annotation, annotationIndex: number): void {

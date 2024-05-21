@@ -258,7 +258,8 @@ export function getCustomColors(): string[] {
  */
 export function isCustomDateTime(format: string, checkTime?: boolean, option?: { type?: string }, checkBoth?: boolean): boolean {
     let isCustom: boolean;
-    if ((format.includes('d') || format.includes('y')) && !format.includes('#') && !getColorCode(format)) {
+    if ((format.includes('d') || format.includes('y')) && !format.includes('#') && !getColorCode(format) &&
+        /^[dyMhHmsaAP0,\:[\]\-. \/]*$/.test(format)) {
         if (option) {
             option.type = 'date';
         }
@@ -270,7 +271,7 @@ export function isCustomDateTime(format: string, checkTime?: boolean, option?: {
         isCustom = true;
     }
     if (checkTime && (format.includes('h') || format.includes('m') || format.includes('s')) && !format.includes('#') &&
-        !getColorCode(format)) {
+        !getColorCode(format) && /^[dyMhHmsaAP0,\:[\]\-. \/]*$/.test(format)) {
         if (option) {
             option.type = option.type || '';
             option.type += 'time';

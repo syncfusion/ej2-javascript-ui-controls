@@ -344,9 +344,9 @@ export class CollaborativeEditingHandler {
             }
             if (action.operations[i].action === 'Delete' || action.operations[i].action === 'Format') {
                 //Update endOffset
-                // if (action.operations[i].action === 'Delete') {
+                if (!(op2.action === 'Format' && op2.length === 0)) {
                     this.documentEditor.selectionModule.isEndOffset = true;
-                // }
+                }
                 endOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset + action.operations[i].length, false, false, false);
                 this.documentEditor.selectionModule.isEndOffset = false;
                 // Code for Comparing the offset calculated using old approach and optimized approach

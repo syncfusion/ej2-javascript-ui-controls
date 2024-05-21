@@ -6296,7 +6296,7 @@ export class Editor {
                     this.owner.enableLocalPaste? 
                         isNullOrUndefined((widget as ParagraphWidget).isCreatedUsingHtmlSpanTag)? false: !(widget as ParagraphWidget).isCreatedUsingHtmlSpanTag
                         : (widget as ParagraphWidget).isCreatedUsingHtmlSpanTag);
-                if (widget instanceof ParagraphWidget && (isPara || (j === widgets.length - 1 && (this.isLastParaMarkCopied || this.isInsertingTOC || isConsiderLastBlock || this.owner.documentHelper.isDragging || this.isRemoteAction)))
+                if (widget instanceof ParagraphWidget && (isPara || (j === widgets.length - 1 && (this.isLastParaMarkCopied || this.isInsertField || this.isInsertingTOC || isConsiderLastBlock || this.owner.documentHelper.isDragging || this.isRemoteAction)))
                     && (!isNullOrUndefined(widget.paragraphFormat.listFormat)
                         && isNullOrUndefined(widget.paragraphFormat.listFormat.list)
                         && widget.paragraphFormat.listFormat.listId === -1)) {
@@ -16536,6 +16536,9 @@ export class Editor {
             }
             if (paragraph.paragraphFormat.firstLineIndent !== 0) {
                 this.onApplyParagraphFormat('firstLineIndent', 0, false, false);
+                if (paragraph.paragraphFormat.leftIndent !== 0) {
+                    this.onApplyParagraphFormat('leftIndent', 0, false, false);
+                }
                 return;
             }
             if (paragraph.paragraphFormat.leftIndent !== 0) {
@@ -20158,7 +20161,7 @@ export class Editor {
      *
      */
 
-    public buildToc(tocSettings: TableOfContentsSettings, fieldCode: string, isFirstPara: boolean, isStartParagraph?: boolean,isNavigationPane?: boolean): ParagraphWidget[] {
+    public buildToc(tocSettings: TableOfContentsSettings, fieldCode: string, isFirstPara: boolean, isStartParagraph?: boolean, isNavigationPane?: boolean): ParagraphWidget[] {
         const tocDomBody: BodyWidget = this.documentHelper.pages[0].bodyWidgets[0];
         const widgets: ParagraphWidget[] = [];
         this.createHeadingLevels(tocSettings);
@@ -20172,7 +20175,7 @@ export class Editor {
             if (widget instanceof ParagraphWidget && (this.isHeadingStyle(widget) || (tocSettings.includeOutlineLevels && this.isOutlineLevelStyle(widget)))) {
                 const bookmarkName: string = this.insertTocBookmark(widget);
 
-                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat,isNavigationPane);
+                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat, isNavigationPane);
                 isFirstPara = false;
             }
             widget = this.selection.getNextParagraphBlock((widget as ParagraphWidget).getSplitWidgets().pop() as ParagraphWidget);
@@ -20479,14 +20482,17 @@ export class Editor {
     }
 
     private generateBookmarkName(): string {
-        this.tocBookmarkId++;
-        let count: number = 10 - this.tocBookmarkId.toString().length;
-        let formatString: string = '';
-        while (count - 1 > 0) {
-            formatString = '0' + formatString;
-            count--;
-        }
-        const bookmarkName: string = '_Toc' + formatString + this.tocBookmarkId;
+        let bookmarkName: string = '';
+        do {
+            this.tocBookmarkId++;
+            let count: number = 10 - this.tocBookmarkId.toString().length;
+            let formatString: string = '';
+            while (count - 1 > 0) {
+                formatString = '0' + formatString;
+                count--;
+            }
+            bookmarkName = '_Toc' + formatString + this.tocBookmarkId;
+        } while (this.documentHelper.bookmarks.containsKey(bookmarkName));
         return bookmarkName;
     }
 

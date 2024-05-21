@@ -130,6 +130,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public defaultFieldListOrder: Sorting = 'None';
     /** @hidden */
     public isDeferUpdateApplied: boolean = false;
+    /** @hidden */
+    public isDeferLayoutUpdate: boolean;
 
     //Property Declarations
     /**
@@ -747,6 +749,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
+        this.isDeferLayoutUpdate = (isNullOrUndefined(this.isDeferLayoutUpdate) && !this.isPopupView) ?
+            this.allowDeferLayoutUpdate : this.isDeferLayoutUpdate;
         this.wireEvent();
     }
 
@@ -1567,7 +1571,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     pivot.clonedFieldList = PivotUtil.getClonedFieldList(pivot.pivotFieldList);
                 }
                 pivot.updateView(pivot.pivotGridModule);
-            } else if (this.isPopupView && pivot.allowDeferLayoutUpdate) {
+            } else if (this.isPopupView && (this.isDeferLayoutUpdate || (pivot.pivotGridModule
+                && pivot.pivotGridModule.pivotDeferLayoutUpdate))) {
                 pivot.pivotGridModule.engineModule = pivot.engineModule;
                 pivot.pivotGridModule.setProperties({
                     dataSourceSettings: (<{ [key: string]: Object }>pivot.dataSourceSettings).properties as IDataOptions

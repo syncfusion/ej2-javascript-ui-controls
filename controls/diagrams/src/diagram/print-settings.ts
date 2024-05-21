@@ -318,6 +318,14 @@ export class PrintAndExport {
                 }
             }
         }
+        //884801-After zooming and exporting the HTML content, the scroll Padding value is not taken into account.
+        if (this.diagram.scrollSettings.padding) {
+            let scrollpadding: MarginModel = this.diagram.scrollSettings.padding;
+            left -= scrollpadding.left;
+            top -= scrollpadding.top;
+            right += (scrollpadding.left + scrollpadding.right);
+            bottom += (scrollpadding.top + scrollpadding.bottom);
+        }
         const svgBounds: Rect = new Rect();
         svgBounds.x = left;
         svgBounds.y = top;

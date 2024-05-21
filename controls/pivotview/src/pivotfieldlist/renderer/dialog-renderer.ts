@@ -107,7 +107,10 @@ export class DialogRenderer {
         if (this.parent.allowDeferLayoutUpdate) {
             this.deferUpdateCheckBox = new CheckBox({
                 label: this.parent.localeObj.getConstant('deferLayoutUpdate'),
-                checked: true,
+                checked: (this.parent.isPopupView && this.parent.pivotGridModule) ?
+                    (isNullOrUndefined(this.parent.pivotGridModule.pivotDeferLayoutUpdate) ? true :
+                        this.parent.pivotGridModule.pivotDeferLayoutUpdate) : (isNullOrUndefined(this.parent.isDeferLayoutUpdate) ? true :
+                        this.parent.isDeferLayoutUpdate),
                 enableRtl: this.parent.enableRtl,
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 locale: this.parent.locale,
@@ -123,7 +126,11 @@ export class DialogRenderer {
                 enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-                isPrimary: true
+                isPrimary: true,
+                disabled: (this.parent.isPopupView && this.parent.pivotGridModule) ?
+                    (!isNullOrUndefined(this.parent.pivotGridModule.pivotDeferLayoutUpdate) ?
+                        !this.parent.pivotGridModule.pivotDeferLayoutUpdate : false) :
+                    (!isNullOrUndefined(this.parent.isDeferLayoutUpdate) ? !this.parent.isDeferLayoutUpdate : false)
             });
             this.deferUpdateApplyButton.isStringTemplate = true;
             this.deferUpdateApplyButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton1');
@@ -136,10 +143,26 @@ export class DialogRenderer {
             content: this.parent.allowDeferLayoutUpdate ? this.parent.localeObj.getConstant('cancel') :
                 this.parent.localeObj.getConstant('close'),
             enableRtl: this.parent.enableRtl, isPrimary: !this.parent.allowDeferLayoutUpdate,
-            locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer
+            locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+            disabled: (this.parent.isPopupView && this.parent.pivotGridModule && this.parent.pivotGridModule['refreshing']) ?
+                (this.parent.allowDeferLayoutUpdate && !isNullOrUndefined(this.parent.pivotGridModule.pivotDeferLayoutUpdate) ?
+                    !this.parent.pivotGridModule.pivotDeferLayoutUpdate : false) : ((this.parent['refreshing'] &&
+                        !isNullOrUndefined(this.parent.isDeferLayoutUpdate) && this.parent.allowDeferLayoutUpdate) ?
+                    !this.parent.isDeferLayoutUpdate : false)
         });
         this.deferUpdateCancelButton.isStringTemplate = true;
         this.deferUpdateCancelButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton2');
+        if (this.parent.allowDeferLayoutUpdate && ((!this.parent.isDeferLayoutUpdate && this.parent.renderMode === 'Popup' &&
+            this.parent['refreshing']) || (this.parent.isPopupView && this.parent.pivotGridModule &&
+                !this.parent.pivotGridModule.pivotDeferLayoutUpdate && this.parent.pivotGridModule['refreshing']))) {
+            this.deferUpdateApplyButton.element.style.display = 'none';
+            this.deferUpdateCancelButton.setProperties({ content: this.parent.localeObj.getConstant('close') });
+            this.deferUpdateCancelButton.isPrimary = true;
+            this.deferUpdateApplyButton.disabled = this.parent.isPopupView ? this.parent.pivotGridModule.pivotDeferLayoutUpdate
+                : this.parent.isDeferLayoutUpdate;
+            this.deferUpdateCancelButton.disabled = this.parent.isPopupView ? this.parent.pivotGridModule.pivotDeferLayoutUpdate
+                : this.parent.isDeferLayoutUpdate;
+        }
         this.deferUpdateCancelButton.element.onclick = this.onCloseFieldList.bind(this);
     }
 
@@ -182,12 +205,15 @@ export class DialogRenderer {
             }
             this.parent.clonedFieldList = PivotUtil.getClonedFieldList(this.parent.pivotFieldList);
         }
-        this.parent.allowDeferLayoutUpdate = !this.parent.allowDeferLayoutUpdate;
+        this.parent.isDeferLayoutUpdate = args.checked;
+        if (this.parent.isPopupView && this.parent.pivotGridModule) {
+            this.parent.pivotGridModule.pivotDeferLayoutUpdate = args.checked;
+        }
         if (this.parent.renderMode === 'Fixed') {
-            this.deferUpdateApplyButton.setProperties({ disabled: !this.parent.allowDeferLayoutUpdate });
-            this.deferUpdateCancelButton.setProperties({ disabled: !this.parent.allowDeferLayoutUpdate });
+            this.deferUpdateApplyButton.setProperties({ disabled: !args.checked });
+            this.deferUpdateCancelButton.setProperties({ disabled: !args.checked });
         } else {
-            if (this.parent.allowDeferLayoutUpdate) {
+            if (this.parent.allowDeferLayoutUpdate && args.checked) {
                 this.deferUpdateApplyButton.element.style.display = '';
                 this.deferUpdateCancelButton.setProperties({ content: this.parent.localeObj.getConstant('cancel') });
                 this.deferUpdateCancelButton.isPrimary = false;
@@ -241,7 +267,8 @@ export class DialogRenderer {
             }
             this.parent.updateDataSource(false, true);
         }
-        if (!this.parent.allowDeferLayoutUpdate && isDeferLayoutEnabled) {
+        if ((!this.parent.isDeferLayoutUpdate || ((this.parent as PivotFieldList).pivotGridModule
+            && !(this.parent as PivotFieldList).pivotGridModule.pivotDeferLayoutUpdate)) && isDeferLayoutEnabled) {
             (this.parent as PivotFieldList).pivotChange = false;
         }
         if (this.parent.allowDeferLayoutUpdate && this.parent.isPopupView && this.parent.pivotGridModule && !this.parent.isAdaptive) {

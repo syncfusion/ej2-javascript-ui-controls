@@ -928,7 +928,9 @@ export class StampTool extends MoveTool {
             fontName = font + 'px' + ' ' + fontFamily;
         }
         context.font = fontName || getComputedStyle(document.body).font; 
-        return context.measureText(text).width;
+        const textWidth = context.measureText(text).width;
+        this.pdfViewerBase.releaseCanvas(canvas);
+        return textWidth;
     }
 
     /**
@@ -1393,7 +1395,7 @@ export class ResizeTool extends ToolBase {
             if (args.target && (args.target as PdfAnnotationBaseModel).formFieldAnnotationType) {
                 const node: PdfAnnotationBaseModel = args.target;
                 // eslint-disable-next-line
-                let field: IFormField = { value: (node as any).value, fontFamily: node.fontFamily, fontSize: node.fontSize, fontStyle: (node as any).fontStyle,
+                let field: IFormField = { id: (args.source as any).id, value: (node as any).value, fontFamily: node.fontFamily, fontSize: node.fontSize, fontStyle: (node as any).fontStyle,
                     // eslint-disable-next-line
                     color: (node as PdfFormFieldBaseModel).color, backgroundColor: (node as PdfFormFieldBaseModel).backgroundColor, alignment: (node as PdfFormFieldBaseModel).alignment, isReadonly: (node as any).isReadonly, visibility: (node as any).visibility,
                     // eslint-disable-next-line

@@ -261,7 +261,9 @@ export class CellEdit {
         if (isNOU(currentValue)) {
             if (!ganttData.hasChildRecords) {
                 this.parent.setRecordValue('startDate', null, ganttProb, true);
-                this.parent.setRecordValue('duration', null, ganttProb, true);
+                if (!(ganttProb.startDate === null && ganttProb.endDate === null && ganttProb.duration !== null)) {
+                    this.parent.setRecordValue('duration', null, ganttProb, true);
+                }
                 this.parent.setRecordValue('isMilestone', false, ganttProb, true);
                 // if (this.parent.allowUnscheduledTasks && isNOU(this.parent.taskFields.endDate)) {
                 //     this.parent.setRecordValue('endDate', null, ganttProb, true);
@@ -317,7 +319,9 @@ export class CellEdit {
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
         if (isNOU(currentValue)) {
             this.parent.setRecordValue('endDate', currentValue, ganttProb, true);
-            this.parent.setRecordValue('duration', null, ganttProb, true);
+            if (!(ganttProb.startDate === null && ganttProb.endDate === null && ganttProb.duration !== null)) {
+                this.parent.setRecordValue('duration', null, ganttProb, true);
+            }
             this.parent.setRecordValue('isMilestone', false, ganttProb, true);
         } else {
             if ((currentValue.getHours() === 0 && this.parent.defaultEndTime !== 86400)) {

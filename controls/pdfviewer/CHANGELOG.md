@@ -2,14 +2,31 @@
 
 ## [Unreleased]
 
+## 25.2.5 (2024-05-21)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I577813` - Now, the document is loading properly without any script errors when a value has already been included in the session storage by default.
+- `#I583019` - Now, the annotation collection and action collection will match in multiple undo.
+- `#I582982` - Now, the Undo does not retains the deleted annotation in annotation collection.
+- `#I580839`, `#I580793` - Now, the extra page is not appeared in the print preview when print the provided document.
+- `#I582676` - Now, the annotation order in the comment panel does not change when adding new annotations in the standalone PDF Viewer.
+- `#I586052` - Now, able to use markup annotations over shape annotations.
+- `#I586408` - Now, the form field ID is not missing in `FormFieldResizerArgs` event.
+- `#I583890` - Now, the Edit and Delete option will get disabled when use isCommentLock
+- `#I582388` - Now, the form field tab order is working properly for the customer-provided document.
+- `#I577318`, `#I577549` - Now, the `deleteFormField` method is working properly for the non-render pages.
+
 ## 25.2.4 (2024-05-14)
 
 ### PDF Viewer
 
 #### Bug Fixes
 
-- `#I575320`- Now, the Form Fields data does not wrongly appear when exporting.
-- `#I583505`- Now, the Export annotations is properly working when drawing the annotation outside page boundaries.
+- `#I575320` - Now, the Form Fields data does not wrongly appear when exporting.
+- `#I583505` - Now, the Export annotations is properly working when drawing the annotation outside page boundaries.
 - `#I581452` - Now, the form field background and border color are set to transparent properly.
 - `#I585089` - Now, the annotation selector is properly removed when undoing annotations in select mode. 
 

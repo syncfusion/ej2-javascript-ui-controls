@@ -48,7 +48,10 @@ export class Indents {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.parent.domNode.setMarker(save);
-        const indentsNodes: Node[] = this.parent.domNode.blockNodes();
+        let indentsNodes: Node[] = this.parent.domNode.blockNodes();
+        if (e.enterAction === 'BR') {
+            indentsNodes = this.parent.domNode.convertToBlockNodes(indentsNodes, false);
+        }
         const parentNodes: Node[] = indentsNodes.slice();
         const listsNodes: Node[] = [];
         for (let i: number = 0; i < parentNodes.length; i++) {

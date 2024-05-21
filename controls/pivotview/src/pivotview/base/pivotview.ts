@@ -767,7 +767,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public actionObj: PivotActionCompleteEventArgs = {};
     /** @hidden */
     public defaultFieldListOrder: Sorting = 'None';
-
+    /** @hidden */
+    public pivotDeferLayoutUpdate: boolean;
     //Property Declarations
 
     /**
@@ -2536,6 +2537,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.renderContextMenu();
         this.isDragging = false;
+        this.pivotDeferLayoutUpdate = isNullOrUndefined(this.pivotDeferLayoutUpdate) ? this.allowDeferLayoutUpdate :
+            this.pivotDeferLayoutUpdate;
         this.addInternalEvents();
         //setCurrencyCode(this.currencyCode);
     }
@@ -4208,7 +4211,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (isServerExport && this.dataSourceSettings.mode === 'Server') {
             this.getEngine('onCsvExport', null, null, null, null, null, null, null, null, excelExportProperties);
         } else {
-           if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0)) && this.dataSourceSettings.mode !== 'Server') {
+            if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0)) && this.dataSourceSettings.mode !== 'Server') {
                 this.excelExportModule.exportToExcel('CSV', excelExportProperties, isBlob);
             } else {
                 this.exportType = 'CSV';

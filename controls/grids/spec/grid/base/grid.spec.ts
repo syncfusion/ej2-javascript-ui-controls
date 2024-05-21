@@ -2322,3 +2322,50 @@ describe('EJ2-880511: When entering the grid through the tab key press, want to 
         gridObj = null;
     });
 });
+
+
+describe('EJ2-883850: Custom localization apply on expand/collapse icon =>', () => {
+    let grid: Grid;
+    beforeAll((done: Function) => {
+        L10n.load({
+            'de-DE': {
+                'grid': {
+                    'Expanded':'Expandido',
+                    'Collapsed':'Colapsado'
+                }
+            }
+        });
+
+        grid = createGrid(
+            {
+            dataSource: filterData,
+            locale: 'de-DE',
+            allowGrouping: true,
+            allowPaging: true,
+            groupSettings: { columns: ['CustomerID'],showGroupedColumn: true },
+            pageSettings: { pageSize: 6 },
+            columns: [
+                { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                { field: 'Freight', headerText: 'Freight', width: 150, format:'C2', textAlign: 'Right' },
+                { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+            ]
+        },done);
+    });
+
+    it('expandcollapse rows method testing', () => {
+        let expandElem = grid.getContent().querySelectorAll('.e-recordplusexpand');
+        grid.groupModule.expandCollapseRows(expandElem[1]);
+        // EJ2-883850 - Screen Reader not announcing the state of the expand and collapse icon properly
+        expect(expandElem[0].firstElementChild.getAttribute('title')).toBe('Expandido');
+        grid.groupModule.expandCollapseRows(expandElem[0]);
+
+        // EJ2-883850 - Screen Reader not announcing the state of the expand and collapse icon properly
+        expect(expandElem[0].firstElementChild.getAttribute('title')).toBe('Colapsado');
+    });
+    afterAll(() => {
+        destroy(grid);
+        grid = null;
+    });
+
+});

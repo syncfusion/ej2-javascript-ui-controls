@@ -889,14 +889,6 @@ export class SfdtReader {
                     }
                     this.isPageBreakInsideTable = true;
                     this.parseTextBody(tableCell[blocksProperty[this.keywordIndex]], cell, false);
-                    if (isNullOrUndefined(cell.contentControlProperties) && cell.childWidgets.length === 1  
-                        && cell.firstChild instanceof ParagraphWidget && cell.firstChild.childWidgets.length === 0 
-                        && !isNullOrUndefined(cell.firstChild.paragraphFormat)) {
-                        const listFormat: WListFormat = cell.firstChild.paragraphFormat.listFormat;
-                        if (listFormat.listId !== -1 && cell.firstChild.paragraphFormat.leftIndent === 0 && cell.firstChild.paragraphFormat.firstLineIndent !== 0) {
-                            cell.firstChild.paragraphFormat.clearIndent();
-                        }
-                    }
                     if (!isNullOrUndefined(cell.contentControlProperties)) {
                         const cellStartContentControl: ContentControl = new ContentControl('Cell');
                         const cellEndContentControl: ContentControl = new ContentControl('Cell');

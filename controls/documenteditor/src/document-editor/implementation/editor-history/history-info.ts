@@ -360,15 +360,17 @@ export class HistoryInfo extends BaseHistoryInfo {
                 }
                 break;
             case 'TOC':
-                for (let i: number = 0; i < this.modifiedActions.length; i++) {
-                    let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
-                    currentHistory.type = currentHistory.action === 'Paste' ? 'PasteToc' : undefined;
-                    let tocOperations: Operation[] = currentHistory.getActionInfo();
-                    operations.push(...tocOperations);
-                }
-                if (this.editorHistory.isUndoing && operations.length > 0) {
-                    let lastelement: Operation = operations.pop();
-                    operations.unshift(lastelement);
+                if (this.modifiedActions) {
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                        let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                        currentHistory.type = currentHistory.action === 'Paste' ? 'PasteToc' : undefined;
+                        let tocOperations: Operation[] = currentHistory.getActionInfo();
+                        operations.push(...tocOperations);
+                    }
+                    if (this.editorHistory.isUndoing && operations.length > 0) {
+                        let lastelement: Operation = operations.pop();
+                        operations.unshift(lastelement);
+                    }
                 }
                 break;
             case 'DragAndDropContent':

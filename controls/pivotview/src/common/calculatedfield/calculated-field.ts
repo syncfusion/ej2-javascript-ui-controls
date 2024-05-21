@@ -474,7 +474,8 @@ export class CalculatedField implements IAction {
             this.currentFieldName = this.formatText = this.fieldText = this.formatType = null;
             this.formulaText = this.fieldType = this.parentHierarchy = null;
         }
-        if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() !== 'pivotfieldlist') {
+        if (!(this.parent as PivotFieldList).isDeferLayoutUpdate || ((this.parent as PivotFieldList).pivotGridModule &&
+            !(this.parent as PivotFieldList).pivotGridModule.pivotDeferLayoutUpdate) || this.parent.getModuleName() !== 'pivotfieldlist') {
             this.parent.updateDataSource();
         }
         this.closeErrorDialog();
@@ -826,7 +827,8 @@ export class CalculatedField implements IAction {
         } else {
             this.parent.setProperties({ dataSourceSettings: report }, true);
         }
-        if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.allowDeferLayoutUpdate) {
+        if (this.parent.getModuleName() === 'pivotfieldlist' && ((this.parent as PivotFieldList).isDeferLayoutUpdate ||
+            ((this.parent as PivotFieldList).pivotGridModule && (this.parent as PivotFieldList).pivotGridModule.pivotDeferLayoutUpdate))) {
             (this.parent as PivotFieldList).isRequiredUpdate = false;
         }
         try {
@@ -846,7 +848,7 @@ export class CalculatedField implements IAction {
                 this.isRequireUpdate = true;
             }
             if (this.parent.getModuleName() === 'pivotfieldlist' &&
-                (this.parent as PivotFieldList).renderMode === 'Fixed' && this.parent.allowDeferLayoutUpdate) {
+                (this.parent as PivotFieldList).renderMode === 'Fixed' && (this.parent as PivotFieldList).isDeferLayoutUpdate) {
                 (this.parent as PivotFieldList).pivotChange = true;
             }
         } catch (exception) {

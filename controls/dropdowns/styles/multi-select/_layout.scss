@@ -1012,7 +1012,7 @@
   }
 }
 
-.e-small .e-multiselect .e-input-group-icon.e-ddl-icon {
+.e-small .e-multiselect:not(.e-outline):not(.e-filled) .e-input-group-icon.e-ddl-icon {
   @if $ddl-multiselect-skin-name == 'Material3' {
     top: 6px;
   }
@@ -1150,7 +1150,7 @@ ejs-multiselect {
     margin-top: $ddl-small-close-hooker-margin-top;
     height: $ddl-small-chip-close-hooker-height;
     width: $ddl-small-chip-close-hooker-width;
-    line-height: 2px;
+    line-height: normal;
   }
 }
 

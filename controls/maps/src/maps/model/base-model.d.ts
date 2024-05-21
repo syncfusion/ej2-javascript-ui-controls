@@ -462,6 +462,14 @@ export interface TooltipSettingsModel {
      */
     valuePath?: string;
 
+    /**
+     * Specifies the value within which the tooltip will be removed on a mobile device. The value represents time in milliseconds.
+     * If the value is set to 0, the tooltip will not be removed. If the value is set to greater than 0, the tooltip will be removed at the specified time.
+     *
+     * @default 2000
+     */
+    duration?: number;
+
 }
 
 /**
@@ -492,6 +500,14 @@ export interface PolygonTooltipSettingsModel {
      * Gets or sets the font properties of the text content of the tooltip element of the polygon shape.
      */
     textStyle?: FontModel;
+
+    /**
+     * Specifies the value within which the tooltip will be removed on a mobile device. The value represents time in milliseconds.
+     * If the value is set to 0, the tooltip will not be removed. If the value is set to greater than 0, the tooltip will be removed at the specified time.
+     *
+     * @default 2000
+     */
+    duration?: number;
 
 }
 
@@ -1993,8 +2009,8 @@ export interface LayerSettingsModel {
 
     /**
      * Gets or sets the geometry type for the layer in maps. There are two types: Geographic and Normal.
-     * * Geographic type renders the shape maps with geographical coordinate system.
-     * * Normal type renders the shape maps using default coordinate system.
+     * - Geographic type renders the shape maps with geographical coordinate system.
+     * - Normal type renders the shape maps using default coordinate system.
      *
      * @default Geographic
      */

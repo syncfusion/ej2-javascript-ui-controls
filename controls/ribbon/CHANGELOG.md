@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.5 (2024-05-21)
+
+### Ribbon
+
+#### Bug Fixes
+
+- `#I585010` - Now setting the ribbon ID dynamically using `htmlAttributes` breaks the UI with ribbon mode switching has been resolved.
+
 ## 25.1.41 (2024-04-23)
 
 ### Ribbon

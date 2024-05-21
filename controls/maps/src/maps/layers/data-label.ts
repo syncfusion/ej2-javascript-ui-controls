@@ -46,7 +46,7 @@ export class DataLabel {
         return text;
     }
     /**
-     * To render label for maps
+     * To render label for maps.
      *
      * @param {LayerSettings} layer - Specifies the layer settings
      * @param {number} layerIndex - Specifies the layer index.

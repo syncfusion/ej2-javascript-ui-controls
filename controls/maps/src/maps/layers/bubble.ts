@@ -40,7 +40,6 @@ export class Bubble {
      * @param {Element} group - Specifies the element group
      * @param {string} bubbleID - Specifies the ID of the bubble
      * @returns {void}
-     *
      * @private
      */
     public renderBubble(
@@ -214,7 +213,7 @@ export class Bubble {
     }
 
     /**
-     * To check and trigger bubble click event
+     * To check and trigger bubble click event.
      *
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
@@ -237,7 +236,7 @@ export class Bubble {
         this.maps.trigger(bubbleClick, eventArgs);
     }
     /**
-     * To get bubble from target id
+     * To get bubble from target id.
      *
      * @param {string} target - Specifies the target
      * @returns {object} - Returns the object
@@ -261,7 +260,7 @@ export class Bubble {
     }
     // eslint-disable-next-line valid-jsdoc
     /**
-     * To check and trigger bubble move event
+     * To check and trigger bubble move event.
      *
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @retruns {void}

@@ -157,7 +157,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      */
     public attachUnloadEvent(): void {
         this.handleUnload = this.handleUnload.bind(this);
-        window.addEventListener('unload', this.handleUnload);
+        window.addEventListener('pagehide', this.handleUnload);
     }
     /**
      * Handling unload event to persist data when enable persistence true
@@ -173,7 +173,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      * @returns {void}
      */
     public detachUnloadEvent(): void {
-        window.removeEventListener('unload', this.handleUnload);
+        window.removeEventListener('pagehide', this.handleUnload);
     }
     /**
      * Appends the control within the given HTML element

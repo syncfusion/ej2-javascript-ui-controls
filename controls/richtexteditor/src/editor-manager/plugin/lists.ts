@@ -555,38 +555,7 @@ export class Lists {
         let listsNodes: Node[] = this.domNode.blockNodes(true);
         if (e.enterAction === 'BR') {
             this.setSelectionBRConfig();
-            const selectedNodes: Node[] = this.parent.domNode.blockNodes();
-            if (selectedNodes.length > 1) {
-                let i: number = 0;
-                let currentAlignmentNode: HTMLElement = selectedNodes[0] as HTMLElement;
-                while (!isNOU(currentAlignmentNode)) {
-                    if (currentAlignmentNode.nodeName === 'BR') {
-                        const nextNode: Node = currentAlignmentNode.nextSibling;
-                        detach(currentAlignmentNode);
-                        currentAlignmentNode = nextNode as HTMLElement;
-                    }
-                    if (!isNOU(currentAlignmentNode)) {
-                        selectedNodes[i as number] = currentAlignmentNode.nodeName === 'LI' || this.parent.domNode.isBlockNode(currentAlignmentNode) ?
-                            currentAlignmentNode : this.gatherElementsAround(currentAlignmentNode as HTMLElement);
-                        const currentSelectNode: Node = selectedNodes[i as number].nodeName === 'LI' ? selectedNodes[i as number].parentElement : selectedNodes[i as number];
-                        const currentElementCheckNode: HTMLElement = currentAlignmentNode.nodeName === '#text' ? currentAlignmentNode.parentElement : currentAlignmentNode;
-                        currentAlignmentNode = !isNOU(currentElementCheckNode.querySelector('.e-editor-select-end')) ||
-                            !isNOU(closest(currentAlignmentNode, '.e-editor-select-end')) ?
-                            null : currentSelectNode.nextSibling as HTMLElement;
-                        if (currentAlignmentNode === null && !isNOU(currentSelectNode.nextSibling) && currentSelectNode.nextSibling.nodeName === 'BR') {
-                            detach(currentSelectNode.nextSibling);
-                        }
-                    }
-                    i++;
-                }
-            } else {
-                if (!this.parent.domNode.isBlockNode(selectedNodes[0] as HTMLElement)) {
-                    selectedNodes[0] = this.gatherElementsAround(selectedNodes[0] as HTMLElement);
-                    if (!isNOU(selectedNodes[0].nextSibling) && (selectedNodes[0].nextSibling.nodeName === 'BR')) {
-                        detach(selectedNodes[0].nextSibling);
-                    }
-                }
-            }
+            this.parent.domNode.convertToBlockNodes(this.parent.domNode.blockNodes(), true);
             this.setSelectionBRConfig();
             listsNodes = this.parent.domNode.blockNodes();
         }
@@ -899,7 +868,7 @@ export class Lists {
                                     parentNode.removeAttribute("style");
                                 }
                             }
-                        const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass + this.domNode.attributes(element) + '></' + CONSTANT.DEFAULT_TAG + '>';
+                        const wrapper: string = '<' + e.enterAction + wrapperclass + this.domNode.attributes(element) + '></' + e.enterAction + '>';
                         if (e.enterAction !== 'BR') {
                             this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
                         }
@@ -973,47 +942,5 @@ export class Lists {
 
     private closeTag(type: string): Element {
         return this.domNode.parseHTMLFragment('<span class="e-rte-list-close-' + type.toLowerCase() + '"></span>');
-    }
-
-    private gatherElementsAround(node: HTMLElement): HTMLElement {
-        const pWrap: HTMLElement = document.createElement('p');
-        // Insert the new div before the current node
-        let currentNode: HTMLElement | null = node.previousSibling as HTMLElement;
-        const classNode: Element = node.parentNode as Element;
-        if (classNode.className === 'e-editor-select-start') {
-            node.parentNode.parentNode.insertBefore(pWrap, node.parentNode);
-        }
-        else if (node.parentNode) {
-            node.parentNode.insertBefore(pWrap, node);
-        }
-        // Gather text and inline elements before the currentNode
-        let i: number = 0;
-        while (currentNode !== null && currentNode.nodeName !== 'BR' &&
-        !this.parent.domNode.isBlockNode(currentNode as HTMLElement)) {
-            const prevSibling: HTMLElement = currentNode.previousSibling as HTMLElement;
-            if (currentNode.nodeType === 3 || currentNode.nodeType === 1) {
-                if (i === 0) {
-                    pWrap.appendChild(currentNode);
-                } else {
-                    pWrap.insertBefore(currentNode, pWrap.firstChild);
-                }
-            }
-            currentNode = prevSibling;
-            i++;
-        }
-        // Add the current node to the new p
-        pWrap.appendChild(node);
-        // Gather text and inline elements after the currentNode
-        currentNode = pWrap.nextSibling as HTMLElement ? pWrap.nextSibling as HTMLElement : pWrap.parentElement.nextSibling as HTMLElement;
-        while (currentNode !== null && currentNode.nodeName !== 'BR' &&
-        !this.parent.domNode.isBlockNode(currentNode as HTMLElement)) {
-            const nextSibling: HTMLElement | null = currentNode.nextSibling as HTMLElement ?
-                currentNode.nextSibling as HTMLElement : currentNode.parentElement.nextSibling as HTMLElement;
-            if (currentNode.nodeType === 3 || currentNode.nodeType === 1) {
-                pWrap.appendChild(currentNode);
-            }
-            currentNode = nextSibling;
-        }
-        return pWrap;
     }
 }

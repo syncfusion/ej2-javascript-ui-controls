@@ -1161,3 +1161,142 @@ describe('CR-869856: dayWorkingTime and TimeZone issue', () => {
         }
     });
 });
+describe('Merge segment getting console error', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource:[  {
+                   
+                TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                Duration: 3, Progress: '60',
+                Segments: [
+                    { StartDate: new Date('02/04/2019'), Duration: 1 },
+                    { StartDate: new Date('02/05/2019'), Duration: 2 },
+                   
+                ]
+            },] ,
+           
+    allowSorting: true,
+    allowReordering: true,
+    enableContextMenu: true,
+    enableVirtualization: false,
+    taskFields: {
+        id: 'TaskID',
+        name: 'TaskName',
+        startDate: 'StartDate',
+        endDate: 'EndDate',
+        duration: 'Duration',
+        progress: 'Progress',
+        dependency: 'Predecessor',
+        child: 'subtasks',
+        segments: 'Segments'
+    },
+    editSettings: {
+        allowAdding: true,
+        allowEditing: true,
+        allowDeleting: true,
+        allowTaskbarEditing: true,
+        showDeleteConfirmDialog: true
+    },
+    columns: [
+        { field: 'TaskID', width: 60 },
+        { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+        { field: 'StartDate' },
+        { field: 'EndDate' },
+        { field: 'Duration' },
+        { field: 'Progress' },
+        { field: 'Predecessor' }
+    ],
+    sortSettings: {
+        columns: [{ field: 'TaskID', direction: 'Ascending' }, 
+        { field: 'TaskName', direction: 'Ascending' }]
+    },
+    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+    'PrevTimeSpan', 'NextTimeSpan',],
+    allowExcelExport: true,
+    allowPdfExport: true,
+    allowSelection: true,
+    allowRowDragAndDrop: true,
+    selectedRowIndex: 1,
+    splitterSettings: {
+        position: "50%",
+       // columnIndex: 4
+    },
+    selectionSettings: {
+        mode: 'Row',
+        type: 'Single',
+        enableToggle: false
+    },
+    tooltipSettings: {
+        showTooltip: true
+    },
+    filterSettings: {
+        type: 'Menu'
+    },
+    allowFiltering: true,
+    gridLines: "Both",
+    showColumnMenu: true,
+    highlightWeekends: true,
+    timelineSettings: {
+        showTooltip: true,
+        topTier: {
+            unit: 'Week',
+            format: 'dd/MM/yyyy'
+        },
+        bottomTier: {
+            unit: 'Day',
+            count: 1
+        }
+    },
+    eventMarkers: [
+        {
+            day: '04/10/2019',
+            cssClass: 'e-custom-event-marker',
+            label: 'Project approval and kick-off'
+        }
+    ],
+    holidays: [{
+        from: "04/04/2019",
+        to: "04/05/2019",
+        label: " Public holidays",
+        cssClass: "e-custom-holiday"
+    
+    },
+    {
+        from: "04/12/2019",
+        to: "04/12/2019",
+        label: " Public holiday",
+        cssClass: "e-custom-holiday"
+    
+    }],
+    searchSettings:
+     { fields: ['TaskName', 'Duration'] 
+    },
+    labelSettings: {
+        leftLabel: 'TaskID',
+        rightLabel: 'Task Name: ${taskData.TaskName}',
+        taskLabel: '${Progress}%'
+    },
+    allowResizing: true,
+    readOnly: false,
+    taskbarHeight: 20,
+    rowHeight: 40,
+    height: '550px',
+    projectStartDate: new Date('01/30/2019'),
+    projectEndDate: new Date('03/04/2019'),
+        }, done);
+    });
+    it('Marge task', () => {
+        let dragElement: HTMLElement = document.getElementsByClassName('e-segment-last')[0] as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft - 100, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        console.log(ganttObj.currentViewData[0].ganttProperties.segments)
+        expect(ganttObj.currentViewData[0].ganttProperties.segments).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

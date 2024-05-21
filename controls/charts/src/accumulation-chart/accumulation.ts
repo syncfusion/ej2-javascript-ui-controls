@@ -838,7 +838,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.element.id = 'acc_chart_' + this.chartid + '_' + collection;
         }
         this.wireEvents();
-        this.element.setAttribute('dir', this.enableRtl ? 'rtl' : '');
+        this.element.setAttribute('dir', this.enableRtl ? 'rtl' : 'ltr');
     }
     /**
      * Themeing for chart goes here

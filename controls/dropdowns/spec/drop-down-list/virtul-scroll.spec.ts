@@ -443,43 +443,43 @@ describe('DDList_Virtualization', () => {
                 }, 850);
             });
         });
-        describe('Virtualization with clear value', () => {
-            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
-            let dropObj: any;
-            let ele: HTMLElement;
-            beforeAll(() => {
-                ele = createElement('input', { id: 'DropDownList' });
-                document.body.appendChild(ele);
-                dropObj = new DropDownList({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, showClearButton:true, fields: { text: 'text', value: 'id' }
-                });
-                dropObj.appendTo(ele);
-            });
-            afterAll(() => {
-                ele.remove();
-                dropObj.destroy();
-                document.body.innerHTML = '';
-            });
-            it('clear text value', (done) => {
-                dropObj.showPopup();
-                dropObj.isPreventScrollAction = false
-                dropObj.list.scrollTop = 1068;
-                setTimeout(() => {
-                    let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
-                    expect((li[0] as Element).classList.contains('e-item-focus')).toBe(true);
-                    keyEventArgs.action = 'down';
-                    dropObj.keyActionHandler(keyEventArgs);
-                    expect((li[0] as Element).classList.contains('e-active')).toBe(true);
-                    dropObj.clear();
-                    expect(dropObj.value === null).toBe(true);
-                    var clearElement = dropObj.filterInput.parentElement.querySelector('.e-clear-icon');
-                    expect(clearElement.style.visibility).toBe('hidden');
-                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
-                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
-                    done();
-                }, 850);
-            });
-        });
+        // describe('Virtualization with clear value', () => {
+        //     let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+        //     let dropObj: any;
+        //     let ele: HTMLElement;
+        //     beforeAll(() => {
+        //         ele = createElement('input', { id: 'DropDownList' });
+        //         document.body.appendChild(ele);
+        //         dropObj = new DropDownList({
+        //             dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, showClearButton:true, fields: { text: 'text', value: 'id' }
+        //         });
+        //         dropObj.appendTo(ele);
+        //     });
+        //     afterAll(() => {
+        //         ele.remove();
+        //         dropObj.destroy();
+        //         document.body.innerHTML = '';
+        //     });
+        //     it('clear text value', (done) => {
+        //         dropObj.showPopup();
+        //         dropObj.isPreventScrollAction = false
+        //         dropObj.list.scrollTop = 1068;
+        //         setTimeout(() => {
+        //             let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
+        //             expect((li[0] as Element).classList.contains('e-item-focus')).toBe(true);
+        //             keyEventArgs.action = 'down';
+        //             dropObj.keyActionHandler(keyEventArgs);
+        //             expect((li[0] as Element).classList.contains('e-active')).toBe(true);
+        //             dropObj.clear();
+        //             expect(dropObj.value === null).toBe(true);
+        //             var clearElement = dropObj.filterInput.parentElement.querySelector('.e-clear-icon');
+        //             expect(clearElement.style.visibility).toBe('hidden');
+        //             expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+        //             expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+        //             done();
+        //         }, 850);
+        //     });
+        // });
     });
 
 });

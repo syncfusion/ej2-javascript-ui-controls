@@ -198,7 +198,7 @@
 
   .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before {
     @if $ddl-multiselect-skin-name == 'Material3' {
-      content: '\e208';
+      content: '\e7e7';
       font-size: 16px;
       height: 16px;
       margin-top: -8px;
@@ -209,7 +209,7 @@
   .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
   .e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before {
     @if $ddl-multiselect-skin-name == 'Material3' {
-      content: '\e208';
+      content: '\e7e7';
       font-size: 14px;
       height: 14px;
       margin-top: -7px;
@@ -220,7 +220,7 @@
   .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
   .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before {
     @if $ddl-multiselect-skin-name == 'Material3' {
-      content: '\e208';
+      content: '\e7e7';
       font-size: 20px;
       height: 20px;
       left: 0;
@@ -234,7 +234,7 @@
   .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
   .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before {
     @if $ddl-multiselect-skin-name == 'Material3' {
-      content: '\e208';
+      content: '\e7e7';
       font-size: 18px;
       height: 18px;
       left: 0;
@@ -278,6 +278,7 @@
   .e-multiselect.e-outline.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
     @if $ddl-multiselect-skin-name == 'Material3' {
       margin: 7px 12px 9px 0;
+      min-height: fit-content;
     }
   }
 
@@ -511,7 +512,7 @@
   .e-bigger.e-small .e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
   .e-bigger .e-small.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before,
   .e-small .e-bigger.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker::before {
-    content: '\e208';
+    content: '\e7e7';
     font-size: 16px;
     height: 16px;
     padding: 0;
@@ -569,6 +570,7 @@
   .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
     @if $ddl-multiselect-skin-name == 'Material3' {
       margin: 10px 0 9px;
+      min-height: fit-content;
     }
   }
 
@@ -602,6 +604,7 @@
   .e-small .e-multiselect.e-filled.e-input-group.e-float-input.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
     @if $ddl-multiselect-skin-name == 'Material3' {
       margin: 0 12px 4px 0;
+      min-width: fit-content;
     }
   }
 

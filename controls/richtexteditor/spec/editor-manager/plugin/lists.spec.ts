@@ -811,7 +811,7 @@ describe ('left indent testing', () => {
                 startNode = editNode.querySelector('.first-p-node');
                 endNode = editNode.querySelector('.ol-first-node');
                 editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[1].childNodes[0].childNodes[0], 0, 4);
-                editorObj.execCommand("Lists", 'OL', null);
+                editorObj.execCommand("Lists", 'OL', null , null , null , null , null , 'p');
                 startNode = editNode.querySelector('.first-p-node');
                 endNode = elem.querySelector('.second-p-node');
                 expect((startNode as Element).tagName === 'P').toBe(true);
@@ -1537,7 +1537,7 @@ describe ('left indent testing', () => {
                 startNode = startNode.childNodes[0] as HTMLElement;
                 endNode = endNode.childNodes[1].childNodes[0].childNodes[0] as HTMLElement;
                 editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
-                editorObj.execCommand("Lists", 'UL', null);
+                editorObj.execCommand("Lists", 'UL', null , null , null , null , null , 'p');
 
                 expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
                 expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);

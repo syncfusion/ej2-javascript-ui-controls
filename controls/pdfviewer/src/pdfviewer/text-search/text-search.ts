@@ -1323,6 +1323,7 @@ export class TextSearch {
                                     imageData.data.set(value);
                                     canvasContext.putImageData(imageData, 0, 0);
                                     let imageUrl: string = canvas.toDataURL();
+                                    proxy.pdfViewerBase.releaseCanvas(canvas);
                                     const textBounds = event.data.textBounds;
                                     const textContent = event.data.textContent;
                                     const pageText = event.data.pageText;
@@ -1373,6 +1374,7 @@ export class TextSearch {
                                     imageData.data.set(value);
                                     canvasContext.putImageData(imageData, 0, 0);
                                     let imageUrl: string = canvas.toDataURL();
+                                    proxy.pdfViewerBase.releaseCanvas(canvas);
                                     let tileWidth: number = w;
                                     let tileHeight: number = h;
                                     const textBounds = event.data.textBounds;

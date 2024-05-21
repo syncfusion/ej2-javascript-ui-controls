@@ -6175,7 +6175,7 @@ export class Selection {
                 }
             }
         } else {
-            const baselineAlignment: BaselineAlignment = format.baselineAlignment;
+            const baselineAlignment: BaselineAlignment = this.characterFormat.baselineAlignment;
             let elementHeight: number = heightElement;
             if (baselineAlignment !== 'Normal' && isEmptySelection) {
                 //Set the caret height as sub/super script text height and updates the top margin for sub script text.
@@ -8957,10 +8957,10 @@ export class Selection {
                 let lastCell: TableCellWidget = cells[cells.length - 1];
                 let firstrow: TableRowWidget = firstcell.ownerRow;
                 let lastRow: TableRowWidget = lastCell.ownerRow;
-                let startCell: TableCellWidget = firstrow.getCell(firstrow.rowIndex, 0);
+                let startCell: TableCellWidget = firstrow.getCell(firstrow.rowIndex, undefined, 0);
                 let firstPara: ParagraphWidget = this.owner.documentHelper.getFirstParagraphInCell(startCell);
                 info.start = this.owner.documentHelper.selection.getHierarchicalIndex(firstPara, "0");
-                let lastCellInRow: TableCellWidget = lastRow.getCell(lastRow.rowIndex, lastRow.childWidgets.length - 1);
+                let lastCellInRow: TableCellWidget = lastRow.getCell(lastRow.rowIndex, undefined, lastRow.childWidgets.length - 1);
                 let lastPara: ParagraphWidget = this.getLastParagraph(lastCellInRow);
                 var offset: number = this.getParagraphLength(lastPara);
                 info.end = this.owner.documentHelper.selection.getHierarchicalIndex(lastPara, offset.toString());
@@ -9978,7 +9978,16 @@ export class Selection {
             topMargin = paragraphInfo.topMargin;
             bottomMargin = paragraphInfo.bottomMargin;
             let height: number = paragraphInfo.height;
-            caretHeight = topMargin < 0 ? topMargin + height : height;
+            const baselineAlignment: BaselineAlignment = this.characterFormat.baselineAlignment;
+            let elementHeight: number = height;
+            if (baselineAlignment !== 'Normal') {
+                //Set the caret height as sub/super script text height and updates the top margin for sub script text.
+                elementHeight = elementHeight / 1.5;
+                if (baselineAlignment === 'Subscript') {
+                    topMargin = height - elementHeight;
+                }
+            }
+            caretHeight = topMargin < 0 ? topMargin + elementHeight : elementHeight;
             if (!skipUpdate) {
                 this.caret.style.height = caretHeight * this.documentHelper.zoomFactor + 'px';
             }

@@ -11,7 +11,7 @@ export class NavigationLine {
         this.maps = maps;
     }
     /**
-     * To render navigation line for maps
+     * To render navigation line for maps.
      *
      * @param {LayerSettings} layer - Specifies the layer instance to which the navigation line is to be rendered.
      * @param {number} factor - Specifies the current zoom factor of the Maps.

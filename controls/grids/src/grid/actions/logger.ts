@@ -410,8 +410,8 @@ const formatErrorHandler: Function = (args: Object): string  => {
     if (error.indexOf && error.indexOf('Format options') !== 0) { return ''; }
     return 'INVALID FORMAT\n' +
     'For more information, refer to the following documentation links:\n' +
-    `Number format: ${DOC_URL}/base/intl.html?#supported-format-string.\n` +
-    `Date format: ${DOC_URL}/base/intl.html?#manipulating-datetime.\n` +
+    `Number format: ${DOC_URL}/common/internationalization#supported-format-string\n` +
+    `Date format: ${DOC_URL}/common/internationalization#manipulating-datetime\n` +
     `Message: ${error}`;
 };
 

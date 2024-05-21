@@ -244,7 +244,7 @@ export class Group implements IAction {
         }
     }
 
-    /**
+    /** 
      * @returns {void}
      * @hidden
      */
@@ -565,7 +565,7 @@ export class Group implements IAction {
             if (trgt.classList.contains('e-recordpluscollapse')) {
                 addClass([trgt], 'e-recordplusexpand'); removeClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gdiagonaldown e-icon-gdownarrow';
-                trgt.firstElementChild.setAttribute('title', 'expanded');
+                trgt.firstElementChild.setAttribute('title', this.l10n.getConstant('Expanded'));
                 expand = true; captionRow.isExpand = true;
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, expand, query, dataManager);
@@ -582,7 +582,7 @@ export class Group implements IAction {
                 isHide = true; captionRow.isExpand = false;
                 removeClass([trgt], 'e-recordplusexpand'); addClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gnextforward e-icon-grightarrow';
-                trgt.firstElementChild.setAttribute('title', 'collapsed');
+                trgt.firstElementChild.setAttribute('title', this.l10n.getConstant('Collapsed'));
                 if (isGroupAdaptive(gObj)) {
                     this.updateVirtualRows(gObj, target, !isHide, query, dataManager);
                 }
@@ -729,13 +729,13 @@ export class Group implements IAction {
                         row.className = 'e-recordplusexpand';
                         row.firstElementChild.className = 'e-icons e-gdiagonaldown e-icon-gdownarrow';
                         row.setAttribute('aria-expanded', 'true');
-                        row.firstElementChild.setAttribute('title', 'expanded');
+                        row.firstElementChild.setAttribute('title', this.l10n.getConstant('Expanded'));
                     }
                     else {
                         row.className = 'e-recordpluscollapse';
                         row.firstElementChild.className = 'e-icons e-gnextforward e-icon-grightarrow';
                         row.setAttribute('aria-expanded', 'false');
-                        row.firstElementChild.setAttribute('title', 'collapsed');
+                        row.firstElementChild.setAttribute('title',  this.l10n.getConstant('Collapsed'));
                     }
                 }
                 if (!(rowNodes[parseInt(i.toString(), 10)].firstElementChild.classList.contains('e-recordplusexpand') ||

@@ -449,19 +449,22 @@ export class ChartRows extends DateProcessor {
                 this.parent.setRecordValue('endDate', segments[segments.length - 1].endDate, mergeData.ganttProperties, true);
             }
         }
-        let segmentFields = Object.keys(mergeData[taskFields.segments][0]);
-        let modifiedSegments: ITaskSegment[] = [];
+        let segmentFields: string[];
+        if (!isNullOrUndefined(mergeData[taskFields.segments]) && !isNullOrUndefined(mergeData[taskFields.segments][0])) {
+            segmentFields = Object.keys(mergeData[taskFields.segments][0]);
+        }
+        const modifiedSegments: ITaskSegment[] = [];
         for (let i: number = 0; i < segments.length; i++) {
-            if (!modifiedSegments[i as number]) {
+            if (!isNullOrUndefined(segmentFields) && !modifiedSegments[i as number]) {
                 modifiedSegments[i as number] = {};
             }
-            if (segmentFields.indexOf('StartDate') != -1) {
+            if (!isNullOrUndefined(segmentFields) && segmentFields.indexOf('StartDate') !== -1) {
                 modifiedSegments[i as number][taskFields.startDate] = segments[i as number].startDate;
             }
-            if (segmentFields.indexOf('EndDate') != -1) {
+            if (!isNullOrUndefined(segmentFields) && segmentFields.indexOf('EndDate') !== -1) {
                 modifiedSegments[i as number][taskFields.endDate] = segments[i as number].endDate;
             }
-            if (segmentFields.indexOf('Duration') != -1) {
+            if (!isNullOrUndefined(segmentFields) && segmentFields.indexOf('Duration') !== -1) {
                 modifiedSegments[i as number][taskFields.duration] = segments[i as number].duration;
             }
         }
@@ -469,6 +472,7 @@ export class ChartRows extends DateProcessor {
         this.refreshChartAfterSegment(mergeData, 'mergeSegment');
     }
 
+    
     private refreshChartAfterSegment(data: IGanttData, requestType: string): void {
         this.parent.setRecordValue('segments', this.parent.dataOperation.setSegmentsInfo(data, false), data.ganttProperties, true);
         this.parent.dataOperation.updateMappingData(data, 'segments');

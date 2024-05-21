@@ -623,7 +623,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public intl: Internationalization;
 
     /**
-     * Check layer whether is geometry or tile
+     * Check layer whether is geometry or tile.
      *
      * @private
      */
@@ -830,7 +830,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public toggledLegendId: number[] = [];
     /** @private */
-    public toggledShapeElementId: string[] = [];
+    public toggledElementId: string[] = [];
     /** @private */
     public checkInitialRender: boolean = true;
     /** @private */
@@ -869,7 +869,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public markerDragArgument: any = null;
 
     /**
-     * Constructor for creating the widget
+     * Constructor for creating the widget.
      *
      * @param {MapsModel} options Specifies the options
      * @param {string | HTMLElement} element Specifies the element
@@ -879,7 +879,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         setValue('mergePersistData', this.mergePersistMapsData, this);
     }
     /**
-     * To manage persist maps data
+     * To manage persist maps data.
      *
      * @returns {void}
      */
@@ -1229,7 +1229,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To apply color to the initial selected marker
+     * To apply color to the initial selected marker.
      *
      * @param {SelectionSettingsModel} selectionSettings - Specifies the selection settings
      * @param {Maps} map - Specifies the instance of the maps
@@ -1273,7 +1273,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
     /**
-     * initial selection of marker
+     * initial selection of marker.
      *
      * @param {number} layerIndex - Specifies the layer index
      * @param {number} markerIndex - Specifies the marker index
@@ -1302,7 +1302,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Render the map area border
+     * Render the map area border.
      *
      * @returns {void}
      */
@@ -1322,7 +1322,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
     /**
-     * To add tab index for map element
+     * To add tab index for map element.
      *
      * @returns {void}
      */
@@ -1549,7 +1549,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Render the map border
+     * Render the map border.
      *
      * @private
      * @returns {void}
@@ -1572,7 +1572,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Render the title and subtitle
+     * Render the title and subtitle.
      *
      * @param {TitleSettingsModel} title - Specifies the title
      * @param {string} type - Specifies the type
@@ -1630,7 +1630,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To create svg element for maps
+     * To create svg element for maps.
      *
      * @returns {void}
      */
@@ -1639,7 +1639,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         createSvg(this);
     }
     /**
-     * To Remove the SVG
+     * To Remove the SVG.
      *
      * @returns {void}
      */
@@ -1941,7 +1941,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         return latLongValue;
     }
     /**
-     * Gets the location of the mouse click
+     * Gets the location of the mouse click.
      *
      * @param {string} targetId - Specifies the ID for the target.
      * @param {number} pageX - Defines the page X position.
@@ -1950,10 +1950,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {number} x - Defines the x position in pixel.
      * @param {number} y - Defines the y position in pixel.
      * @param {string} type -  Specifies the type.
-     * @returns {GeoPosition} -  Returns the position of the event
-     *
+     * @returns {GeoPosition} -  Returns the position of the event.
      * @private
-     *
      */
     public getClickLocation(targetId: string, pageX: number, pageY: number, targetElement: HTMLElement,
                             x: number, y: number, type?: string): GeoPosition {
@@ -2021,7 +2019,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 } else { latLongValue = { latitude: null, longitude: null }; }
             } else {
-                latLongValue = this.getGeoLocation(layerIndex, x, y);
+                latLongValue = this.getGeoLocation(layerIndex, pageX, pageY);
             }
         } else if (this.isTileMap && (!isNullOrUndefined(type) ||
             ((parseInt(this.mouseDownEvent['x'], 10) === parseInt(this.mouseClickEvent['x'], 10)) &&
@@ -2466,7 +2464,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * This method is used to add the layers dynamically to the maps.
      *
-     * @param {Object} layer - Specifies the layer to be added in the maps.
+     * @param {object} layer - Specifies the layer to be added in the maps.
      * @returns {void}
      */
     public addLayer(layer: Object): void {
@@ -2753,7 +2751,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         super.destroy();
         this.shapeSelectionItem = [];
-        this.toggledShapeElementId = [];
+        this.toggledElementId = [];
         this.toggledLegendId = [];
         this.legendSelectionCollection = [];
         this.selectedLegendElementId = [];
@@ -2815,7 +2813,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Gets component name
+     * Gets component name.
      *
      * @returns {string} - Returns the string value
      * @private
@@ -2925,7 +2923,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
     /**
-     * To provide the array of modules needed for maps rendering
+     * To provide the array of modules needed for maps rendering.
      *
      * @returns {ModuleDeclaration[]} - Returns the modules
      * @private
@@ -3047,7 +3045,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To find marker visibility
+     * To find marker visibility.
      *
      * @returns {boolean} - Returns whether the markers are visible or not.
      */
@@ -3066,7 +3064,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To find DataLabel visibility
+     * To find DataLabel visibility.
      *
      * @returns {boolean} - Returns whether the data labels are visible or not.
      */
@@ -3083,7 +3081,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To find navigation line visibility
+     * To find navigation line visibility.
      *
      * @returns {boolean} - Returns whether the navigation lines are visible or not.
      */
@@ -3102,7 +3100,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To find navigation line visibility
+     * To find navigation line visibility.
      *
      * @returns {boolean} - Returns whether the navigation lines are visible or not.
      */
@@ -3120,7 +3118,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To find marker visibility
+     * To find marker visibility.
      *
      * @returns {boolean} - Returns whether the bubble is visible or not.
      */
@@ -3136,7 +3134,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         return isVisible;
     }
     /**
-     * To find the bubble visibility from layer
+     * To find the bubble visibility from layer.
      *
      * @param {LayerSettingsModel} layer - Spcifies the layer settings model
      * @returns {boolean} - Returns the boolean value
@@ -3298,8 +3296,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let longitude: number = 0;
         if (!this.isDestroyed) {
             const container: HTMLElement = document.getElementById(this.element.id);
-            const pageX: number = x - (isNullOrUndefined(this.markerDragArgument) ? container.offsetLeft : 0);
-            const pageY: number = y - (isNullOrUndefined(this.markerDragArgument) ? container.offsetTop : 0);
+            const elementClientRect: ClientRect = this.element.getBoundingClientRect();
+            const bodyClientRect: ClientRect = document.body.getBoundingClientRect();
+            const pageX: number = x - (isNullOrUndefined(this.markerDragArgument) ? container.offsetLeft ||
+                (elementClientRect.left - bodyClientRect.left) : 0);
+            const pageY: number = y - (isNullOrUndefined(this.markerDragArgument) ? container.offsetTop ||
+                (elementClientRect.top - bodyClientRect.top) : 0);
             const currentLayer: LayerSettings = <LayerSettings>this.layersCollection[layerIndex as number];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const translate: any = getTranslate(this, currentLayer, false);
@@ -3347,7 +3349,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param {number} pageX - Specifies the x position value in pixels.
      * @param {number} pageY - Specifies the y position value in pixels.
-     * @returns {Object} - Returns the latitude and longitude values.
+     * @returns {object} - Returns the latitude and longitude values.
      */
     public pointToLatLong(pageX: number, pageY: number): Object {
         let latitude: number = 0;

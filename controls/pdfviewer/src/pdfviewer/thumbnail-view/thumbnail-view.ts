@@ -308,6 +308,7 @@ export class ThumbnailView {
             imageData.data.set(value);
             canvasContext.putImageData(imageData, 0, 0);
             let imageUrl: string = canvas.toDataURL();
+            this.pdfViewerBase.releaseCanvas(canvas);
             let currentPageImage: HTMLImageElement = this.getThumbnailImageElement(pageIndex);
             if(currentPageImage){
                 currentPageImage.src = imageUrl;

@@ -1,4 +1,4 @@
-import { TimelineDetails } from './../base/interface';
+import { IEventMarkerInfo, TimelineDetails } from './../base/interface';
 import { PdfGanttTaskbarCollection } from './pdf-taskbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PageDetail } from '../base/interface';
@@ -226,10 +226,10 @@ export class PdfGantt extends PdfTreeGrid {
             cumulativeHeight = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
             this.headerDetails[this.headerDetails.indexOf(detail)].startIndex = this.startPageIndex;
             this.headerDetails[this.headerDetails.indexOf(detail)].pageStartPoint = taskbarPoint;
-            this.parent.eventMarkerColloction.map((eventMarker)=>{
+            this.parent.eventMarkerColloction.map((eventMarker:IEventMarkerInfo) => {
                 let timelimeHeight = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60)
                 const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
-                this.eventMarker.drawEventMarker( pdfPage,  taskbarPoint, cumulativeWidth, detail,eventMarker,timelimeHeight)
+                this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight)
             })
             for (let i: number = 0; i < this.taskbarCollection.length; i++) {
                 const task: PdfGanttTaskbarCollection = this.taskbarCollection[i as number];
@@ -268,16 +268,17 @@ export class PdfGantt extends PdfTreeGrid {
                         taskbarPoint.y = 0;
                         cumulativeHeight = 0;
                     }
-                    this.parent.eventMarkerColloction.map((eventMarker)=>{
-                        let timelimeHeight = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60)
-                        const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
-                        this.eventMarker.drawEventMarker( pdfPage,  taskbarPoint, cumulativeWidth, detail,eventMarker,timelimeHeight)
-                    })
                 }
                 taskbarPoint.y += rowHeight;
                 cumulativeHeight += rowHeight;
                 // eslint-disable-next-line
                 totalHeight += rowHeight;
+                
+                this.parent.eventMarkerColloction.map((eventMarker:IEventMarkerInfo) => {
+                    let timelimeHeight = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60)
+                    const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
+                    this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight)
+                })
             }
             
             this.headerDetails[index as number].endIndex = this.startPageIndex;

@@ -34,7 +34,7 @@ export class Size {
     }
 }
 /**
- * To find number from string
+ * To find number from string.
  *
  * @param {string} value Specifies the value
  * @param {number} containerSize Specifies the container size
@@ -48,7 +48,7 @@ export function stringToNumber(value: string, containerSize: number): number {
     return null;
 }
 /**
- * Method to calculate the width and height of the maps
+ * Method to calculate the width and height of the maps.
  *
  * @param {Maps} maps Specifies the maps instance
  * @returns {void}
@@ -95,7 +95,7 @@ export function createSvg(maps: Maps): void {
     }
 }
 /**
- * Method to get the mouse position
+ * Method to get the mouse position.
  *
  * @param {number} pageX - Specifies the pageX.
  * @param {number} pageY - Specifies the pageY.
@@ -114,7 +114,7 @@ export function getMousePosition(pageX: number, pageY: number, element: Element)
     return new MapLocation((pageX - positionX), (pageY - positionY));
 }
 /**
- * Method to convert degrees to radians
+ * Method to convert degrees to radians.
  *
  * @param {number} deg Specifies the degree value
  * @returns {number} Returns the number
@@ -125,7 +125,7 @@ export function degreesToRadians(deg: number): number {
 }
 
 /**
- * Convert radians to degrees method
+ * Convert radians to degrees method.
  *
  * @param {number} radian Specifies the radian value
  * @returns {number} Returns the number
@@ -137,7 +137,7 @@ export function radiansToDegrees(radian: number): number {
 
 
 /**
- * Method for converting from latitude and longitude values to points
+ * Method for converting from latitude and longitude values to points.
  *
  * @param {number} latitude - Specifies the latitude.
  * @param {number} longitude - Specifies the longitude.
@@ -243,7 +243,7 @@ export function calculatePolygonPath(maps: Maps, factor: number, currentLayer: L
     return path;
 }
 /**
- * Converting tile latitude and longitude to point
+ * Converting tile latitude and longitude to point.
  *
  * @param {MapLocation} center Specifies the map center location
  * @param {number} zoomLevel Specifies the zoom level
@@ -267,7 +267,7 @@ export function convertTileLatLongToPoint(
     return { x: pixelX, y: pixelY };
 }
 /**
- * Method for calculate x point
+ * Method for calculate x point.
  *
  * @param {Maps} mapObject - Specifies the maps.
  * @param {number} val - Specifies the value.
@@ -282,7 +282,7 @@ export function xToCoordinate(mapObject: Maps, val: number): number {
 }
 
 /**
- * Method for calculate y point
+ * Method for calculate y point.
  *
  * @param {Maps} mapObject - Specifies the maps.
  * @param {number} val - Specifies the value.
@@ -295,7 +295,7 @@ export function yToCoordinate(mapObject: Maps, val: number): number {
 }
 
 /**
- * Method for calculate aitoff projection
+ * Method for calculate aitoff projection.
  *
  * @param {number} x - Specifies the x value.
  * @param {number} y - Specifies the y value.
@@ -310,7 +310,7 @@ export function aitoff(x: number, y: number): Point {
 
 
 /**
- * Method to round the number
+ * Method to round the number.
  *
  * @param {number} a - Specifies the a value
  * @param {number} b - Specifies the b value
@@ -343,7 +343,7 @@ export function acos(a: number): number {
 }
 
 /**
- * Method to calculate bound
+ * Method to calculate bound.
  *
  * @param {number} value Specifies the value
  * @param {number} min Specifies the minimum value
@@ -362,7 +362,7 @@ export function calculateBound(value: number, min: number, max: number): number 
 }
 
 /**
- * To trigger the download element
+ * To trigger the download element.
  *
  * @param {string} fileName Specifies the file name
  * @param {ExportType} type Specifies the type
@@ -474,7 +474,8 @@ export function measureText(text: string, font: FontModel): Size {
  * @param {string} text - Specifies the text.
  * @param {FontModel} font - Specifies the font.
  * @returns {Size} - Returns the size of text.
- * @private */
+ * @private
+ */
 export function measureTextElement(text: string, font: FontModel): Size {
     const canvas: HTMLCanvasElement = document.createElement('canvas');
     // eslint-disable-next-line @typescript-eslint/tslint/config
@@ -487,7 +488,7 @@ export function measureTextElement(text: string, font: FontModel): Size {
 }
 
 /**
- * Internal use of text options
+ * Internal use of text options.
  *
  * @private
  */
@@ -511,7 +512,7 @@ export class TextOption {
     }
 }
 /**
- * Internal use of path options
+ * Internal use of path options.
  *
  * @private
  */
@@ -550,7 +551,7 @@ export class ColorValue {
     }
 }
 /**
- * Internal use of rectangle options
+ * Internal use of rectangle options.
  *
  * @private
  */
@@ -582,7 +583,7 @@ export class RectOption extends PathOption {
     }
 }
 /**
- * Internal use of circle options
+ * Internal use of circle options.
  *
  * @private
  */
@@ -604,7 +605,7 @@ export class CircleOption extends PathOption {
 }
 
 /**
- * Internal use of polygon options
+ * Internal use of polygon options.
  *
  * @private
  */
@@ -618,7 +619,7 @@ export class PolygonOption extends PathOption {
     }
 }
 /**
- * Internal use of polyline options
+ * Internal use of polyline options.
  *
  * @private
  */
@@ -629,7 +630,7 @@ export class PolylineOption extends PolygonOption {
     }
 }
 /**
- * Internal use of line options
+ * Internal use of line options.
  *
  * @private
  */
@@ -649,7 +650,7 @@ export class LineOption extends PathOption {
     }
 }
 /**
- * Internal use of line
+ * Internal use of line.
  *
  * @property {number} Line - Specifies the line class
  * @private
@@ -667,7 +668,7 @@ export class Line {
     }
 }
 /**
- * Internal use of map location type
+ * Internal use of map location type.
  *
  * @private
  */
@@ -686,7 +687,7 @@ export class MapLocation {
     }
 }
 /**
- * Internal use of type rect
+ * Internal use of type rect.
  *
  * @private
  */
@@ -745,7 +746,7 @@ export class PatternOptions {
     }
 }
 /**
- * Internal rendering of text
+ * Internal rendering of text.
  *
  * @param {TextOption} option Specifies the text option
  * @param {FontModel} style Specifies the style
@@ -933,7 +934,7 @@ export function convertElementFromLabel(element: Element, labelId: string, data:
  * @returns {Element} - Returns the element
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point, markerID: string, shapeCustom: any,
                             markerCollection: Element, maps: Maps): Element {
     let markerEle: Element; let x: number; let y: number;
@@ -1291,7 +1292,8 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
  * @param {number} index - Specifies the index.
  * @param {number} indexCollection - Specifies the index Collection.
  * @returns {void}
- * @private */
+ * @private
+ */
 export function markerClusterListHandler(maps: Maps, currentZoomFactor: number, layerIndex: number, index: number, indexCollection: number[]): void {
     if (currentZoomFactor === 1) {
         const initialMarkerClusterList: number[] = isNullOrUndefined(maps.markerModule.initialMarkerCluster[layerIndex as number][index as number]) ? [] : indexCollection.length > 1 ? indexCollection : [];
@@ -1310,7 +1312,8 @@ export function markerClusterListHandler(maps: Maps, currentZoomFactor: number, 
  * @param {number[]} indexCollection - Specifies the index collection.
  * @param {number} p - Specifies the p.
  * @returns {void}
- * @private */
+ * @private
+ */
 export function markerBoundsComparer(tempElement: Element, markerBounds: ClientRect, colloideBounds: ClientRect[], indexCollection: number[], p: number): void {
     // eslint-disable-next-line @typescript-eslint/tslint/config
     const currentMarkerBound = tempElement.getBoundingClientRect() as DOMRect;
@@ -1474,6 +1477,11 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
     const y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
     ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
     maintainSelection(maps.selectedMarkerElementId, maps.markerSelectionClass, ele, 'MarkerselectionMapStyle');
+    if (maps.legendSettings.toggleLegendSettings.enable && maps.legendSettings.type === 'Markers') {
+        const layerIndex: number = parseInt(ele.id.split('_LayerIndex_')[1], 10);
+        maintainToggleSelection(maps.toggledElementId, ele.tagName === 'g' ? ele.children[0] : ele, maps.legendSettings.toggleLegendSettings.applyShapeSettings ?
+            maps.layers[layerIndex as number].shapeSettings : maps.legendSettings.toggleLegendSettings);
+    }
     markerCollection.appendChild(ele);
     const element: string = (markerData.length - 1) === dataIndex ? 'marker' : null;
     const markerPoint: Point = new Point(x, y);
@@ -1501,7 +1509,7 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
  * @returns {HTMLElement} - Returns the html element
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: any, markerID: string, data: any,
                                markerIndex: number, markerTemplate: HTMLElement, location: Point, transPoint: Point, scale: number, offset: Point, maps: Maps): HTMLElement {
     templateFn = getTemplateFunction(eventArgs.template, maps);
@@ -1532,7 +1540,7 @@ export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn:
 }
 
 /**
- * To maintain selection during page resize
+ * To maintain selection during page resize.
  *
  * @param {string[]} elementId - Specifies the element id
  * @param {Element} elementClass - Specifies the element class
@@ -1560,7 +1568,31 @@ export function maintainSelection(elementId: string[], elementClass: Element, el
 }
 
 /**
- * To maintain selection style class
+ * To maintain toggle state during page resize.
+ *
+ * @param {string[]} toggledElements - Specifies the list of toggled elements
+ * @param {Element} element - Specifies the element id
+ * @param {any} styleProperty - Specifies the style properties
+ * @returns {void}
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function maintainToggleSelection(toggledElements: string[], element: Element, styleProperty: any): void {
+    if (!isNullOrUndefined(toggledElements) && toggledElements.length > 0) {
+        for (let j: number = 0; j < toggledElements.length; j++) {
+            if (toggledElements[j as number] === element.id) {
+                element.setAttribute('fill', styleProperty.fill);
+                element.setAttribute('stroke', styleProperty.border.color);
+                element.setAttribute('fill-opacity', (styleProperty.opacity).toString());
+                element.setAttribute('stroke-opacity', (isNullOrUndefined(styleProperty.border.opacity) ? styleProperty.opacity : styleProperty.border.opacity).toString());
+                element.setAttribute('stroke-width', (isNullOrUndefined(styleProperty.border.width) ? 0 : styleProperty.border.width).toString());
+            }
+        }
+    }
+}
+
+/**
+ * To maintain selection style class.
  *
  * @param {string} id - Specifies the id
  * @param {string} idClass - Specifies the class id
@@ -1588,7 +1620,7 @@ export function maintainStyleClass(id: string, idClass: string, fill: string, op
 }
 
 /**
- * Internal use of append shape element
+ * Internal use of append shape element.
  *
  * @param {Element} shape - Specifies the shape
  * @param {Element} element - Specifies the element
@@ -1600,7 +1632,7 @@ export function appendShape(shape: Element, element: Element): Element {
     return shape;
 }
 /**
- * Internal rendering of Circle
+ * Internal rendering of Circle.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {CircleOption} options - Specifies the circle options
@@ -1612,7 +1644,7 @@ export function drawCircle(maps: Maps, options: CircleOption, element?: Element)
     return appendShape(maps.renderer.drawCircle(options), element);
 }
 /**
- * Internal rendering of Rectangle
+ * Internal rendering of Rectangle.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {RectOption} options - Specifies the rect options
@@ -1624,7 +1656,7 @@ export function drawRectangle(maps: Maps, options: RectOption, element?: Element
     return appendShape(maps.renderer.drawRectangle(options), element);
 }
 /**
- * Internal rendering of Path
+ * Internal rendering of Path.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PathOption} options - Specifies the polygon options
@@ -1636,7 +1668,7 @@ export function drawPath(maps: Maps, options: PathOption, element?: Element): El
     return appendShape(maps.renderer.drawPath(options), element);
 }
 /**
- * Internal rendering of Polygon
+ * Internal rendering of Polygon.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PolygonOption} options - Specifies the polygon options
@@ -1648,7 +1680,7 @@ export function drawPolygon(maps: Maps, options: PolygonOption, element?: Elemen
     return appendShape(maps.renderer.drawPolygon(options), element);
 }
 /**
- * Internal rendering of Polyline
+ * Internal rendering of Polyline.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PolylineOption} options - Specifies the poly line options
@@ -1660,7 +1692,7 @@ export function drawPolyline(maps: Maps, options: PolylineOption, element?: Elem
     return appendShape(maps.renderer.drawPolyline(options), element);
 }
 /**
- * Internal rendering of Line
+ * Internal rendering of Line.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {LineOption} options - Specifies the line options
@@ -1673,7 +1705,7 @@ export function drawLine(maps: Maps, options: LineOption, element?: Element): El
 }
 
 /**
- * Calculate marker shapes
+ * Calculate marker shapes.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {MarkerType} shape - Specifies the marker type
@@ -1742,7 +1774,7 @@ export function calculateShapes(
 
 
 /**
- * Internal rendering of Diamond
+ * Internal rendering of Diamond.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PathOption} options - Specifies the path options
@@ -1758,7 +1790,7 @@ export function drawDiamond(maps: Maps, options: PathOption, size: Size, locatio
     return appendShape(maps.renderer.drawPath(options), element);
 }
 /**
- * Internal rendering of Triangle
+ * Internal rendering of Triangle.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PathOption} options - Specifies the path options
@@ -1774,7 +1806,7 @@ export function drawTriangle(maps: Maps, options: PathOption, size: Size, locati
     return appendShape(maps.renderer.drawPath(options), element);
 }
 /**
- * Internal rendering of Cross
+ * Internal rendering of Cross.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PathOption} options - Specifies the path options
@@ -1790,7 +1822,7 @@ export function drawCross(maps: Maps, options: PathOption, size: Size, location:
     return appendShape(maps.renderer.drawPath(options), element);
 }
 /**
- * Internal rendering of HorizontalLine
+ * Internal rendering of HorizontalLine.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PathOption} options - Specifies the path options
@@ -1805,7 +1837,7 @@ export function drawHorizontalLine(maps: Maps, options: PathOption, size: Size, 
     return appendShape(maps.renderer.drawPath(options), element);
 }
 /**
- * Internal rendering of VerticalLine
+ * Internal rendering of VerticalLine.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PathOption} options - Specifies the path options
@@ -1820,7 +1852,7 @@ export function drawVerticalLine(maps: Maps, options: PathOption, size: Size, lo
     return appendShape(maps.renderer.drawPath(options), element);
 }
 /**
- * Internal rendering of Star
+ * Internal rendering of Star.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PathOption} options - Specifies the path options
@@ -1838,7 +1870,7 @@ export function drawStar(maps: Maps, options: PathOption, size: Size, location: 
     return appendShape(maps.renderer.drawPath(options), element);
 }
 /**
- * Internal rendering of Balloon
+ * Internal rendering of Balloon.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PathOption} options - Specifies the path options
@@ -1872,7 +1904,7 @@ export function drawBalloon(maps: Maps, options: PathOption, size: Size, locatio
     return pathElement;
 }
 /**
- * Internal rendering of Pattern
+ * Internal rendering of Pattern.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {PatternOptions} options - Specifies the pattern options
@@ -1916,7 +1948,7 @@ export function getFieldData(dataSource: any[], fields: string[]): any[] {
     return newData;
 }
 /**
- * To find the index of dataSource from shape properties
+ * To find the index of dataSource from shape properties.
  *
  * @param {any[]} dataSource - Specifies the data source
  * @param {any} properties - Specifies the properties
@@ -1926,7 +1958,7 @@ export function getFieldData(dataSource: any[], fields: string[]): any[] {
  * @returns {number} - Returns the number
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function checkShapeDataFields(dataSource: any[], properties: any, dataPath: string, propertyPath: string | string[],
                                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                      layer: LayerSettingsModel): number {
@@ -2011,7 +2043,7 @@ export function getRatioOfBubble(min: number, max: number, value: number, minVal
     return bubbleRadius;
 }
 /**
- * To find the midpoint of the polygon from points
+ * To find the midpoint of the polygon from points.
  *
  * @param {MapLocation[]} points - Specifies the points
  * @param {string} type - Specifies the type
@@ -2103,7 +2135,7 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string, geome
     };
 }
 /**
- * Check custom path
+ * Check custom path.
  *
  * @param {any[]} layerData - Specifies the layer data
  * @returns {boolean} - Returns the boolean vlue
@@ -2123,7 +2155,7 @@ export function isCustomPath(layerData: any[]): boolean {
 }
 
 /**
- * Trim the title text
+ * Trim the title text.
  *
  * @param {number} maxWidth - Specifies the maximum width
  * @param {string} text - Specifies the text
@@ -2170,7 +2202,7 @@ export function textTrim(maxWidth: number, text: string, font: FontModel, width?
 }
 
 /**
- * Method to calculate x position of title
+ * Method to calculate x position of title.
  *
  * @param {Rect} location - Specifies the location
  * @param {Alignment} alignment - Specifies the alignment
@@ -2198,7 +2230,7 @@ export function findPosition(location: Rect, alignment: Alignment, textSize: Siz
     return new Point(x, y);
 }
 /**
- * To remove element by id
+ * To remove element by id.
  *
  * @param {string} id - Specifies the id
  * @returns {void}
@@ -2210,7 +2242,7 @@ export function removeElement(id: string): void {
 }
 
 /**
- * To calculate map center position from pixel values
+ * To calculate map center position from pixel values.
  *
  * @param {Maps} mapObject - Specifies the map object
  * @param {LayerSettings} layer - Specifies the layer settings
@@ -2528,7 +2560,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
 }
 
 /**
- * To get the html element by specified id
+ * To get the html element by specified id.
  *
  * @param {Maps} map - Specifies the instance of the maps
  * @returns {void}
@@ -2546,7 +2578,7 @@ export function fixInitialScaleForTile(map: Maps): void {
 }
 
 /**
- * To get the html element by specified id
+ * To get the html element by specified id.
  *
  * @param {string} id - Specifies the id
  * @returns {Element} - Returns the element
@@ -2571,7 +2603,7 @@ export function getClientElement(id: string): ClientRect {
     }
 }
 /**
- * To apply internalization
+ * To apply internalization.
  *
  * @param {Maps} maps - Specifies the instance of the maps
  * @param {number} value - Specifies the value
@@ -2622,7 +2654,7 @@ export function getElement(id: string): Element {
 }
 
 /**
- * Function to get shape data using target id
+ * Function to get shape data using target id.
  *
  * @param {string} targetId - Specifies the target id
  * @param {Maps} map - Specifies the instance of the maps
@@ -2646,7 +2678,7 @@ export function getShapeData(targetId: string, map: Maps): { shapeData: any, dat
     return { shapeData: shapeData, data: data };
 }
 /**
- * Function to trigger shapeSelected event
+ * Function to trigger shapeSelected event.
  *
  * @param {string} targetId - Specifies the target id
  * @param {SelectionSettingsModel} selection - Specifies the selection
@@ -2693,7 +2725,7 @@ export function triggerShapeEvent(
 }
 
 /**
- * Function to get elements using class name
+ * Function to get elements using class name.
  *
  * @param {string} className - Specifies the class name
  * @returns {HTMLCollectionOf<Element>} - Returns the collection
@@ -2709,7 +2741,7 @@ export function getElementsByClassName(className: string): HTMLCollectionOf<Elem
 //     return element.querySelectorAll('.' + args);
 // }
 /**
- * Function to get elements using querySelector
+ * Function to get elements using querySelector.
  *
  * @param {string} args - Specifies the args
  * @param {string} elementSelector - Specifies the element selector
@@ -2724,7 +2756,7 @@ export function querySelector(args: string, elementSelector: string): Element {
     return targetEle;
 }
 /**
- * Function to get the element for selection and highlight using public method
+ * Function to get the element for selection and highlight using public method.
  *
  * @param {number} layerIndex - Specifies the layer index
  * @param {string} name - Specifies the layer name
@@ -2747,7 +2779,7 @@ export function getTargetElement(layerIndex: number, name: string, enable: boole
     return targetEle;
 }
 /**
- * Function to create style element for highlight and selection
+ * Function to create style element for highlight and selection.
  *
  * @param {string} id - Specifies the id
  * @param {string} className - Specifies the class name
@@ -2768,7 +2800,7 @@ export function createStyle(id: string, className: string, eventArgs: IShapeSele
     return styleEle;
 }
 /**
- * Function to customize the style for highlight and selection
+ * Function to customize the style for highlight and selection.
  *
  * @param {string} id - Specifies the id
  * @param {string} className - Specifies the class name
@@ -2789,7 +2821,7 @@ export function customizeStyle(id: string, className: string, eventArgs: IShapeS
 }
 
 /**
- * Function to trigger itemSelection event for legend selection and public method
+ * Function to trigger itemSelection event for legend selection and public method.
  *
  * @param {SelectionSettingsModel} selectionSettings - Specifies the selection settings
  * @param {Maps} map - Specifies the instance of the maps
@@ -2832,7 +2864,7 @@ export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsMo
 }
 
 /**
- * Function to remove class from element
+ * Function to remove class from element.
  *
  * @param {Element} element - Specifies the element
  * @returns {void}
@@ -2866,7 +2898,7 @@ export function elementAnimate(
         duration: (duration === 0 && animationMode === 'Enable') ? 1000 : duration,
         delay: delay,
         progress: (args: AnimationOptions): void => {
-            if (args.timeStamp > args.delay) {
+            if ((args.timeStamp > args.delay) && !maps.zoomModule.isPanningInProgress) {
                 if (maps.isTileMap && height === 0) {
                     const layerGroupElement: HTMLElement = document.querySelector('.GroupElement') as HTMLElement;
                     if (!isNullOrUndefined(layerGroupElement)) {
@@ -2880,8 +2912,10 @@ export function elementAnimate(
         },
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         end: (model: AnimationOptions) => {
-
-            element.setAttribute('transform', transform);
+            if (!maps.zoomModule.isPanningInProgress) {
+                element.setAttribute('transform', transform);
+            }
+            maps.zoomModule.isPanningInProgress = false;
             if (!ele) {
                 return;
             }
@@ -3321,7 +3355,8 @@ export function changeNavaigationLineWidth(element: Element, index: number, scal
 /**
  * @param {PointerEvent | TouchEvent} event - Specifies the pointer or touch event
  * @returns {ITouches[]} - Returns the target
- * @private */
+ * @private
+ */
 export function targetTouches(event: PointerEvent | TouchEvent): ITouches[] {
     const targetTouches: ITouches[] = [];
     const touches: TouchList = (<TouchEvent & PointerEvent>event).touches;
@@ -3347,7 +3382,8 @@ export function calculateScale(startTouches: ITouches[], endTouches: ITouches[])
  * @param {ITouches} a - Specifies the a value
  * @param {ITouches} b - Specifies the b value
  * @returns {number} - Returns the number
- * @private */
+ * @private
+ */
 export function getDistance(a: ITouches, b: ITouches): number {
     const x: number = a.pageX - b.pageX;
     const y: number = a.pageY - b.pageY;
@@ -3399,7 +3435,7 @@ export function sum(a: number, b: number): number {
 }
 
 /**
- * Animation Effect Calculation End
+ * Animation Effect Calculation End.
  *
  * @param {Element} element - Specifies the element.
  * @param {number} delay - Specifies the delay.
@@ -3471,7 +3507,7 @@ export function zoomAnimate(
     );
 }
 /**
- * To process custom animation
+ * To process custom animation.
  *
  * @param {Element} element - Specifies the element
  * @param {number} delay - Specifies the delay
@@ -3541,7 +3577,7 @@ export class MapAjax {
 }
 
 /**
- * Animation Translate
+ * Animation Translate.
  *
  * @param {Element} element - Specifies the element
  * @param {number} delay - Specifies the delay
@@ -3573,7 +3609,7 @@ export function smoothTranslate(element: Element, delay: number, duration: numbe
     );
 }
 /**
- * To find compare should zoom factor with previous factor and current factor
+ * To find compare should zoom factor with previous factor and current factor.
  *
  * @param {number} scaleFactor - Specifies the scale factor
  * @param {Maps} maps - Specifies the instance of the maps
@@ -3597,7 +3633,7 @@ export function compareZoomFactor(scaleFactor: number, maps: Maps): void {
     }
 }
 /**
- * To find zoom level for the min and max latitude values
+ * To find zoom level for the min and max latitude values.
  *
  * @param {number} minLat - Specifies the minimum latitude
  * @param {number} maxLat - Specifies the maximum latitude
@@ -3646,13 +3682,13 @@ export function calculateZoomLevel(minLat: number, maxLat: number, minLong: numb
 }
 
 /**
- * Method to get the result
+ * Method to get the result.
  *
  * @param {any} e - Specifies the any type value
  * @returns {any} - Returns the data value
  * @private
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function processResult(e: any): any {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let dataValue: any;

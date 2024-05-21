@@ -1901,6 +1901,9 @@ export class StickyNotesAnnotation {
             if (annotCollection[i].annotationSettings.isLock && (commentEvent.textContent === note || annotCollection[i].dynamicText === commentEvent.textContent)) {
                 return true;
             }
+            else if (annotCollection[i].isCommentLock && ((this.pdfViewer.selectedItems.annotations[i] && this.pdfViewer.selectedItems.annotations[i].isCommentLock) || (this.pdfViewer.annotationModule.textMarkupAnnotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.isCommentLock))) {
+                return true;
+            }
             for (let j: number = 0; j < annotCollection[i].comments.length; j++) {
                 if (annotation && annotCollection[i].annotationId === annotation.annotName) {
                 // eslint-disable-next-line max-len
@@ -3074,7 +3077,7 @@ export class StickyNotesAnnotation {
      * @private
      */
     // eslint-disable-next-line
-    public findPosition(annotation: any, type: string, action?: string): any {
+    public findPosition(annotation: any, type: string, action?: string, isUndoAction?: boolean): any {
         let index: number;
         // eslint-disable-next-line
         let commentsDiv: any = document.getElementById(annotation.annotName);
@@ -3106,7 +3109,9 @@ export class StickyNotesAnnotation {
                         // eslint-disable-next-line
                         let clonedObject: any = cloneObject(pageAnnotations[i]);
                         pageAnnotations[i].position = index;
+                        if(!isUndoAction){
                         this.pdfViewer.annotation.undoCommentsElement.push(pageAnnotations[i]);
+                        }
                         if (type === 'sticky') {
                             this.updateUndoRedoCollections(clonedObject, pageIndex, null, action);
                         }

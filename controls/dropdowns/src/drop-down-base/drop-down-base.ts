@@ -1597,10 +1597,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     private updateGroupFixedHeader(element: HTMLElement, target: Element): void {
-        this.fixedHeaderElement.innerHTML = element.innerHTML;
-        this.fixedHeaderElement.style.position = 'fixed';
-        this.fixedHeaderElement.style.top = this.list.parentElement.offsetTop + this.list.offsetTop + 'px';
-        this.fixedHeaderElement.style.display = 'block';
+        if(this.fixedHeaderElement){
+            if(!isNullOrUndefined(element.innerHTML)){
+              this.fixedHeaderElement.innerHTML = element.innerHTML;
+            }
+            this.fixedHeaderElement.style.position = 'fixed';
+            this.fixedHeaderElement.style.top = (this.list.parentElement.offsetTop + this.list.offsetTop) - window.scrollY + 'px';
+            this.fixedHeaderElement.style.display = 'block';
+         }
     }
 
     protected getValidLi() : HTMLElement {
@@ -1803,9 +1807,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @param {string | number | boolean} value - Specifies given value.
      * @returns {number} Returns the index of the item.
      */
-    protected getIndexByValueFilter(value: string | number | boolean): number {
+    protected getIndexByValueFilter(value: string | number | boolean, ulElement: HTMLElement): number | null {
         let index: number;
-        const listItems: NodeListOf<Element> = this.renderItems(this.selectData as { [key: string]: Object }[], this.fields).querySelectorAll('li' + ':not(.e-list-group-item)');
+
+        if (!ulElement) {
+            return null
+        }
+        const listItems: NodeListOf<Element> = ulElement.querySelectorAll('li' + ':not(.e-list-group-item)');
         if (listItems) {
             for (let i: number = 0; i < listItems.length; i++) {
                 if (!isNullOrUndefined(value) && listItems[i as number].getAttribute('data-value') === value.toString()) {
@@ -1971,6 +1979,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         const group: HTMLElement = <HTMLElement>this.element.querySelector('select>optgroup');
         if ((this.fields.groupBy || !isNullOrUndefined(group)) && !this.isGroupChecking) {
             EventHandler.add(this.list, 'scroll', this.setFloatingHeader, this);
+            EventHandler.add(document, 'scroll', this.updateGroupFixedHeader, this);
         }
         if (this.getModuleName() === 'dropdownbase') {
             if (this.element.getAttribute('tabindex')) {
@@ -2223,12 +2232,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @returns {void}
      */
     public destroy(): void {
-        if (document.body.contains(this.list)) {
-            EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);
-            if (!isNullOrUndefined(this.rippleFun)) {
-                this.rippleFun();
+        if(document){
+            EventHandler.remove(document, 'scroll', this.updateGroupFixedHeader);
+            if (document.body.contains(this.list)) {
+                EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);
+                if (!isNullOrUndefined(this.rippleFun)) {
+                    this.rippleFun();
+                }
+                detach(this.list);
             }
-            detach(this.list);
         }
         this.liCollections = null;
         this.ulElement = null;

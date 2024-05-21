@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.5 (2024-05-21)
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#I587516` - Fixed an issue where the timepicker `prevValue` property was holding the current selected value instead of the previous value.
+
 ## 25.1.40 (2024-04-16)
 
 ### DatePicker

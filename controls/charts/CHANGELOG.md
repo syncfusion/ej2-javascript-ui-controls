@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 25.2.5 (2024-05-21)
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I580553` - Accessibility issues are resolved, and now the score has become stable.
+
+### Chart
+
+#### Bug Fixes
+
+- `#I581265` - Now, the Stacking Bar chart has been exported as a CSV file, and the CSV contains the appropriate data.
+
 ## 25.2.4 (2024-05-14)
 
 ### Chart

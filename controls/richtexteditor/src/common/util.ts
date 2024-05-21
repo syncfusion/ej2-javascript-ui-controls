@@ -216,11 +216,14 @@ export function nestedListCleanUp(range: Range): void {
                     item.remove();
                 });
             }
+            else {
+                break;
+            }
         }
         let liElem = (range.startContainer.nodeName === "#text" ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll("li");
         if (liElem.length > 0) {
             liElem.forEach((item) => {
-                if(item.firstChild.nodeName === "OL" || item.firstChild.nodeName === "UL"){
+                if(!isNullOrUndefined(item.firstChild) && (item.firstChild.nodeName === "OL" || item.firstChild.nodeName === "UL")){
                     item.style.listStyleType = "none";
                 }
             });

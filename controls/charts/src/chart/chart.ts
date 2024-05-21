@@ -1680,7 +1680,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
         }
 
-        this.element.setAttribute('dir', this.enableRtl ? 'rtl' : '');
+        this.element.setAttribute('dir', this.enableRtl ? 'rtl' : 'ltr');
     }
 
     private initPrivateVariable(): void {

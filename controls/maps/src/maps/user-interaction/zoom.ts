@@ -69,6 +69,8 @@ export class Zoom {
     private fingers: number;
     /** @private */
     public firstMove: boolean;
+    /** @private */
+    public isPanningInProgress: boolean = false;
     private isPan: boolean = false;
     private isZoomFinal: boolean = false;
     private isZoomSelection: boolean = false;
@@ -100,7 +102,7 @@ export class Zoom {
     }
 
     /**
-     * To perform zooming for maps
+     * To perform zooming for maps.
      *
      * @param {Point} position - Specifies the position.
      * @param {number} newZoomFactor - Specifies the zoom factor.
@@ -524,7 +526,7 @@ export class Zoom {
         }
     }
     /**
-     * To animate the zooming process
+     * To animate the zooming process.
      *
      * @param {Element} element - Specifies the element
      * @param {boolean} animate - Specifies the boolean value
@@ -562,6 +564,7 @@ export class Zoom {
         const y: number = maps.translatePoint.y;
         let currentLabelIndex: number = 0;
         maps.zoomShapeCollection = [];
+        this.isPanningInProgress = isPanning || false;
         if (document.getElementById(maps.element.id + '_mapsTooltip')) {
             removeElement(maps.element.id + '_mapsTooltip');
         }
@@ -608,7 +611,7 @@ export class Zoom {
                             }
 
                         } else if (currentEle.id.indexOf('_Markers_Group') > -1) {
-                            if ((!this.isPanModeEnabled) && !isNullOrUndefined(currentEle.childNodes[0])) {
+                            if ((!this.isPanModeEnabled || !isPanning) && !isNullOrUndefined(currentEle.childNodes[0])) {
                                 this.markerTranslates(<Element>currentEle.childNodes[0], factor, x, y, scale, 'Marker', layerElement);
                             }
                             currentEle = layerElement.childNodes[j as number] as Element;
@@ -866,7 +869,7 @@ export class Zoom {
         });
     }
     /**
-     * To translate the layer template elements
+     * To translate the layer template elements.
      *
      * @param {number} x - Specifies the x value
      * @param {number} y - Specifies the y value
@@ -1579,10 +1582,14 @@ export class Zoom {
             break;
         case 'zoomin':
             map.staticMapZoom = map.tileZoomLevel;
-            if (map.staticMapZoom > 0 && map.staticMapZoom < 22) {
+            if (map.staticMapZoom > 0 && map.staticMapZoom < map.zoomSettings.maxZoom) {
                 map.staticMapZoom += 1;
             }
-            this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) + 1, 'ZoomIn');
+            if (map.isTileMap && map.tileZoomLevel >= map.zoomSettings.minZoom && map.tileZoomLevel < map.zoomSettings.maxZoom) {
+                this.toolBarZooming(map.tileZoomLevel + 1, 'ZoomIn');
+            } else if (!map.isTileMap) {
+                this.toolBarZooming(map.scale + 1, 'ZoomIn');
+            }
             scale = this.maps.isTileMap ? Math.round(this.maps.tileZoomLevel) : Math.round(this.maps.mapScaleValue);
             if (!this.isZoomSelection) {
                 if (scale === map.zoomSettings.maxZoom || scale > 1 || (scale === 1 && this.maps.isTileMap)) {
@@ -1954,9 +1961,13 @@ export class Zoom {
                     -(e.detail) / 3 > 0 ? 'ZoomIn' : 'ZoomOut' : ((e as any).wheelDelta / 120) > 0 ? 'ZoomIn' : 'ZoomOut';
                 if (direction === 'ZoomIn') {
                     map.mapScaleValue = value + delta;
-                    map.staticMapZoom = map.tileZoomLevel;
-                    if (map.staticMapZoom > 0 && map.staticMapZoom < staticMaxZoomLevel) {
-                        map.staticMapZoom += 1;
+                    if (map.isTileMap) {
+                        map.staticMapZoom = map.tileZoomLevel;
+                        if (map.staticMapZoom > 0 && map.staticMapZoom < staticMaxZoomLevel) {
+                            map.staticMapZoom += 1;
+                            this.performZooming(position, (value + delta), direction);
+                        }
+                    } else {
                         this.performZooming(position, (value + delta), direction);
                     }
                 } else {
@@ -2239,7 +2250,7 @@ export class Zoom {
     }
 
     /**
-     * Gets the Mouse Position
+     * Gets the Mouse Position.
      *
      * @param {number} pageX - Specifies the Page x in map
      * @param {number} pageY - Specifies the Page y in map

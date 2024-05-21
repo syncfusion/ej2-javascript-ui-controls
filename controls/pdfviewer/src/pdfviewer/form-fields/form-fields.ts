@@ -2526,7 +2526,10 @@ export class FormFields {
     public clearFormFieldStorage(): void {
         // eslint-disable-next-line
         let sessionSize: any = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
-        const maxSessionSize: number = 4500;
+        let maxSessionSize: number = 4500;
+        if(this.pdfViewerBase.isDeviceiOS || this.pdfViewerBase.isMacSafari){
+            maxSessionSize = 2000;
+        }
         if (this.pdfViewerBase.isStorageExceed) {
             const storageLength: number = window.sessionStorage.length;
             // eslint-disable-next-line
@@ -2654,7 +2657,9 @@ export class FormFields {
             fontName = font + 'px' + ' ' + fontFamily;
         }
         context.font = fontName || getComputedStyle(document.body).font;
-        return context.measureText(text).width;
+        const textWidth: number = context.measureText(text).width;
+        this.pdfViewerBase.releaseCanvas(canvas);
+        return textWidth;
     }
 
     /**

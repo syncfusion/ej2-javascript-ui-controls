@@ -181,7 +181,9 @@ export class FormFieldsBase {
                         }
                         let signed: boolean = !isNullOrUndefined(signField)? signField.isSigned : true;
                         //Removing the formfields from a page
-                        if (formFieldsPageList.includes(pageNumber + 1) && (signField == null || !signed)) {
+                        // if (formFieldsPageList.includes(pageNumber + 1) && (signField === null || !signed)) {
+                        // formFieldsPageList is did not removed  when delete non rendered pages form fields.
+                        if ((signField === null || !signed)) {
                             loadedForm.removeField(loadedForm.fieldAt(k));
                         }
                     }

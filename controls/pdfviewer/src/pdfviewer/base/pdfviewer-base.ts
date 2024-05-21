@@ -753,6 +753,9 @@ export class PdfViewerBase {
      * @private
      */
     public isSkipDocumentPath: boolean = false;
+    private isScrollerMoving: boolean = false;
+    private isScrollerMovingTimer: any = null;
+
     /**
      * Initialize the constructor of PDFViewerBase
      *
@@ -1032,6 +1035,7 @@ export class PdfViewerBase {
     private mobileScrollContainerDown(event: any) {
         this.ispageMoved = false;
         this.isThumb = true;
+        this.isScrollerMoving = false;
         if (this.isTextMarkupAnnotationModule()) {
             // eslint-disable-next-line max-len
             if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage != null && (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
@@ -1141,6 +1145,8 @@ export class PdfViewerBase {
         }
         this.isThumb = false;
         this.ispageMoved = false;
+        this.isScrollerMoving = false;
+        this.pageViewScrollChanged(this.currentPageNumber);
         this.mobileScrollerContainer.removeEventListener('touchmove', this.viewerContainerOnScroll.bind(this), true);
         this.mobilePageNoContainer.style.display = 'none';
     }
@@ -1723,10 +1729,23 @@ export class PdfViewerBase {
         }
     }
     private saveDocumentInfo(): void {
-        window.sessionStorage.setItem(this.documentId + '_currentDocument', this.documentId);
-        window.sessionStorage.setItem(this.documentId + '_serviceURL', this.pdfViewer.serviceUrl);
-        if (this.pdfViewer.serverActionSettings) {
-            window.sessionStorage.setItem(this.documentId + '_unload', this.pdfViewer.serverActionSettings.unload);
+        let currentSize: number = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
+        let newObjectSize: number = Math.round(JSON.stringify(this.documentId).length / 1024);
+        let sessionSize: number = currentSize + newObjectSize;
+        const maxSessionSize: number = 5000;
+        if (sessionSize < maxSessionSize) {
+            window.sessionStorage.setItem(this.documentId + '_currentDocument', this.documentId);
+            window.sessionStorage.setItem(this.documentId + '_serviceURL', this.pdfViewer.serviceUrl);
+            if (this.pdfViewer.serverActionSettings) {
+                window.sessionStorage.setItem(this.documentId + '_unload', this.pdfViewer.serverActionSettings.unload);
+            }
+        }
+        else {
+            this.sessionStorage.push(this.documentId + '_currentDocument', this.documentId);
+            this.sessionStorage.push(this.documentId + '_serviceURL', this.pdfViewer.serviceUrl);
+            if (this.pdfViewer.serverActionSettings) {
+                this.sessionStorage.push(this.documentId + '_unload', this.pdfViewer.serverActionSettings.unload);
+            }
         }
     }
     private saveDocumentHashData(): void {
@@ -3881,7 +3900,7 @@ export class PdfViewerBase {
                 case 9:
                     if (event.target && ((event.target as any).id || (event.target as any).tabIndex) && this.pdfViewer.formFieldCollections) {
                         {
-                            if ((event.target as any).className === 'e-pv-formfield-input' || (event.target as any).id === this.pdfViewer.element.id + '_viewerContainer') {
+                            if ((event.target as any).className === 'e-pv-formfield-input' || (event.target as any).className === "foreign-object" || (event.target as any).id === this.pdfViewer.element.id + '_viewerContainer') {
                                 let nextField: any;
                                 let fieldIndex: any;
                                 let currentTarget: any = event.target;
@@ -5328,6 +5347,9 @@ export class PdfViewerBase {
                 const textLayer: HTMLElement = this.getElement('_textLayer_' + j);
                 let initialLoadedPages: number = this.pdfViewer.initialRenderPages > this.pageRenderCount ? (this.pdfViewer.initialRenderPages <= this.pageCount) ? (this.pdfViewer.initialRenderPages - 1) : this.pageCount : -1;
                 if (pageCanvas && j > initialLoadedPages) {
+                    (pageCanvas as HTMLImageElement).src = '';
+                    pageCanvas.onload = null;
+                    pageCanvas.onerror = null;
                     pageCanvas.parentNode.removeChild(pageCanvas);
                     if (textLayer) {
                         if (this.pdfViewer.textSelectionModule && textLayer.childNodes.length !== 0 && !this.isTextSelectionDisabled) {
@@ -5525,57 +5547,62 @@ export class PdfViewerBase {
                             pageDiv.append(image);
                         }
                     }
-                    (image as HTMLImageElement).src = imageData;
-                    image.setAttribute('alt', '');
-                    image.onload = (): void => {
-                        proxy.showPageLoadingIndicator(pageIndex, false);
-                        proxy.tileRenderCount = proxy.tileRenderCount + 1;
-                        if ((tileX === 0) && (tileY === 0)) {
-                            if (pageIndex === 0 && this.isDocumentLoaded) {
-                                proxy.renderPDFInformations();
-                                proxy.isInitialLoaded = true;
-                                // eslint-disable-next-line
-                                let pageData: any = window.sessionStorage.getItem(proxy.documentId + '_pagedata');
-                                if (proxy.pageCount <= 100) {
-                                    proxy.pdfViewer.fireDocumentLoad(pageData);
+                    if(pageDiv){
+                        (image as HTMLImageElement).src = imageData;
+                        image.setAttribute('alt', '');
+                        image.onload = (): void => {
+                            proxy.showPageLoadingIndicator(pageIndex, false);
+                            proxy.tileRenderCount = proxy.tileRenderCount + 1;
+                            if ((tileX === 0) && (tileY === 0)) {
+                                if (pageIndex === 0 && this.isDocumentLoaded) {
+                                    proxy.renderPDFInformations();
+                                    proxy.isInitialLoaded = true;
+                                    // eslint-disable-next-line
+                                    let pageData: any = window.sessionStorage.getItem(proxy.documentId + '_pagedata');
+                                    if (proxy.pageCount <= 100) {
+                                        proxy.pdfViewer.fireDocumentLoad(pageData);
+                                    }
+                                    proxy.isDocumentLoaded = false;
+                                    if (proxy.pdfViewer.textSearch && proxy.pdfViewer.isExtractText) {
+                                        proxy.pdfViewer.textSearchModule.getPDFDocumentTexts();
+                                    }
                                 }
-                                proxy.isDocumentLoaded = false;
-                                if (proxy.pdfViewer.textSearch && proxy.pdfViewer.isExtractText) {
-                                    proxy.pdfViewer.textSearchModule.getPDFDocumentTexts();
+                            }
+                            if (proxy.tileRenderCount === proxy.tileRequestCount && data.uniqueId === proxy.documentId) {
+                                if (proxy.isTextMarkupAnnotationModule()) {
+                                    proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.rerenderAnnotations(pageIndex);
                                 }
+                                if (canvas) {
+                                    canvas.style.display = 'none';
+                                    canvas.src = '#';
+                                }
+                                const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_oldCanvas"]');
+                                for (let i: number = 0; i < oldPageDiv.length; i++) {
+                                    (oldPageDiv[parseInt(i.toString(), 10)] as HTMLImageElement).src = '';
+                                    (oldPageDiv[parseInt(i.toString(), 10)] as HTMLImageElement).onload = null;
+                                    (oldPageDiv[parseInt(i.toString(), 10)] as HTMLImageElement).onerror = null;
+                                    pageDiv.removeChild(oldPageDiv[parseInt(i.toString(), 10)]);
+                                }
+                                proxy.isTileImageRendered = false;
+                                proxy.tileRenderCount = 0;
+                                if (proxy.pdfViewer.magnificationModule) {
+                                    proxy.pdfViewer.magnificationModule.rerenderCountIncrement();
+                                }
+                                proxy.isDrawnCompletely = true;
+                                proxy.pdfViewer.firePageRenderComplete(data);
                             }
-                        }
-                        if (proxy.tileRenderCount === proxy.tileRequestCount && data.uniqueId === proxy.documentId) {
-                            if (proxy.isTextMarkupAnnotationModule()) {
-                                proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.rerenderAnnotations(pageIndex);
-                            }
-                            if (canvas) {
-                                canvas.style.display = 'none';
-                                canvas.src = '#';
-                            }
-                            const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_oldCanvas"]');
-                            for (let i: number = 0; i < oldPageDiv.length; i++) {
-                                pageDiv.removeChild(oldPageDiv[parseInt(i.toString(), 10)]);
-                            }
-                            proxy.isTileImageRendered = false;
-                            proxy.tileRenderCount = 0;
-                            if (proxy.pdfViewer.magnificationModule) {
-                                proxy.pdfViewer.magnificationModule.rerenderCountIncrement();
-                            }
-                            proxy.isDrawnCompletely = true;
-                            proxy.pdfViewer.firePageRenderComplete(data);
-                        }
-                        image.setAttribute('alt', 'Page ' + (pageIndex + 1));
-                    };
-                    let currentImageWidth: number = (((width * this.getZoomFactor()) / zoomFactor) / scaleFactor);
-                    let matrixElements: any = matrix.Elements ? matrix.Elements : matrix.Values;
-                    let currentImageTop: number = (((matrixElements[5] * this.getZoomFactor()) / zoomFactor) / scaleFactor);
-                    let currentImageLeft: number = (((matrixElements[4] * this.getZoomFactor()) / zoomFactor) / scaleFactor);
-                    (image as HTMLImageElement).width = currentImageWidth;
-                    (image as HTMLImageElement).style.width = currentImageWidth + 'px';
-                    image.style.top = currentImageTop + 'px';
-                    image.style.left = currentImageLeft + 'px';
-                    image.style.position = 'absolute';
+                            image.setAttribute('alt', 'Page ' + (pageIndex + 1));
+                        };
+                        let currentImageWidth: number = (((width * this.getZoomFactor()) / zoomFactor) / scaleFactor);
+                        let matrixElements: any = matrix ? (matrix.Elements ? matrix.Elements : matrix.Values) : [1, 0, 0, 1, 1, 1];
+                        let currentImageTop: number = (((matrixElements[5] * this.getZoomFactor()) / zoomFactor) / scaleFactor);
+                        let currentImageLeft: number = (((matrixElements[4] * this.getZoomFactor()) / zoomFactor) / scaleFactor);
+                        (image as HTMLImageElement).width = currentImageWidth;
+                        (image as HTMLImageElement).style.width = currentImageWidth + 'px';
+                        image.style.top = currentImageTop + 'px';
+                        image.style.left = currentImageLeft + 'px';
+                        image.style.position = 'absolute';
+                    }
                 }
                 if ((tileX === 0) && (tileY === 0)) {
                     this.onPageRender(data, pageIndex, pageDiv);
@@ -5623,6 +5650,9 @@ export class PdfViewerBase {
                                     }
                                     const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_oldCanvas"]');
                                     for (let i: number = 0; i < oldPageDiv.length; i++) {
+                                        (oldPageDiv[parseInt(i.toString(), 10)] as HTMLImageElement).src = '';
+                                        (oldPageDiv[parseInt(i.toString(), 10)] as HTMLImageElement).onload = null;
+                                        (oldPageDiv[parseInt(i.toString(), 10)] as HTMLImageElement).onerror = null;
                                         pageDiv.removeChild(oldPageDiv[parseInt(i.toString(), 10)]);
                                     }
                                     proxy.isTileImageRendered = false;
@@ -5712,15 +5742,24 @@ export class PdfViewerBase {
                             let tileImgId: string[] = oldCanvases[parseInt(i.toString(), 10)].id.split('_');
                             if (parseFloat(tileImgId[tileImgId.length - 3]) != proxy.getZoomFactor()) {
                                 if (pageIndex !== parseInt(tileImgId[tileImgId.length - 4], 10)) {
+                                    (oldCanvases[parseInt(i.toString(), 10)] as HTMLImageElement).src = '';
+                                    (oldCanvases[parseInt(i.toString(), 10)] as HTMLImageElement).onload = null;
+                                    (oldCanvases[parseInt(i.toString(), 10)] as HTMLImageElement).onerror = null;
                                     proxy.getElement('_pageDiv_' + tileImgId[tileImgId.length - 4]).removeChild(oldCanvases[parseInt(i.toString(), 10)]);
                                 }
                                 else {
+                                    (oldCanvases[parseInt(i.toString(), 10)] as HTMLImageElement).src = '';
+                                    (oldCanvases[parseInt(i.toString(), 10)] as HTMLImageElement).onload = null;
+                                    (oldCanvases[parseInt(i.toString(), 10)] as HTMLImageElement).onerror = null;
                                     pageCanvas.removeChild(oldCanvases[parseInt(i.toString(), 10)]);
                                 }
                             }
                         }
                         const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_oldCanvas"]');
                         for (let i: number = 0; i < oldPageDiv.length; i++) {
+                            (oldPageDiv[parseInt(i.toString(), 10)] as HTMLImageElement).src = '';
+                            (oldPageDiv[parseInt(i.toString(), 10)] as HTMLImageElement).onload = null;
+                            (oldPageDiv[parseInt(i.toString(), 10)] as HTMLImageElement).onerror = null;
                             pageDiv.removeChild(oldPageDiv[parseInt(i.toString(), 10)]);
                         }
                         if (this.pdfViewer.magnificationModule) {
@@ -6326,9 +6365,21 @@ export class PdfViewerBase {
             if (this.isThumb) {
                 this.ispageMoved = true;
                 event.preventDefault();
+                this.isScrollerMoving = true;
                 this.mobilePageNoContainer.style.display = 'block';
                 scrollposX = event.touches[0].pageX - this.scrollX;
                 scrollposY = event.touches[0].pageY - this.viewerContainer.offsetTop;
+                if(isNullOrUndefined(this.isScrollerMovingTimer)) {
+                    this.isScrollerMovingTimer = setTimeout(() => { 
+                        this.isScrollerMoving = false;
+                        this.pageViewScrollChanged(this.currentPageNumber);
+                    }, 300);
+                }
+                let differenceY: number = Math.abs(this.viewerContainer.scrollTop - (scrollposY * ratio));
+                if(differenceY > 10) {
+                    clearTimeout(this.isScrollerMovingTimer);
+                    this.isScrollerMovingTimer = null;
+                }
                 this.viewerContainer.scrollTop = scrollposY * ratio;
                 // eslint-disable-next-line
                 let containerValue: any = event.touches[0].pageY;
@@ -6576,7 +6627,7 @@ export class PdfViewerBase {
             if (this.isDataExits && !this.getStoredData(currentPageIndex)) {
                 isSkip = true;
             }
-            if (this.renderedPagesList.indexOf(currentPageIndex) === -1 && !this.getMagnified() && !isSkip) {
+            if (this.renderedPagesList.indexOf(currentPageIndex) === -1 && !this.getMagnified() && !isSkip && !this.isScrollerMoving) {
                 this.renderCountIncrement();
                 this.createRequestForRender(currentPageIndex);
             }
@@ -6590,7 +6641,7 @@ export class PdfViewerBase {
                 isSkip = true;
             }
             if (canvas !== null && !isSkip) {
-                if (this.renderedPagesList.indexOf(previous) === -1 && !this.getMagnified()) {
+                if (this.renderedPagesList.indexOf(previous) === -1 && !this.getMagnified() && !this.isScrollerMoving) {
                     this.renderCountIncrement();
                     this.createRequestForRender(previous);
 
@@ -6610,7 +6661,7 @@ export class PdfViewerBase {
                         for (var i = 1; i < renderLimit; i++) {
                             this.createRequestForRender(i);
                         }
-                    } else {
+                    } else if(!this.isScrollerMoving) {
                         this.createRequestForRender(next);
                         this.renderCountIncrement();
                         while (this.viewerContainer.clientHeight > pageHeight) {
@@ -7631,6 +7682,7 @@ export class PdfViewerBase {
                                                     imageData.data.set(value);
                                                     canvasContext.putImageData(imageData, 0, 0);
                                                     let imageUrl: string = canvas.toDataURL();
+                                                    proxy.releaseCanvas(canvas);
                                                     const textBounds = event.data.textBounds;
                                                     const textContent = event.data.textContent;
                                                     const pageText = event.data.pageText;
@@ -7652,7 +7704,7 @@ export class PdfViewerBase {
                                                         data.pageText = textDetails.pageText;
                                                         data.characterBounds = textDetails.characterBounds;
                                                     }
-                                                    if (data && data.image && data.uniqueId === proxy.documentId) {
+                                                    if (data && data.image && !isNullOrUndefined(data.image.split('base64,')[1]) && data.uniqueId === proxy.documentId) {
                                                         let currentPageWidth: number = (data.pageWidth && data.pageWidth > 0) ? data.pageWidth : pageWidth;
                                                         proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderPages, data);
                                                         const pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
@@ -7681,6 +7733,7 @@ export class PdfViewerBase {
                                                     imageData.data.set(value);
                                                     canvasContext.putImageData(imageData, 0, 0);
                                                     let imageUrl: string = canvas.toDataURL();
+                                                    proxy.releaseCanvas(canvas);
                                                     let tileWidth: number = w;
                                                     let tileHeight: number = h;
                                                     const textBounds = event.data.textBounds;
@@ -8166,9 +8219,15 @@ export class PdfViewerBase {
 
     // eslint-disable-next-line
     private manageSessionStorage(pageIndex: number, storeObject: any, tileX?: number, tileY?: number): void {
-        // eslint-disable-next-line
-        let sessionSize: any = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
-        const maxSessionSize: number = 5000;
+        let currentSize: number = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
+        let newObjectSize: number = Math.round(JSON.stringify(storeObject).length / 1024);
+        let sessionSize: number = currentSize + newObjectSize;
+        let maxSessionSize: number = 5000;
+        let maxSessionLength: number = 200;
+        if(this.isDeviceiOS || this.isMacSafari){
+            maxSessionSize = 2000;
+            maxSessionLength = 80;
+        }
         if (sessionSize >= maxSessionSize) {
             if (!this.isStorageExceed) {
                 // eslint-disable-next-line
@@ -8205,15 +8264,17 @@ export class PdfViewerBase {
             }
             this.isStorageExceed = true;
             sessionSize = Math.round(JSON.stringify(window.sessionStorage).length / 1024);
-            if (sessionSize >= 5000) {
+            if (sessionSize >= maxSessionSize) {
                 let storageLength: number = window.sessionStorage.length;
-                if (storageLength > 200) {
-                    storageLength = 200;
+                if (storageLength > maxSessionLength) {
+                    storageLength = maxSessionLength;
                 }
                 for (let i: number = 0; i < storageLength; i++) {
                     if (window.sessionStorage.key(i) && window.sessionStorage.key(i).split('_')[3]) {
                         if (window.sessionStorage.key(i).split('_')[3] !== 'annotations') {
                             window.sessionStorage.removeItem(window.sessionStorage.key(i));
+                            storageLength = storageLength - 1;
+                            i = i - 1;
                         }
                     }
                 }
@@ -8221,13 +8282,15 @@ export class PdfViewerBase {
         }
         const zoomFactor: number = this.retrieveCurrentZoomFactor();
         if (isNaN(tileX) && isNaN(tileY)) {
-            // eslint-disable-next-line max-len
-            window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + zoomFactor, JSON.stringify(storeObject));
+            if (sessionSize < maxSessionSize) {
+                window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + zoomFactor, JSON.stringify(storeObject));
+            }
             this.sessionStorage.push(this.documentId + '_' + pageIndex + '_' + zoomFactor);
         } else {
             this.sessionStorage.push(this.documentId + '_' + pageIndex + '_' + tileX + '_' + tileY + '_' + zoomFactor);
-            // eslint-disable-next-line max-len
-            window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + tileX + '_' + tileY + '_' + zoomFactor, JSON.stringify(storeObject));
+            if (sessionSize < maxSessionSize) {
+                window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + tileX + '_' + tileY + '_' + zoomFactor, JSON.stringify(storeObject));
+            }
         }
     }
 
@@ -12296,6 +12359,18 @@ export class PdfViewerBase {
             this.isPinchZoomStorage = false;
         }
         return mergedObj;
+    }
+
+    /**
+     * @param canvas
+     * @private
+     */
+    // eslint-disable-next-line
+    public releaseCanvas(canvas: HTMLCanvasElement): void {
+        canvas.width = 1;
+        canvas.height = 1;
+        const ctx = canvas.getContext('2d');
+        ctx && ctx.clearRect(0, 0, 1, 1);
     }
 
     /**

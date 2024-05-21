@@ -7,6 +7,104 @@ export let projectResources: Object[] = [
     { ResourceId: 3, ResourceName: 'Developer' },
     { ResourceId: 4, ResourceName: 'Testing Engineer' }
 ];
+
+export let cR885322: Object[] = [
+    {
+        id: '62ed75125fb9p80015ae8ee7',
+        TaskID: 'ITEM-01',
+        taskId: 'ITEM-01',
+        TaskName: '022',
+        Duration: 1,
+        Progress: 62,
+        parent: null,
+        subTasks: [
+            {
+                id: '62ed76455fb9e8q015ae94cf',
+                TaskID: 'SUBITEM-1',
+                TaskName: '134',
+                Duration: 1,
+                Progress: 48,
+                parent: '62ed75125fb9p80015ae8ee7',
+                subTasks: [
+                    {
+                        id: '62ed65f949y1860014766268',
+                        TaskID: 'LASTITEM-1',
+                        TaskName: '432111',
+                        Duration: 1,
+                        Progress: 48,
+                        parent: '62ed76455fb9e8q015ae94cf',
+                        subTasks: [],
+                        rank: '4',
+                        PlannedStartDate: '2022-06-06T15:00:00.000Z',
+                        PlannedEndDate: '2022-12-30T01:00:00.000Z',
+                        Indicators: [],
+                    },
+                ],
+                rank: '3',
+                PlannedStartDate: '2022-12-05T16:00:00.000Z',
+                PlannedEndDate: '2022-12-30T01:00:00.000Z',
+                Indicators: [],
+                isExpand: true,
+                null: null,
+            },
+        ],
+        isExpand: true,
+        rank: '0V',
+        PlannedStartDate: '2022-12-05T16:00:00.000Z',
+        PlannedEndDate: '2022-12-31T01:00:00.000Z',
+        Indicators: [],
+    },
+    {
+        id: '62ed75125fb9p80015ae8ee7',
+        TaskID: 'ITEM-02',
+        taskId: 'ITEM-02',
+        TaskName: '022',
+        Duration: 1,
+        Progress: 62,
+        parent: null,
+        subTasks: [],
+        isExpand: true,
+        rank: '0V',
+        PlannedStartDate: '2022-12-05T16:00:00.000Z',
+        PlannedEndDate: '2022-12-31T01:00:00.000Z',
+        Indicators: [],
+    },
+    {
+        id: '62ed75415fb9e8999015ae8ffda',
+        TaskID: 'ITEM-003',
+        taskId: 'ITEM-003',
+        TaskName: '123333',
+        StartDate: null,
+        EndDate: null,
+        Duration: 1,
+        Progress: 99,
+        parent: null,
+        subTasks: [],
+        isExpand: true,
+        rank: '1',
+        PlannedStartDate: null,
+        PlannedEndDate: null,
+        Indicators: [],
+    },
+    {
+        id: '42ed75415fb9e8999015ae8ffda',
+        TaskID: 'ITEM-004',
+        taskId: 'ITEM-004',
+        TaskName: '123333',
+        StartDate: null,
+        EndDate: null,
+        Duration: 1,
+        Progress: 99,
+        parent: null,
+        subTasks: [],
+        isExpand: true,
+        rank: '1',
+        PlannedStartDate: null,
+        PlannedEndDate: null,
+        Indicators: [],
+    },
+];
+
 export let parentProgressData: object[] = [
     {
         TaskID: 1,
@@ -18,6 +116,42 @@ export let parentProgressData: object[] = [
             { TaskID: 3, TaskName: 'Child2', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 100},
             { TaskID: 4, TaskName: 'Child3', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 100 },
         ]
+    },
+];
+export let pdfData: Object[] = [
+    {
+        TaskID: 61,
+        TaskName: 'Project initiation',
+        StartDate: new Date('04/02/2024'),
+        EndDate: new Date('04/21/2024'),
+        subtasks: [],
+    },
+    {
+        TaskID: 65,
+        TaskName: 'Project estimation',
+        StartDate: new Date('04/02/2024'),
+        EndDate: new Date('04/21/2024'),
+        subtasks: [],
+    },
+    {
+        TaskID: 69,
+        TaskName: 'Sign contract',
+        StartDate: new Date('04/04/2024'),
+        Duration: 1,
+        Progress: 30,
+        resources: [12],
+        info: 'If required obtain approval from HOA (homeowners association) or ARC (architectural review committee)',
+        Indicators: [
+            {
+                date: '04/04/2024',
+                name: 'Custom String',
+                tooltip: 'Follow up',
+            },
+            {
+                date: '04/07/2024',
+                name: '<span style="color:red">String Template</span>',
+            },
+        ],
     },
 ];
 export let customZoomingdata: Object[] = [
@@ -7124,6 +7258,75 @@ export let splitTasksData: object[] = [
                     },
                     {
                         TaskID: 11, TaskName: 'Design complete', StartDate: new Date('02/25/2019'), EndDate: new Date('02/25/2019'),
+                        Duration: 0, Predecessor: '10FS'
+                    }
+                ]
+            }
+        ]
+    }
+];
+export let splitTasksData2: object[] = [
+    {
+        id: 1,
+        TaskName: 'Project Schedule',
+        StartDate: new Date('02/04/2019'),
+        EndDate: new Date('03/10/2019'),
+        subtasks: [
+            {
+                id: 2,
+                TaskName: 'Planning',
+                StartDate: new Date('02/04/2019'),
+                subtasks: [
+                    {
+                        id: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '60',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 2 },
+                            { StartDate: new Date('02/05/2019'), Duration: 5 },
+                            { StartDate: new Date('02/08/2019'), Duration: 3 }
+                        ]
+                    },
+                    {
+                        id: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '90'
+                    },
+                    {
+                        id: 5, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '75',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 4 },
+                            { StartDate: new Date('02/08/2019'), Duration: 2 }
+                        ]
+                    },
+                    {
+                        id: 6, TaskName: 'Planning complete', StartDate: new Date('02/21/2019'), EndDate: new Date('02/21/2019'),
+                        Duration: 0, Predecessor: '3FS,5FS'
+                    },
+                ]
+            },
+            {
+                id: 7,
+                TaskName: 'Design',
+                StartDate: new Date('02/25/2019'),
+                subtasks: [
+                    {
+                        id: 8, TaskName: 'Software Specification', StartDate: new Date('02/25/2019'), EndDate: new Date('03/02/2019'),
+                        Duration: 5, Progress: '60', Predecessor: '6FS'
+                    },
+                    {
+                        id: 9, TaskName: 'Develop prototype', StartDate: new Date('02/25/2019'), EndDate: new Date('03/02/2019'),
+                        Duration: 5, Progress: '100', Predecessor: '6FS',
+                        Segments: [
+                            { StartDate: new Date('02/25/2019'), Duration: 2 },
+                            { StartDate: new Date('02/28/2019'), Duration: 3 }
+                        ]
+                    },
+                    {
+                        id: 10, TaskName: 'Get approval from customer', StartDate: new Date('02/25/2019'),
+                        EndDate: new Date('03/01/2019'), Duration: 4, Progress: '100', Predecessor: '9FS'
+                    },
+                    {
+                        id: 11, TaskName: 'Design complete', StartDate: new Date('02/25/2019'), EndDate: new Date('02/25/2019'),
                         Duration: 0, Predecessor: '10FS'
                     }
                 ]

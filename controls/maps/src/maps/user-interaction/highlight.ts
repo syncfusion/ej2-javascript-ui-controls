@@ -17,7 +17,7 @@ export class Highlight {
         this.addEventListener();
     }
     /**
-     * To bind events for highlight module
+     * To bind events for highlight module.
      *
      * @returns {void}
      */
@@ -29,7 +29,7 @@ export class Highlight {
         this.maps.on(Browser.touchStartEvent, this.mouseMove, this);
     }
     /**
-     * To unbind events for highlight module
+     * To unbind events for highlight module.
      *
      * @returns {void}
      */
@@ -41,7 +41,7 @@ export class Highlight {
         this.maps.off(Browser.touchStartEvent, this.mouseMove);
     }
     /**
-     * Public method for highlight module
+     * Public method for highlight module.
      *
      * @param {number} layerIndex - Specifies the index of the layer.
      * @param {string} name - Specifies the name.
@@ -146,7 +146,7 @@ export class Highlight {
     }
 
     /**
-     * Handles the highlighting events in map
+     * Handles the highlighting events in map.
      *
      * @param {Element} targetElement - Specifies the target element.
      * @param {number} layerIndex - Specifies the index of the layer.

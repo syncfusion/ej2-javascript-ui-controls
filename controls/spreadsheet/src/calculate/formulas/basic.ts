@@ -773,7 +773,7 @@ export class BasicFormulas {
                     decimalCount = arg1.length - decimalIndex - 1;
                     decimalCount = decimalCount >= digits ? digits : decimalCount;
                 }
-                num = this.parent.parseFloat(num.toFixed(decimalCount));
+                num = this.parent.parseFloat(this.preciseRound(num,decimalCount));
                 result = num.toString();
                 if (isNaN(num)) {
                     if (digits.toString().indexOf('"') > - 1) {

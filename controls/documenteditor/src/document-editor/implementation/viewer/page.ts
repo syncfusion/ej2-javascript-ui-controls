@@ -3000,10 +3000,10 @@ export class TableRowWidget extends BlockWidget {
     /**
      * @private
      */
-    public getCell(rowIndex: number, cellIndex: number): TableCellWidget {
+    public getCell(rowIndex: number, columnIndex: number, cellIndex?: number): TableCellWidget {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let cell: TableCellWidget = this.childWidgets[i] as TableCellWidget;
-            if (cell.rowIndex === rowIndex && cell.index === cellIndex) {
+            if (cell.rowIndex === rowIndex && (!isNullOrUndefined(cellIndex) ? cell.cellIndex === cellIndex : cell.columnIndex === columnIndex)) {
                 return cell;
             }
         }
@@ -3584,7 +3584,7 @@ export class TableCellWidget extends BlockWidget {
                 if (isNullOrUndefined(row) || row.index < this.rowIndex) {
                     break;
                 }
-                let previousCell: TableCellWidget = row.getCell(this.rowIndex, this.index);
+                let previousCell: TableCellWidget = row.getCell(this.rowIndex, this.columnIndex);
                 if (previousCell && this.equals(previousCell)) {
                     return previousCell;
                 }
@@ -3604,7 +3604,7 @@ export class TableCellWidget extends BlockWidget {
                 if (isNullOrUndefined(row) || row.index > this.rowIndex + rowSpan) {
                     break;
                 }
-                let nextCell: TableCellWidget = row.getCell(this.rowIndex, this.index);
+                let nextCell: TableCellWidget = row.getCell(this.rowIndex, this.columnIndex);
                 if (nextCell && this.equals(nextCell)) {
                     return nextCell;
                 }

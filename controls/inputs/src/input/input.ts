@@ -595,6 +595,9 @@ export namespace Input {
      * @param {HTMLElement} container - The parent element which is need to get the label span to calculate width
      */
     export function calculateWidth(element: any, container: HTMLElement, moduleName?: string): void {
+        if (moduleName !== 'multiselect' && !_isElementVisible(element)) {
+            return;
+        }
         const elementWidth : number = moduleName === 'multiselect' ? element : element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'), 10);
         if (!isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
             if (container.getElementsByClassName('e-float-text-content')[0].classList.contains('e-float-text-overflow')) {
@@ -908,6 +911,23 @@ export namespace Input {
         if (!container.classList.contains('e-disabled') && !container.querySelector('input').readOnly ) {
             button.classList.add('e-input-btn-ripple');
         }
+    }
+
+    function _isElementVisible(element: any): boolean {
+        if (!element) {
+            return false;
+        }
+        // Check if the element or any of its parents are hidden using display: none
+        let currentElement: any = element;
+        while (currentElement && currentElement !== document.body) {
+            const style = window.getComputedStyle(currentElement);
+            if (style.display === 'none') {
+                return false;
+            }
+            currentElement = currentElement.parentElement;
+        }
+        // If none of the elements have display: none, the element is considered visible
+        return true;
     }
 
     function _onMouseDownRipple(): void {

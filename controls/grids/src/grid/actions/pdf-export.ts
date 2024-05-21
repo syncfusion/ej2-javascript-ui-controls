@@ -267,8 +267,8 @@ export class PdfExport {
     }
 
     private processSectionExportProperties(section: PdfSection, pdfExportProperties: PdfExportProperties): PdfSection {
-        if (!isNullOrUndefined(pdfExportProperties) && (!isNullOrUndefined(pdfExportProperties.pageOrientation)
-            || !isNullOrUndefined(pdfExportProperties.pageSize))) {
+        if (!isNullOrUndefined(section) && !isNullOrUndefined(pdfExportProperties)
+            && (!isNullOrUndefined(pdfExportProperties.pageOrientation) || !isNullOrUndefined(pdfExportProperties.pageSize))) {
             this.pdfPageSettings.orientation = (pdfExportProperties.pageOrientation === 'Landscape') ?
                 PdfPageOrientation.Landscape : PdfPageOrientation.Portrait;
             this.pdfPageSettings.size = this.getPageSize(pdfExportProperties.pageSize);

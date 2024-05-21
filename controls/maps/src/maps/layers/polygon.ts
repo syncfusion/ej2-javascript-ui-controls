@@ -12,7 +12,7 @@ export class Polygon {
     /* eslint-enable @typescript-eslint/no-unused-vars */
     /* eslint-enable @typescript-eslint/no-empty-function */
     /**
-     * To render polygon for maps
+     * To render polygon for maps.
      *
      * @param {Maps} maps - Specifies the layer instance to which the polygon is to be rendered.
      * @param {number} layerIndex -Specifies the index of current layer.

@@ -542,7 +542,8 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        if (!this.parent.allowDeferLayoutUpdate) {
+        if ((this.parent as PivotFieldList).isDeferLayoutUpdate === false || ((this.parent as PivotFieldList).pivotGridModule &&
+            (this.parent as PivotFieldList).pivotGridModule.pivotDeferLayoutUpdate === false)) {
             sortCLass = engineModule.fieldList[fieldName as string].sort === 'Descending' ? cls.SORT_DESCEND_CLASS : '';
         } else {
             sortCLass = '';
@@ -593,7 +594,8 @@ export class PivotButton implements IAction {
         }
         const filterField: IFieldOptions =
             PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.filterSettings) as IFieldOptions;
-        if (!this.parent.allowDeferLayoutUpdate) {
+        if ((this.parent as PivotFieldList).isDeferLayoutUpdate === false || ((this.parent as PivotFieldList).pivotGridModule &&
+            (this.parent as PivotFieldList).pivotGridModule.pivotDeferLayoutUpdate === false)) {
             engineModule.fieldList[fieldName as string].filter = engineModule.fieldList[fieldName as string].filter === null ?
                 [] : engineModule.fieldList[fieldName as string].filter;
             filterCLass = ((this.parent.dataSourceSettings.mode === 'Server' && !filterField) ||
@@ -877,7 +879,9 @@ export class PivotButton implements IAction {
                     if ((this.parent as PivotFieldList).staticPivotGridModule) {
                         (this.parent as PivotFieldList).staticPivotGridModule.actionObj = this.parent.actionObj;
                     }
-                    if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() !== 'pivotfieldlist') {
+                    if ((this.parent as PivotFieldList).isDeferLayoutUpdate === false || ((this.parent as PivotFieldList).pivotGridModule
+                        && (this.parent as PivotFieldList).pivotGridModule.pivotDeferLayoutUpdate === false) ||
+                        this.parent.getModuleName() !== 'pivotfieldlist') {
                         const actionInfo: PivotActionInfo = {
                             sortInfo: this.parent.lastSortInfo
                         };
@@ -900,7 +904,9 @@ export class PivotButton implements IAction {
      * @returns {void}
      * @hidden */
     public updateDataSource(isRefreshGrid?: boolean): void {
-        if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() === 'pivotview') {
+        if ((this.parent as PivotFieldList).isDeferLayoutUpdate === false || ((this.parent as PivotFieldList).pivotGridModule
+            && (this.parent as PivotFieldList).pivotGridModule.pivotDeferLayoutUpdate === false) ||
+            this.parent.getModuleName() === 'pivotview') {
             this.parent.updateDataSource(isRefreshGrid);
         } else {
             if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).isPopupView && (this.parent as PivotFieldList).pivotGridModule) {

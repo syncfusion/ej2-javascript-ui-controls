@@ -2,12 +2,12 @@
 import { isNullOrUndefined, extend, createElement, Fetch, animationMode } from '@syncfusion/ej2-base';
 import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
-import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, removeElement } from '../utils/helper';
+import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, removeElement, maintainToggleSelection } from '../utils/helper';
 import { getElementByID, maintainSelection, getValueFromObject } from '../utils/helper';
 import { MapLocation, RectOption, getTranslate, convertTileLatLongToPoint, checkShapeDataFields, CircleOption } from '../utils/helper';
 import { getZoomTranslate, fixInitialScaleForTile } from '../utils/helper';
 import { LayerSettings, ShapeSettings, Tile} from '../model/base';
-import { BorderModel, LayerSettingsModel, ShapeSettingsModel, ToggleLegendSettingsModel } from '../model/base-model';
+import { BorderModel, LayerSettingsModel } from '../model/base-model';
 import { BingMap } from './bing-map';
 import { ColorMapping } from './color-mapping';
 import { layerRendering, ILayerRenderingEventArgs, shapeRendering, IShapeRenderingEventArgs, BubbleSettingsModel, Rect } from '../index';
@@ -667,19 +667,10 @@ export class LayerPanel {
         }
         maintainSelection(this.mapObject.selectedElementId, this.mapObject.shapeSelectionClass, pathEle,
                           'ShapeselectionMapStyle');
-        if (this.mapObject.toggledShapeElementId) {
-            for (let j: number = 0; j < this.mapObject.toggledShapeElementId.length; j++) {
-                const styleProperty: ShapeSettingsModel | ToggleLegendSettingsModel =
-                    this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ?
-                        this.currentLayer.shapeSettings : this.mapObject.legendSettings.toggleLegendSettings;
-                if (this.mapObject.toggledShapeElementId[j as number] === pathEle.id) {
-                    pathEle.setAttribute('fill', styleProperty.fill);
-                    pathEle.setAttribute('stroke', styleProperty.border.color);
-                    pathEle.setAttribute('fill-opacity', (styleProperty.opacity).toString());
-                    pathEle.setAttribute('stroke-opacity', (isNullOrUndefined(styleProperty.border.opacity) ? styleProperty.opacity : styleProperty.border.opacity).toString());
-                    pathEle.setAttribute('stroke-width', (isNullOrUndefined(styleProperty.border.width) ? 0 : styleProperty.border.width).toString());
-                }
-            }
+        if (this.mapObject.legendSettings.toggleLegendSettings.enable && this.mapObject.legendSettings.type === 'Layers') {
+            maintainToggleSelection(this.mapObject.toggledElementId, pathEle,
+                                    this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ? this.currentLayer.shapeSettings
+                                        : this.mapObject.legendSettings.toggleLegendSettings);
         }
         groupElement.appendChild(pathEle);
     }
@@ -761,7 +752,7 @@ export class LayerPanel {
     }
 
     /**
-     * render datalabel
+     * render datalabel.
      *
      * @param {LayerSettings} layer - Specifies the layer
      * @param {number} layerIndex - Specifies the layer index
@@ -782,7 +773,7 @@ export class LayerPanel {
         );
     }
     /**
-     * To render path for multipolygon
+     * To render path for multipolygon.
      *
      * @param {any[]} currentShapeData Specifies the current shape data
      * @returns {string} Returns the path
@@ -804,7 +795,7 @@ export class LayerPanel {
         return path;
     }
     /**
-     * To render bubble
+     * To render bubble.
      *
      * @param {LayerSettings} layer - Specifies the layer
      * @param {object} bubbleData - Specifies the bubble data
@@ -834,7 +825,7 @@ export class LayerPanel {
             bubbleSettings, bubbleData, color, range, bubbleIndex, dataIndex, layerIndex, layer, group, this.mapObject.bubbleModule.id);
     }
     /**
-     * To get the shape color from color mapping module
+     * To get the shape color from color mapping module.
      *
      * @param {LayerSettingsModel} layer - Specifies the layer
      * @param {any} shape - Specifies the shape
@@ -1388,7 +1379,7 @@ export class LayerPanel {
     }
 
     /**
-     * Animation for tile layers and hide the group element until the tile layer rendering
+     * Animation for tile layers and hide the group element until the tile layer rendering.
      *
      * @param {string} zoomType - Specifies the zoom type
      * @param {number} translateX - Specifies the x translate point
@@ -1418,7 +1409,7 @@ export class LayerPanel {
     }
 
     /**
-     * Static map rendering
+     * Static map rendering.
      *
      * @param {string} apikey - Specifies the api key
      * @param {number} zoom - Specifies the zoom value
@@ -1473,7 +1464,7 @@ export class LayerPanel {
     }
 
     /**
-     * To find the tile translate point
+     * To find the tile translate point.
      *
      * @param {number} factorX - Specifies the x factor
      * @param {number} factorY - Specifies the x factor

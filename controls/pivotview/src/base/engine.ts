@@ -2519,7 +2519,8 @@ export class PivotEngine {
             if (headersInfo.position === currentPosition) {
                 const engine: PivotEngine = this;   // eslint-disable-line @typescript-eslint/no-this-alias
                 headers = headers.filter((item: IAxisSet) => {
-                    return !engine.fieldFilterMem[filterItem.name].memberObj[item.formattedText] || item.type === 'grand sum';
+                    return engine.fieldFilterMem[filterItem.name].memberObj[item.formattedText] === '' ? false :
+                        !engine.fieldFilterMem[filterItem.name].memberObj[item.formattedText] || item.type === 'grand sum';
                 });
                 loopIn = false;
             } else if (headers[count as number].members.length > 0) {

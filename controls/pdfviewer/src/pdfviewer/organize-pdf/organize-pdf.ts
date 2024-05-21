@@ -392,6 +392,7 @@ export class PageOrganizer {
             imageData.data.set(value);
             canvasContext.putImageData(imageData, 0, 0);
             let imageUrl: string = canvas.toDataURL();
+            this.pdfViewerBase.releaseCanvas(canvas);
             let data = ({
                 thumbnailImage: imageUrl,
                 startPage: startIndex,

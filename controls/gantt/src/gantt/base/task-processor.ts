@@ -2467,6 +2467,23 @@ export class TaskProcessor extends DateProcessor {
         }
     }
 
+    private isUnscheduledTask(ganttProperties: ITaskData): [boolean, string | null] {
+        let properties: string[] = ['startDate', 'endDate', 'duration'];
+        let count: number= 0;
+        let filledProperty: string | null = null;
+        for (const prop of properties) {
+            if (ganttProperties[prop as string]) {
+                count++;
+                filledProperty = prop;
+            }
+        }
+        if (count === 1) {
+            return [true, filledProperty];
+        } else {
+            return [false, null];
+        }
+    }
+
     /**
      * @param {IParent | IGanttData} cloneParent .
      * @param {boolean} isParent .
@@ -2478,6 +2495,7 @@ export class TaskProcessor extends DateProcessor {
         parentData = parentData ? parentData : cloneParent;
         let deleteUpdate: boolean = false;
         const ganttProp: ITaskData = !isNullOrUndefined(parentData) ? parentData.ganttProperties : null;
+        const [isParentUnschecule, propertyWithValue] : [boolean, string] = this.isUnscheduledTask(ganttProp)
         if (this.parent.autoCalculateDateScheduling || this.parent.viewType === "ResourceView") {
             if (parentData && parentData.childRecords && parentData.childRecords.length > 0) {
                 const previousStartDate: Date = ganttProp.isAutoSchedule ? ganttProp.startDate : ganttProp.autoStartDate;
@@ -2503,11 +2521,14 @@ export class TaskProcessor extends DateProcessor {
                         }
                         continue;
                     }
-                    let startDate: Date = this.getValidStartDate(childData.ganttProperties);
+                    const [isUnscheduled, propertyWithValue]:[boolean, string] = this.isUnscheduledTask(childData.ganttProperties)
+                    let startDate: Date = ((isUnscheduled && (propertyWithValue !='startDate' && propertyWithValue !='endDate')) && !isParentUnschecule) ?
+                    ganttProp.startDate:this.getValidStartDate(childData.ganttProperties);
                     if (parentData.hasChildRecords && !ganttProp.isAutoSchedule && !isNullOrUndefined(childData.ganttProperties.autoStartDate)) {
                         startDate = childData.ganttProperties.autoStartDate;
                     }
-                    let endDate: Date = this.getValidEndDate(childData.ganttProperties);
+                    let endDate: Date = ((isUnscheduled && (propertyWithValue !='startDate' && propertyWithValue !='endDate')) && !isParentUnschecule) ?
+                    ganttProp.endDate:this.getValidEndDate(childData.ganttProperties);
                     if (parentData.hasChildRecords && !ganttProp.isAutoSchedule && !isNullOrUndefined(childData.ganttProperties.autoEndDate)) {
                         endDate = childData.ganttProperties.autoEndDate;
                     }

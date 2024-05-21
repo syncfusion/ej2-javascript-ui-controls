@@ -12,7 +12,7 @@ import { beforePrint } from '../model/constants';
 export class Print {
 
     /**
-     * Constructor for Maps
+     * Constructor for Maps.
      *
      * @param {Maps} control - Specifies the instance of the Maps
      */
@@ -20,7 +20,7 @@ export class Print {
     constructor(control: Maps) { }
 
     /**
-     * To print the Maps
+     * To print the Maps.
      *
      * @param {Maps} maps -Specifies the Maps instance.
      * @param {string[] | string | Element} elements - Specifies the element of the Maps
@@ -43,7 +43,7 @@ export class Print {
     }
 
     /**
-     * To get the html string of the Maps
+     * To get the html string of the Maps.
      *
      * @param {Maps} maps -Specifies the Maps instance.
      * @param {string[] | string | Element} elements - Specifies the html element

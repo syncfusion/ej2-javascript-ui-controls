@@ -8,12 +8,33 @@
 
 ## [Unreleased]
 
+## 25.2.5 (2024-05-21)
+
+### Maps
+
+#### Bug fixes
+
+- `#I585591` - When setting different sizes for the Maps, the `latitude` and `longitude` values from the `tooltipRender` event will now be proper.
+- `#I584215` - Markers will now be rendered properly when the left mouse click is on hold and mouse wheel action is performed.
+- `#I584211` - Markers will now be in proper position when the panning action is performed in the Maps when the marker animation is in progress.
+
 ## 25.2.4 (2024-05-14)
 
 ### Maps
 
 #### Bug Fixes
 
+- `#I583752` - Legends for the markers will now maintain the toggled state when zoomed in or out.
+- `#I584887` - Exceptions will no longer be thrown when toggling the legend by enabling the `removeDuplicateLegend` property in the Maps.
+- `#I584215` - Panning will now work properly when the Maps is zoomed to the maximum level using keyboard interaction.
+
+## 25.2.3 (2024-05-08)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I561947` - The duration of the tooltip in the Maps on the mobile device can be changed using the `duration` property in `tooltipSettings`. When the value is set to **0**, the tooltip will not be removed.
 - `#I580579` - Script errors will no longer be thrown when the markers in the Maps are disabled.
 
 ## 25.1.41 (2024-04-23)

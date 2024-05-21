@@ -656,7 +656,7 @@ export class ColumnChooser implements IAction {
             this.updateIntermediateBtn();
             const columnUid: string = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
             const column: Column[] =  (this.searchValue && this.searchValue.length) ? this.filterColumns : this.parent.getColumns();
-            if (columnUid === 'grid-selectAll') {
+            if (columnUid === this.parent.element.id +'-selectAll') {
                 this.changedColumns = [];
                 this.unchangedColumns = [];
                 for (let i: number = 0; i < column.length; i++) {
@@ -767,7 +767,7 @@ export class ColumnChooser implements IAction {
         this.ulElement = this.parent.createElement('ul', { className: 'e-ccul-ele e-cc' });
         const selectAllValue: string = this.l10n.getConstant('SelectAll');
         const cclist: HTMLElement = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall' });
-        const selectAll: Element = this.createCheckBox(selectAllValue, false, 'grid-selectAll');
+        const selectAll: Element = this.createCheckBox(selectAllValue, false, this.parent.element.id +'-selectAll');
         if (gdCol.length) {
             selectAll.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
             selectAll.querySelector('.e-frame').classList.add('e-selectall');

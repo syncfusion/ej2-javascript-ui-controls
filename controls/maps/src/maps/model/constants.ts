@@ -204,21 +204,17 @@ export const zoomComplete: string = 'zoomComplete';
 export const itemHighlight: string = 'itemHighlight';
 /**
  * Specifies the maps before print event name.
- *
  */
 export const beforePrint: string = 'beforePrint';
 /**
  * Specifies the maps zoom in event name.
- *
  */
 export const zoomIn: string = 'zoomIn';
 /**
  * Specifies the maps zoom out event name.
- *
  */
 export const zoomOut: string = 'zoomOut';
 /**
  * Specifies the maps pan event name.
- *
  */
 export const pan: string = 'pan';

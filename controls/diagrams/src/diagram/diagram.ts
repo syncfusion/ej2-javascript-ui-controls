@@ -10234,7 +10234,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     if (!textWrapper) {
                         textWrapper = this.getWrapper(node.wrapper, this.activeLabel.id);
                     }
-
+                    if(!this.activeLabel.isGroup){
+                        this.startGroupAction();
+                    }
                     if (annotation.content !== text && !args.cancel) {
                         if ((node as Node).parentId && this.nameTable[(node as Node).parentId].shape.type === 'UmlClassifier'
                             && text.indexOf('+') === -1 && text.indexOf('-') === -1 && text.indexOf('#') === -1
@@ -10322,9 +10324,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 textWrapper.visible = true;
                 this.updateDiagramObject(node);
                 this.diagramActions = this.diagramActions & ~DiagramAction.TextEdit;
-                if (this.activeLabel.isGroup) {
-                    this.endGroupAction();
-                }
+                this.endGroupAction();
                 this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
                 this.commandHandler.getBlazorOldValues();
                 if (isBlazor()) { this.canEnableBlazorObject = false; }

@@ -1771,8 +1771,7 @@ export class Renderer {
             left -= elementBox.width;
         }
         if (this.documentHelper.owner.isSpellCheck) {
-            if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))
-                && (!this.documentHelper.selection.isSelectionInsideElement(elementBox) || this.documentHelper.triggerElementsOnLoading))) {
+            if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox)))) {
                 elementBox.canTrigger = true;
                 this.leftPosition = this.pageLeft;
                 this.topPosition = this.pageTop;
@@ -1780,13 +1779,21 @@ export class Renderer {
                 if (errorDetails.errorFound && !this.isPrinting) {
                     color = '#FF0000';
                     let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+                    const errors = this.spellChecker.errorWordCollection;
                     for (let i: number = 0; i < errorDetails.elements.length; i++) {
                         let currentElement: ErrorTextElementBox = errorDetails.elements[i];
-                        if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
+                        const exactText = this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true);
+                        if (elementBox.ignoreOnceItems.indexOf(exactText) === -1) {
                             if (isRTL) {
                                 this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.end)) ? left : currentElement.end.location.x, top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
                             } else {
                                 this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+                            }
+                            if (errors.containsKey(exactText)) {
+                                const errorElements = errors.get(exactText);
+                                if (errorElements.indexOf(currentElement) === -1) {
+                                    errorElements.push(currentElement);
+                                }
                             }
                         }
                     }

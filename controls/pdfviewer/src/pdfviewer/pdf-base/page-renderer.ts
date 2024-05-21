@@ -445,7 +445,7 @@ export class PageRenderer{
                                         if(template.size[0] === 0 || template.size[1] === 0 || isNullOrUndefined(template._appearance))
                                             this.findStampImage(annotation);
                                         else
-                                            this.findStampTemplate(annotation,rubberStampAnnotation,pageRotation);
+                                            this.findStampTemplate(annotation, rubberStampAnnotation, pageRotation, this.annotationOrder.length - 1);
                                     }
                                 }
                             }
@@ -454,7 +454,7 @@ export class PageRenderer{
                                 if(template.size[0] === 0 || template.size[1] === 0 || isNullOrUndefined(template._appearance))
                                     this.findStampImage(annotation)
                                 else
-                                    this.findStampTemplate(annotation,rubberStampAnnotation,pageRotation);
+                                    this.findStampTemplate(annotation, rubberStampAnnotation, pageRotation, this.annotationOrder.length - 1);
                             }
                         }
                     
@@ -566,7 +566,7 @@ export class PageRenderer{
      * @private
      * @param annotation 
      */
-    public findStampTemplate(annotation: PdfRubberStampAnnotation,rubberStampAnnotation: any,pageRotation: number) {
+    public findStampTemplate(annotation: PdfRubberStampAnnotation,rubberStampAnnotation: any,pageRotation: number, collectionOrder: number) {
         // Create a template from the appearance of rubber stamp annotation
         let template: PdfTemplate = annotation.createTemplate();
         let templateData: _JsonDocument = new _JsonDocument();
@@ -589,7 +589,7 @@ export class PageRenderer{
         let data: string =  'data:application/pdf;base64,' + _encode(stampDocument.save());
         data = this.pdfViewerBase.checkDocumentData(data);
         let fileByteArray: any = this.pdfViewerBase.convertBase64(data);
-        this.pdfViewerBase.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder)});
+        this.pdfViewerBase.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder});
     }
 
     /**
@@ -606,6 +606,7 @@ export class PageRenderer{
         imageData.data.set(value);
         canvasContext.putImageData(imageData, 0, 0);
         let imageUrl: string = canvas.toDataURL();
+        this.pdfViewerBase.releaseCanvas(canvas);
         let base64string: string = this.pdfViewerBase.checkDocumentData(imageUrl);
         let Json: any = { imagedata: imageUrl };
         const id: any = data.annotName;
@@ -625,7 +626,7 @@ export class PageRenderer{
                 currentAnnot.Apperarance = [];
             }
             currentAnnot.Apperarance.push(Json);
-            this.pdfViewer.annotationModule.stampAnnotationModule.renderStampAnnotImage(currentAnnot, 0, null, null, true);
+            this.pdfViewer.annotationModule.stampAnnotationModule.renderStampAnnotImage(currentAnnot, 0, null, null, true, true, data.collectionOrder);
         }
         this.Imagedata = imageUrl;
     }

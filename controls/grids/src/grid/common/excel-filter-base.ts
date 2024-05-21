@@ -412,6 +412,13 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
         this.dlg.classList.remove('e-checkboxfilter');
         this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' }) as HTMLUListElement;
+        const menuItems = this.dlg.querySelectorAll('.e-menu-item');
+        menuItems.forEach((menuItem) => {
+            if(menuItem.scrollWidth>menuItem.clientWidth)
+            {
+                menuItem.setAttribute('title',menuItem.textContent);
+            }
+        });
         if (options.column.showColumnMenu) {
             this.parent.notify(events.filterDialogCreated, {});
         }

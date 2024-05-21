@@ -69,7 +69,10 @@ export class Alignments {
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         if (!isTableAlign) {
             this.parent.domNode.setMarker(save);
-            const alignmentNodes: Node[] = this.parent.domNode.blockNodes();
+            let alignmentNodes: Node[] = this.parent.domNode.blockNodes();
+            if (e.enterAction === 'BR') {
+                alignmentNodes = this.parent.domNode.convertToBlockNodes(alignmentNodes, false);
+            }
             for (let i: number = 0; i < alignmentNodes.length; i++) {
                 const parentNode: Element = alignmentNodes[i as number] as Element;
                 setStyleAttribute(parentNode as HTMLElement, { 'text-align': this.alignments[e.subCommand] });

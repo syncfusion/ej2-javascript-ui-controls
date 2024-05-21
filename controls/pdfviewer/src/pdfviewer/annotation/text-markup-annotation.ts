@@ -1768,7 +1768,7 @@ export class TextMarkupAnnotation {
         const pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations) {
             if (action === 'Text Markup Added') {
-                this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(pageAnnotations[index], 'textMarkup');
+                this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(pageAnnotations[index], 'textMarkup',null,true);
                 // eslint-disable-next-line
                 let removeDiv: any = document.getElementById(pageAnnotations[index].annotName);
                 if (removeDiv) {
@@ -1779,6 +1779,7 @@ export class TextMarkupAnnotation {
                     }
                 }
                 pageAnnotations.splice(index, 1);
+                this.pdfViewer.annotationCollection.splice(index, 1);
             } else if (action === 'Text Markup Deleted') {
                 // eslint-disable-next-line max-len
                 this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addAnnotationComments(pageNumber, annotation.shapeAnnotationType);

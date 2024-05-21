@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 25.2.5 (2024-05-21)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I577994` - Now, After zooming and exporting the HTML content, the scroll Padding values are considered.
+- `#I586462` - Now, undo redo working properly after editing swimlane child node’s annotation.
+
 ## 25.2.4 (2024-05-14)
 
 ### Diagram

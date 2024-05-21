@@ -185,7 +185,7 @@ export class Marker {
         return scaleFactor;
     }
     /**
-     * To calculate center position and factor value dynamically
+     * To calculate center position and factor value dynamically.
      *
      * @param {LayerSettings[]} layersCollection - Specifies the layer settings instance.
      * @returns {void}
@@ -306,7 +306,7 @@ export class Marker {
         }
     }
     /**
-     * To check and trigger marker click event
+     * To check and trigger marker click event.
      *
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
@@ -368,7 +368,7 @@ export class Marker {
         }
     }
     /**
-     * To check and trigger Cluster click event
+     * To check and trigger Cluster click event.
      *
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
@@ -407,7 +407,7 @@ export class Marker {
         this.maps.trigger(markerClusterClick, eventArgs);
     }
     /**
-     * To get marker from target id
+     * To get marker from target id.
      *
      * @param {string} target - Specifies the target
      * @returns {object} - Returns the marker, data, clusterCollection, markCollection
@@ -464,7 +464,7 @@ export class Marker {
         return null;
     }
     /**
-     * To check and trigger marker move event
+     * To check and trigger marker move event.
      *
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
@@ -490,7 +490,7 @@ export class Marker {
         this.maps.trigger(markerMouseMove, eventArgs);
     }
     /**
-     * To check and trigger cluster move event
+     * To check and trigger cluster move event.
      *
      * @param {PointerEvent} e - Specifies the pointer event argument.
      * @returns {void}
@@ -515,8 +515,8 @@ export class Marker {
         this.maps.trigger(markerClusterMouseMove, eventArgs);
     }
 
-    /** @private
-     *
+    /**
+     * @private
      * @returns {void}
      */
     public initializeMarkerClusterList(): void {

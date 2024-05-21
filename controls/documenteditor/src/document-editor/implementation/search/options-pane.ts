@@ -1,4 +1,4 @@
-import { LayoutViewer, DocumentHelper, TableOfContentsSettings, ParagraphWidget } from '../index';
+import { LayoutViewer, DocumentHelper, TableOfContentsSettings, ParagraphWidget, HistoryInfo } from '../index';
 import { TextSearchResults } from './text-search-results';
 import { TextSearchResult } from './text-search-result';
 import { createElement, isNullOrUndefined, L10n, classList } from '@syncfusion/ej2-base';
@@ -326,10 +326,17 @@ export class OptionsPane {
             includeOutlineLevels: true,
             includeHyperlink: true,
         };
+        this.documentHelper.owner.editor.initComplexHistory('TOC');
         let code: string = undefined;
         // Build TOC field code based on parameter
         code = this.constructHeadingFieldCode(headingPaneSettings);
         let widgets: ParagraphWidget[] = this.documentHelper.owner.editorModule.buildToc(this.validateHeadingSettings(headingPaneSettings), code, false, true, true);
+        if (this.documentHelper.owner.editorHistory) {
+            this.documentHelper.owner.editorHistory.updateComplexHistory();
+            if (isNullOrUndefined((this.documentHelper.owner.editorHistory.undoStack[this.documentHelper.owner.editorHistory.undoStack.length - 1] as HistoryInfo).modifiedActions)) {
+                this.documentHelper.owner.editorHistory.undoStack.pop();
+            }
+        }
         return widgets;
     }
     private validateHeadingSettings(navigationSettings: TableOfContentsSettings): TableOfContentsSettings {

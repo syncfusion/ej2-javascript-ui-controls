@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 25.2.5 (2024-05-21)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I584933` - Resolved the Manage Styles is missing from the DocumentEditor.
+- `#I585396` - Resolved the odd cursor behaviour with superscript and subscript.
+- `#I583968` - Resolved the insert field issue when local paste is enabled.
+- `#I587711` - Resolved the spellcheck change all does not work on document opening case.
+- `#I586658` - Resolved the backspace issue while deleting list item.
+- `#I585406` - Resolved the spellcheck annotation disappears issue when cursor is in range.
+
 ## 25.2.4 (2024-05-14)
 
 ### DocumentEditor

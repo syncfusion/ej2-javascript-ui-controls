@@ -1081,6 +1081,7 @@ export class PdfRenderer {
     }
 
     private pdfiumExportAsImage(pageIndex: number): Promise<string> {
+        const proxy: PdfRenderer = this;
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner) && !isNullOrUndefined(this.loadedDocument)) {
                 this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false });
@@ -1095,6 +1096,7 @@ export class PdfRenderer {
                         imageData.data.set(value);
                         canvasContext.putImageData(imageData, 0, 0);
                         let imageUrl: string = canvas.toDataURL();
+                        proxy.pdfViewerBase.releaseCanvas(canvas);
                         resolve(imageUrl);
                     }
                 }
@@ -1106,6 +1108,7 @@ export class PdfRenderer {
     }
 
     private pdfiumExportAsImages(startIndex: number, endIndex: number): Promise<string[]> {
+        const proxy: PdfRenderer = this;
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner) && !isNullOrUndefined(this.loadedDocument)) {
                 if (startIndex < 0) {
@@ -1133,6 +1136,7 @@ export class PdfRenderer {
                         imageData.data.set(value);
                         canvasContext.putImageData(imageData, 0, 0);
                         let imageUrl: string = canvas.toDataURL();
+                        proxy.pdfViewerBase.releaseCanvas(canvas);
                         imageUrls.push(imageUrl);
                         if (imageUrls.length === count) {
                             resolve(imageUrls);

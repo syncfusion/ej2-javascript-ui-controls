@@ -491,3 +491,4 @@ $error-font-color: $danger !default;
 $warning-font-color: $yellow !default;
 $success-font-color: lighten($green, 10%) !default;
 $information-font-color: $cyan !default;
+$accordion-text-active-color: tint-color($primary, 40%) !default;

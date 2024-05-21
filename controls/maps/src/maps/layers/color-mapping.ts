@@ -19,7 +19,7 @@ export class ColorMapping {
      * @param { ShapeSettingsModel } shapeSettings - Specifies the shape settings.
      * @param { object } layerData - Specifies the layer data.
      * @param { string } color - Specifies the color.
-     * @returns {Object} - Returns the object.
+     * @returns {object} - Returns the object.
      * @private
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,7 +33,7 @@ export class ColorMapping {
         return !isNullOrUndefined(shapeColor) ? shapeColor : color;
     }
     /**
-     * To color by value and color mapping
+     * To color by value and color mapping.
      *
      * @param {ColorMappingSettingsModel[]} colorMapping - Specifies the color mapping instance.
      * @param {number} colorValue - Specifies the color value

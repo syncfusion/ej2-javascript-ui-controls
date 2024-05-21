@@ -7728,7 +7728,7 @@ export class Layout {
             const cellWidget: TableCellWidget = rowWidget.childWidgets[i] as TableCellWidget;
             let isRightStyleNone: boolean = (cellWidget.cellFormat.borders.right.lineStyle === 'None');
             cellspace = !isNullOrUndefined(cellWidget.ownerTable) && !isNullOrUndefined(cellWidget.ownerTable.tableFormat) ? HelperMethods.convertPointToPixel(cellWidget.ownerTable.tableFormat.cellSpacing) : 0;
-            if (Math.round(left) < Math.round(cellWidget.x - cellWidget.margin.left)) {
+            if (Math.round(left) < Math.round(cellWidget.x - cellWidget.margin.left - cellspace)) {
                 if (this.insertRowSpannedWidget(rowWidget, viewer, left, i)) {
                     i--;
                     continue;
@@ -7740,13 +7740,6 @@ export class Layout {
                 const length: number = rowWidget.childWidgets.length;
                 this.insertEmptySplittedCellWidget(rowWidget, tableCollection, left, i, previousRowIndex);
                 if (length < rowWidget.childWidgets.length) {
-                    if (isNullOrUndefined(rowWidget.previousRenderedWidget) || !(rowWidget.previousRenderedWidget instanceof TableRowWidget)) {
-                        break;
-                    }
-                    let prevRowWidget: TableRowWidget = rowWidget.previousRenderedWidget as TableRowWidget;
-                    if ((prevRowWidget.lastChild as TableCellWidget).columnIndex === (rowWidget.lastChild as TableCellWidget).columnIndex && (rowWidget.ownerTable.tableFormat.allowAutoFit ? (prevRowWidget.lastChild as TableCellWidget).cellFormat.columnSpan === 1 : true)) {
-                        break;
-                    }
                     i--;
                     continue;
                 }
@@ -7858,14 +7851,23 @@ export class Layout {
                 if (Math.round(left) === Math.round(previousLeft)) {
                     rowSpan = (isNullOrUndefined(cellWidget) || isNullOrUndefined(cellWidget.cellFormat)) ? rowSpan :
                         cellWidget.cellFormat.rowSpan;
-                    if (rowSpan > 1) {
-                        //if (!isNullOrUndefined(currentRow.childWidgets[index])) {
-                        const emptyCellWidget: TableCellWidget = this.createCellWidget(cellWidget);
-                        //if (emptyCellWidget.x < (currentRow.childWidgets[index] as TableCellWidget).x) {
-                        currentRow.childWidgets.splice(index, 0, emptyCellWidget);
-                        emptyCellWidget.containerWidget = currentRow;
-                        this.updateChildLocationForRow(currentRow.y, currentRow);
-                        return;
+                    if (rowSpan > 1 && ((rowWidget.firstChild as TableCellWidget).columnIndex === 0)) {
+                        if (this.isVerticalMergedCellContinue(currentRow) && !isNullOrUndefined(currentRow.previousRenderedWidget) && currentRow.previousRenderedWidget instanceof TableRowWidget && this.isVerticalMergedCellContinue(currentRow.previousRenderedWidget) && currentRow.previousRenderedWidget.y + currentRow.previousRenderedWidget.height < cellWidget.y + cellWidget.height) {
+                            let splittedCell: TableCellWidget = this.getSplittedWidget(currentRow.previousRenderedWidget.y + currentRow.previousRenderedWidget.height, true, tableCollection, undefined, cellWidget, undefined, undefined, undefined, undefined, true);
+                            currentRow.childWidgets.splice(index, 0, splittedCell);
+                            splittedCell.containerWidget = currentRow;
+                            this.updateChildLocationForRow(currentRow.y, currentRow);
+                            return;
+                        }
+                        else {
+                            //if (!isNullOrUndefined(currentRow.childWidgets[index])) {
+                            const emptyCellWidget: TableCellWidget = this.createCellWidget(cellWidget);
+                            //if (emptyCellWidget.x < (currentRow.childWidgets[index] as TableCellWidget).x) {
+                            currentRow.childWidgets.splice(index, 0, emptyCellWidget);
+                            emptyCellWidget.containerWidget = currentRow;
+                            this.updateChildLocationForRow(currentRow.y, currentRow);
+                            return;
+                        }
                         //}
                         //}
                     }

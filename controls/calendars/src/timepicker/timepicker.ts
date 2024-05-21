@@ -2014,7 +2014,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 break;
             }
         }
-        return this.prevValue;
+        return this.getValue(date);
     }
     protected resetState(): void {
         this.removeSelection();
@@ -2281,7 +2281,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     protected updateInput(isUpdate: boolean, date: Date): void {
         if (isUpdate) {
-            this.prevValue = this.getValue(date);
+            this.prevValue = this.getValue(this.prevDate);
         }
         this.prevDate = this.valueWithMinutes = date;
         if ((typeof date !== 'number') || (this.value && +new Date(+this.value).setMilliseconds(0)) !== +date) {

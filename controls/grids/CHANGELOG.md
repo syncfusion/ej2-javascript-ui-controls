@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 25.2.4 (2024-05-14)
+## 25.2.5 (2024-05-21)
+
+### Grid
+
+#### Bug fixes
+
+- `#I582334` - Resolved the issue where the page orientation Landscape throws script error while pdf export.
+- `#I584344` - Localization not applied on grid's group expand icons issue was resolved.
+- `#I586600` - Resolved the issue where the Interface `BeforeDataBoundArgs` mismatches the actual event arguments.
+- `#I587235` - Resolved the issue where the `INVALID FORMAT` console warning documentation reference link not found issue.
+- `#I587421` - Resolved the duplicate ID accessibility issue occurring when using multiple data grids with column chooser on the same page.
+
+## 25.2.3 (2024-05-08)
 
 ### Grid
 

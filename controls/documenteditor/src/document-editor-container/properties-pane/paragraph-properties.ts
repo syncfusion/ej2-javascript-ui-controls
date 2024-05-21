@@ -475,8 +475,9 @@ export class Paragraph {
             change: this.selectStyleValue.bind(this)
         });
         let itemTemplate: string | Function = '';
+        let instance: Paragraph = this;
+        this.style.open = this.updateOptions.bind(this);
         if (!this.container.enableCsp) {
-            this.style.open = this.updateOptions.bind(this);
             if (this.isRtl) {
                 itemTemplate = initializeCSPTemplate(
                     function (data: any): string {
@@ -491,10 +492,14 @@ export class Paragraph {
                 );
             }
             this.style.itemTemplate = itemTemplate;
-            this.style.footerTemplate = '<span class="e-de-ctnr-dropdown-ftr">'
-                + this.localObj.getConstant('Manage Styles') + '...' + '</span>';
             this.style.isStringTemplate = true;
         }
+        this.style.footerTemplate = initializeCSPTemplate(
+            function (data: any): string {
+                return `<span class="e-de-ctnr-dropdown-ftr">
+                ${instance.localObj.getConstant('Manage Styles')}...</span>`;
+            }
+        );
         this.style.appendTo(selectElement);
         this.style.focus = (): void => {
             this.isRetrieving = false;

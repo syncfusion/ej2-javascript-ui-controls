@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { SpreadsheetModel, SheetModel, getCell, CellModel, showAggregate, Spreadsheet, setCell, ICellRenderer } from '../../../src/index';
-import { InventoryList } from '../util/datasource.spec';
+import { InventoryList, defaultData } from '../util/datasource.spec';
 import { L10n, setCurrencyCode } from '@syncfusion/ej2-base';
 
 /**
@@ -1272,6 +1272,21 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                     });
                 });
             });
+        });
+    });
+    describe('EJ2-883693 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Custom number format is not working properly like MS Excel when the format contains text with date time format in it', (done: Function) => {
+            helper.edit('A12','33.43');
+            helper.invoke('numberFormat', ['"Largo: "0.00" metros"', 'A12']);
+            let td: HTMLElement = helper.invoke('getCell', [11, 0]);
+            expect(td.textContent).toBe('Largo: 33.43 metros');
+            done();
         });
     });
 });

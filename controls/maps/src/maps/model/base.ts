@@ -486,6 +486,14 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      */
     @Property(null)
     public valuePath: string;
+    /**
+     * Specifies the value within which the tooltip will be removed on a mobile device. The value represents time in milliseconds.
+     * If the value is set to 0, the tooltip will not be removed. If the value is set to greater than 0, the tooltip will be removed at the specified time.
+     *
+     * @default 2000
+     */
+    @Property(2000)
+    public duration: number;
 }
 /**
  * Specifies the properties such as visibility, fill, border and text style to customize the tooltip.
@@ -517,6 +525,15 @@ export class PolygonTooltipSettings extends ChildProperty<PolygonTooltipSettings
      */
     @Complex<FontModel>({ fontFamily: null, size: null, fontWeight : null }, Font)
     public textStyle: FontModel;
+
+    /**
+     * Specifies the value within which the tooltip will be removed on a mobile device. The value represents time in milliseconds.
+     * If the value is set to 0, the tooltip will not be removed. If the value is set to greater than 0, the tooltip will be removed at the specified time.
+     *
+     * @default 2000
+     */
+    @Property(2000)
+    public duration: number;
 }
 /**
  * Gets or sets the options to customize the margin of the maps.
@@ -2049,7 +2066,7 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
  * Gets or sets the options to customize the markers in the maps.
  */
 export class MarkerSettings extends MarkerBase {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
@@ -2104,8 +2121,8 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     public type: Type;
     /**
      * Gets or sets the geometry type for the layer in maps. There are two types: Geographic and Normal.
-     * * Geographic type renders the shape maps with geographical coordinate system.
-     * * Normal type renders the shape maps using default coordinate system.
+     * - Geographic type renders the shape maps with geographical coordinate system.
+     * - Normal type renders the shape maps using default coordinate system.
      *
      * @default Geographic
      */

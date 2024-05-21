@@ -30,9 +30,6 @@ export class FullScreen {
             && !isNOU(this.parent.quickToolbarModule)) {
             this.parent.quickToolbarModule.hideQuickToolbars();
         }
-        if (this.parent.showTooltip && !isNOU(document.querySelector('.e-tooltip-wrap'))) {
-            this.parent.notify(events.destroyTooltip, {args: event});
-        }
         this.scrollableParent = getScrollableParent(this.parent.element);
         if (!this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             const evenArgs: { [key: string]: Object } = {
@@ -84,9 +81,6 @@ export class FullScreen {
         if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown'
             && !isNOU(this.parent.quickToolbarModule)) {
             this.parent.quickToolbarModule.hideQuickToolbars();
-        }
-        if (this.parent.showTooltip && !isNOU(document.querySelector('.e-tooltip-wrap'))) {
-            this.parent.notify(events.destroyTooltip, {args: event});
         }
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             const evenArgs: { [key: string]: Object } = {

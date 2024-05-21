@@ -429,7 +429,9 @@ export class AggregateMenu {
         }
     }
     private updateDataSource(isRefreshed?: boolean): void {
-        if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() === 'pivotview') {
+        if ((this.parent as PivotFieldList).isDeferLayoutUpdate === false || ((this.parent as PivotFieldList).pivotGridModule &&
+            (this.parent as PivotFieldList).pivotGridModule.pivotDeferLayoutUpdate === false)
+            || this.parent.getModuleName() === 'pivotview') {
             this.parent.updateDataSource(isRefreshed);
         } else {
             if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') {

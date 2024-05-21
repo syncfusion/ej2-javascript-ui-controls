@@ -817,34 +817,34 @@ export class Drawing {
         }
         if (obj.formFieldAnnotationType === 'Textbox' || obj.formFieldAnnotationType === 'Checkbox' || obj.formFieldAnnotationType === 'RadioButton'
             || obj.formFieldAnnotationType === 'PasswordField' || obj.formFieldAnnotationType === 'DropdownList' || obj.formFieldAnnotationType === 'ListBox' || obj.formFieldAnnotationType === 'SignatureField' || obj.formFieldAnnotationType === 'InitialField') {
-            for (let i: number = 0; i < this.pdfViewer.formFieldCollections.length; i++) {
-                // eslint-disable-next-line
-                const element: any = this.pdfViewer.formFieldCollections[i];
-                if (element.id === obj.id) {
-                    this.pdfViewer.formFieldCollections.splice(i, 1);
-                }
-            }
-        }
-        if (obj.formFieldAnnotationType === 'Textbox' || obj.formFieldAnnotationType === 'Checkbox' || obj.formFieldAnnotationType === 'RadioButton'
-            || obj.formFieldAnnotationType === 'PasswordField' || obj.formFieldAnnotationType === 'DropdownList' || obj.formFieldAnnotationType === 'ListBox' || obj.formFieldAnnotationType === 'SignatureField' || obj.formFieldAnnotationType === 'InitialField') {
-            // eslint-disable-next-line
             const inputField: any = document.getElementById('form_field_' + obj.id + '_content_html_element');
             if (inputField) {
                 inputField.remove();
                 this.pdfViewer.renderDrawing(undefined, index);
-                const field: IFormField = {
-                    // eslint-disable-next-line
-                    name: (obj as any).name, id: (obj as any).id, value: (obj as any).value, fontFamily: obj.fontFamily, fontSize: obj.fontSize, fontStyle: (obj as any).fontStyle,
-                    // eslint-disable-next-line
-                    color: (obj as any).color, backgroundColor: (obj as any).backgroundColor, alignment: (obj as any).alignment, isReadonly: (obj as any).isReadonly, visibility: (obj as any).visibility,
-                    // eslint-disable-next-line
-                    maxLength: (obj as any).maxLength, isRequired: (obj as any).isRequired, isPrint: obj.isPrint, rotation: (obj as any).rotateAngle, tooltip: (obj as any).tooltip,
-                    // eslint-disable-next-line
-                    options: (obj as any).options, isChecked: (obj as any).isChecked, isSelected: (obj as any).isSelected
-                };
-                this.pdfViewer.fireFormFieldRemoveEvent('formFieldRemove', field, obj.pageIndex);
-                this.pdfViewer.formDesignerModule.removeFieldsFromAnnotationCollections(obj.id, field.name);
             }
+            for (let i: number = 0; i < this.pdfViewer.formFieldCollections.length; i++) {
+                let element: FormFieldModel = this.pdfViewer.formFieldCollections[parseInt(i.toString(), 10)];
+                if (element.id === obj.id) {
+                    this.pdfViewer.formFieldCollections.splice(i, 1);
+                }
+            }
+            for (let i: number = 0; i < this.pdfViewer.viewerBase.formFieldCollection.length; i++) {
+                if (obj.id == this.pdfViewer.viewerBase.formFieldCollection[parseInt(i.toString(), 10)]) {
+                    this.pdfViewer.viewerBase.formFieldCollection.splice(i, 1);
+                }
+            }
+            const field: IFormField = {
+                // eslint-disable-next-line
+                name: (obj as any).name, id: (obj as any).id, value: (obj as any).value, fontFamily: obj.fontFamily, fontSize: obj.fontSize, fontStyle: (obj as any).fontStyle,
+                // eslint-disable-next-line
+                color: (obj as any).color, backgroundColor: (obj as any).backgroundColor, alignment: (obj as any).alignment, isReadonly: (obj as any).isReadonly, visibility: (obj as any).visibility,
+                // eslint-disable-next-line
+                maxLength: (obj as any).maxLength, isRequired: (obj as any).isRequired, isPrint: obj.isPrint, rotation: (obj as any).rotateAngle, tooltip: (obj as any).tooltip,
+                // eslint-disable-next-line
+                options: (obj as any).options, isChecked: (obj as any).isChecked, isSelected: (obj as any).isSelected
+            };
+            this.pdfViewer.fireFormFieldRemoveEvent('formFieldRemove', field, obj.pageIndex);
+            this.pdfViewer.formDesignerModule.removeFieldsFromAnnotationCollections(obj.id, field.name);
         }
         this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
     }

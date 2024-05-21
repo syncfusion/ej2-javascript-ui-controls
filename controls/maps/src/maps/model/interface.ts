@@ -69,7 +69,8 @@ export interface ILoadedEventArgs extends IMinMaxLatitudeLongitude, IMapsEventAr
  * Specifies the event argument of the load event in maps.
  */
 export interface ILoadEventArgs extends IMapsEventArgs {
-    /** Defines the current maps instance.
+    /**
+     * Defines the current maps instance.
      *
      * @deprecated
      */

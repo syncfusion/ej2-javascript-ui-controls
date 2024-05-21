@@ -516,7 +516,7 @@ export class TreeViewRenderer implements IAction {
             (this.parent.isPopupView && (this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule
                 : this.parent);
         if (this.parent.pivotCommon.nodeStateModified.onStateModified(args, fieldName)) {
-            if (this.parent.allowDeferLayoutUpdate) {
+            if (this.parent.isDeferLayoutUpdate || (this.parent.pivotGridModule && this.parent.pivotGridModule.pivotDeferLayoutUpdate)) {
                 selectedNode.isSelected = true;
                 this.updateDataSource();
             } else {
@@ -752,7 +752,8 @@ export class TreeViewRenderer implements IAction {
     private updateNodeStateChange(
         id: string, selectedNode: { [key: string]: Object }, isChecked: boolean
     ): void {
-        if (!this.parent.allowDeferLayoutUpdate) {
+        if (this.parent.isDeferLayoutUpdate === false || (this.parent.pivotGridModule &&
+            this.parent.pivotGridModule.pivotDeferLayoutUpdate === false)) {
             this.parent.updateDataSource(true);
         } else {
             selectedNode.isSelected = isChecked;

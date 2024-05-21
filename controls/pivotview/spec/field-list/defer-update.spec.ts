@@ -1072,6 +1072,81 @@ describe('Pivot Field List Rendering - Defer Update', () => {
         });
     });
 
+    describe('Retain the defer update UI after refreshing the component', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(GroupingBar, FieldList);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    sortSettings: [{ name: 'company', order: 'Descending' }],
+                    filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                    { name: 'company', type: 'Include', items: ['NIPAZ'] },
+                    { name: 'gender', type: 'Include', items: ['male'] }],
+                    rows: [{ name: 'company' }, { name: 'state' }],
+                    columns: [{ name: 'name' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'gender' }]
+                },
+                showGroupingBar: true,
+                showFieldList: true,
+                dataBound: dataBound,
+                allowDeferLayoutUpdate: true
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        let click: MouseEvent = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        it('Open popup field list', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                document.querySelectorAll('.e-toggle-field-list')[0].dispatchEvent(click);
+                done();
+            }, 1000);
+        });
+        it('Disable defer update', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                document.querySelectorAll('.e-check')[6].dispatchEvent(click);
+                done();
+            }, 1000);
+        });
+        it('Refreshing the component', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                pivotGridObj.refresh();
+                done();
+            }, 1000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

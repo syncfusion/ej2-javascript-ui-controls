@@ -35,6 +35,7 @@ export function createFloatLabel(
     element.id = id;
     if (!isNullOrUndefined(element.id) && element.id !== '') {
         floatLabelElement.id = 'label_' + element.id.replace(/ /g, '_');
+        floatLabelElement.setAttribute('for',element.id);
         attributes(inputElement, { 'aria-labelledby': floatLabelElement.id });
     }
     if (!isNullOrUndefined(inputElement.placeholder) && inputElement.placeholder !== '') {

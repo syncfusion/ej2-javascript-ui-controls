@@ -2711,6 +2711,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.showCheckBox) {
             return;
         }
+        const eventArgs: DdtSelectEventArgs = this.getEventArgs(args);
+        this.trigger('select', eventArgs);
         let selectedText: string;
         if (args.isInteracted) {
             const id: string = getValue('id', args.nodeData).toString();
@@ -2736,8 +2738,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.setMultiSelect();
             }
         }
-        const eventArgs: DdtSelectEventArgs = this.getEventArgs(args);
-        this.trigger('select', eventArgs);
         if (this.isValueChange && !this.changeOnBlur) {
             this.triggerChangeEvent(this.keyEventArgs);
             this.isValueChange = false;
