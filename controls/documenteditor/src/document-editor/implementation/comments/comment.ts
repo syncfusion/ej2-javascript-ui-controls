@@ -475,7 +475,7 @@ export class CommentReviewPane {
                     this.owner.editorHistoryModule.undo();
                     this.owner.editorHistoryModule.redoStack.pop();
                 }
-                this.owner.editorModule.isSkipOperationsBuild = true;
+                this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
                 this.owner.editorModule.deleteCommentInternal(comment);
                 this.owner.editorModule.isSkipOperationsBuild = false;
             } else if (this.owner.editorModule) {
@@ -1314,7 +1314,7 @@ export class CommentView {
                 this.commentPane.parentPane.isNewComment = false;
             }
             let documentEditor: DocumentEditor = this.owner;
-            documentEditor.editorModule.isSkipOperationsBuild = true;
+            documentEditor.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
             this.commentPane.parentPane.discardComment(this.comment);
             documentEditor.editorModule.isSkipOperationsBuild = false;
         }

@@ -2423,7 +2423,7 @@ export class RulerHelper {
                 isDragging = true;
                 tabStopOffset = e.clientX - tabStopElement.getBoundingClientRect().left;
                 initialValue = HelperMethods.getNumberFromString(tabStopElement.style.left);
-                tabIndex = parseInt(tabStopElement.id.split('_')[3]);
+                tabIndex = parseInt(tabStopElement.id.split('_')[tabStopElement.id.split('_').length - 1]);
                 currentTabStop = currrentParagraph.paragraphFormat.tabs[parseInt(tabIndex.toString(), 10)];
                 this.currentTabStopElement = tabStopElement;
                 let rulerZeroPoint: number = HelperMethods.convertPointToPixel(1584 - documentEditor.selectionModule.sectionFormat.leftMargin)

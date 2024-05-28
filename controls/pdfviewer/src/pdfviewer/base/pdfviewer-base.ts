@@ -30,6 +30,7 @@ import { IRectangle, TextSelection } from '../text-selection';
 import { FormFields } from '../form-fields';
 import { PdfiumRunner } from '../pdfium/pdfium-runner';
 import { PageOrganizer } from '../index';
+import { PdfPage } from '@syncfusion/ej2-pdf';
 
 /**
  * The `ISize` module is used to handle page size property of PDF viewer.
@@ -7644,11 +7645,16 @@ export class PdfViewerBase {
                                 if (this.clientSideRendering) {
                                     let textDetailsId: string = proxy.documentId + '_' + pageIndex + '_textDetails';
                                     let isTextNeed: boolean = proxy.pageTextDetails ? proxy.pageTextDetails[`${textDetailsId}`] ? false : true : true;
+                                    let currentPage: PdfPage = this.pdfViewer.pdfRenderer.loadedDocument.getPage(pageIndex);
+                                    let cropBoxRect: Rect = new Rect(0, 0, 0, 0);
+                                    if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map && currentPage._pageDictionary._map.CropBox) {
+                                        [cropBoxRect.x, cropBoxRect.y, cropBoxRect.width, cropBoxRect.height] = currentPage._pageDictionary._map.CropBox;
+                                    }
                                     if (viewPortWidth >= pageWidth || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
                                         jsonData = JSON.parse(JSON.stringify(jsonObject));
                                         jsonData.action = 'pageRenderInitiate';
                                         proxy.pdfViewer.firePageRenderInitiate(jsonData);
-                                        this.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId });
+                                        this.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId, cropBoxRect: cropBoxRect });
                                     }
                                     else {
                                         this.showPageLoadingIndicator(pageIndex, true);
@@ -9689,9 +9695,10 @@ export class PdfViewerBase {
                 obj = (this.pdfViewer.nameTable as any)[id];
             }
         }
-        if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && (obj && !(obj instanceof PdfFormFieldBase))) {
-            evt.preventDefault();
-        }
+        //(Bug-884739): We have commented out this line. The signature window is not open for mobile view.
+        // if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && (obj && !(obj instanceof PdfFormFieldBase))) {
+        //     evt.preventDefault();
+        // }
         if (this.pdfViewer.annotation && this.pdfViewer.enableStampAnnotations) {
             const stampModule: StampAnnotation = this.pdfViewer.annotationModule.stampAnnotationModule;
             if (stampModule && stampModule.isNewStampAnnot) {

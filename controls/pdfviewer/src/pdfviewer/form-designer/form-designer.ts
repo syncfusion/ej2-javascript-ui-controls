@@ -851,7 +851,6 @@ export class FormDesigner {
                                     let zoomCurrentData = this.renderFormFieldsInZooming(element, currentData, signatureField, zoomValue);
                                     if (currentData.formFieldAnnotationType === "SignatureField" || currentData.formFieldAnnotationType === "InitialField") {
                                         let proxy: any = this;
-                                        if (currentData.value === '') {
                                             formFieldsData.filter(function (item: any) {
                                                 if (item.FormField.name === currentData.name && item.FormField.id !== currentData.id && !isNullOrUndefined(proxy.pdfViewer.nameTable[item.FormField.id]) && proxy.pdfViewer.nameTable[item.FormField.id].value !== '') {
                                                     currentData.value = proxy.pdfViewer.nameTable[item.FormField.id].value;
@@ -865,7 +864,6 @@ export class FormDesigner {
                                                 this.pdfViewer.formFieldsModule.drawSignature(currentData.signatureType, currentData.value, currentData);
                                                 signatureValueRender = true;
                                             }
-                                        }
                                     }
                                     currentData.lineBound = zoomCurrentData.lineBound;
                                     if (currentData.signatureBound) {

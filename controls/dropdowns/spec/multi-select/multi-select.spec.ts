@@ -7566,7 +7566,7 @@ describe('MultiSelect', () => {
             mEle.remove();
         });
         it('without datasource', () => {
-            expect(listObj.value.length).toBe(0);
+            expect(listObj.componentWrapper.innerText === '').toBe(true);
             //invalid value will be prevented from adding to the control when allowcustomvalue is false
             listObj.allowCustomValue = true;
             listObj.value = ['Sync'];

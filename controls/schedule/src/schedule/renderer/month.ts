@@ -223,8 +223,12 @@ export class Month extends ViewBase implements IRenderer {
         this.renderHeader();
         this.parent.notify(event.contentReady, {});
         const dateHeader: HTMLElement = (this.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS) as HTMLElement);
+        const contentWrapper: HTMLElement = (this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement);
         if (dateHeader) {
             dateHeader.scrollLeft = this.parent.uiStateValues.left;
+        }
+        if (contentWrapper) {
+            contentWrapper.scrollLeft = this.parent.uiStateValues.left;
         }
     }
 

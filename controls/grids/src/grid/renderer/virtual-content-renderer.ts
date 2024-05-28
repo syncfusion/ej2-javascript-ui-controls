@@ -552,7 +552,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     protected onDataReady(e?: NotifyArgs): void {
         if (!isNullOrUndefined(e.count)) {
             this.count = e.count;
-            this.maxPage = Math.ceil(e.count / this.parent.pageSettings.pageSize);
+            this.maxPage = Math.ceil((this.parent.groupSettings.columns.length && this.parent.vcRows.length ? this.parent.vcRows.length
+                : e.count) / this.parent.pageSettings.pageSize);
         }
         this.vgenerator.checkAndResetCache(e.requestType);
         if (['refresh', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder', undefined]
@@ -705,6 +706,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.parent.selectRow(this.selectedRowIndex);
         } else {
             this.activeKey = this.empty as string;
+            this.requestType = this.empty as string;
         }
     }
 

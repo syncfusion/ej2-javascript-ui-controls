@@ -861,6 +861,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             enableOptimizedRendering: this.pivotGridModule && (this.pivotGridModule.enableVirtualization &&
                 this.pivotGridModule.virtualScrollSettings && this.pivotGridModule.virtualScrollSettings.allowSinglePage),
             requestType: 'string',
+            headers: {}
         };
         if (this.request.readyState === XMLHttpRequest.UNSENT || this.request.readyState === XMLHttpRequest.OPENED) {
             this.request.withCredentials = false;
@@ -899,13 +900,17 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         });
         this.request.open('POST', this.dataSourceSettings.url, true);
         this.request.onreadystatechange = this.onSuccess.bind(this);
-        if(params.internalProperties.requestType === 'string'){
+        const keys: string[] = Object.keys(params.internalProperties.headers);
+        for (let i: number = 0; i < keys.length; i++) {
+            this.request.setRequestHeader(keys[i], params.internalProperties.headers[keys[i] as string]);
+        }
+        if (params.internalProperties.requestType === 'string') {
             this.request.setRequestHeader('Content-type', 'application/json');
             this.request.send(JSON.stringify(params));
-        } else if(params.internalProperties.requestType === 'base64'){
+        } else if (params.internalProperties.requestType === 'base64') {
             this.request.setRequestHeader('Content-type', 'application/octet-stream');
-            this.request.send(btoa(JSON.stringify(params)))
-        };
+            this.request.send(btoa(JSON.stringify(params)));
+        }
     }
 
     private onSuccess(): void {

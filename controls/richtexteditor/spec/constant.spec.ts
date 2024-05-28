@@ -24,3 +24,16 @@ export const TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT = new KeyboardEvent('keydown', {
     shiftKey: false,
     repeat: false
 } as EventInit);
+
+export const ENTERKEY_EVENT_INIT: KeyboardEventInit = {
+    key: "Enter",
+    keyCode: 13,
+    which: 13,
+    code: "Enter",
+    location: 0,
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    repeat: false
+} as EventInit;

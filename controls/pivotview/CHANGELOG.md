@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### Pivot Table
+
+#### Bug fixes
+
+- `#I586835` - When measures have no values, the OLAP pivot table will now be rendered with the correct cell values when drilling down.
+- `#I585932` - Date grouping will now work properly when using remote data in a pivot table.
+
 ## 25.2.5 (2024-05-21)
 
 ### Pivot Table

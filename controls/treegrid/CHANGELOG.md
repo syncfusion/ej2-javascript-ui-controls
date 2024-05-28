@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F56915` - Fixed an issue where adding an action while data is being fetched and re-rendered would throw a script error.
+
 ## 25.2.5 (2024-05-21)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I585943` - Resolved border not showing on Row Drag and Drop when the height exceeds the current view port.
+
+## 25.2.4 (2024-05-14)
 
 ### Tree Grid
 

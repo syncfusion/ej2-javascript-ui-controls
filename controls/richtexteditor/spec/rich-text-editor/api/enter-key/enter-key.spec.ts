@@ -5,6 +5,7 @@ import { isNullOrUndefined, Browser, createElement, detach } from '@syncfusion/e
 import { EditorManager, RichTextEditor} from './../../../../src/index';
 import { renderRTE, destroy } from './../../render.spec';
 import { NodeSelection } from './../../../../src/selection/index';
+import { ENTERKEY_EVENT_INIT } from '../../../constant.spec';
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -2520,5 +2521,69 @@ describe('Bug 880237: Bullet list not working properly and throws script error w
     });
     afterAll(() => {
         destroy(rteObj);
+    });
+});
+
+describe('884734 : Pasted images get duplicated when using enterKey as BR in RichTextEditor', () => {
+    let editor: RichTextEditor
+    beforeEach((done: DoneFn) => {
+        editor = renderRTE({
+            enterKey: 'BR',
+            value: `<img alt="image 1" src="/base/spec/content/image/RTEImage-Feather.png" style="width: 450px; height: 300px;" />`
+        });
+        done();
+    });
+    afterEach((done: DoneFn) => {
+        destroy(editor);
+        done();
+    });
+    it ('Case 1 The cursot at the start of the image', (done: DoneFn) => {
+        editor.focusIn();
+        const range: Range = document.createRange();
+        range.setStart(editor.inputElement.querySelector('img'), 0);
+        range.setEnd(editor.inputElement.querySelector('img'), 0);
+        const selection: Selection = document.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+        editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+        setTimeout(() => {
+            expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'IMG').toBe(true);
+            done();
+        }, 100);
+    });
+    it ('Case 2 The cursot at the end of the image', (done: DoneFn) => {
+        editor.focusIn();
+        const range: Range = document.createRange();
+        range.setStart(editor.inputElement, 1);
+        range.setEnd(editor.inputElement, 1);
+        const selection: Selection = document.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+        editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+        setTimeout(() => {
+            expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'BR').toBe(true);
+            done();
+        }, 100);
+    });
+    it ('Case 3 The cursot at the start of the image, Multiple enter action', (done: DoneFn) => {
+        editor.focusIn();
+        const range: Range = document.createRange();
+        range.setStart(editor.inputElement.querySelector('img'), 0);
+        range.setEnd(editor.inputElement.querySelector('img'), 0);
+        const selection: Selection = document.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+        editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+        editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+        editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+        editor.inputElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+        editor.inputElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+        setTimeout(() => {
+            expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'IMG').toBe(true);
+            done();
+        }, 100);
     });
 });

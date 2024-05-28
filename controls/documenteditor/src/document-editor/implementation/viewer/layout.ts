@@ -116,6 +116,7 @@ export class Layout {
     private nextElementToLayout: ElementBox = undefined;
     private endNoteHeight: number = 0;
     private isMultiColumnSplit = false;
+    private isMultiColumnLayout: boolean = false;
     private skipUpdateContainerWidget = false;
     private isIFfield: boolean = false;
     /**
@@ -533,7 +534,9 @@ export class Layout {
         }
         this.addBodyWidget(this.viewer.clientActiveArea, section);
         this.clearBlockWidget(section.childWidgets, true, true, true);
+        this.isMultiColumnLayout = true;
         this.reLayoutMultiColumnBlock(section, nextSection, blockIndex);
+        this.isMultiColumnLayout = false;
         this.isInitialLoad = false;
         let splitSections: Widget[] = section.getSplitWidgets();
         let lastSection: BodyWidget = splitSections[splitSections.length - 1] as BodyWidget;
@@ -4532,7 +4535,7 @@ export class Layout {
         if (line.paragraph.bodyWidget.sectionFormat.equalWidth) {
             let parawidget: ParagraphWidget = line.paragraph;
             this.documentHelper.blockToShift = parawidget;
-            this.shiftLayoutedItems(false);
+            this.shiftLayoutedItems(false, true);
         }
     }
     //Checks Inbetween Overlap & Updates Line marginTop
@@ -9700,7 +9703,7 @@ export class Layout {
 
     //#region Shifting
 
-    public shiftLayoutedItems(reLayout: boolean): void {
+    public shiftLayoutedItems(reLayout: boolean, isMultiColumnShift?: boolean): void {
         if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget)) {
             this.documentHelper.blockToShift = undefined;
             this.checkAndShiftEndnote();
@@ -9741,6 +9744,9 @@ export class Layout {
         let splittedWidget: BlockWidget[] = block.getSplitWidgets() as BlockWidget[];
         let nextBlock: BlockWidget = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
         while (nextBlock instanceof BlockWidget && (nextBlock.bodyWidget.index === sectionIndex || (nextBlock.bodyWidget.sectionFormat.breakCode === 'NoBreak' && block.bodyWidget.sectionFormat.pageWidth === nextBlock.bodyWidget.sectionFormat.pageWidth && block.bodyWidget.sectionFormat.pageHeight === nextBlock.bodyWidget.sectionFormat.pageHeight))) {
+            if (isMultiColumnShift && nextBlock.bodyWidget.sectionFormat.columns.length === 0) {
+                return;
+            }
             isColumnBreak = this.getColumnBreak(nextBlock.bodyWidget);
             if ((!isColumnBreak || (reLayout && this.isSectionEndsWithColumnBreak(nextBlock.bodyWidget))) && this.viewer instanceof PageLayoutViewer && !this.isMultiColumnSplit && nextBlock.bodyWidget.sectionFormat.columns.length > 1) {
                 // let lastbody: BodyWidget = this.getBodyWidget(nextBlock.bodyWidget, false);
@@ -9995,13 +10001,13 @@ export class Layout {
                     i--;
                     continue;
                 }
-                prevWidget = undefined;
                 if (prevBodyWidget !== widget.containerWidget) {
                     prevBodyWidget = widget.containerWidget as BodyWidget;
-                    if (isPageBreak) {
+                    if (isPageBreak && prevWidget !== widget.previousSplitWidget) {
                         viewer.updateClientAreaByWidget(widget);
                     }
                 }
+                prevWidget = undefined;
             }
            
             let footWidget: BodyWidget[] = [];
@@ -11031,7 +11037,7 @@ export class Layout {
             let insertPage: boolean = false;
             const page: Page = body.page;
             const pageIndex: number = page.index + 1;
-            if (this.documentHelper.pages.length > pageIndex) {
+            if (this.documentHelper.pages.length > pageIndex && !this.isMultiColumnLayout) {
                 nextPage = this.documentHelper.pages[pageIndex];
                 if (!isNullOrUndefined(nextPage) && nextPage.bodyWidgets.length !== 0 && body.sectionFormat.pageHeight === nextPage.bodyWidgets[0].sectionFormat.pageHeight && body.sectionFormat.pageWidth === nextPage.bodyWidgets[0].sectionFormat.pageWidth && body.sectionFormat.breakCode === 'NoBreak') {
                     if (nextPage.bodyWidgets[0].index === body.index) {
@@ -11051,6 +11057,9 @@ export class Layout {
                     nextBody = nextPage.bodyWidgets[0];
                     this.viewer.updateClientArea(nextBody, nextBody.page);
                 }
+            }
+            if (this.isMultiColumnLayout) {
+                insertPage = true;
             }
             if (isNullOrUndefined(nextPage)) {
                 nextBody = this.createSplitBody(body);
@@ -11229,8 +11238,8 @@ export class Layout {
                 lineToLayout = lineToLayout.nextLine;
             } while (lineToLayout);
             this.updateWidgetToPage(this.viewer, paragraph);
-            this.viewer.updateClientAreaForBlock(paragraph, false);
         }
+        this.viewer.updateClientAreaForBlock(paragraph, false);
         this.layoutNextItemsBlock(paragraph, this.viewer);
         const prevWidget: BodyWidget = paragraph.getSplitWidgets()[0].previousRenderedWidget as BodyWidget;
         if (!isNullOrUndefined(prevWidget) && !paragraph.isEndsWithPageBreak && !paragraph.isEndsWithColumnBreak && (!(prevWidget instanceof ParagraphWidget) ||

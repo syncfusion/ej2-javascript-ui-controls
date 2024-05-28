@@ -667,14 +667,13 @@ export class Image {
             selectParentEle = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             if (!originalEvent.ctrlKey && originalEvent.key && (originalEvent.key.length === 1 || originalEvent.action === 'enter') &&
                 (!isNOU(selectParentEle[0]) && (selectParentEle[0] as HTMLElement).tagName === 'IMG') && (selectParentEle[0] as HTMLElement).parentElement) {
-                const prev: Node = ((selectParentEle[0] as HTMLElement).parentElement as HTMLElement).childNodes[0];
                 if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
                     this.removeResizeEle();
                 }
-                this.parent.formatter.editorManager.nodeSelection.setSelectionText(
-                    this.contentModule.getDocument(), prev, prev, prev.textContent.length, prev.textContent.length);
                 removeClass([selectParentEle[0] as HTMLElement], 'e-img-focus');
-                this.quickToolObj.imageQTBar.hidePopup();
+                if (this.quickToolObj && this.quickToolObj.imageQTBar) {
+                    this.quickToolObj.imageQTBar.hidePopup();
+                }
             }
         }
         if (originalEvent.ctrlKey && (originalEvent.keyCode === 89 || originalEvent.keyCode === 90)) {

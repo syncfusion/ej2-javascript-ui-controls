@@ -2594,4 +2594,83 @@ describe ('left indent testing', () => {
             expect(startNode.textContent === 'rt').toBe( true);
         });
     });
+
+    describe('883337 - List type got changed for Nested list while applying increase indents in RichTextEditor.', () => {
+        let editorObj: RichTextEditor;
+        beforeEach((done) => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<p><br></p><ol style="list-style-image: none; list-style-type: upper-alpha;">
+                <li>Test 1</li>
+                <ol style="list-style-image: none; list-style-type: upper-alpha;">
+                  <li>test 2</li>
+                  <li>test 3</li>
+                  <li>test 4</li>
+                </ol>
+                <li>test 5</li>
+                <li>test 6</li>
+              </ol>`
+            });
+            done();
+        });
+        afterEach((done) => {
+            destroy(editorObj);
+            done();
+        });
+        it('Select the entire list and apply the indent.', (done) => {
+            let startNode = editorObj.inputElement.querySelector('ol');
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstElementChild, startNode.lastElementChild, 0, 1);
+            editorObj.executeCommand('indent');
+            expect(startNode.firstElementChild.querySelector("ol").style.listStyleType === 'upper-alpha').toBe(true);
+            done();
+        });
+    });
+
+    describe('Nested list while applying increase indents in RichTextEditor.', () => {
+        let editorObj: RichTextEditor;
+        beforeEach((done) => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+            });
+            done();
+        });
+        afterEach((done) => {
+            destroy(editorObj);
+            done();
+        });
+        it('Enter key at the end of the nested list', (done) => {
+            editorObj.value = `<ol style="list-style-image: none; list-style-type: upper-alpha;">
+                <li>Test 1</li>
+                <li>test 5</li>
+                <li>test 6</li>
+              </ol>`;
+            editorObj.dataBind();
+            let startNode = editorObj.inputElement.querySelector('ol');
+            let listElement = document.createElement("ol");
+            listElement.innerHTML = "<li>Rich Text Editor</li>";
+            startNode.appendChild(listElement);
+            let keyboardEventArgs = {
+                preventDefault: function () { },
+                keyCode: 13,
+                shiftKey: false,
+                altKey: false,
+                ctrlKey: false,
+                char: '',
+                key: ':',
+                charCode: 13,
+                which: 13,
+                code: 'Enter',
+                action: 'Enter',
+                type: 'Enter',
+                target: listElement.querySelector("LI")
+            };
+            (editorObj as any).keyUp(keyboardEventArgs);
+            expect(listElement.parentElement.nodeName === 'LI').toBe(true);
+            done();
+        });
+    });
 });

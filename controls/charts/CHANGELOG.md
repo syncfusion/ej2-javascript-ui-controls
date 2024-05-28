@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I592273` - An empty tooltip will no longer be displayed when the cancel argument is enabled in the shared tooltip event.
+
 ## 25.2.5 (2024-05-21)
 
 ### Accumulation Chart

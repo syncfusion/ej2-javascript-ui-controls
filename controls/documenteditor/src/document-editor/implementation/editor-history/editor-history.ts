@@ -188,7 +188,9 @@ export class EditorHistory {
         }
         this.currentBaseHistoryInfo = new BaseHistoryInfo(this.owner);
         this.currentBaseHistoryInfo.action = action;
-        this.currentBaseHistoryInfo.updateSelection();
+        if (action !== 'ModifyStyle') {
+            this.currentBaseHistoryInfo.updateSelection();
+        }
     }
     /**
      * Initialize complex history

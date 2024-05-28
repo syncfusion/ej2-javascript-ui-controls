@@ -176,6 +176,7 @@ export class Virtualization {
         this.scrollPosition = scroll;
         // Update the list of items and the items property of the largeIconInstance
         this.largeIconInstance.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, this.largeIconInstance.element));
+        this.itemCount = this.itemCount != this.largeIconInstance.itemList.length ? this.largeIconInstance.itemList.length : this.itemCount;
         this.largeIconInstance.items = this.largeIconInstance.allItems.slice(this.renderedCount -
             this.itemCount, this.renderedCount);
     }

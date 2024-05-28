@@ -77,6 +77,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         if (!isNullOrUndefined(column.headerValueAccessor)) {
             hValueAccer = (this.getValue(column.headerText, column) as string);
         }
+        if (this.parent.allowSorting && column.allowSorting && !isNullOrUndefined(column.field)) {
+            node.classList.add('e-sort-icon');
+        }
         if (column.type !== 'checkbox') {
             let value: string = column.headerText;
             if (!isNullOrUndefined(hValueAccer)) {

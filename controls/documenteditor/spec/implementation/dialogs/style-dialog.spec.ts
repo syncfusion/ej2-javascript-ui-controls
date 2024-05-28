@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer } from '../../../src/index';
+import { LayoutViewer, PageLayoutViewer, SfdtExport } from '../../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { StyleDialog } from '../../../src/document-editor/implementation/dialogs/style-dialog';
 import { TestHelper } from '../../test-helper.spec';
@@ -369,7 +369,7 @@ describe('Modify Styles for Heading 1 validation', () => {
         editor = undefined;
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, StyleDialog, FontDialog, ParagraphDialog, ContextMenu, EditorHistory, StylesDialog);
+        DocumentEditor.Inject(Editor, Selection, StyleDialog, FontDialog, ParagraphDialog, ContextMenu, EditorHistory, StylesDialog, SfdtExport);
         editor = new DocumentEditor({
             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
             enableFontDialog: true, enableParagraphDialog: true

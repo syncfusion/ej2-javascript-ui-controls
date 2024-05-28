@@ -1196,13 +1196,14 @@ export class DocumentHelper {
         let addToCollection: boolean = true;
         let base64ImageString: string[] = [];
         for (let i: number = 0; i < this.images.length; i++) {
-            let imageStringCol: string[] = this.images.get(i);
+            let index = this.images.keys[parseInt(i.toString(), 10)];
+            let imageStringCol: string[] = this.images.get(index);
             if (image.isMetaFile && image.metaFileImageString === imageStringCol[0]) {
-                key = i;
+                key = index;
                 addToCollection = false;
                 break;
             } else if (image.imageString === imageStringCol[0]) {
-                key = i;
+                key = index;
                 addToCollection = false;
                 break;
             }
@@ -1502,13 +1503,13 @@ export class DocumentHelper {
             this.editableDiv.innerHTML = '';
             if (this.owner.editorHistoryModule) {
                 if (text !== '') {
-                    this.owner.editorModule.isSkipOperationsBuild = true;
+                    this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
                 }
                 this.owner.editorHistoryModule.updateComplexHistory();
                 if (text === '') {
                     //When the composition in live. The Undo operation will terminate the composition and empty text will be return from text box.
                     //At that time the the history should be updated. Undo the operation and clear the redo stack. This undo operation will not be saved for redo operation.
-                    this.owner.editorModule.isSkipOperationsBuild = true;
+                    this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
                     this.owner.editorHistoryModule.undo();
                     this.owner.editorHistoryModule.redoStack.pop();
                 }
@@ -3102,6 +3103,12 @@ export class DocumentHelper {
         }
         if (page.footerWidgetIn) {
             page.footerWidgetIn.page = undefined;
+        }
+        if (page.headerWidget) {
+            page.headerWidget.page = undefined;
+        }
+        if (page.footerWidget) {
+            page.footerWidget.page = undefined;
         }
         let index: number = this.pages.indexOf(page);
         if (index > -1) {

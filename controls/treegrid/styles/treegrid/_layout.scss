@@ -135,7 +135,11 @@
         vertical-align: middle;
       }
     }
-
+    .e-cloneproperties .e-treecolumn-container {
+      span {
+        vertical-align: text-top;
+      }
+    }
     .e-hierarchycheckbox .e-frame {
       @if $skin-name == 'bootstrap' or $skin-name == 'boostrap-dark' or $skin-name == 'fabric-dark' or $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'FluentUI' or $theme-name == 'fluentui-dark' {
         font-size: 10px;

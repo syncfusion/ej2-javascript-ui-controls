@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I588344` - Resolved the content overlapping issue when editing multi column document.
+- `#I586107` - Resolved the script error when inserting image.
+- `#I585401` - Resolved the tab anchor issue in ruler when right clicking on it.
+- `#I586654` - Resolved the strange indentation behaviour when editing list item.
+
 ## 25.2.5 (2024-05-21)
 
 ### DocumentEditor

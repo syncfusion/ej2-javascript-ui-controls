@@ -305,26 +305,7 @@ export class CollaborativeEditingHandler {
             if (action.operations[i].action === 'Update') {
                 if (!isNullOrUndefined(action.operations[i].styleData)) {
                     let styleData = JSON.parse(action.operations[i].styleData);
-                    let styles: WStyles = new WStyles();
-                    this.documentEditor.parser.parseStyles(styleData, styles);
-                    for (let i = 0; i < styles.length; i++) {
-                        let style: WStyle = styles.getItem(i) as WStyle;
-                        let styleInCollection: WStyle = this.documentEditor.documentHelper.styles.findByName(style.name) as WStyle;
-                        if (!isNullOrUndefined(styleData[abstractListsProperty[1]])) {
-                            this.documentEditor.parser.parseAbstractList(styleData, this.documentEditor.documentHelper.abstractLists);
-                            if (!isNullOrUndefined(styleData[listsProperty[1]])) {
-                                this.documentEditor.parser.parseList(styleData, this.documentEditor.documentHelper.lists);
-                            }
-                        }
-                        if (!isNullOrUndefined(styleInCollection)) {
-                            this.documentEditor.updateStyle(styleInCollection, style);
-                            this.documentEditor.isShiftingEnabled = true;
-                            this.documentEditor.editorModule.layoutWholeDocument();
-                            this.documentEditor.isShiftingEnabled = false;
-                        } else {
-                            this.documentEditor.documentHelper.styles.push(style as WParagraphStyle | WCharacterStyle);
-                        }
-                    }
+                    this.documentEditor.editor.updateStyleObject(styleData);
                 }
                 continue;
             }

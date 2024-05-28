@@ -1254,13 +1254,14 @@ export class CheckBoxFilterBase {
 
     private queryGenerate(query: Query): void {
         if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
-            if (!isNullOrUndefined((this.parent as IGrid).getDataModule) && (this.parent as IGrid).getDataModule().isRemote() &&
-                (<{ getModuleName?: Function }>(this.parent as IGrid).getDataModule().dataManager.adaptor).getModuleName() === 'ODataV4Adaptor') {
+            const moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
+            if (!isNullOrUndefined((this.parent as IGrid).getDataModule) && moduleName && moduleName() === 'ODataV4Adaptor') {
                 (this.parent as IGrid).getDataModule().searchQuery(query);
             } else {
-                const sSettings: SearchSettingsModel = this.parent.searchSettings;
-                const fields: string[] = sSettings.fields.length ? sSettings.fields : this.options.columns.map((f: Column) => f.field);
-                query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
+                const searchSettings: SearchSettingsModel = this.parent.searchSettings;
+                const fields: string[] = searchSettings.fields.length ? searchSettings.fields
+                    : this.options.columns.map((f: Column) => f.field);
+                query.search(searchSettings.key, fields, searchSettings.operator, searchSettings.ignoreCase, searchSettings.ignoreAccent);
             }
         }
         if ((this.options.filteredColumns.length)) {

@@ -1592,7 +1592,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     }
                     break;
                 case 'tab':
-                case 'shiftTab':
                     if (this.isPopupOpen) {
                         this.hidePopup();
                     }

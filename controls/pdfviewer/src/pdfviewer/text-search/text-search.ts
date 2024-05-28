@@ -680,7 +680,7 @@ export class TextSearch {
         let indiuvalLineArray:string[] = [];
         let searchArray:string[] = searchString.split(/[" "]+/);
         if (!this.isMatchCase) {
-            searchArray = searchString.toLowerCase().split(/[" "]+/);
+            searchArray = searchString.toLowerCase().split(/\s+/);
         }
         matchIndex = 0;
         let linestring:string = "";

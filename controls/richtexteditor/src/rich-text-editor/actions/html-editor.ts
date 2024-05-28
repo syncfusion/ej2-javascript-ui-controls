@@ -317,7 +317,7 @@ export class HtmlEditor {
                 const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
                 const parentNode: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
                 if (!((parentNode[0].nodeName === 'LI' || closest(parentNode[0] as HTMLElement, 'li') ||
-                    closest(parentNode[0] as HTMLElement, 'table')) && range.startOffset === 0)) {
+                    closest(parentNode[0] as HTMLElement, 'table')))) {
                     args.preventDefault();
                     const selection: Range = this.contentRenderer.getDocument().getSelection().getRangeAt(0);
                     let alignmentNodes: Node[] = this.parent.formatter.editorManager.domNode.blockNodes();

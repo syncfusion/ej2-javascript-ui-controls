@@ -888,8 +888,8 @@ export class ResourceBase {
     public getResourceRenderDates(): Date[] {
         // eslint-disable-next-line prefer-spread
         const resourceDates: Date[] = [].concat.apply([], this.lastResourceLevel.map((e: TdData) => e.renderDates));
-        const time = resourceDates.map((dateObj: Date) => dateObj.getTime());
-        const removeDuplicateDates: CallbackFunction = (dateColl: Date[]) => dateColl.filter((date: Date, index: number, dates: Date[]) =>
+        const time: number[] = resourceDates.map((dateObj: Date) => dateObj.getTime());
+        const removeDuplicateDates: CallbackFunction = (dateColl: Date[]) => dateColl.filter((date: Date, index: number) =>
             time.indexOf(date.getTime()) === index);
         const renderDates: Date[] = removeDuplicateDates(resourceDates);
         renderDates.sort((a: Date, b: Date) => a.getTime() - b.getTime());

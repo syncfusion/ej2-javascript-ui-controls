@@ -665,6 +665,83 @@ describe('Dialog actions module', () => {
         });
     });
 
+    describe('885268- Edited values in dialog dont get reflected in Cards when pressing the enter key in Kanban', () => {
+        let kanbanObj: Kanban;
+        let keyModule: any;
+        const ENTERKEY_EVENT_INIT: KeyboardEventInit = {
+            key: 'Enter',
+            code: 'Enter',
+            bubbles: true,
+            cancelable: true,
+            keyCode: 13
+        } as EventInit;
+
+        beforeAll((done: DoneFn) => {
+            const kanbanDatas: Record<string, any>[] = [
+                {
+                    "Id": "Task 26",
+                    "Title": "Task - 29036",
+                    "Status": "Review",
+                    "Summary": "Check Login page validation.",
+                    "Priority": "Critical",
+                    "Tags": "Bug, Customer",
+                    "RankId": 7,
+                    "Assignee": 'Margaret hamilt'
+                }
+            ];
+            const model: KanbanModel = {
+                keyField: 'Status',
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open' },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Review', keyField: 'Review' }
+                ],
+                cardSettings: {
+                    contentField: 'RankId',
+                    headerField: 'Id'
+                },
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Title', type: 'TextBox' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'DropDown' },
+                        { key: 'RankId', type: 'TextBox' },
+                        { key: 'Summary', type: 'TextArea' }
+                    ]
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanDatas, done);
+            done();
+        });
+
+        afterAll((done: DoneFn) => {
+            util.destroy(kanbanObj);
+            done();
+        });
+        it('ensure module name', function () {
+            keyModule = kanbanObj.keyboardModule;
+            expect(keyModule).not.toBeNull;
+        });
+        it('double click and change rank ID and checked updated in card', (done) => {
+            let element1: HTMLButtonElement = kanbanObj.element.querySelector('.e-card-content') as HTMLButtonElement;
+            util.triggerMouseEvent(element1, 'dblclick');
+            setTimeout(() => {
+                let RankId: HTMLButtonElement = document.querySelector('input[name="RankId"]') as HTMLButtonElement;
+                RankId.focus();
+                util.triggerMouseEvent(RankId, 'click');
+                setTimeout(() => {
+                    RankId.value = '71';
+                    RankId.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+                    setTimeout(() => {
+                        element1 = kanbanObj.element.querySelector('.e-card-content');
+                        expect(element1.textContent === '71').toBe(true);
+                        done();
+                    }, 200);
+                }, 200);
+            }, 200);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -226,6 +226,60 @@ describe('Data module', () => {
         });
     });
 
+    describe('refreshTemplates checking on virtual scrolling', () => {
+        let schObj: Schedule;
+        const resourceHeaderTemplate: string = '<span>ResourceHeaderTemplate</span>';
+
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2020, 0, 4),
+                width: '800px',
+                height: '500px',
+                group: { resources: ['Owners'] },
+                resources: [
+                    {
+                        field: 'OwnerId', name: 'Owners',
+                        dataSource: [
+                            { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' },
+                            { Text: 'Nancy', Id: 4, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 5, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 6, GroupID: 1, Color: '#7499e1' },
+                            { Text: 'Nancy', Id: 7, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 8, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 9, GroupID: 1, Color: '#7499e1' },
+                            { Text: 'Nancy', Id: 10, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 11, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 12, GroupID: 1, Color: '#7499e1' },
+                            { Text: 'Nancy', Id: 13, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 14, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 15, GroupID: 1, Color: '#7499e1' },
+                            { Text: 'Nancy', Id: 16, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 17, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 18, GroupID: 1, Color: '#7499e1' }
+                        ]
+                    }
+                ],
+                resourceHeaderTemplate: resourceHeaderTemplate,
+                views: [
+                    { option: 'TimelineDay' },
+                ],
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('refresh templates of resourceHeader testing after scrolling in Timeline views', (done: DoneFn) => {
+            schObj.element.querySelector('.e-content-wrap').scrollTop = 700;
+            schObj.refreshTemplates('resourceHeaderTemplate');
+            expect(schObj.element.querySelector('.e-resource-column-wrap').scrollTop).toEqual(schObj.element.querySelector('.e-content-wrap').scrollTop);
+            done();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

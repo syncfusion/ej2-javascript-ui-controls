@@ -2,6 +2,7 @@ import { isNullOrUndefined as isNOU, KeyboardEventArgs, detach, Browser } from '
 import * as events from '../base/constant';
 import { IRichTextEditor, ActionBeginEventArgs } from '../base/interface';
 import { NotifyArgs } from '../base/interface';
+import { ImageOrTableCursor } from '../../common';
 
 /**
  * `EnterKey` module is used to handle enter key press actions.
@@ -45,16 +46,18 @@ export class EnterKeyAction {
         this.getRangeNode();
         let isTableEnter: boolean = true;
         this.formatTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'];
-        const isCursorAtTableEnd: boolean = this.range.collapsed && (this.range.startContainer.nodeType === 1) &&
-            (this.range.startContainer as HTMLElement).isContentEditable &&
-            this.range.startContainer.childNodes[this.range.startOffset - 1] &&
-            (this.range.startContainer.childNodes[this.range.startOffset - 1] as HTMLElement).nodeName === 'TABLE';
-        const isCursorAtTableStart: boolean = this.range.collapsed && (this.range.startContainer.nodeType === 1) &&
-            (this.range.startContainer as HTMLElement).isContentEditable && this.range.startContainer.childNodes[this.range.startOffset] &&
-            (this.range.startContainer.childNodes[this.range.startOffset] as HTMLElement).nodeName === 'TABLE';
-        if (isCursorAtTableEnd || isCursorAtTableStart) {
-            this.handleCursorAtTableSide(e, isCursorAtTableStart, isCursorAtTableEnd);
-            return;
+        const tableImagCursor: ImageOrTableCursor = this.processedTableImageCursor();
+        if (tableImagCursor.start || tableImagCursor.end) {
+            if (tableImagCursor.startName === 'TABLE' || tableImagCursor.endName === 'TABLE') { // Default browser action prevented and hanled manually.
+                this.handleCursorAtTableSide(e, tableImagCursor.start, tableImagCursor.end);
+                return;
+            }
+        }
+        if (tableImagCursor.start || tableImagCursor.end || this.range.startContainer.nodeName === 'IMG') {
+            if (this.parent.enterKey === 'BR' &&  (tableImagCursor.startName === 'IMG' || tableImagCursor.endName === 'IMG' || this.range.startContainer.nodeName === 'IMG' )) { // Default browser action prevented and hanled manually.
+                this.handleEnterKeyAtImageSide(e, tableImagCursor.start, tableImagCursor.end);
+                return;
+            }
         }
         if (!isNOU(this.startNode.closest('TABLE')) && !isNOU(this.endNode.closest('TABLE'))) {
             isTableEnter = false;
@@ -439,7 +442,6 @@ export class EnterKeyAction {
                                     const outerBRElem: HTMLElement = this.parent.createElement('br');
                                     if (this.range.startOffset === 0 && this.range.endOffset === 0 &&
                                         !isNOU(currentParent.previousSibling) && currentParent.previousSibling.nodeName === 'BR' && currentParent.nodeName !== 'P' && currentParent.nodeName !== 'DIV') {
-                                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                         newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                             this.range, currentParent, false).cloneNode(true);
                                         this.parent.formatter.editorManager.domNode.insertAfter(outerBRElem, currentParent);
@@ -470,7 +472,7 @@ export class EnterKeyAction {
                             }
                             (e.args as KeyboardEventArgs).preventDefault();
                         }
-                        this.parent.trigger(events.actionComplete, { requestType: shiftKey ? 'ShiftEnterAction' : 'EnterAction', args: (e.args as KeyboardEventArgs) });
+                        this.triggerActionComplete(e, shiftKey);
                     }
                 });
             }
@@ -542,6 +544,10 @@ export class EnterKeyAction {
         return insertElem;
     }
 
+    private triggerActionComplete(e: NotifyArgs, shiftKey: boolean): void {
+        this.parent.trigger(events.actionComplete, { requestType: shiftKey ? 'ShiftEnterAction' : 'EnterAction', args: (e.args as KeyboardEventArgs) });
+    }
+
     private handleCursorAtTableSide(e: NotifyArgs, isStart: boolean, isEnd: boolean): void {
         if (this.parent.enterKey !== 'BR') {
             const shiftKey: boolean = (e.args as KeyboardEventArgs).shiftKey;
@@ -569,11 +575,96 @@ export class EnterKeyAction {
                             tableElement.parentElement.appendChild(newElement);
                         }
                     }
-                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(), newElement, 0);
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),
+                                                                                     newElement, 0);
                     (e.args as KeyboardEventArgs).preventDefault();
-                    this.parent.trigger(events.actionComplete, { requestType: shiftKey ? 'ShiftEnterAction' : 'EnterAction', args: (e.args as KeyboardEventArgs) });
+                    this.triggerActionComplete(e, shiftKey);
                 }
             });
         }
+    }
+
+    private handleEnterKeyAtImageSide(e: NotifyArgs, isStart: boolean, isEnd: boolean): void {
+        const actionBeginArgs: ActionBeginEventArgs = {
+            cancel: false,
+            name: events.actionBegin,
+            requestType: (e.args as KeyboardEventArgs).shiftKey ? 'ShiftEnterAction' : 'EnterAction',
+            originalEvent: (e.args as KeyboardEventArgs)
+        };
+        let directRange: boolean = false;
+        if (this.range.startContainer.nodeName === 'IMG' && this.range.startOffset === 0) {
+            directRange = true;
+        }
+        this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+            if (!actionBeginArgs.cancel) {
+                if (this.parent.enterKey === 'BR') {
+                    const newElement: HTMLBRElement = this.parent.createElement('BR');
+                    let imageElement: HTMLImageElement;
+                    if (directRange) {
+                        imageElement = this.range.startContainer as HTMLImageElement;
+                        imageElement.parentElement.insertBefore(newElement, imageElement);
+                        this.parent.formatter.editorManager.nodeSelection.
+                            setCursorPoint(this.parent.contentModule.getDocument(), imageElement, 0);
+                    }
+                    if (isStart) {
+                        imageElement = this.range.startContainer.childNodes[this.range.startOffset] as HTMLImageElement;
+                        imageElement.parentElement.insertBefore(newElement, imageElement);
+                        this.parent.formatter.editorManager.nodeSelection.
+                            setCursorPoint(this.parent.contentModule.getDocument(), imageElement, 0);
+                    }
+                    if (isEnd) {
+                        imageElement = this.range.startContainer.childNodes[this.range.startOffset - 1] as HTMLImageElement;
+                        if (!isNOU(imageElement.nextSibling)) {
+                            imageElement.parentElement.insertBefore(newElement, imageElement.nextSibling);
+                            this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                this.parent.contentModule.getDocument(), newElement.nextSibling as Element, 0);
+                        }
+                        else if (isNOU(imageElement.nextSibling)) {
+                            imageElement.parentElement.appendChild(newElement);
+                            const brElement: HTMLBRElement = this.parent.createElement('BR');
+                            imageElement.parentElement.appendChild(brElement);
+                            this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                this.parent.contentModule.getDocument(), brElement, 0);
+                        }
+                    }
+                    (e.args as KeyboardEventArgs).preventDefault();
+                    this.triggerActionComplete(e, (e.args as KeyboardEventArgs).shiftKey);
+                }
+            }
+        });
+    }
+
+    private isTableOrImageStart(): { start: boolean; startNodeName: string} {
+        const customHandlerElements: string[] = ['IMG', 'TABLE'];
+        const startContainer: Element = this.range.startContainer as Element;
+        const startOffset: number = this.range.startOffset;
+        const isCursorAtStart: boolean = this.range.collapsed && (startContainer.nodeType === 1) &&
+        (startContainer as HTMLElement).isContentEditable && startContainer.childNodes[startOffset as number] &&
+        (customHandlerElements.indexOf((startContainer.childNodes[startOffset as number] as HTMLElement).nodeName) > -1);
+        if (isCursorAtStart) {
+            return { start : isCursorAtStart, startNodeName: (startContainer.childNodes[startOffset as number] as HTMLElement).nodeName };
+        } else {
+            return { start : false, startNodeName: ''};
+        }
+    }
+
+    private isTableOrImageEnd(): { end: boolean; endNodeName: string} {
+        const customHandlerElements: string[] = ['IMG', 'TABLE'];
+        const startContainer: Element = this.range.startContainer as Element;
+        const startOffset: number = this.range.startOffset;
+        const isCursorAtEnd: boolean = this.range.collapsed && (startContainer.nodeType === 1) &&
+        (startContainer as HTMLElement).isContentEditable && startContainer.childNodes[startOffset - 1] &&
+        (customHandlerElements.indexOf((startContainer.childNodes[startOffset - 1] as HTMLElement).nodeName) > -1);
+        if (isCursorAtEnd) {
+            return { end : isCursorAtEnd, endNodeName: (startContainer.childNodes[startOffset - 1] as HTMLElement).nodeName };
+        } else {
+            return { end : false, endNodeName: ''};
+        }
+    }
+
+    private processedTableImageCursor(): ImageOrTableCursor  {
+        const { start, startNodeName }: { start: boolean; startNodeName: string } = this.isTableOrImageStart();
+        const { end, endNodeName}: { end: boolean; endNodeName: string} = this.isTableOrImageEnd();
+        return { start, startName: startNodeName, end, endName: endNodeName };
     }
 }

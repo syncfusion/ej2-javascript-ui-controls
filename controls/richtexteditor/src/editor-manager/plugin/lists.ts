@@ -261,13 +261,21 @@ export class Lists {
             e.event.preventDefault();
         }
     }
-    private onKeyUp(): void {
+    private onKeyUp(e: IHtmlKeyboardEvent): void {
         if (!isNOU(this.commonLIParent) && !isNOU(this.commonLIParent.querySelector('.removeList'))){
             const currentLIElem: Element = this.commonLIParent.querySelector('.removeList');
             while (!isNOU(currentLIElem.firstChild)) {
                 this.parent.domNode.insertAfter((currentLIElem.firstChild as Element), currentLIElem);
             }
             detach(currentLIElem);
+        }
+        if (e.event.keyCode === 13) {
+            const listElements: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('UL, OL');
+            for (let i: number = 0; i < listElements.length; i++) {
+                if (!isNullOrUndefined(listElements[i as number]) && !isNullOrUndefined(listElements[i as number].parentElement) && !isNullOrUndefined(listElements[i as number].previousElementSibling) && (listElements[i as number].parentElement.nodeName === 'UL' || listElements[i as number].parentElement.nodeName === 'OL')) {
+                    listElements[i as number].previousElementSibling.appendChild(listElements[i as number]);
+                }
+            }
         }
     }
 
@@ -506,6 +514,8 @@ export class Lists {
                 } else {
                     if (prevSibling.tagName === 'LI') {
                         const nestedElement: Element = createElement((elements[i as number].parentNode as Element).tagName);
+                        (nestedElement as HTMLElement).style.listStyleType =
+                            (elements[i as number].parentNode as HTMLElement).style.listStyleType;
                         append([nestedElement], prevSibling as Element);
                         append([elements[i as number] as Element], nestedElement);
                     } else if (prevSibling.tagName === 'OL' || prevSibling.tagName === 'UL') {
@@ -614,7 +624,7 @@ export class Lists {
                 }
                 let elemAtt: string;
                 elements[i as number].style.removeProperty('margin-left');
-                elemAtt = elements[i as number].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i as number]);
+                elemAtt = elements[i as number].tagName === 'IMG' || elements[i as number].classList.contains('e-editor-select-start') ? '' : this.domNode.attributes(elements[i as number]);
                 if (elements[i as number].getAttribute('contenteditable') === 'true'
                     && elements[i as number].childNodes.length === 1 && elements[i as number].childNodes[0].nodeName === 'TABLE') {
                     const listEle: Element = document.createElement(type);
@@ -738,6 +748,13 @@ export class Lists {
         for (let c: number = 0; c < liParents.length; c++) {
             const node: Element = liParents[c as number];
             let toFindtopOlUl: boolean = true;
+            let containsListElements: Element = node;
+            while (containsListElements.parentElement) {
+                if (containsListElements.parentElement && containsListElements.parentElement.tagName !== 'LI' && containsListElements.parentElement.tagName !== 'OL' && containsListElements.parentElement.tagName !== 'UL') {
+                    break;
+                }
+                containsListElements = containsListElements.parentElement;
+            }
             if (toFindtopOlUl && (liParents[c as number].parentElement.parentElement.nodeName === 'OL' || liParents[c as number].parentElement.parentElement.nodeName === 'UL')) {
                 toFindtopOlUl = false;
                 const preElement: HTMLElement = liParents[c as number].parentElement.parentElement;
@@ -755,10 +772,43 @@ export class Lists {
                 if (node.tagName === node.previousElementSibling.tagName) {
                     (node.previousElementSibling.lastChild as HTMLElement).append(node);
                 }
+            } else if (this.domNode.isList(node.previousElementSibling) && containsListElements.contains(node.previousElementSibling) && ((node.tagName === 'OL' || node.tagName === 'UL') && (node.previousElementSibling.nodeName === 'OL' || node.previousElementSibling.nodeName === 'UL'))) {
+                const contentNodes: Node[] = this.domNode.contents(node);
+                for (let f: number = 0; f < contentNodes.length; f++) {
+                    node.previousElementSibling.appendChild(contentNodes[f as number]);
+                }
+                node.parentNode.removeChild(node);
             }
         }
         if (firstNodeOL) {
             (firstNodeOL as HTMLElement).style.listStyleType = listStyleType;
+            const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            let listOlUlElements: Node[] = [];
+            if (range.commonAncestorContainer.nodeName === 'UL' || range.commonAncestorContainer.nodeName === 'OL') {
+                if (range.commonAncestorContainer instanceof Element) {
+                    listOlUlElements.push(range.commonAncestorContainer);
+                }
+                listOlUlElements = listOlUlElements.concat(Array.from((range.commonAncestorContainer as Element).querySelectorAll('ol, ul')));
+            }
+            else {
+                listOlUlElements = Array.from((range.commonAncestorContainer as Element).querySelectorAll('ol, ul'));
+            }
+            for (let k: number = 0; k < listOlUlElements.length; k++) {
+                let listStyle: string;
+                let listElements: HTMLElement | Element = listOlUlElements[k as number] as HTMLElement;
+                while (listElements) {
+                    if (listElements.nodeName === 'OL' || listElements.nodeName === 'OL') {
+                        if ((listElements as HTMLElement).style.listStyleType !== '' && (listElements as HTMLElement).style.listStyleType !== 'none' && (listElements as HTMLElement).nodeName !== 'LI') {
+                            listStyle = (listElements as HTMLElement).style.listStyleType;
+                        }
+                        else if (!isNOU(listStyle) && ((listElements as HTMLElement).style.listStyleType === '' || (listElements as HTMLElement).style.listStyleType === 'none') &&
+                            (listElements as HTMLElement).nodeName !== 'LI' && ((listElements as HTMLElement).nodeName === 'UL' || (listElements as HTMLElement).nodeName === 'OL')) {
+                            (listElements as HTMLElement).style.listStyleType = listStyle;
+                        }
+                    }
+                    listElements = listElements.querySelector('UL,OL');
+                }
+            }
         }
     }
     private findUnSelected(temp: HTMLElement[], elements: HTMLElement[]): void {

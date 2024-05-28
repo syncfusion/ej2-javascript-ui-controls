@@ -834,7 +834,7 @@ export class MsWordPaste {
                 !isNormalList) {
                 prevList = null;
             }
-            const pElement: Element = createElement('p', { className: 'MsoNormal'});
+            const pElement: Element = createElement('p', { className: 'MsoNoSpacing'});
             pElement.innerHTML = collection[index as number].content.join(' ');
             if ((collection[index as number].nestedLevel === 1) &&
             (listCount === 0 || lfo !== collection[index as number].listFormatOverride) &&

@@ -1023,6 +1023,7 @@ export class FormFields {
         let targetBounds: Rect;
         let parentElementBounds: Rect;
         let data: any;
+        let targetName: string;
         if (this.pdfViewer.formDesigner) {
             data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         } else {
@@ -1030,10 +1031,10 @@ export class FormFields {
         }
         var formFieldsData = JSON.parse(data);
         if (this.pdfViewer.formDesignerModule) {
-            var targetName = this.currentTarget && this.currentTarget.offsetParent? this.currentTarget.offsetParent.name : this.currentTarget ? this.currentTarget.name: target.name ? target.name : target.offsetParent.name;
+            targetName = this.currentTarget && this.currentTarget.name ? this.currentTarget.name : target.name ? target.name : target && target.offsetParent ? target.offsetParent.name : this.currentTarget && this.currentTarget.offsetParent ? this.currentTarget.offsetParent.name : '';
         }
         else {
-            var targetName = this.currentTarget ? this.currentTarget.name : target.name ? target.name : target.offsetParent.name;
+            targetName = this.currentTarget ? this.currentTarget.name : target.name ? target.name : target.offsetParent.name;
         }
         for (var i = 0; i < formFieldsData.length; i++) {
             let fieldName: string = this.pdfViewer.formDesigner ? formFieldsData[i].FormField.name : formFieldsData[i].FieldName;

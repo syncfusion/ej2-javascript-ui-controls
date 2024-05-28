@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### Switch
+
+#### Bug Fixes
+
+- `#593165` - The issue with "`tabindex HtmlAttributes` property is not properly set on the switch input element." has been resolved.
+
 ## 25.2.4 (2024-05-14)
 
 ### Checkbox

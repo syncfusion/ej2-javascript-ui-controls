@@ -3622,6 +3622,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
             if (type === 'Paragraph' || type === 'Linked Style') {
                 styleInCollection.next = style.next;
+                (styleInCollection as WParagraphStyle).characterFormat.destroy();
                 (styleInCollection as WParagraphStyle).characterFormat.copyFormat((style as WParagraphStyle).characterFormat);
                 let oldListId: number = (styleInCollection as WParagraphStyle).paragraphFormat.listFormat.listId;
                 (styleInCollection as WParagraphStyle).paragraphFormat.copyFormat((style as WParagraphStyle).paragraphFormat);
@@ -3634,6 +3635,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     }
                 }
             } else if (type === 'Character') {
+                (styleInCollection as WCharacterStyle).characterFormat.destroy();
                 (styleInCollection as WCharacterStyle).characterFormat.copyFormat((style as WCharacterStyle).characterFormat);
             }
             styleInCollection.name = style.name;
@@ -3667,7 +3669,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
-    public getStyleData(name: string, listId?: number): void {
+    public setStyleData(name: string, listId?: number): void {
         if (!this.enableCollaborativeEditing) {
             return;
         }
@@ -3676,27 +3678,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNullOrUndefined(name) && !isNullOrUndefined(this.documentHelper.owner.sfdtExportModule)) {
             let style = this.documentHelper.styles.findByName(name);
             if (!isNullOrUndefined(style)) {
-                let keyIndex = this.documentHelper.owner.sfdtExportModule.keywordIndex;
-                this.documentHelper.owner.sfdtExportModule.keywordIndex = 1;
-                let styleData = this.documentHelper.owner.sfdtExportModule.writeStyle(style as WStyle);
-                let styleObject = {
-                    "optimizeSfdt": true,
-                    "sty": [styleData]
-                };
-                if (this.editorModule.isLinkedStyle((style as WStyle).name)) {
-                    let linkedStyle: WStyle = this.documentHelper.styles.findByName((style as WStyle).name + ' Char') as WStyle;
-                    let linkedStyleData = this.documentHelper.owner.sfdtExportModule.writeStyle(linkedStyle);
-                    styleObject.sty.push(linkedStyleData);
-                }
-                if (!isNullOrUndefined(listId) && listId > -1) {
-                    let list: WList = this.documentHelper.getListById(listId);
-                    styleObject[listsProperty[1]] = [];
-                    styleObject[listsProperty[1]].push(this.sfdtExportModule.writeList(list));
-                    styleObject[abstractListsProperty[1]] = [];
-                    styleObject[abstractListsProperty[1]].push(this.sfdtExportModule.writeAbstractList(list.abstractList));
-                }
-                this.documentHelper.owner.sfdtExportModule.keywordIndex = keyIndex;
-                if (!isNullOrUndefined(style)) {
+                let styleObject = this.getStyleObject(style, listId);
+                if (!isNullOrUndefined(style) && this.enableCollaborativeEditing) {
                     operation = {
                         action: 'Update',
                         styleData: JSON.stringify(styleObject)
@@ -3707,6 +3690,41 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.fireContentChange();
     }
+
+    /**
+     * 
+     * @private
+     * @param style 
+     * @param listId 
+     * @returns 
+     */
+    public getStyleObject(style: Object, listId: number): any {
+        if (!isNullOrUndefined(style)) {
+            const keyIndex: number = this.documentHelper.owner.sfdtExportModule.keywordIndex;
+            this.documentHelper.owner.sfdtExportModule.keywordIndex = 1;
+            const styleData = this.documentHelper.owner.sfdtExportModule.writeStyle(style as WStyle);
+            const styleObject = {
+                'optimizeSfdt': true,
+                'sty': [styleData]
+            };
+            if (!isNullOrUndefined((style as WStyle).link)) {
+                const linkedStyle: WStyle = this.documentHelper.styles.findByName((style as WStyle).name + ' Char') as WStyle;
+                const linkedStyleData = this.documentHelper.owner.sfdtExportModule.writeStyle(linkedStyle);
+                styleObject.sty.push(linkedStyleData);
+            }
+            if (!isNullOrUndefined(listId) && listId > -1) {
+                const list: WList = this.documentHelper.getListById(listId);
+                styleObject[listsProperty[1]] = [];
+                styleObject[listsProperty[1]].push(this.sfdtExportModule.writeList(list));
+                styleObject[abstractListsProperty[1]] = [];
+                styleObject[abstractListsProperty[1]].push(this.sfdtExportModule.writeAbstractList(list.abstractList));
+            }
+            this.documentHelper.owner.sfdtExportModule.keywordIndex = keyIndex;
+            return styleObject;
+        }
+        return undefined;
+    }
+
     /**
      * @private
      */

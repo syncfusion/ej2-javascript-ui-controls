@@ -4810,7 +4810,7 @@ margin: $grid-group-animator-cell-margin;
 
   .e-gridheader .e-headercell,
   .e-gridheader .e-detailheadercell,
-  .e-gridheader .e-headercell .e-headercelldiv {
+  .e-gridheader .e-headercell:not(.e-fltr-icon, .e-sort-icon) .e-headercelldiv {
     height: auto;
   }
 

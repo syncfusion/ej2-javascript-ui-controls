@@ -95,3 +95,18 @@ export interface IImageResizeFactor {
     botLeft     : [number, number];
     botRight    : [number, number];
 }
+
+/**
+ * The `ImageOrTableCursor` is used to specify the image or table cursor in Enter key Module.
+ *
+ * @private
+ * @hidden
+ *
+ *
+ * */
+export interface ImageOrTableCursor  {
+    start: boolean;
+    startName: string;
+    end: boolean;
+    endName: string;
+}

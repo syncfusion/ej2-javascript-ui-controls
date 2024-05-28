@@ -1494,6 +1494,10 @@ export class ContentFocus implements IFocus {
         if (this.parent.allowGrouping && this.parent.groupSettings.enableLazyLoading && isData) {
             rowIndex = this.parent.getDataRows().indexOf(info.element.parentElement);
         }
+        if (this.parent.enableVirtualization && this.parent.groupSettings.columns.length) {
+            rowIndex = rIndex;
+            cellIndex = cIndex;
+        }
         if (this.parent.editSettings.showAddNewRow && this.parent.editSettings.newRowPosition === 'Top' &&
             !this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling && e && e.action === 'downArrow') {
             rowIndex++;

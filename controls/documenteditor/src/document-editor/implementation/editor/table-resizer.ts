@@ -244,7 +244,7 @@ export class TableResizer {
         }
         this.startingPoint.y += HelperMethods.convertPointToPixel(dragValue);
         this.owner.documentHelper.layout.reLayoutTable(table);
-        this.owner.editorModule.isSkipOperationsBuild = true;
+        this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
         this.owner.editorModule.reLayout(this.owner.selectionModule);
         this.owner.editorModule.isSkipOperationsBuild = false;
         if (row) {
@@ -669,7 +669,7 @@ export class TableResizer {
             this.documentHelper.layout.reLayoutTable(table);
         }
         this.owner.editorModule.getOffsetValue(this.documentHelper.selection);
-        this.owner.editorModule.isSkipOperationsBuild = true;
+        this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
         this.owner.editorModule.reLayout(this.owner.selectionModule);
         this.owner.editorModule.isSkipOperationsBuild = false;
         if (dragValue) {

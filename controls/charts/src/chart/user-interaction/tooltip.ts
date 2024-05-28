@@ -514,6 +514,7 @@ export class Tooltip extends BaseTooltip {
                 );
                 point = null;
             } else {
+                removeElement(this.element.id + '_tooltip');
                 extraPoints.push(point);
             }
         };

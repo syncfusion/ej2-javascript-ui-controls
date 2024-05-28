@@ -123,6 +123,9 @@
       .e-selectall-parent {
         border-bottom-color: $ddt-popup-reorder-border;
 
+        &:focus {
+          background: $ddt-item-hover-bg;
+        }
         .e-all-text {
           color: $ddt-select-all-font-color;
         }

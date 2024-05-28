@@ -1,3 +1,5 @@
+import { Rect } from "@syncfusion/ej2-drawings";
+
 /* eslint-disable */
 declare let importScripts: (...scripts: string[]) => void;
 // eslint-disable-next-line
@@ -183,7 +185,7 @@ export function PdfiumRunner(): void {
             if (event.data.message === 'renderPage') {
                 let firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 let ImageData: any = event.data;
-                let data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null, ImageData.textDetailsId);
+                let data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null, ImageData.textDetailsId, null, event.data.cropBoxRect);
                 ctx.postMessage(data);
             }
             else if (event.data.message === 'renderPageSearch') {
@@ -265,8 +267,8 @@ export function PdfiumRunner(): void {
             this.processor = processor;
         }
 
-        public render(message: any, zoomFactor?: number, isTextNeed?: boolean, printScaleFactor?: any, printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean ): object {
-            return this.processor.render(this.index, message, zoomFactor, isTextNeed, printScaleFactor, printDevicePixelRatio, textDetailsId, isTransparent);
+        public render(message: any, zoomFactor?: number, isTextNeed?: boolean, printScaleFactor?: any, printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean, cropBoxRect?: Rect): object {
+            return this.processor.render(this.index, message, zoomFactor, isTextNeed, printScaleFactor, printDevicePixelRatio, textDetailsId, isTransparent, cropBoxRect);
         }
         public renderTileImage(x: any, y: any, tileX: any, tileY: any, zoomFactor?: number, isTextNeed?: boolean, textDetailsId?: any) {
             return this.processor.renderTileImage(this.index, x, y, tileX, tileY, zoomFactor, isTextNeed, textDetailsId);
@@ -317,7 +319,7 @@ export function PdfiumRunner(): void {
             return H(F64, 4, [-1, -1, -1, -1])((left: any, right: any, bottom: any, top: any) => (FPDF as any).GetCharBox(pagePointer, i, left, right, bottom, top));
         }
 
-        public getRender(i = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean) {
+        public getRender(i = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean, cropBoxRect?: Rect) {
             const flag = (FPDF as any).REVERSE_BYTE_ORDER;
             const heap = PDFiumModule.asm.malloc(w * h * 4);
             PDFiumModule.HEAPU8.fill(0, heap, heap + (w * h * 4));
@@ -326,12 +328,12 @@ export function PdfiumRunner(): void {
             (FPDF as any).Bitmap_FillRect(bmap, 0, 0, w, h, isTransparent ? 0x00FFFFFF : 0xFFFFFFFF);
             (FPDF as any).RenderPageBitmap(bmap, page, 0, 0, w, h, 0, flag);
             (FPDF as any).Bitmap_Destroy(bmap);
-            this.textExtraction(page, i, isTextNeed);
+            this.textExtraction(page, i, isTextNeed, cropBoxRect);
             (FPDF as any).ClosePage(page);
             return heap;
         }
 
-        public textExtraction(pagePointer: any, pageIndex: number, isTextNeed: boolean) {
+        public textExtraction(pagePointer: any, pageIndex: number, isTextNeed: boolean, cropBoxRect?: Rect) {
             if (isTextNeed) {
                 const [pageWidth, pageHeight] = this.getPageSize(pageIndex);
                 const textPage = (FPDF as any).LoadTextPage(pagePointer, pageIndex);
@@ -366,8 +368,8 @@ export function PdfiumRunner(): void {
                     let rotationRadian : any = (FPDF as any).GetCharAngle(textPage, charCount);
                     let character: string = String.fromCharCode(result);
                     let [charLeft, charRight, charBottom, charTop] = this.getCharBounds(textPage, charCount);
-                    let X: number = this.pointerToPixelConverter(charLeft);
-                    let Y: number = (pageHeight) - this.pointerToPixelConverter(charTop);
+                    let X: number = this.pointerToPixelConverter(charLeft) - this.pointerToPixelConverter(cropBoxRect.x);
+                    let Y: number = (pageHeight + this.pointerToPixelConverter(cropBoxRect.y)) - this.pointerToPixelConverter(charTop);
                     let Width = this.pointerToPixelConverter(charRight - charLeft);
                     let Height = this.pointerToPixelConverter(charTop - charBottom);
                     let rotationAngle: number = parseInt((rotationRadian * 180 / Math.PI).toString());
@@ -794,15 +796,15 @@ export function PdfiumRunner(): void {
             return rtlDirCheck.test(text);
         }
 
-        public getPageRender(n = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean ) {
-            let pageRenderPtr = this.getRender(n, w, h, isTextNeed, isTransparent);
+        public getPageRender(n = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean, cropBoxRect?: Rect) {
+            let pageRenderPtr = this.getRender(n, w, h, isTextNeed, isTransparent, cropBoxRect);
             let pageRenderData = [];
             pageRenderData = PDFiumModule.HEAPU8.slice(pageRenderPtr, pageRenderPtr + (w * h * 4));
             PDFiumModule.asm.free(pageRenderPtr);
             return pageRenderData;
         }
 
-        public render(n = 0, message: any, zoomFactor: number, isTextNeed: boolean, printScaleFactor: any, printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean ): object {
+        public render(n = 0, message: any, zoomFactor: number, isTextNeed: boolean, printScaleFactor: any, printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean, cropBoxRect?: Rect): object {
             const [w, h] = this.getPageSize(n);
             const scaleFactor = 1.5;
             const thumbnailWidth = 99.7;
@@ -845,7 +847,7 @@ export function PdfiumRunner(): void {
                     newWidth = Math.round(this.pointerToPixelConverter(w) * zoomFactor);
                     newHeight = Math.round(this.pointerToPixelConverter(h) * zoomFactor);
                 }
-                const data = this.getPageRender(n, newWidth, newHeight, isTextNeed, isTransparent);
+                const data = this.getPageRender(n, newWidth, newHeight, isTextNeed, isTransparent, cropBoxRect);
                 return { value: data, width: newWidth, height: newHeight, pageWidth: w, pageHeight: h, pageIndex: n, message: 'imageRendered', textBounds: this.TextBounds, textContent: this.TextContent, rotation: this.Rotation, pageText: this.PageText, characterBounds: this.CharacterBounds, zoomFactor: zoomFactor,isTextNeed: isTextNeed,textDetailsId: textDetailsId };
             }
         }

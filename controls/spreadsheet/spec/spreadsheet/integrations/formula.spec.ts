@@ -11903,6 +11903,18 @@ describe('Spreadsheet formula module ->', () => {
             it('The ROUNDDOWN function returns the wrong result when performing actions with decimal values->', (done: Function) => {
                 helper.edit('A1', '=ROUNDDOWN(62427.81-41400.08,2)');
                 expect(helper.invoke('getCell', [0, 0]).textContent).toBe('21027.73');
+                helper.edit('A2', '=ROUNDDOWN(62427.91+41400.10,2)');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('103828.01');
+                helper.edit('A3', '=ROUNDDOWN(62427.881-41400.028,3)');
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('21027.853');
+                helper.edit('A4', '=ROUNDDOWN(62427.001+41400.038,3)');
+                expect(helper.invoke('getCell', [3, 0]).textContent).toBe('103827.039');
+                helper.edit('A5', '=ROUNDDOWN(62427.0091-41400.1010,4)');
+                expect(helper.invoke('getCell', [4, 0]).textContent).toBe('21026.9081');
+                helper.edit('A6', '=ROUNDDOWN(62427.0001/21400.9999,3)');
+                expect(helper.invoke('getCell', [5, 0]).textContent).toBe('2.917');
+                helper.edit('A7', '=ROUNDDOWN(62427.10101-21400.91919,5)');
+                expect(helper.invoke('getCell', [6, 0]).textContent).toBe('41026.18182');
                 done();
             });
         });   

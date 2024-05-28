@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I588147` - Now, The text `&times` should not get converted into `x` when paste from the clipboard into the RichTextEditor.
+
+- `#I582501` - Now, the font size is pasted properly when we copy and paste from MS Word into RichTextEditor.
+
+- `#I586268` - Now, auto-numbering works properly with `enterKey` as `BR` in RichTextEditor.
+
+- `#I564770` - Now, the list type is applied properly to both the parent and the nest list while applying indents in the Rich Text Editor.
+
+- `#I586268` - Now, pressing the Enter key on the side of the image will work properly when `BR` is configured.
+
 ## 25.2.5 (2024-05-21)
 
 ### RichTextEditor
@@ -9,6 +25,8 @@
 #### Bug Fixes
 
 - `#I582303` - Now, the Tab key press on selected paragraph works properly in RichTextEditor.
+
+- `#F56019` - Now, pressing the enter key when the cursor is at the end of the empty list creates a new tag based on the `enterKey` property.
 
 - `#F186874` - Now, the background and font color popup's collision will function correctly upon initial click.
 

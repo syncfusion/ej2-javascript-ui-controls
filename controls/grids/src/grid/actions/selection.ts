@@ -324,8 +324,8 @@ export class Selection implements IAction {
         this.activeTarget();
         isToggle = !isToggle ? isToggle :
             !this.selectedRowIndexes.length ? false :
-                (this.selectedRowIndexes.length === 1 ? (this.isKeyAction && this.parent.isCheckBoxSelection ?
-                    false : index === this.selectedRowIndexes[0]) : false);
+                (this.selectedRowIndexes.length ? (this.isKeyAction && this.parent.isCheckBoxSelection ?
+                    false : index === this.selectedRowIndexes[this.selectedRowIndexes.length - 1]) : false);
         this.isKeyAction = false;
         let args: Object;
         const can: string = 'cancel';
@@ -340,6 +340,11 @@ export class Selection implements IAction {
             this.parent.trigger(events.rowSelecting, this.fDataUpdate(args),
                                 this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
         } else {
+            this.rowDeselect(events.rowDeselecting, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], this.actualTarget);
+            if (this.isCancelDeSelect) {
+                return;
+            }
+            this.rowDeselect(events.rowDeselected, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], this.actualTarget, undefined, undefined, undefined);
             this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can)(args);
         }
     }
@@ -844,7 +849,7 @@ export class Selection implements IAction {
         type: string, rowIndex: number[], data: Object, row: Element[],
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         foreignKeyData: Object[], target: Element, mRow?: Element[], rowDeselectCallBack?: Function, frozenRightRow?: Element[]): void {
-        if ((this.selectionSettings.persistSelection && (this.isRowClicked || this.checkSelectAllClicked || (this.focus['activeKey'] &&
+        if ((this.selectionSettings.persistSelection && (this.isRowClicked || this.deSelectedData.length || this.checkSelectAllClicked || (this.focus['activeKey'] &&
             this.focus.currentInfo.element.classList.contains('e-gridchkbox') && this.focus['activeKey'] === 'space'))) ||
             !this.selectionSettings.persistSelection) {
             const cancl: string = 'cancel';
@@ -882,7 +887,7 @@ export class Selection implements IAction {
                 type, rowDeselectObj,
                 (args: Object) => {
                     this.isCancelDeSelect = args[`${cancl}`];
-                    if (!this.isCancelDeSelect || (!this.isRowClicked && !this.isInteracted && !this.checkSelectAllClicked)) {
+                    if (!this.isCancelDeSelect || (!this.isRowClicked && !this.isInteracted && this.deSelectedData.length < 0 && !this.checkSelectAllClicked)) {
                         this.updatePersistCollection(row[0], false);
                         this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
                     }
@@ -3433,13 +3438,8 @@ export class Selection implements IAction {
                     this.checkSelect(checkBox);
                 }
             } else {
-                const gObj: IGrid = this.parent; let rIndex: number = 0;
-                if (isGroupAdaptive(gObj)) {
-                    const uid: string = target.parentElement.getAttribute('data-uid');
-                    rIndex = gObj.getRows().map((m: HTMLTableRowElement) => m.getAttribute('data-uid')).indexOf(uid);
-                } else {
-                    rIndex = parseInt(target.parentElement.getAttribute(literals.dataRowIndex), 10);
-                }
+                let rIndex: number = 0;
+                rIndex = parseInt(target.parentElement.getAttribute(literals.dataRowIndex), 10);
                 if (this.parent.isPersistSelection && !this.parent.editSettings.showAddNewRow
                     && this.parent.element.getElementsByClassName(literals.addedRow).length > 0) {
                     ++rIndex;

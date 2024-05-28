@@ -282,8 +282,16 @@ export class ContextMenu {
         if (this.parent.pathNames[this.parent.pathNames.length-1] === selectedTreeNode.querySelector('.e-list-text').innerHTML && this.parent.activeModule === 'navigationpane') {
             this.disabledItems.push('Open');
         }
-        } else if (this.parent.selectedItems.length !== 1 && this.parent.activeModule !=='navigationpane') {
-            this.disabledItems.push('Rename', 'Paste');
+        } else if (this.parent.activeModule !=='navigationpane') {
+            if (this.parent.selectedItems.length === 1) {
+                const renameIndex: number = this.disabledItems.indexOf('Rename');
+                if (renameIndex !== -1) {
+                    this.disabledItems.splice(renameIndex, 1);
+                }
+            }
+            else {
+                this.disabledItems.push('Rename', 'Paste');
+            }
         }
     }
 
@@ -291,7 +299,13 @@ export class ContextMenu {
         this.menuType = 'file';
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.file.map((item: string) => item.trim()));
         this.contextMenu.dataBind();
-        if (this.parent.selectedItems.length !== 1) {
+        if (this.parent.selectedItems.length === 1) {
+            const renameIndex: number = this.disabledItems.indexOf('Rename');
+            if (renameIndex !== -1) {
+                this.disabledItems.splice(renameIndex, 1);
+            }
+        }
+        else {
             this.disabledItems.push('Rename');
         }
     }

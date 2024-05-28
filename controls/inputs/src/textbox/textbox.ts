@@ -69,6 +69,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private textboxOptions: TextBoxModel;
     private inputPreviousValue: string = null;
     private isVue: boolean = false;
+    private isReact: boolean = false;
     private clearButton: HTMLElement;
 
     /**
@@ -385,7 +386,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
-        if (this.type === 'text'){
+        if (this.type === 'text' || (this.element.tagName === 'INPUT' && this.multiline && this.isReact)){
             this.element.setAttribute('role', 'textbox');
         }
         this.globalize = new Internationalization(this.locale);

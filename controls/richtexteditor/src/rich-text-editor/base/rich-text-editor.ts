@@ -2567,7 +2567,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     private updatePanelValue(): void {
-        let value: string = this.value;
+        let value: string = this.listOrderCorrection(this.value);
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
         const getTextArea: HTMLInputElement = this.element.querySelector('.'+ classes.CLS_RTE_SOURCE_CODE_TXTAREA) ;
         if (value) {
@@ -2605,6 +2605,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.showCharCount) {
             this.countModule.refresh();
         }
+    }
+    private listOrderCorrection(value: string): string {
+        const valueElementWrapper: HTMLElement = this.createElement('div');
+        valueElementWrapper.innerHTML = value;
+        const listElements: NodeListOf<Element> = valueElementWrapper.querySelectorAll('UL, OL');
+        for (let i: number = 0; i < listElements.length; i++) {
+            if (!isNOU(listElements[i as number]) && !isNOU(listElements[i as number].parentElement) && !isNOU(listElements[i as number].previousElementSibling) && (listElements[i as number].parentElement.nodeName === 'UL' || listElements[i as number].parentElement.nodeName === 'OL')) {
+                listElements[i as number].previousElementSibling.appendChild(listElements[i as number]);
+            }
+        }
+        return valueElementWrapper.innerHTML;
     }
     private setHeight(height: string | number): void {
         if (height !== 'auto') {

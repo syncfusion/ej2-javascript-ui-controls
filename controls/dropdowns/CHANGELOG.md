@@ -2,9 +2,21 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I577257` - Fixed issue with incorrect binding of value property to MultiSelect.
+
 ## 25.2.5 (2024-05-21)
 
 ### DropDownTree
+
+#### Bug Fixes
+
+- `#I589141` - The Dropdown Tree component now includes tab focus support for the "Select All" checkbox element. With this enhancement, pressing the Tab key will move the focus to the "Select All" checkbox, and pressing Shift+Tab will move the focus back to the "Select All" checkbox during backward navigation.
 
 - `#I586376` - Trigger the "select" event instantly after the item selection in Dropdown Tree popup.
 

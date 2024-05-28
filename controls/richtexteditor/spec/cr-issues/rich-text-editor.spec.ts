@@ -2632,7 +2632,7 @@ describe('RTE CR issues ', () => {
             const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
             editor.contentModule.getEditPanel().dispatchEvent(pasteEvent);
             setTimeout(() => {
-                expect((editor.contentModule.getEditPanel().querySelectorAll('ul p')[0] as HTMLElement).style.fontFamily).toEqual('Calibri, sans-serif');
+                expect((editor.contentModule.getEditPanel().querySelectorAll('ul p')[0] as HTMLElement).style.fontFamily).toEqual('');
                 done();
             }, 100);
         });
@@ -4306,7 +4306,7 @@ describe('RTE CR issues ', () => {
             }, 100);
         });
         it('Select and apply tab key in list', () => {
-        rteObj.value=`<ol><li><p>Provide
+        rteObj.value=`<ol id='ol'><li><p>Provide
         the tool bar support, it’s also customizable.</p></li><li ><p id='one'>Options
         to get the HTML elements with styles.</p></li><li><p>Support
         to insert image from a defined path.</p></li><li id='two'><p>Footer
@@ -4316,8 +4316,8 @@ describe('RTE CR issues ', () => {
         let endElement = rteObj.inputElement.querySelector('#two');
         domSelection.setSelectionText(document, startElement.childNodes[0], endElement.childNodes[0], 6, 1);
         (rteObj as any).keyDown(keyBoardEvent);
-        let value=rteObj.inputElement.querySelector('ol');
-        expect(value.innerHTML==='<li><p>Provide\n        the tool bar support, it’s also customizable.</p></li><li><p id="one">Option&nbsp;&nbsp;&nbsp;&nbsp;</p></li><li id="two"></li>').toBe(true)
+        let value=rteObj.inputElement.querySelector('#ol');
+        expect(value.innerHTML===`<li><p>Provide\n        the tool bar support, it’s also customizable.</p><ol><li><p id="one">Options\n        to get the HTML elements with styles.</p></li><li><p>Support\n        to insert image from a defined path.</p></li><li id="two"><p>Footer\n        elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol></li>`).toBe(true)
         rteObj.value=`<p id='one'><b>Functional Specifications/Requirements:</b></p><ol><li><p>Provide the tool bar support, it’s also customizable.</p></li><li><p id='two'>Options to get the HTML elements with styles.</p></li></ol>`;
         rteObj.dataBind();
         startElement = rteObj.inputElement.querySelector('#one');
@@ -4328,6 +4328,39 @@ describe('RTE CR issues ', () => {
         });
         afterEach((done) => {
             destroy(rteObj);
+            done();
+        });
+    });
+    describe('Bug 884738: Auto numbering or bulletin list not working with enterKey as BR in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, action:'space', key: 'Space', stopPropagation: () => { }, shiftKey: false, which: 32};
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: 'test<br>1. ',
+                enterKey: 'BR',
+                toolbarSettings: {
+                    items: [
+                      'Alignments',
+                      '|',
+                      'NumberFormatList',
+                      'BulletFormatList',
+                      '|',
+                      'Outdent',
+                      'Indent',
+                    ],
+                  },
+            });
+        });
+        it(' to create list when using br', () => {
+            rteObj.dataBind();
+           setCursorPoint(rteObj.inputElement.querySelector('br').nextSibling as Element, 2);
+           keyBoardEvent.keyCode = 32;
+           keyBoardEvent.code = 'Space';
+           (rteObj as any).keyDown(keyBoardEvent);
+           expect(rteObj.inputElement.innerHTML === 'test<br><ol><li></li></ol>').toBe(true); 
+        });
+        afterAll((done: DoneFn) => {
+           destroy(rteObj);
             done();
         });
     });

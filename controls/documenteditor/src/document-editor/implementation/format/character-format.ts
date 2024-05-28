@@ -328,8 +328,11 @@ export class WCharacterFormat {
         if (isNullOrUndefined(value) || value === '') {
             value = WCharacterFormat.getPropertyDefaultValue(property);
         }
-        if (isNullOrUndefined(this.uniqueCharacterFormat)) {
-            this.initializeUniqueCharacterFormat(property, value);
+        if (isNullOrUndefined(this.uniqueCharacterFormat) 
+            || (isNullOrUndefined(this.uniqueCharacterFormat.propertiesHash) 
+            && isNullOrUndefined(this.uniqueCharacterFormat.uniqueFormatType) 
+            && isNullOrUndefined(this.uniqueCharacterFormat.referenceCount))) {
+                this.initializeUniqueCharacterFormat(property, value);
         } else {
             const propertyType: number = WUniqueFormat.getPropertyType(this.uniqueCharacterFormat.uniqueFormatType, property);
             if (this.uniqueCharacterFormat.propertiesHash.containsKey(propertyType) &&

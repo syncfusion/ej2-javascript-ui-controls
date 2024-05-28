@@ -575,10 +575,12 @@ export class OlapEngine {
         if (this.drilledMembers.length > 0) {
             // let st1: number = new Date().getTime();
             let orderedInfo: IOrderedInfo;
-            orderedInfo = this.frameMeasureOrder(measureInfo, 'column', columnTuples, valCollection, columnTuples.length);
+            orderedInfo = this.frameMeasureOrder(measureInfo, 'column', columnTuples, valCollection,
+                columnTuples.length, columnTuples.length * rowTuples.length);
             columnTuples = orderedInfo.orderedHeaderTuples;
             valCollection = orderedInfo.orderedValueTuples;
-            orderedInfo = this.frameMeasureOrder(measureInfo, 'row', rowTuples, valCollection, columnTuples.length);
+            orderedInfo = this.frameMeasureOrder(measureInfo, 'row', rowTuples, valCollection,
+                columnTuples.length, columnTuples.length * rowTuples.length);
             rowTuples = orderedInfo.orderedHeaderTuples;
             valCollection = orderedInfo.orderedValueTuples;
             // let st2: number = (new Date().getTime() - st1) / 1000;
@@ -2952,7 +2954,8 @@ export class OlapEngine {
         }
     }
 
-    private frameMeasureOrder(measureInfo: IMeasureInfo, axis: string, tuples: Element[], vTuples: Element[], cLen: number): IOrderedInfo {
+    private frameMeasureOrder(measureInfo: IMeasureInfo, axis: string, tuples: Element[], vTuples: Element[],
+        cLen: number, valuesCount: number): IOrderedInfo {
         const orderedTuples: Element[] = [];
         const orderedVTuples: Element[] = [];
         const orderedIndex: number[] = [];
@@ -3016,13 +3019,14 @@ export class OlapEngine {
                     }
                 }
             }
+            const clonedValTuple: Element[] = [];
             if (vTuples.length > 0) {
                 const valueIndex: IPivotValues = [];
                 const vOrdinalIndex: number[] = [];
                 let vOrdinalIndexPos: number = 0;
                 let len: number = 0;
                 let cRow: number = 0;
-                for (let j: number = 0, cnt: number = vTuples.length; j < cnt; j++) {
+                for (let j: number = 0, cnt: number = valuesCount; j < cnt; j++) {
                     if (len > (cLen - 1)) {
                         cRow++;
                         len = 0;
@@ -3038,20 +3042,29 @@ export class OlapEngine {
                         valueIndex[cRow as number][len as number] = j;
                         len++;
                     }
-                    if (vTuples[j as number]) {
-                        vOrdinalIndex[vOrdinalIndexPos as number] = Number(vTuples[j as number].getAttribute('CellOrdinal'));
+                    let vTupleOrdinal: number;
+                    if (vTuples[vOrdinalIndexPos as number]) {
+                        vTupleOrdinal = this.olapVirtualization ? 
+                            j : Number(vTuples[vOrdinalIndexPos as number].getAttribute('CellOrdinal'));
+                    } else {
+                        vOrdinalIndexPos++;
                     }
-                    vOrdinalIndexPos++;
+                    if (vTupleOrdinal === j) {
+                        vOrdinalIndex[j as number] = vTupleOrdinal;
+                        clonedValTuple[vTupleOrdinal as number] = vTuples[vOrdinalIndexPos as number];
+                        vOrdinalIndexPos++;
+                    }
                 }
+                vTuples = clonedValTuple;
                 if (measureAxis === 'column') {
                     if (valueIndex.length > 0 && valueIndex[0].length === orderedIndex.length) {
                         for (let i: number = 0, cnt: number = orderedIndex.length; i < cnt; i++) {
                             let j: number = 0;
                             while (j < valueIndex.length) {
                                 const index: number = (j * cLen) + i;
-                                if (!isNullOrUndefined(vOrdinalIndex[index as number]) && !isNullOrUndefined(valueIndex[j as number])
-                                    && !isNullOrUndefined(orderedIndex[i as number])) {
-                                    const ordinalValue: string = vOrdinalIndex[index as number].toString();
+                                if (!isNullOrUndefined(valueIndex[j as number]) && !isNullOrUndefined(orderedIndex[i as number])) {
+                                    const ordinalValue: string = vOrdinalIndex[index as number] ?
+                                        vOrdinalIndex[index as number].toString() : index.toString();
                                     const tuple: Element = vTuples[Number(valueIndex[j as number][orderedIndex[i as number]])];
                                     if (tuple) {
                                         tuple.setAttribute('CellOrdinal', ordinalValue.toString());
@@ -3068,9 +3081,10 @@ export class OlapEngine {
                             let j: number = 0;
                             while (j < valueIndex[orderedIndex[i as number]].length) {
                                 const index: number = (i * cLen) + j;
-                                if (!isNullOrUndefined(vOrdinalIndex[index as number])) {
-                                    const ordinalValue: string = vOrdinalIndex[index as number].toString();
-                                    const tuple: Element = vTuples[Number(valueIndex[orderedIndex[i as number]][j as number])];
+                                const ordinalValue: string = vOrdinalIndex[index as number] ?
+                                    vOrdinalIndex[index as number].toString() : index.toString();
+                                const tuple: Element = vTuples[Number(valueIndex[orderedIndex[i as number]][j as number])];
+                                if (tuple) {
                                     tuple.setAttribute('CellOrdinal', ordinalValue.toString());
                                     orderedVTuples[orderedVTuples.length] = tuple;
                                 }

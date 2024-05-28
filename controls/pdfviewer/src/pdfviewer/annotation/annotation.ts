@@ -3847,7 +3847,7 @@ export class Annotation {
                 // eslint-disable-next-line
                 pageString = eventTarget.id.split('_text_')[1] || eventTarget.id.split('_textLayer_')[1] || eventTarget.id.split('_annotationCanvas_')[1] || eventTarget.id.split('_pageDiv_')[1];
             }
-            else if ((!isNullOrUndefined(this.pdfViewerBase.annotationEvent)) && (!isNullOrUndefined(this.pdfViewerBase.annotationEvent.target))) {
+            if ((!isNullOrUndefined(this.pdfViewerBase.annotationEvent)) && (!isNullOrUndefined(this.pdfViewerBase.annotationEvent.target)) && (isNullOrUndefined(pageString))) {
                 // eslint-disable-next-line
                 pageString = this.pdfViewerBase.annotationEvent.target.id.split('_textLayer_')[1]
             }

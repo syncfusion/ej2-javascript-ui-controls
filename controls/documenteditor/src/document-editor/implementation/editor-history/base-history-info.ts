@@ -517,8 +517,8 @@ export class BaseHistoryInfo {
         let isForwardSelection: boolean = TextPosition.isForwardSelection(start, end);
         if (this.modifiedProperties.length > 0 || this.action === 'Selection'
             || this.action === 'ClearCharacterFormat' || this.action === 'ClearParagraphFormat') {
-            selectionStartTextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(start);
-            selectionEndTextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(end);
+                selectionStartTextPosition = !isNullOrUndefined(start) ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(start): undefined;
+                selectionEndTextPosition = !isNullOrUndefined(end)? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(end): undefined;
             this.revertModifiedProperties(selectionStartTextPosition, selectionEndTextPosition);
         } else {
             let sel: Selection = this.owner.selectionModule;
@@ -731,13 +731,15 @@ export class BaseHistoryInfo {
             ((this.action === 'InsertRowAbove' || this.action === 'Borders' || this.action === 'InsertRowBelow' || this.action === 'InsertColumnLeft' || this.action === 'InsertColumnRight' || this.action === 'Accept Change' || this.action === 'PasteColumn' || this.action === 'PasteRow' || this.action === 'PasteOverwrite' || this.action === 'PasteNested') && (this.editorHistory.isRedoing
                 || this.editorHistory.currentHistoryInfo.action === 'Paste'))) {
             if (this.action === 'RemoveRowTrack' && this.editorHistory.isRedoing) {
-                selectionStartTextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.selectionStart);
-                selectionEndTextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.selectionEnd);
+                selectionStartTextPosition = !isNullOrUndefined(this.selectionStart) ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.selectionStart) : undefined;
+                selectionEndTextPosition = !isNullOrUndefined(this.selectionEnd) ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.selectionEnd) : undefined;
             } else {
-                selectionStartTextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(start);
-                selectionEndTextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(end);
+                selectionStartTextPosition = !isNullOrUndefined(start) ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(start): undefined;
+                selectionEndTextPosition = !isNullOrUndefined(end) ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(end): undefined;
             }
-            this.owner.selectionModule.selectRange(selectionStartTextPosition, selectionEndTextPosition);
+            if (this.action !== 'ModifyStyle') {
+                this.owner.selectionModule.selectRange(selectionStartTextPosition, selectionEndTextPosition);
+            }
             this.documentHelper.updateFocus();
             isSelectionChanged = true;
         }
@@ -758,7 +760,7 @@ export class BaseHistoryInfo {
         }
         this.owner.editorModule.reLayout(this.owner.selectionModule, this.owner.selectionModule.isEmpty);
         if (this.editorHistory.isUndoing && this.action === 'SectionBreak') {
-            this.owner.editorModule.isSkipOperationsBuild = true;
+            this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
             this.owner.editorModule.layoutWholeDocument();
             this.owner.editorModule.isSkipOperationsBuild = false;            
         }
@@ -848,7 +850,9 @@ export class BaseHistoryInfo {
         if (this.action === 'CellFormat' || this.action === 'CellOptions' || this.action === 'TableOptions') {
             this.owner.isShiftingEnabled = false;
         }
-        this.owner.selectionModule.selectRange(start, end);
+        if (!isNullOrUndefined(start) && !isNullOrUndefined(end)) {
+            this.owner.selectionModule.selectRange(start, end);
+        }
         this.documentHelper.updateFocus();
         if (this.action === 'RowResizing' || this.action === 'CellResizing') {
             this.revertResizing();
@@ -1603,6 +1607,9 @@ export class BaseHistoryInfo {
             this.owner.editorModule.updateCellFormat(this.owner.selectionModule, property, undefined);
         } else if (this.modifiedProperties[0] instanceof WRowFormat) {
             this.owner.editorModule.updateRowFormat(this.owner.selectionModule, property, undefined);
+        } else if (this.action === 'ModifyStyle') {
+            let styleObject: Object = this.modifiedProperties.pop();
+            this.owner.editor.updateStyleObject(styleObject);
         }
         this.currentPropertyIndex = 0;
         if (this.action === 'ClearCharacterFormat' || this.action === 'ClearParagraphFormat') {

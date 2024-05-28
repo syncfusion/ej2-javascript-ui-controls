@@ -857,4 +857,27 @@ describe('Sorting module => ', () => {
         });
     });
 
+    describe('EJ2-885389 Field with empty headerText icons not align properly => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    rowHeight: 50,
+                    columns: [{ field: 'OrderID', headerText: '' },
+                              { field: 'CustomerID', headerText: 'Customer ID' }]
+                }, done);
+        });
+        it('Class Name testing', function () {
+            var thElement = gridObj.element.querySelector('th');
+            expect(thElement.classList.contains('e-sort-icon')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

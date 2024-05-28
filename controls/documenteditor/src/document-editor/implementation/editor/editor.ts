@@ -34,7 +34,7 @@ import {
 import { SelectionCharacterFormat, SelectionParagraphFormat } from '../index';
 import { Action } from '../../index';
 import { PageLayoutViewer, SfdtReader } from '../index';
-import { WCharacterStyle } from '../format/style';
+import { WCharacterStyle, WStyles } from '../format/style';
 import { EditorHistory, HistoryInfo } from '../editor-history/index';
 import { BaseHistoryInfo, MarkerInfo, ImageInfo} from '../editor-history/base-history-info';
 import { TableResizer } from './table-resizer';
@@ -463,7 +463,7 @@ export class Editor {
             startPosition = this.startOffset;
             endPosition = this.endOffset;
             const isSelectionEmpty: boolean = this.selection.isEmpty;
-            this.isSkipOperationsBuild = true;
+            this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
             this.clearFormattingInternal(!this.isLinkedStyle(style));
             this.isSkipOperationsBuild = false;
             if (isSelectionEmpty && !this.selection.isEmpty) {
@@ -1030,7 +1030,7 @@ export class Editor {
             if (this.editorHistory) {
                 this.editorHistory.updateComplexHistory();
             }
-            this.isSkipOperationsBuild = true;
+            this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
             this.reLayout(this.selection);
             this.isSkipOperationsBuild = false;
         }
@@ -4312,7 +4312,7 @@ export class Editor {
         let end: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
         if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
             this.editorHistory.currentHistoryInfo.endPosition = end;
-            this.isSkipOperationsBuild = true;
+            this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
             this.editorHistory.updateComplexHistory();
             this.isSkipOperationsBuild = false;
             this.reLayout(selection);
@@ -5665,7 +5665,7 @@ export class Editor {
         this.isPaste = true;
         let copiedContent: object = this.copiedContent !== '' ? this.copiedContent : this.copiedTextContent;
         if (this.editorHistory && this.editorHistory.canUndo()) {
-            // this.isSkipOperationsBuild = true;
+            // this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
             this.editorHistory.undo();
             this.editorHistory.redoStack.pop();
             // this.isSkipOperationsBuild = false;
@@ -10778,6 +10778,59 @@ export class Editor {
     }
     /**
      * @private
+     */
+    public updateStyleObject(styleData: Object): void {
+        let styles: WStyles = new WStyles();
+        let keyIndex: number = this.owner.parser.keywordIndex;
+        this.owner.parser.keywordIndex = 1;
+        let isRemoteAction: boolean = this.owner.editor.isRemoteAction;
+        this.owner.editor.isRemoteAction = true;
+        this.owner.parser.parseStyles(styleData, styles);
+        for (let i = 0; i < styles.length; i++) {
+            let style: WStyle = styles.getItem(i) as WStyle;
+            let styleInCollection: WStyle = this.owner.documentHelper.styles.findByName(style.name) as WStyle;
+            if (!isNullOrUndefined(styleData[abstractListsProperty[1]])) {
+                this.owner.parser.parseAbstractList(styleData, this.owner.documentHelper.abstractLists);
+                if (!isNullOrUndefined(styleData[listsProperty[1]])) {
+                    this.owner.parser.parseList(styleData, this.owner.documentHelper.lists);
+                }
+            }
+            if (!isNullOrUndefined(styleInCollection)) {
+                if (this.owner.editorHistoryModule && (this.owner.editorHistoryModule.isUndoing || this.owner.editorHistoryModule.isRedoing) && i === 0) {
+                    if (this.owner.editorHistoryModule.currentBaseHistoryInfo && this.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'ModifyStyle') {
+                        let listId: number = styleInCollection instanceof WParagraphStyle ? (styleInCollection as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
+                        let styleObject = this.owner.getStyleObject(styleInCollection, listId);
+                        if (!isNullOrUndefined(styleData['isNew'])) {
+                            styleObject['isNew'] = styleData['isNew'];
+                        }
+                        this.owner.editorHistoryModule.currentBaseHistoryInfo.modifiedProperties.push(styleObject);
+                    }
+                }
+                if (styleData['isNew'] && this.owner.editorHistoryModule.isUndoing) {
+                    this.owner.documentHelper.styles.remove(styleInCollection as WParagraphStyle | WCharacterStyle);
+                } else {
+                    this.owner.updateStyle(styleInCollection, style);
+                }
+            } else {
+                if (this.owner.editorHistory.isRedoing) {
+                    let listId: number = style instanceof WParagraphStyle ? (style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
+                    let styleObject = this.documentHelper.owner.getStyleObject(style, listId);
+                    styleObject["isNew"] = true;
+                    this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.modifiedProperties.push(styleObject);
+                }
+                this.owner.documentHelper.styles.push(style as WParagraphStyle | WCharacterStyle);
+            }
+        }
+        this.owner.editor.isRemoteAction = isRemoteAction;
+        if (styles.length > 0) {
+            this.owner.isShiftingEnabled = true;
+            this.owner.editorModule.layoutWholeDocument();
+            this.owner.isShiftingEnabled = false;
+        }
+        this.owner.parser.keywordIndex = keyIndex;
+    }
+    /**
+     * @private
      * @returns {void}
      */
     public onImageFormat(elementBox: ImageElementBox, width: number, height: number,alternateText: string): void {
@@ -11871,7 +11924,7 @@ export class Editor {
                     }
                 }
                 this.selection.updateTextPositionForBlockContainer(this.selection.start.paragraph.containerWidget as BlockContainer);
-                this.isSkipOperationsBuild = true;
+                this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
                 this.layoutWholeDocument();
                 this.isSkipOperationsBuild = false;
                 this.fireContentChange();
@@ -11988,7 +12041,7 @@ export class Editor {
                 }
             }
         }
-        this.isSkipOperationsBuild = true;
+        this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
         this.layoutWholeDocument();
         this.isSkipOperationsBuild = false;
         this.fireContentChange();
@@ -15411,7 +15464,7 @@ export class Editor {
                 return;
             }
             this.initComplexHistory('PageBreak');
-            this.isSkipOperationsBuild = true;
+            this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
             this.onEnter('PageBreak');
             this.isSkipOperationsBuild = false;
             if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)) {
@@ -16308,7 +16361,7 @@ export class Editor {
                     this.initComplexHistory('RemoveComment');
                     initComplextHistory = true;
                 }
-                this.isSkipOperationsBuild = true;
+                this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
                 this.deleteCommentInternal(commentMark.comment);
                 this.isSkipOperationsBuild = false;
                 updateSelection = true;
@@ -21234,7 +21287,7 @@ export class Editor {
             this.editorHistory.updateHistory();
         }
         if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
-            this.isSkipOperationsBuild = true;
+            this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
             this.editorHistory.updateComplexHistory();
             this.isSkipOperationsBuild = false;
         }
@@ -21359,7 +21412,7 @@ export class Editor {
     private updateFormFieldResult(field: FieldElementBox, value: string): void {
         //When protection is enabled with type Form Filling below method selects the field result alone.
         this.selection.selectFieldInternal(field, false, true);
-        this.isSkipOperationsBuild = true;
+        this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
         this.insertText(value);
         this.isSkipOperationsBuild = false;
     }
@@ -21620,7 +21673,7 @@ export class Editor {
         this.selection.end.setPositionInternal(this.selection.start);
         this.updateEndNoteIndex();
         this.documentHelper.layout.isLayoutWhole = true;
-        this.isSkipOperationsBuild = true;
+        this.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
         this.layoutWholeDocument();
         this.isSkipOperationsBuild = false;
         this.documentHelper.layout.isLayoutWhole = false;

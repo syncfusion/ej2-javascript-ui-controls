@@ -5,7 +5,7 @@ import { WTableFormat, WBorder, WBorders, WShading, WCellFormat, WParagraphForma
 import { LineStyle } from '../../base/types';
 import { TablePropertiesDialog } from './table-properties-dialog';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { ParagraphWidget, TableCellWidget } from '../viewer/page';
+import { ParagraphWidget, TableCellWidget, TableRowWidget, TableWidget } from '../viewer/page';
 import { Editor } from '../index';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { DocumentHelper, SelectionBorders, SelectionBorder } from '../../index';
@@ -606,6 +606,35 @@ export class BordersAndShadingDialog {
             const currentTableFormat: WTableFormat = this.documentHelper.owner.selectionModule.tableFormat.table.tableFormat;
             this.tableFormat.copyFormat(currentTableFormat);
             this.tableFormat.borders = new WBorders();
+            
+            // when we copy a table and paste it in documentEditor, in that case rowFormat and cellFormat has a border value instead of tableFormat. So, we need to clear the border value from rowFormat and cellFormat.
+            if (!isNullOrUndefined(borders) || this.noneDiv.classList.contains('e-de-table-border-inside-setting-click')) {
+                let table: TableWidget = this.documentHelper.owner.selectionModule.tableFormat.table;
+                for (const rowWidget of table.childWidgets as TableRowWidget[]) {
+                    this.updateBorder(table.tableFormat.borders.left, rowWidget.rowFormat.borders.left);
+                    this.updateBorder(table.tableFormat.borders.top, rowWidget.rowFormat.borders.top);
+                    this.updateBorder(table.tableFormat.borders.right, rowWidget.rowFormat.borders.right);
+                    this.updateBorder(table.tableFormat.borders.bottom, rowWidget.rowFormat.borders.bottom);
+                    const rowHorizontalBorder = rowWidget.rowFormat.borders.horizontal;
+                    const tableHorizontalBorder = table.tableFormat.borders.horizontal;
+                    if ((rowHorizontalBorder.lineStyle === 'Single' && tableHorizontalBorder.lineStyle === 'None') ||
+                        (rowHorizontalBorder.lineStyle === 'Cleared' && tableHorizontalBorder.lineStyle === 'Cleared')) {
+                        tableHorizontalBorder.lineStyle = 'Single';
+                        tableHorizontalBorder.lineWidth = rowHorizontalBorder.lineWidth;
+                    }
+                    const rowVerticalBorder = rowWidget.rowFormat.borders.vertical;
+                    const tableVerticalBorder = table.tableFormat.borders.vertical;
+                    if ((rowVerticalBorder.lineStyle === 'Single' && tableVerticalBorder.lineStyle === 'None') ||
+                        (rowVerticalBorder.lineStyle === 'Cleared' && tableVerticalBorder.lineStyle === 'Cleared')) {
+                        tableVerticalBorder.lineStyle = 'Single';
+                        tableVerticalBorder.lineWidth = rowVerticalBorder.lineWidth;
+                    }
+                    rowWidget.rowFormat.borders.clearFormat();
+                    for (const cellWidget of rowWidget.childWidgets as TableCellWidget[]) {
+                        cellWidget.cellFormat.borders.clearFormat();
+                    }
+                }
+            }
             if (!isNullOrUndefined(borders)) {
                 editorModule.applyBordersInternal(this.tableFormat.borders, borders);
             } else if (this.noneDiv.classList.contains('e-de-table-border-inside-setting-click')) {
@@ -630,6 +659,14 @@ export class BordersAndShadingDialog {
         this.applyFormat();
         this.closeDialog();
     };
+
+    private updateBorder(tableBorder: WBorder, rowBorder: WBorder): void {
+        if (rowBorder.lineStyle === 'Single' && tableBorder.lineStyle === 'None') {
+            tableBorder.lineStyle = 'Single';
+            tableBorder.lineWidth = rowBorder.lineWidth;
+        }
+    }
+
     private applyFormat(): void {
         // const selection: Selection = this.documentHelper.selection;
         const editorModule: Editor = this.documentHelper.owner.editorModule;

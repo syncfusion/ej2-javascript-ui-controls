@@ -341,7 +341,11 @@ export class KanbanDialog {
     }
 
     private dialogButtonClick(event: Event): void {
-        const target: HTMLElement = (event.target as HTMLElement).cloneNode(true) as HTMLElement;
+        let target: HTMLElement = (event.target as HTMLElement).cloneNode(true) as HTMLElement;
+        if (!isNullOrUndefined((event as KeyboardEvent).keyCode) && (event as KeyboardEvent).keyCode as number  === 13) {
+            const valTrg: HTMLElement = this.dialogObj.element.querySelector('.e-footer-content button.e-primary');
+            target = valTrg.cloneNode(true) as HTMLElement;
+        }
         const id: string = this.formObj.element.id;
         if (document.getElementById(id) && this.formObj.validate() &&
             (target.classList.contains('e-dialog-edit') || target.classList.contains('e-dialog-add'))) {
@@ -446,6 +450,9 @@ export class KanbanDialog {
             const instance: Kanban[] = (element as EJ2Instance).ej2_instances as Kanban[];
             if (instance && instance.length > 0) {
                 instance.forEach((node: Kanban) => node.destroy());
+            }
+            if ((this as any).parent.isReact && this.formObj) {
+                this.formObj.element.remove();
             }
         }
     }

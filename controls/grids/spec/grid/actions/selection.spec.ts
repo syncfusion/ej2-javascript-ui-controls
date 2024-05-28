@@ -861,7 +861,7 @@ describe('Grid Selection module', () => {
         it('rowSelecting event call', () => {
             let spyFn: (e?: Object) => void = jasmine.createSpy('begin');
             gridObj.rowSelecting = spyFn;
-            selectionModule.selectRow(2, true);
+            selectionModule.selectRow(1, true);
             expect(spyFn).toHaveBeenCalled();
         });
 
@@ -1073,7 +1073,7 @@ describe('Grid Selection module', () => {
         it('rowSelecting event call', () => {
             let spyFn: (e?: Object) => void = jasmine.createSpy('begin');
             gridObj.rowSelecting = spyFn;
-            selectionModule.selectRow(2, true);
+            selectionModule.selectRow(1, true);
             expect(spyFn).toHaveBeenCalled();
         });
 
@@ -6850,6 +6850,37 @@ describe('EJ2-855396 - SelectionSettings mode as Both shows wrong selected items
         (gridObj.element.querySelectorAll('.e-gridchkbox')[0] as any).click();
         done();
         expect(gridObj.selectionModule.selectedRowCellIndexes[0].cellIndexes[0]).toBe(1);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-885652 - Programmatic row deselect with toggle as true, not trigger rowDeselecting, rowDeselected events and not deselect row when the grid has existing selected rows', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                toolbar: [ 'Select' ],
+                toolbarClick: function() {
+                    gridObj.selectRow(3, true);
+                },
+                columns: [{ type: 'checkbox' }, { field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                { field: 'ShipCity' }],
+                allowSelection: true,
+                selectionSettings: { persistSelection: true },
+                enableHover: false,
+            }, done);
+    });
+
+    it('Selecting with checkbox', (done: Function) => {
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[0].querySelector('.e-rowcell')).click();
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_select' } });
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_select' } });
+        expect(gridObj.selectionModule.selectedRecords.length).toBe(1);
+        done();
     });
 
     afterAll(() => {

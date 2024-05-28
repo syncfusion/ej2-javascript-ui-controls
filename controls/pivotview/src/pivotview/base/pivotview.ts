@@ -3083,6 +3083,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             enableOptimizedRendering: this.enableVirtualization && this.virtualScrollSettings &&
                 this.virtualScrollSettings.allowSinglePage,
             requestType: 'string',
+            headers: {}
         };
         if (this.request.readyState === XMLHttpRequest.UNSENT || this.request.readyState === XMLHttpRequest.OPENED) {
             this.request.withCredentials = false;
@@ -3129,13 +3130,17 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.request.responseType = '';
         }
-        if(params.internalProperties.requestType === 'string'){
+        const keys: string[] = Object.keys(params.internalProperties.headers);
+        for (let i: number = 0; i < keys.length; i++) {
+            this.request.setRequestHeader(keys[i], params.internalProperties.headers[keys[i] as string]);
+        }
+        if (params.internalProperties.requestType === 'string') {
             this.request.setRequestHeader('Content-type', 'application/json');
             this.request.send(JSON.stringify(params));
-        } else if(params.internalProperties.requestType === 'base64'){
+        } else if (params.internalProperties.requestType === 'base64') {
             this.request.setRequestHeader('Content-type', 'application/octet-stream');
-            this.request.send(btoa(JSON.stringify(params)))
-        };
+            this.request.send(btoa(JSON.stringify(params)));
+        }
     }
 
     private getChartSettings(): string {
@@ -3530,9 +3535,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             case 'editSettings':
             case 'allowDataCompression':
                 if (newProp.dataSourceSettings && ((!isNullOrUndefined(newProp.dataSourceSettings.dataSource) &&
-                    this.clonedDataSet !== newProp.dataSourceSettings.dataSource && newProp.dataSourceSettings.groupSettings) ||
-                    (Object.keys(newProp.dataSourceSettings).length === 1 && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource'
-                        && this.dataSourceSettings.groupSettings.length > 0))) {
+                    !isNullOrUndefined(this.clonedDataSet) && this.clonedDataSet !== newProp.dataSourceSettings.dataSource &&
+                    newProp.dataSourceSettings.groupSettings) || (Object.keys(newProp.dataSourceSettings).length === 1 &&
+                        Object.keys(newProp.dataSourceSettings)[0] === 'dataSource' &&
+                        this.dataSourceSettings.groupSettings.length > 0))) {
                     this.clonedDataSet = newProp.dataSourceSettings.dataSource as IDataSet[];
                     this.updateGroupingReport(this.dataSourceSettings.groupSettings, 'Date');
                 }
@@ -4174,7 +4180,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     public excelExport(    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: any,
-        isBlob?: boolean, isServerExport?: boolean  // eslint-disable-line @typescript-eslint/no-unused-vars
+        isBlob?: boolean, isServerExport?: boolean
     ): void {
         if (isServerExport && this.dataSourceSettings.mode === 'Server') {
             this.getEngine('onExcelExport', null, null, null, null, null, null, null, null, excelExportProperties);
@@ -4206,7 +4212,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @param  {boolean} isServerExport - Specifies whether server-side CSV export is enabled.
      * @returns {void}
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any, max-len, @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any, max-len
     public csvExport(excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: any, isBlob?: boolean, isServerExport?: boolean): void {
         if (isServerExport && this.dataSourceSettings.mode === 'Server') {
             this.getEngine('onCsvExport', null, null, null, null, null, null, null, null, excelExportProperties);
@@ -6092,8 +6098,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         }
                         this.engineModule.data = pivot.remoteData;
                         this.initEngine();
+                    } else if (!isNullOrUndefined(pivot.engineModule.data) && pivot.engineModule.data.length === 0) {
+                        clearTimeout(this.timeOutObj);
+                        this.timeOutObj = setTimeout(pivot.getData.bind(pivot), 100);
                     } else {
-                        setTimeout(pivot.getData.bind(pivot), 100);
+                        pivot.initEngine();
                     }
                 } else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
                             (pivot.dataSourceSettings.dataSource && (pivot.dataSourceSettings.dataSource as IDataSet[]).length > 0

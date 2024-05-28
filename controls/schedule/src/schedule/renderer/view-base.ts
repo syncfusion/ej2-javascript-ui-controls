@@ -41,10 +41,27 @@ export class ViewBase {
     }
 
     public refreshResourceHeader(): void {
-        remove(this.element.querySelector('tbody').lastElementChild.firstElementChild);
-        const resTd: Element = createElement('td');
-        resTd.appendChild(this.parent.resourceBase.createResourceColumn());
-        prepend([resTd], this.element.querySelector('tbody').lastElementChild);
+        const resTbl: HTMLElement = this.element.querySelector('.' + cls.RESOURCE_COLUMN_TABLE_CLASS) as HTMLElement;
+        const resourceTd: HTMLElement[] = Array.from(resTbl.querySelectorAll('.' + cls.RESOURCE_CELLS_CLASS)) as HTMLElement[];
+        resourceTd.forEach((currentElement: HTMLElement) => {
+            const children: HTMLElement[] = Array.from(currentElement.children) as HTMLElement[];
+            children.forEach((child: HTMLElement) => {
+                if (!child.classList.contains(cls.RESOURCE_EXPAND_CLASS) && !child.classList.contains(cls.RESOURCE_COLLAPSE_CLASS)) {
+                    remove(child);
+                }
+            });
+        });
+        if (!isNullOrUndefined(this.parent.resourceBase.renderedResources) && this.parent.resourceBase.renderedResources.length > 0) {
+            for (let i: number = 0; i < resourceTd.length; i++) {
+                const element: HTMLElement = resourceTd[parseInt(i.toString(), 10)];
+                const data: TdData = this.parent.resourceBase.renderedResources[parseInt(i.toString(), 10)];
+                if (this.parent.activeView && !isNullOrUndefined(element) && !isNullOrUndefined(data)
+                    && parseInt(element.getAttribute('data-group-index'), 10) === data.groupIndex) {
+                    this.parent.activeView.setResourceHeaderContent(element, data, cls.RESOURCE_TEXT_CLASS);
+                }
+            }
+        }
+        this.parent.renderTemplates();
         this.parent.notify(event.contentReady, {});
     }
 

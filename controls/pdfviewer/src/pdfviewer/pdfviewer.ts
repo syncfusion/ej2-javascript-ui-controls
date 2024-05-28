@@ -8638,8 +8638,29 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
         } else {
             let data: any = this.viewerBase.getItemFromSessionStorage('_formfields');
-            if (data) {
-                var FormFieldsData = JSON.parse(data);
+            if(isNullOrUndefined(data))
+            {
+                const data_1: string = this.viewerBase.getItemFromSessionStorage('_formDesigner');
+                const FormFieldsData_1 : any = JSON.parse(data_1);
+                const filteredCollection : any = this.viewerBase.formFieldCollection.filter((field: any) => {
+                    return field.FormField.id.split("_")[0] === fieldValue.id;
+                });
+
+                filteredCollection.forEach((field: any) => {
+                    field.FormField.signatureType = fieldValue.signatureType;
+                    field.FormField.value = fieldValue.value;
+                });
+                for (let m: number = 0; m < FormFieldsData_1.length; m++) {
+                    if (FormFieldsData_1[parseInt(m.toString(), 10)].FormField.id.split("_")[0] == fieldValue.id) {
+                        FormFieldsData_1[parseInt(m.toString(), 10)].FormField.value = fieldValue.value;
+                        FormFieldsData_1[parseInt(m.toString(), 10)].FormField.signatureType = fieldValue.signatureType;
+                        this.viewerBase.setItemInSessionStorage(FormFieldsData_1, '_formDesigner');
+                    }
+                }
+            }
+
+            else {
+                const FormFieldsData: any = JSON.parse(data);
                 for (var m = 0; m < FormFieldsData.length; m++) {
                     let currentData: any = FormFieldsData[m];
                     let fieldName: string;
@@ -8684,9 +8705,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         this.formFieldsModule.updateFormFieldsCollection(currentData);
                     }
                 }
+                window.sessionStorage.removeItem(this.viewerBase.documentId + '_formfields');
+                this.viewerBase.setItemInSessionStorage(FormFieldsData, '_formfields');
             }
-            window.sessionStorage.removeItem(this.viewerBase.documentId + '_formfields');
-            this.viewerBase.setItemInSessionStorage(FormFieldsData, '_formfields');
         }
     }
     // eslint-disable-next-line

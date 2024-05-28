@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I575728` - Now, Edited values in dialog will reflect in Cards when pressing the enter key in Kanban.
+
+- `I580937` - Now, clicking the save button in the edit dialog works properly in Kanban.
+
 ## 25.1.42 (2024-04-30)
 
 ### Kanban

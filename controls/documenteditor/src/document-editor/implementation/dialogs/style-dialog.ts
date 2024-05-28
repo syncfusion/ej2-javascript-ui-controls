@@ -691,13 +691,20 @@ export class StyleDialog {
             let style: WStyle = this.documentHelper.styles.findByName(styleName) as WStyle;
             let name: string;
             if (!isNullOrUndefined(style)) {
+                this.documentHelper.owner.editorHistoryModule.initializeHistory('ModifyStyle');
+                if (this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo && this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'ModifyStyle') {
+                    let listId: number = style instanceof WParagraphStyle ? (style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
+                    let styleObject = this.documentHelper.owner.getStyleObject(style, listId);
+                    this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.modifiedProperties.push(styleObject);
+                }
+                this.documentHelper.owner.editorHistoryModule.updateHistory();
                 this.style.type = this.getTypeValue();
                 this.style.basedOn = this.documentHelper.styles.findByName(this.documentHelper.owner.stylesDialogModule.getStyleName(this.styleBasedOn.value as string)) as WStyle;
 
                 if (this.styleType.value === 'Paragraph' || this.styleType.value === 'Linked Style') {
                     this.style.next = this.documentHelper.styles.findByName(this.documentHelper.owner.stylesDialogModule.getStyleName(this.styleParagraph.value as string)) as WStyle;
-                    (this.style as WParagraphStyle).characterFormat.mergeFormat((style as WParagraphStyle).characterFormat);
-                    (this.style as WParagraphStyle).paragraphFormat.mergeFormat((style as WParagraphStyle).paragraphFormat, true);
+                    (this.style as WParagraphStyle).characterFormat.mergeFormat(this.characterFormat);
+                    (this.style as WParagraphStyle).paragraphFormat.mergeFormat(this.paragraphFormat, true);
                     this.updateList();
 
                     this.style.link = (this.styleType.value === 'Linked Style') ? this.createLinkStyle(styleName, this.isEdit) : undefined;
@@ -707,14 +714,14 @@ export class StyleDialog {
                 this.style.name = style.name;
                 name = style.name;
                 style = this.style;
+                let listId: number = this.style instanceof WParagraphStyle ? (this.style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
+                this.documentHelper.owner.setStyleData(name, listId);
 
                 this.documentHelper.owner.isShiftingEnabled = true;
-                this.documentHelper.owner.editorModule.isSkipOperationsBuild = true;
+                this.documentHelper.owner.editorModule.isSkipOperationsBuild = this.documentHelper.owner.enableCollaborativeEditing;
                 this.documentHelper.owner.editorModule.layoutWholeDocument();
                 this.documentHelper.owner.editorModule.isSkipOperationsBuild = false;
                 this.documentHelper.owner.isShiftingEnabled = false;
-                let listId: number = this.style instanceof WParagraphStyle ? (this.style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
-                this.documentHelper.owner.getStyleData(name, listId);
             } else {
                 let tmpStyle: any = this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
                 tmpStyle.copyStyle(this.style);
@@ -738,9 +745,17 @@ export class StyleDialog {
                 this.documentHelper.styles.push(tmpStyle as any);
                 this.documentHelper.addToStylesMap(tmpStyle);
                 name = styleName;
+                this.documentHelper.owner.editorHistoryModule.initializeHistory('ModifyStyle');
+                if (this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo && this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'ModifyStyle') {
+                    let listId: number = tmpStyle instanceof WParagraphStyle ? (tmpStyle as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
+                    let styleObject = this.documentHelper.owner.getStyleObject(tmpStyle, listId);
+                    styleObject["isNew"] = true;
+                    this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.modifiedProperties.push(styleObject);
+                }
+                this.documentHelper.owner.editorHistoryModule.updateHistory();
                 let listId: number = this.style instanceof WParagraphStyle ? (this.style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
-                this.documentHelper.owner.getStyleData(name, listId);
-                this.documentHelper.owner.editorModule.isSkipOperationsBuild = this.styleType.value === 'Character';
+                this.documentHelper.owner.setStyleData(name, listId);
+                this.documentHelper.owner.editorModule.isSkipOperationsBuild = this.styleType.value === 'Character' && this.documentHelper.owner.enableCollaborativeEditing;
                 this.documentHelper.owner.editorModule.applyStyle(name,true);
                 this.documentHelper.owner.editorModule.isSkipOperationsBuild = false;
                 this.documentHelper.owner.notify(internalStyleCollectionChange, {});
@@ -823,7 +838,7 @@ export class StyleDialog {
      */
     public updateCharacterFormat(characterFormat?: WCharacterFormat): void {
         if (!isNullOrUndefined(characterFormat)) {
-            this.characterFormat = characterFormat;
+            this.characterFormat = characterFormat.cloneFormat();
         }
         this.fontFamily.value = this.characterFormat.fontFamily;
         this.fontSize.value = this.characterFormat.fontSize;
@@ -839,7 +854,7 @@ export class StyleDialog {
      */
     public updateParagraphFormat(paragraphFOrmat?: WParagraphFormat): void {
         if (!isNullOrUndefined(paragraphFOrmat)) {
-            this.paragraphFormat = paragraphFOrmat;
+            this.paragraphFormat = paragraphFOrmat.cloneFormat();
         }
         if (isNullOrUndefined(this.paragraphFormat)) {
             return;
@@ -1012,9 +1027,11 @@ export class StyleDialog {
      * @returns {void}
      */
     public onCancelButtonClick = (): void => {
-        if (!this.isEdit && this.style) {
-            this.style.destroy();
-        }
+        // if (!this.isEdit && this.style) {
+            this.style = undefined;
+            this.characterFormat = undefined;
+            this.paragraphFormat = undefined;
+        // }
         this.documentHelper.dialog2.hide();
         this.documentHelper.updateFocus();
     }

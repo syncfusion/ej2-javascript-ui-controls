@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### Grid
+
+#### Bug fixes
+
+- `#I584245` - The problem of deselecting a row programmatically with toggle set to true, without triggering the `rowDeselecting` and `rowDeselected` events, and without deselecting the row when there are existing selected rows has been successfully resolved.
+- `#I580119` - Resolved the issue where the `Tooltip` element is not shown in context menu text overflow element.
+- `#I571259` - Resolved the issue with the `selectRow` method when both `virtualization` and `grouping` are enabled.
+- `#I587208` - The issue with misalignment of icons when the `headerText` field is empty has been resolved.
+- `#I591601` - Resolved the issue where continuous spinner loading when opening the Excel filter dialog after performing the grid's search operation.
+
 ## 25.2.5 (2024-05-21)
 
 ### Grid

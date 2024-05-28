@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I586371` - Now, the page does not become unresponsive when search multiple text.
+- `#I586065` - Now, the `isDocumentEdited` API is set to true after making changes in the organize dialog.
+- `#I587851` - Now, the signature field saved properly when using the provided code snippet for the customer.
+- `#I585582` - Now, the text selection is working properly for OCR documents in client-side rendering.
+- `#I586473` - Now, the signature dialog opens properly when using the provided code snippet for the customer on a mobile device.
+- `#I574463` - Now, the script error does not occur when updating form fields in non-rendered pages.
+
 ## 25.2.5 (2024-05-21)
 
 ### PDF Viewer

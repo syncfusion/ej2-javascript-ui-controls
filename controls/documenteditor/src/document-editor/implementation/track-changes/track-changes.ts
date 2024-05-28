@@ -647,7 +647,7 @@ export class RevisionCollection {
                 this.owner.editorHistoryModule.undoStack.pop();
             }
         }
-        this.owner.editorModule.isSkipOperationsBuild = true;
+        this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
         this.owner.editorModule.reLayout(this.owner.selectionModule, false);
         this.owner.editorModule.isSkipOperationsBuild = false;
         this.skipGroupAcceptReject = false;

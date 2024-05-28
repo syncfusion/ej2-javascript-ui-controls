@@ -1127,7 +1127,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.updateSelectElementData(this.allowFiltering);
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: MultiSelect = this;
-        if (!isNullOrUndefined(this.value) && !this.allowCustomValue && !this.enableVirtualization) {
+        if (!isNullOrUndefined(this.value) && !this.allowCustomValue && !this.enableVirtualization && this.listData && this.listData.length > 0) {
             for (let i: number = 0; i < this.value.length; i++) {
                 const value: string | number | boolean = this.allowObjectBinding ? getValue((this.fields.value) ? this.fields.value : '', proxy.value[i as number]) :  proxy.value[i as number];
                 const checkEle: Element = this.findListElement(
@@ -3921,7 +3921,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         valueItem
                     );
                 }
-                if (isNullOrUndefined(listValue) && !this.allowCustomValue && !this.enableVirtualization) {
+                if (isNullOrUndefined(listValue) && !this.allowCustomValue && !this.enableVirtualization && this.listData && this.listData.length > 0) {
                     this.value.splice(index, 1);
                     index -= 1;
                     valueLength -= 1;
@@ -4691,7 +4691,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 downIconWidth = this.dropIcon.offsetWidth + parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
             }
             this.checkClearIconWidth();
-            if (!isNullOrUndefined(this.value)) {
+            if (!isNullOrUndefined(this.value) && (this.allowCustomValue || (this.listData && this.listData.length > 0))) {
                 for (let index: number = 0; !isNullOrUndefined(this.value[index as number]); index++) {
                     let items = this.text && this.text.split(this.delimiterChar);
                     if (!this.enableVirtualization) {

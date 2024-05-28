@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.6 (2024-05-28)
+
+### TextBox
+
+#### Bug Fixes
+
+- `#I587808` - Fixed an accessibility issue in the Multi Line textbox caused by the role attribute.
+
 ## 25.1.42 (2024-04-30)
 
 ### NumericTextBox

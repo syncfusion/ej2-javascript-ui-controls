@@ -978,7 +978,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 type: e ? e.type : null, cancel: false, target: target, event: e ? e : null,
                 element: ctrlObj.tooltipEle, isInteracted: !isNullOrUndefined(e)
             };
-            if (ctrlObj.needTemplateReposition() && !ctrlObj.mouseTrail && (showAnimation.effect == 'None' ||
+            if (ctrlObj.needTemplateReposition() && !ctrlObj.mouseTrail && (showAnimation.effect == 'None' || showAnimation.effect == 'FadeIn' ||
                 ((this as any).isReact && typeof ctrlObj.content != 'string'))) {
                 ctrlObj.tooltipEle.style.display = 'none';
             }
