@@ -3,13 +3,14 @@
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs  } from '../../src/index';
-import { dialogEditData,crDialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1,splitTasksData2} from '../base/data-source.spec';
+import { dialogEditData,crDialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1,splitTasksData2,splitTasksData3, CR886052} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent,  } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { actionComplete } from '@syncfusion/ej2-treegrid';
+import { Grid } from '@syncfusion/ej2-grids';
 Gantt.Inject( Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
@@ -525,7 +526,7 @@ describe('Gantt dialog module', () => {
        it('Dependency tab editing', () => {
            ganttObj.actionComplete = (args: any): void => {
                if (args.requestType === 'save') {
-                   // expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe("3FS");
+                    expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe("3FS");
                }
            };
            let row: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_content_table > tbody > tr > td:nth-child(2)') as HTMLElement;
@@ -5386,5 +5387,181 @@ describe('Validation Rule with change in taskfield and column', () => {
             let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
             expect(ganttObj.element.getElementsByClassName('e-row')[2].children[3].innerHTML).toBe('2/5/2019');           
+        });
+    });
+    describe('Split task Cr-885547', function () {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: splitTasksData3,
+                taskFields: {
+                    id: 'id',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    durationUnit: 'DurationUnit',
+                    segments: 'Segments',
+                },
+                durationUnit: 'Hour',
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  allowTaskbarEditing: true,
+                  showDeleteConfirmDialog: true,
+                },
+                enableContextMenu: true,
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                highlightWeekends: true,
+                }, done);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Checking Custom Column', (done: Function) => {
+            ganttObj.actionComplete = (args: any): void => {
+                if(args.requestType === 'save') {
+                    expect(args.data.Segments[0].customID).toBe(33);
+                    done();        
+                }
+            }
+            ganttObj.openEditDialog(3);
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });
+    describe('CR:886052-Editing issue for the grid rendered inside a custom column', function () {
+        let ganttObj: Gantt | any;
+        let indicatorData: any;
+        let elem: HTMLElement;
+        let gridObj: Grid | any;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: CR886052,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+                editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  allowTaskbarEditing: true,
+                  showDeleteConfirmDialog: true,
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', width: 250 },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Predecessor' },
+                    { field: 'Progress' },
+                    { field: 'Customfield', visible: false,
+                    edit: {
+                        create: () => {
+                          elem = document.createElement('div');
+                          return elem;
+                        },
+                        read: () => {
+                          return gridObj.value;
+                        },
+                        destroy: () => {
+                          gridObj.destroy();
+                        },
+                        write: (args: Object) => {
+                          if ((args as any).rowData.Indicators) {
+                            indicatorData = (args as any).rowData.Indicators.map((indicator: any, index: number) => ({
+                              id: index,
+                              date: new Date(indicator.date),
+                              name: indicator.name,
+                              tooltip: indicator.tooltip,
+                              iconClass: indicator.iconClass
+                            }));
+                        } else {
+                            indicatorData = []; 
+                        }
+                          gridObj = new Grid({
+                            width:"550px",
+                            height:"120px",
+                            dataSource: indicatorData,
+                            columns: [
+                                { field: 'id', headerText: 'id', width: 120, isPrimaryKey: true,  },
+                                { field: 'date', type:'date', headerText: 'date', width: 120, format:'yMd', editType: 'datepickeredit',},
+                                { field: 'name', width: 150},
+                                { field: 'tooltip', width: 150,}
+                            ],
+                            toolbar: [ 'Add','Edit', 'Delete', 'Update', 'Cancel'],
+                            editSettings: { 
+                              allowAdding: true,
+                              allowEditing: true, allowDeleting: true, mode: 'Normal' },
+                          });
+                          gridObj.appendTo(elem);
+                        },
+                      },
+                    
+                    },
+                ],
+                editDialogFields: [
+                    { type: 'General', headerText: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Custom', headerText: 'Indicator' },
+                ],
+                actionBegin: function (args: any) {
+                    if (args.requestType === 'beforeOpenEditDialog') {
+                        ganttObj['columnByField'].Customfield.visible = true;
+                    }
+                    if(args.requestType == "beforeSave"){
+                        if (Array.isArray(indicatorData)) {
+                            const obj = indicatorData.map((indicator: any, index: number) => ({
+                                date: new Date(indicator.date),
+                                name: indicator.name,
+                                tooltip: indicator.tooltip,
+                                iconClass: indicator.iconClass || 'okIcon e-icons'
+                            }));
+                            args.data.Indicators = obj;
+                            args.data.ganttProperties.indicators = obj;
+                        }
+                    }
+                },
+                enableContextMenu: true,
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                highlightWeekends: true,
+                projectStartDate: new Date('03/24/2019'),
+                projectEndDate: new Date('07/06/2019')
+                }, done);
+            });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it ('Opening Indicator tab and save action', () => {
+            ganttObj.openEditDialog(2);
+            let selectIndicator: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_Tab > div.e-tab-header.e-control.e-toolbar.e-lib.e-keyboard > div > div:nth-child(3)') as HTMLElement;
+            triggerMouseEvent(selectIndicator, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+            expect(ganttObj.currentViewData.length).toBe(12);
+            expect(ganttObj['columnByField'].Customfield.visible).toBe(true);
         });
     });

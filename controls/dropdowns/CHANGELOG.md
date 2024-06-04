@@ -8,6 +8,8 @@
 
 #### Bug Fixes
 
+- `#I587743` - Fixed an accessibility issue in MultiSelect to improve usability for all users.
+
 - `#I577257` - Fixed issue with incorrect binding of value property to MultiSelect.
 
 ## 25.2.5 (2024-05-21)

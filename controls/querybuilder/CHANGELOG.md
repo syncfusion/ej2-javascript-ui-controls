@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 25.2.6 (2024-05-28)
+## 25.2.7 (2024-06-04)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I887637` - Issue with Script error thrown in QueryBuilder when `clicking` the button group component in header template has been fixed.
+
+## 25.2.4 (2024-05-14)
 
 ### QueryBuilder
 

@@ -111,7 +111,7 @@ export class Edit {
      */
     private updateDefaultColumnEditors(): void {
         const customEditorColumns: string[] =
-            [this.parent.taskFields.id, this.parent.taskFields.progress, this.parent.taskFields.resourceInfo, 'taskType'];
+            [this.parent.taskFields.id, this.parent.taskFields.progress, this.parent.taskFields.resourceInfo, this.parent.taskFields.type];
         for (let i: number = 0; i < customEditorColumns.length; i++) {
             if (!isNullOrUndefined(customEditorColumns[i as number]) && customEditorColumns[i as number].length > 0) {
                 // eslint-disable-next-line
@@ -123,7 +123,7 @@ export class Edit {
                         this.updateProgessColumnEditParams(column);
                     } else if (column.field === this.parent.taskFields.resourceInfo) {
                         this.updateResourceColumnEditor(column);
-                    } else if (column.field === 'taskType') {
+                    } else if (column.field === this.parent.taskFields.type) {
                         this.updateTaskTypeColumnEditor(column);
                     }
                 }
@@ -285,7 +285,7 @@ export class Edit {
         };
         editObject.read = (element: HTMLElement): string => {
             const value: string = (<EJ2Intance>element).ej2_instances[0].value;
-            const key: string = 'taskType';
+            const key: string = this.parent.taskFields.type;
             this.parent.treeGridModule.currentEditRow[key as string] = value;
             return value;
         };
@@ -390,6 +390,10 @@ export class Edit {
      * @returns {void} .
      */
     public updateRecordByID(data: Object): void {
+        if (this.parent.enableImmutableMode && this.parent.editSettings.allowEditing &&
+            this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+            this.parent.treeGrid.endEdit();
+        }
         if (!this.parent.readOnly) {
             const tasks: TaskFieldsModel = this.parent.taskFields;
             if (isNullOrUndefined(data) || isNullOrUndefined(data[tasks.id])) {
@@ -3111,7 +3115,7 @@ export class Edit {
             } else if (rowPosition === 'Bottom') {
                 dataSource.push(addedRecord[i as number].taskData);
             } else {
-                if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID)) {
+                if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID) && rowPosition === 'Child') {
                     dataSource.push(addedRecord[i as number].taskData);
                 } else {
                     if (!this.isNewRecordAdded) {
@@ -3542,7 +3546,7 @@ export class Edit {
                 tempRecord[fieldName as string] = 0;
             } else if (ganttColumns[i as number].field === taskSettingsFields.work) {
                 tempRecord[fieldName as string] = 0;
-            } else if (ganttColumns[i as number].field === 'taskType') {
+            } else if (ganttColumns[i as number].field === taskSettingsFields.type) {
                 tempRecord[fieldName as string] = this.parent.taskType;
             } else if (ganttColumns[i as number].field === taskSettingsFields.milestone) {
                 tempRecord[fieldName as string] = null;

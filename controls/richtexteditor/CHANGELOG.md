@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 25.2.7 (2024-06-04)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I590215` - Now, clicking the cancel and close icon of the insert image dialog while uploading the image will cancel the image uploading API request.
+
+- `#I592457` - Now, when pasting an image in an empty paragraph with a `br` tag inside, the `br` tag is removed after the image is pasted in the Rich Text Editor..
+
 ## 25.2.6 (2024-05-28)
 
 ### RichTextEditor

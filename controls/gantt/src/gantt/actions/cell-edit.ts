@@ -57,7 +57,7 @@ export class CellEdit {
         }
         if (data.hasChildRecords && !this.parent.allowParentDependency && ((field === taskSettings.endDate && ((!isNullOrUndefined(data['isManual']) &&
             data['isManual'] === false) || this.parent.taskMode === 'Auto')) || field === taskSettings.duration
-            || field === taskSettings.dependency || field === taskSettings.progress || field === taskSettings.work || field === 'taskType')) {
+            || field === taskSettings.dependency || field === taskSettings.progress || field === taskSettings.work || field === taskSettings.type)) {
             if ((field === taskSettings.dependency && !this.parent.allowParentDependency) || field !== taskSettings.dependency) {
                 args.cancel = true;
             }
@@ -190,7 +190,7 @@ export class CellEdit {
                 this.notedEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.work) {
                 this.workEdited(editedArgs);
-            } else if (column.field === 'taskType' && !isNOU(this.parent.taskFields.work)) {
+            } else if (column.field === this.parent.taskFields.type && !isNOU(this.parent.taskFields.work)) {
                 this.typeEdited(editedArgs, editedObj);
             } else if (column.field === this.parent.taskFields.manual) {
                 this.taskmodeEdited(editedArgs);
@@ -604,7 +604,7 @@ export class CellEdit {
      * @returns {void} .
      */
     private typeEdited(args: ITaskbarEditedEventArgs, editedObj: Object): void {
-        const key: string = 'taskType';
+        const key: string = this.parent.taskFields.type;
         const ganttProb: ITaskData = args.data.ganttProperties;
         const taskType: string = editedObj[`${key}`];
         this.parent.setRecordValue('taskType', taskType, ganttProb, true);

@@ -2,7 +2,10 @@
   .e-speeddial-popup {
     position: absolute;
     z-index: 100000;
-    pointer-events: none;
+    
+    &:not(.e-speeddial-hover-open) {
+      pointer-events: none;
+    }
 
     &.e-speeddial-top {
       top: $sd-offset;

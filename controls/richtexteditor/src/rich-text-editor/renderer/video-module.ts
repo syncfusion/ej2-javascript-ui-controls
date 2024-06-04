@@ -1118,7 +1118,11 @@ export class Video {
             animationSettings: { effect: 'None' },
             close: (event: { [key: string]: object }) => {
                 if (this.isVideoUploaded) {
-                    this.uploadObj.removing();
+                    if (this.dialogObj.element.querySelector('.e-file-abort-btn') as HTMLElement) {
+                        (this.dialogObj.element.querySelector('.e-file-abort-btn') as HTMLElement).click();
+                    } else {
+                        this.uploadObj.remove();
+                    }
                 }
                 this.parent.isBlur = false;
                 if (event && !isNOU(event.event) && (event.event as { [key: string]: string }).returnValue) {

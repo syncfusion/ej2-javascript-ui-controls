@@ -1625,6 +1625,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.totalItemCount = this.enableVirtualization && this.dataSource instanceof DataManager ? tempCount : this.totalItemCount;
                 }
                 else {
+                    if (this.dataSource instanceof DataManager && this.allowCustomValue && this.allowFiltering) {
+                        this.remoteCustomValue = false;
+                    }
                     const tempData: [{ [key: string]: Object }] = JSON.parse(JSON.stringify(this.listData));
                     tempData.splice(0, 0, dataItem);
                     this.resetList(tempData, field, query);
@@ -3758,6 +3761,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                     if (!eventArgs.cancel) {
                         if (!this.isFiltered && !eventArgs.preventDefaultAction) {
                             this.filterAction = true;
+                            if (this.dataSource instanceof DataManager && this.allowCustomValue ) {
+                                this.isCustomRendered = false;
+                            }
                             this.dataUpdater(this.dataSource, null, this.fields);
                         }
                     }
@@ -5813,6 +5819,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode === 'Default' || this.mode === 'Box') {
             this.inputElement.setAttribute('aria-describedby', this.chipCollectionWrapper.id);
         }
+        if(!isNullOrUndefined(this.inputElement))
+        {
+            attributes(this.inputElement, { 'aria-expanded': 'false', 'aria-label': this.getModuleName() });
+        }
         if (this.element.tagName !== this.getNgDirective()) {
             this.element.style.display = 'none';
         }
@@ -6093,7 +6103,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.ulElement = null;
         this.mainListCollection = null;
         super.destroy();
-        const temp: string[] = ['readonly', 'aria-disabled', 'placeholder'];
+        const temp: string[] = ['readonly', 'aria-disabled', 'placeholder', 'aria-label', 'aria-expanded'];
         let length: number = temp.length;
         if (!isNullOrUndefined(this.inputElement)) {
             while (length > 0) {

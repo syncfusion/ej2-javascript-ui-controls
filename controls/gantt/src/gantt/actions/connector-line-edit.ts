@@ -578,6 +578,9 @@ export class ConnectorLineEdit {
             this.parent.editModule.initiateUpdateAction(args);
             return true;
         } else {
+            if (ganttRecord.taskData[this.parent.taskFields.dependency]) {
+                ganttRecord.taskData[this.parent.taskFields.dependency] = null
+            }
             return false;
         }
     }

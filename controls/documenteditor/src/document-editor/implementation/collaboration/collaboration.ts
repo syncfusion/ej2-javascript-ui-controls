@@ -1496,10 +1496,14 @@ export class CollaborativeEditingHandler {
             this.documentEditor.editorModule.onApplyCharacterFormat('CharacterFormat', format);
         } else if (keys.length === 1) {
             if (keys.indexOf('styleName') !== -1) {
-                this.documentEditor.editorModule.applyStyle(characterFormat.styleName, true);
-            }else if(keys.indexOf('allCaps') !== -1){
+                if (isNullOrUndefined(characterFormat.styleName)) {
+                    this.documentEditor.editorModule.onApplyCharacterFormat('styleName', null, false, true);
+                } else {
+                    this.documentEditor.editorModule.applyStyle(characterFormat.styleName);
+                }
+            } else if (keys.indexOf('allCaps') !== -1) {
                 this.documentEditor.editorModule.changeCase('allCaps');
-            }else if (keys.indexOf('Uppercase') !== -1 || keys.indexOf('Lowercase') !== -1 || keys.indexOf('SentenceCase') !== -1 || keys.indexOf('ToggleCase') !== -1 || keys.indexOf('CapitalizeEachWord') !== -1) {
+            } else if (keys.indexOf('Uppercase') !== -1 || keys.indexOf('Lowercase') !== -1 || keys.indexOf('SentenceCase') !== -1 || keys.indexOf('ToggleCase') !== -1 || keys.indexOf('CapitalizeEachWord') !== -1) {
                 this.documentEditor.editorModule.changeCase(keys[0]);
             } else {
                 if (type === 'increment' || type === 'decrement') {
@@ -1525,7 +1529,7 @@ export class CollaborativeEditingHandler {
         this.documentEditor.documentHelper.owner.parser.parseParagraphFormat(0, paragraphFormat, format);
         if (keys.length === 1) {
             if (keys.indexOf('styleName') !== -1) {
-                this.documentEditor.editorModule.applyStyle(paragraphFormat.styleName, true);
+                this.documentEditor.editorModule.applyStyle(paragraphFormat.styleName);
             } else {
                 if (keys[0] === 'borders') {
                     this.documentEditor.editorModule.onApplyParagraphFormat(keys[0], format.borders, false, false);
@@ -1599,14 +1603,16 @@ export class CollaborativeEditingHandler {
             } else if (keys[0] === 'borders') {
                 this.documentEditor.editorModule.applyCellPropertyValue(this.documentEditor.selectionModule, keys[0], format.borders, cellFormat);
             } else {
-                this.documentEditor.editorModule.applyCellPropertyValue(this.documentEditor.selectionModule, keys[0], cellFormat[keys[0]], cellFormat);
+                this.documentEditor.editorModule.applyCellPropertyValue(this.documentEditor.selectionModule, keys[0], formatCell[keys[0]], cellFormat);
             }
+            this.rowWidget = this.documentEditor.selectionModule.start.paragraph.associatedCell.ownerRow;
         } else {
             if (keys.indexOf('preferredWidth') !== -1 || keys.indexOf('preferredWidthType') !== -1 || keys.indexOf('verticalAlignment') !== -1 || keys.indexOf('borders') !== -1 || keys.indexOf('shading') !== -1) {
                 if (keys.indexOf('borders') !== -1 || keys.indexOf('shading') !== -1) {
                     this.documentEditor.editorModule.isBordersAndShadingDialog = true;
                 }
                 this.documentEditor.editorModule.applyCellPropertyValue(this.documentEditor.selectionModule, undefined, format, cellFormat);
+                this.rowWidget = this.documentEditor.selectionModule.start.paragraph.associatedCell.ownerRow;
                 this.documentEditor.editorModule.isBordersAndShadingDialog = false;
             } else {
                 this.documentEditor.documentHelper.owner.cellOptionsDialogModule.applySubCellOptions(format);

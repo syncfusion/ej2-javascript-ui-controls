@@ -1797,11 +1797,15 @@ export class ChartRows extends DateProcessor {
      */
     public triggerQueryTaskbarInfoByIndex(trElement: Element, data: IGanttData): void {
         // eslint-disable-next-line
+        if (isNullOrUndefined(trElement)) {
+            return
+        }
         const taskbarElement: Element = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0 ? trElement :
             trElement.querySelector('.' + cls.taskBarMainContainer);
         let rowElement: Element;
         let segmentRowElement: Element;
-        if (data.ganttProperties.segments && data.ganttProperties.segments.length > 0) {
+        if (data.ganttProperties.segments && data.ganttProperties.segments.length > 0 && trElement && trElement.parentElement
+            && trElement.parentElement.parentElement && trElement.parentElement.parentElement.parentElement) {
             segmentRowElement = trElement.parentElement.parentElement.parentElement;
         }
         let triggerTaskbarElement: Element;
@@ -2120,7 +2124,18 @@ export class ChartRows extends DateProcessor {
                 }
             }
             if (data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar) {
-                tr.replaceChild(this.getResourceParent(data).childNodes[0], tr.childNodes[0]);
+                tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
+                if (this.parent.queryTaskbarInfo) {
+                    let mainContainers: HTMLCollectionOf<Element> = (tr as Element).getElementsByClassName('e-taskbar-main-container');
+                    for (let i: number = 0; mainContainers.length > i; i++) {
+                        const mainTaskbar: HTMLElement = (mainContainers[i as number].querySelector('.e-gantt-child-taskbar'));
+                        if (!isNullOrUndefined(mainTaskbar)) {
+                            const id: string = mainContainers[i as number].getAttribute('rowUniqueId');
+                            const ganttData: IGanttData = this.parent.getRecordByID(id);
+                            this.triggerQueryTaskbarInfoByIndex(mainTaskbar, ganttData);
+                        }
+                    }
+                }
                 if(this.parent.renderBaseline){
                     data.childRecords.forEach((childRecord) => {
                         if (!isNullOrUndefined(childRecord.ganttProperties.baselineStartDate && childRecord.ganttProperties.baselineEndDate)) {
@@ -2213,57 +2228,6 @@ export class ChartRows extends DateProcessor {
         parentTr[0].childNodes[0].childNodes[0].childNodes[0].appendChild(cloneChildElement);
     }
 
-    private getResourceParent(record: IGanttData): Node {
-        const chartRows: NodeListOf<Element> = this.parent.ganttChartModule.getChartRows();
-        //Below code is for rendering taskbartemplate in resource view with multi taskbar
-        if (this.parent.initialChartRowElements && (!this.parent.allowTaskbarDragAndDrop && this.parent.allowTaskbarOverlap)) {
-            for (let j: number = 0; j < this.parent.initialChartRowElements.length; j++) {
-                if (!isNullOrUndefined(chartRows[j as number])) {
-                    if (!isNullOrUndefined(chartRows[j as number].childNodes[0].childNodes[1].childNodes[2]) && 
-                       !isNullOrUndefined(this.parent.initialChartRowElements[j as number].childNodes[0].childNodes[1].childNodes[2])) {
-                        // eslint-disable-next-line
-                        chartRows[j as number].childNodes[0].childNodes[1].childNodes[2]['innerHTML'] = this.parent.initialChartRowElements[j as number].childNodes[0].childNodes[1].childNodes[2]['innerHTML'];
-                    }
-                }
-            }
-        }
-        this.templateData = record;
-        const parentTrNode: NodeList = this.getTableTrNode();
-        const leftLabelNode: NodeList = this.leftLabelContainer();
-        const collapseParent: HTMLElement = createElement('div', {
-            className: 'e-collapse-parent'
-        });
-        parentTrNode[0].childNodes[0].childNodes[0].appendChild(collapseParent);
-        const tasks: IGanttData[] = this.parent.dataOperation.setSortedChildTasks(record);
-        this.parent.dataOperation.updateOverlappingIndex(tasks);
-        let tRow: Node;
-        if (this.parent.enableVirtualization) {
-            for (let i: number = 0; i < record.childRecords.length; i++) {
-                tRow = this.getGanttChartRow(record.childRecords[i as number].index, this.parent.flatData[record.childRecords[i as number].index]);
-                this.updateResourceTaskbarElement(tRow, parentTrNode);
-            }
-        }
-        else {
-            for (let i: number = 0; i < chartRows.length; i++) {
-                if ((<HTMLElement>chartRows[i as number]).classList.contains('gridrowtaskId'
-                    + record.ganttProperties.rowUniqueID + 'level' + (record.level + 1))) {
-                    this.updateResourceTaskbarElement(chartRows[i as number], parentTrNode);
-                }
-                else if (record.hasChildRecords) {
-                    for (let j: number = 0; j < record.childRecords.length; j++) {
-                        if (record.childRecords[j as number].childRecords && !record.childRecords[j as number].expanded) {
-                            if ((<HTMLElement>chartRows[i as number]).classList.contains('gridrowtaskId'
-                                + tasks[j as number].ganttProperties.rowUniqueID + 'level' + (tasks[j as number].level + 1))) {
-                                this.updateResourceTaskbarElement(chartRows[i as number], parentTrNode);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(leftLabelNode)[0]);
-        return parentTrNode[0].childNodes[0];
-    }
     /**
      * To refresh all edited records
      *

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 25.2.7 (2024-06-04)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I594041` -  Fixed an issue where the `tab` key and `escape` key were not functioning correctly.
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#I594041` -  Fixed an issue where the `tab` key and `escape` key were not functioning correctly.
+
 ## 25.2.5 (2024-05-21)
 
 ### TimePicker

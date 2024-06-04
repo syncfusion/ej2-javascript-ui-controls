@@ -4,7 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13 } from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, cr884998 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -1385,6 +1385,9 @@ describe('Milestone Baseline render', () => {
              expect(ganttObj.currentViewData[0].ganttProperties.segments[0].progressWidth).toBe(56.4);
              expect(ganttObj.currentViewData[0].ganttProperties.segments[1].progressWidth).toBe(-1);
          });
+         it('Checking if row present', () => {
+            expect(document.getElementsByClassName('gridrowtaskIdlevel0').length > 0).toBe(true);
+         });
          afterAll(() => {
              if (ganttObj) {
                  destroyGantt(ganttObj);
@@ -1551,6 +1554,51 @@ describe('Milestone Baseline render', () => {
         });
         it('Add record at Bottom', function () {
             ganttObj.addRecord({ TaskID: 9, TaskName: 'NewTask4' },'Bottom'); 
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Checking for empty element', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: cr884998,
+                taskFields: {
+                    id: 'taskId',
+                    name: 'taskName',
+                    startDate: 'startDate',
+                    endDate: 'endDate',
+                    duration: 'duration',
+                    progress: 'realized',
+                    dependency: 'dependencies',
+                    segments: 'parts',
+                    parentID: 'parentId',
+                    baselineStartDate: 'baselineStartDate',
+                    baselineEndDate: 'baselineEndDate'
+                },
+                gridLines:'Both',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                queryTaskbarInfo:function(args) {
+
+                },
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px'
+            }, done);
+
+        });
+        it('check flat data', () => {
+            expect(ganttObj.flatData.length > 0).toBe(true);
         });
         afterAll(() => {
             if (ganttObj) {

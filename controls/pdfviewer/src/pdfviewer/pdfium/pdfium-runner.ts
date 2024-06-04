@@ -191,7 +191,7 @@ export function PdfiumRunner(): void {
             else if (event.data.message === 'renderPageSearch') {
                 let firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 let ImageData: any = event.data;
-                let data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null, ImageData.textDetailsId);
+                let data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null, ImageData.textDetailsId,null,event.data.cropBoxRect);
                 (data as any).message = 'imageRenderedSearch';
                 ctx.postMessage(data);
             }
@@ -241,7 +241,7 @@ export function PdfiumRunner(): void {
             else if (event.data.message === 'renderImageAsTileSearch') {
                 let values = event.data;
                 let firstPage: Page = documentDetails.getPage(event.data.pageIndex);
-                let data: object = firstPage.renderTileImage(values.tileX, values.tileY, values.tileXCount, values.tileYCount, values.zoomFactor, event.data.isTextNeed, event.data.textDetailsId);
+                let data: object = firstPage.renderTileImage(values.tileX, values.tileY, values.tileXCount, values.tileYCount, values.zoomFactor, event.data.isTextNeed, event.data.textDetailsId, event.data.cropBoxRect);
                 (data as any).message = 'renderTileImageSearch';
                 ctx.postMessage(data);
             }
@@ -270,8 +270,8 @@ export function PdfiumRunner(): void {
         public render(message: any, zoomFactor?: number, isTextNeed?: boolean, printScaleFactor?: any, printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean, cropBoxRect?: Rect): object {
             return this.processor.render(this.index, message, zoomFactor, isTextNeed, printScaleFactor, printDevicePixelRatio, textDetailsId, isTransparent, cropBoxRect);
         }
-        public renderTileImage(x: any, y: any, tileX: any, tileY: any, zoomFactor?: number, isTextNeed?: boolean, textDetailsId?: any) {
-            return this.processor.renderTileImage(this.index, x, y, tileX, tileY, zoomFactor, isTextNeed, textDetailsId);
+        public renderTileImage(x: any, y: any, tileX: any, tileY: any, zoomFactor?: number, isTextNeed?: boolean, textDetailsId?: any, cropBoxRect?: Rect) {
+            return this.processor.renderTileImage(this.index, x, y, tileX, tileY, zoomFactor, isTextNeed, textDetailsId,cropBoxRect);
         }
     }
     
@@ -852,7 +852,7 @@ export function PdfiumRunner(): void {
             }
         }
 
-        public renderTileImage(n = 0, tileX: any, tileY: any, xCount: any, yCount: any, zoomFactor: number, isTextNeed: boolean, textDetailsId: any) : object{
+        public renderTileImage(n = 0, tileX: any, tileY: any, xCount: any, yCount: any, zoomFactor: number, isTextNeed: boolean, textDetailsId: any, cropBoxRect?: Rect) : object{
             const [w, h] = this.getPageSize(n);
             var newWidth = Math.round(w * 1.5 * zoomFactor);
             var newHeight = Math.round(h * 1.5 * zoomFactor);
@@ -869,7 +869,7 @@ export function PdfiumRunner(): void {
             FPDF.Bitmap_FillRect(bmap, 0, 0, w1, h1, 0xFFFFFFFF);
             FPDF.RenderPageBitmap(bmap, page, -tileX * w1, -tileY * h1, newWidth, newHeight, 0, flag);
             FPDF.Bitmap_Destroy(bmap);
-            this.textExtraction(page, n, isTextNeed);
+            this.textExtraction(page, n, isTextNeed, cropBoxRect);
             FPDF.ClosePage(page);
             let pageRenderPtr = heap;
             let data = [];

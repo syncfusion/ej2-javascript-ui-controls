@@ -1998,4 +1998,54 @@ describe('Aggregates Functionality testing', () => {
             grid = null;
         });
     });
+
+    describe('EJ2-884166: Need to show Aggregate row when Grid is empty', () => {
+        let grid: Grid;
+        let rows: HTMLTableRowElement;
+        function dataReady(args:any) {
+            args.loadSummaryOnEmpty=true;
+        }
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: [],
+                    load: function () {
+                        this.on('data-ready', dataReady, this);
+                     },
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', visible: false
+                        },
+                        { field: 'Verified', displayAsCheckbox: true, type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd', type: 'datetime' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Average',
+                            field: 'Freight',
+                            format: 'c2'
+                        }]
+                    }, {
+                        columns: [{
+                            type: 'Max',
+                            field: 'OrderDate',
+                            format: { type: 'date', skeleton: 'medium' },
+                            footerTemplate: '${Max}'
+                        }]
+                    }]
+                },
+                done
+            );
+        });
+        it('check summary cell visibility visiblity', () => {
+            expect((grid.getFooterContentTable().querySelectorAll('.e-summarycell')).length).toBeGreaterThan(0);
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = rows = null;
+        });
+    });
 });

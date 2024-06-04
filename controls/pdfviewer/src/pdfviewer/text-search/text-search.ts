@@ -4,6 +4,8 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel } from '../index';
 import { DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pdfviewer-model';
 import { createSpinner, showSpinner, hideSpinner } from '../index';
+import { Rect } from '@syncfusion/ej2-drawings';
+import { PdfPage } from '@syncfusion/ej2-pdf';
 let searchTextCollection: any = [];
 
 /**
@@ -1289,13 +1291,19 @@ export class TextSearch {
                 if (this.pdfViewerBase.clientSideRendering) {
                     let textDetailsId: string = this.pdfViewerBase.documentId + '_' + pageIndex + '_textDetails';
                     let isTextNeed: boolean = this.pdfViewerBase.pageTextDetails ? this.pdfViewerBase.pageTextDetails[textDetailsId] ? false : true : true;
+                    let cropBoxRect: Rect = new Rect(0, 0, 0, 0);
+                    let currentPage: PdfPage = this.pdfViewer.pdfRenderer.loadedDocument.getPage(pageIndex);
+                    if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map && currentPage._pageDictionary._map.CropBox) {
+                        [cropBoxRect.x, cropBoxRect.y, cropBoxRect.width, cropBoxRect.height] = currentPage._pageDictionary._map.CropBox;
+                    }
                     if (viewPortWidth >= pageWidth || !this.pdfViewer.tileRenderingSettings.enableTileRendering) {
                         this.pdfViewerBase.pdfViewerRunner.postMessage({
                             pageIndex: pageIndex,
                             message: 'renderPageSearch',
                             zoomFactor: proxy.pdfViewer.magnificationModule.zoomFactor,
                             isTextNeed: isTextNeed,
-                            textDetailsId: textDetailsId
+                            textDetailsId: textDetailsId,
+                            cropBoxRect: cropBoxRect
                         });
                     } else {
                         this.pdfViewerBase.pdfViewerRunner.postMessage({
@@ -1307,7 +1315,8 @@ export class TextSearch {
                             tileXCount: noTileX,
                             tileYCount: noTileY,
                             isTextNeed: isTextNeed,
-                            textDetailsId: textDetailsId
+                            textDetailsId: textDetailsId,
+                            cropBoxRect: cropBoxRect
                         });
                     }
                     this.pdfViewerBase.pdfViewerRunner.onmessage = function (event: any) {

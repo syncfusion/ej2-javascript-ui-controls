@@ -561,7 +561,7 @@ export class Render {
             }
             this.parent.notify(
                 events.dataReady,
-                extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates }, args));
+                extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates, loadSummaryOnEmpty: false }, args));
             if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
                 && (args && args.requestType !== 'filtering')) {
                 this.headerRenderer.refreshUI();

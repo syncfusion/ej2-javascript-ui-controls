@@ -650,7 +650,7 @@ export class CriticalPath {
                 else if (record.ganttProperties.predecessor[i as number].type == 'SF') {
                     durationDiff = this.parent.dataOperation.getDuration(record.ganttProperties.endDate, fromRecord.ganttProperties.startDate, fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule, true);
                 }
-                if (durationDiff == 0 && this.validatedids.indexOf(parseInt(fromRecord.ganttProperties.taskId)) == -1 && fromRecord.ganttProperties.taskId != record.ganttProperties.taskId) {
+                if (durationDiff >= 0 && this.validatedids.indexOf(parseInt(fromRecord.ganttProperties.taskId)) == -1 && fromRecord.ganttProperties.taskId != record.ganttProperties.taskId) {
                     fromRecord.ganttProperties.slack = record.ganttProperties.slack;
                     fromRecord.slack = record.slack;
                     fromRecord.isCritical = record.ganttProperties.isCritical;

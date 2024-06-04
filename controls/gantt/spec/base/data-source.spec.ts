@@ -7,7 +7,28 @@ export let projectResources: Object[] = [
     { ResourceId: 3, ResourceName: 'Developer' },
     { ResourceId: 4, ResourceName: 'Testing Engineer' }
 ];
-
+export let dataSource1: Object[] = [
+    {
+        taskId: 1,
+        taskName: "Project initiation",
+        startDate: new Date('03/29/2019'),
+        endDate: new Date('04/21/2019'),
+    }, {
+        taskId: 2,
+        taskName: "Identify Site location",
+        startDate: new Date('03/29/2019'),
+        duration: "2",
+        progress: 30,
+        parentID: 1,
+        predecessor: null
+    }, {
+        taskId: 3,
+        taskName: "Perform soil test",
+        startDate: new Date('03/29/2019'),
+        duration: "4",
+        parentID: 1
+    }
+];
 export let cR885322: Object[] = [
     {
         id: '62ed75125fb9p80015ae8ee7',
@@ -7334,6 +7355,32 @@ export let splitTasksData2: object[] = [
         ]
     }
 ];
+export let splitTasksData3: object[] = [
+    {
+        id: 1,
+        TaskName: 'Project Schedule',
+        StartDate: new Date('02/04/2019'),
+        EndDate: new Date('03/10/2019'),
+        subtasks: [
+            {
+                id: 2,
+                TaskName: 'Planning',
+                StartDate: new Date('02/04/2019'),
+                subtasks: [
+                    {
+                        id: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                        Duration: 10, Progress: '60',
+                        Segments: [
+                            { StartDate: new Date('02/04/2019'), Duration: 2 , customID: 33},
+                            { StartDate: new Date('02/05/2019'), Duration: 5 , customID: 44},
+                            { StartDate: new Date('02/08/2019'), Duration: 3 , customID: 55}
+                        ]
+                    },
+                ]
+            },
+        ]
+    }
+];
 export let stringTaskId: object[] = [
     {
         TaskID: "a1",
@@ -8827,6 +8874,162 @@ export let splitTasksData1 = [
                 Duration: 90,
             },
         ],
+    },
+];
+export let cr884998 = [
+    {
+        taskId: 8,
+        taskName: 'Adicionar 8',
+        startDate: '2024-04-05',
+        endDate: '2024-04-05T23:59:59.999Z',
+        duration: 1,
+        dependencies: '',
+        taskIndex: 0,
+        cost: 110,
+        index: 0,
+        wbs: '01',
+    },
+    {
+        taskId: 6,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parts: [
+            {
+                left: 0,
+                width: 165,
+                duration: 3,
+                endDate: '2024-04-10T20:00:00.000Z',
+                startDate: '2024-04-08T11:00:00.000Z',
+                segmentIndex: 0,
+                showProgress: true,
+                progressWidth: 0,
+                offsetDuration: 0,
+            },
+            {
+                left: 198,
+                width: 66,
+                duration: 2,
+                endDate: '2024-04-15T20:00:00.000Z',
+                startDate: '2024-04-12T11:00:00.000Z',
+                segmentIndex: 1,
+                showProgress: false,
+                progressWidth: -1,
+                offsetDuration: 1,
+            },
+        ],
+        taskIndex: 1,
+        cost: 0,
+        index: 1,
+        wbs: '02',
+    },
+    {
+        taskId: 7,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 6,
+        taskIndex: 2,
+        cost: 0,
+        index: 2,
+        wbs: '02.01',
+    },
+    {
+        taskId: 9,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 7,
+        taskIndex: 3,
+        cost: 12340,
+        index: 3,
+        wbs: '02.01.01',
+    },
+    {
+        taskId: 10,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 6,
+        taskIndex: 4,
+        cost: 0,
+        index: 4,
+        wbs: '02.02',
+    },
+    {
+        taskId: 11,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 10,
+        taskIndex: 5,
+        cost: 1000,
+        index: 5,
+        wbs: '02.02.01',
+    },
+    {
+        taskId: 13,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 10,
+        taskIndex: 6,
+        cost: 1000,
+        index: 6,
+        wbs: '02.02.02',
+    },
+    {
+        taskId: 12,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        parentId: 10,
+        taskIndex: 7,
+        cost: 700,
+        index: 7,
+        wbs: '02.02.03',
+    },
+    {
+        taskId: 2,
+        taskName: 'Adicionar 2',
+        startDate: '2024-04-09',
+        endDate: '2024-04-09T23:59:59.999Z',
+        duration: 1,
+        dependencies: '',
+        taskIndex: 8,
+        cost: 105,
+        index: 8,
+        wbs: '03',
+    },
+    {
+        taskId: 4,
+        taskName: 'Adicionar 4',
+        startDate: '2024-04-05',
+        endDate: '2024-04-05T23:59:59.999Z',
+        duration: 1,
+        dependencies: '',
+        taskIndex: 9,
+        cost: 120,
+        index: 9,
+        wbs: '04',
+    },
+    {
+        taskId: 5,
+        taskName: 'Adicionar 5',
+        startDate: '2024-04-08',
+        endDate: '2024-04-08T23:59:59.999Z',
+        duration: 1,
+        dependencies: '4FS',
+        taskIndex: 10,
+        index: 10,
+        wbs: '05',
     },
 ];
 export let projectNewData13 = [{
@@ -11048,6 +11251,149 @@ export let resourceDataUndo: object[] = [
         Progress: 30, resources: [12], work: 24
     }
 ];
+export let cellEditData1: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        SchedulingType: 'FixedDuration',
+        Work: 5,
+        Duration: 1,
+    }
+  ]
+export let CR885011: Object[] = [
+    {
+        taskId: 1,
+        taskName: 'Adicionar 6',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        dependencies: null,
+        taskIndex: 0,
+        cost: 0,
+        baselineStartDate: null,
+        baselineEndDate: null,
+        index: 0,
+        wbs: '01',
+      },
+      {
+        taskId: 2,
+        taskName: 'Adicionar 1',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        dependencies: null,
+        taskIndex: 1,
+        cost: 0,
+        baselineStartDate: null,
+        baselineEndDate: null,
+        index: 1,
+        wbs: '02',
+      },
+      {
+        taskId: 3,
+        taskName: 'Adicionar 2',
+        startDate: '2024-04-08',
+        endDate: '2024-04-12T23:59:59.999Z',
+        duration: 5,
+        dependencies: null,
+        taskIndex: 2,
+        cost: 0,
+        baselineStartDate: null,
+        baselineEndDate: null,
+        index: 2,
+        wbs: '03',
+    }
+]
+export let criticalData2: Object[] = [
+    {
+        taskId: 1,
+        taskName: 'Test 1',
+        startDate: '2024-04-15',
+        endDate: '2024-04-19T23:59:59.999Z',
+        duration: 2,
+        dependencies: '',
+    },
+    {
+        taskId: 2,
+        taskName: 'Test 2',
+        startDate: '2024-04-24',
+        endDate: '2024-04-26T23:59:59.999Z',
+        duration: 2,
+        dependencies: '1FS+1 days',
+    }
+]
+export let CR886052: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+            {
+                TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 2,
+                Predecessor: '2', Progress: 30
+            },
+        ]
+    },
+    {
+        TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4',
+        Indicators: [
+            {
+                'date': new Date('04/10/2019'),
+                'name': 'Design Phase',
+                'tooltip': 'Design phase completed',
+                'iconClass': 'okIcon e-icons'
+            },
+            {
+                'date': new Date('04/15/2019'),
+                'name': 'Design change',
+                'tooltip': 'Design phase load',
+                'iconClass': 'okIcon e-icons'
+            }
+        ]
+    },
+    {
+        TaskID: 6,
+        TaskName: 'Market research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'), Duration: 4,
+                        Predecessor: '5', Progress: 30
+                    },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '5' }
+                ]
+            },
+            {
+                TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'), Duration: 4,
+                Predecessor: '7, 8', Progress: 30
+            },
+            { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: '9' },
+            {
+                TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: '10',
+                Indicators: [
+                    {
+                        'date': new Date('04/27/2019'),
+                        'name': 'Research completed',
+                        'tooltip': 'Research completed',
+                        'iconClass': 'description e-icons'
+                    }
+                ]
+            }
+        ]
+    }
+]
 export let resourceResourcesUndo: object[] = [
     { resourceId: 1, resourceName: 'Martin Tamer' },
     { resourceId: 2, resourceName: 'Rose Fuller' },

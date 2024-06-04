@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.7 (2024-06-04)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I583706` - Now, the PDF Viewer scroll bar was not updated after deleting the existing value using API from the signature field.
+
 ## 25.2.6 (2024-05-28)
 
 ### PDF Viewer

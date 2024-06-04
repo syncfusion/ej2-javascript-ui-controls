@@ -3,7 +3,7 @@
  */
 import { Gantt, Edit, CriticalPath, ContextMenu, ContextMenuClickEventArgs, RowDD, Selection, Toolbar, DayMarkers, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ExcelExport, PdfExport, ITaskbarEditedEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection, criticalPathData, taskModeData1, taskModeData2, criticalPathData1, criticalPathData2, bwData1, bwData2, bwData3, bwData4 } from '../base/data-source.spec';
+import { multiTaskbarData, projectData1, resources, normalResourceData, resourceCollection, criticalPathData, taskModeData1, taskModeData2, criticalPathData1, criticalPathData2, bwData1, bwData2, bwData3, bwData4, criticalData2 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 Gantt.Inject(Edit, CriticalPath, ContextMenu, RowDD, Selection, Toolbar, DayMarkers, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ExcelExport, PdfExport);
@@ -44,10 +44,10 @@ describe('Gantt spec for critical path', () => {
             }, done);
         });
         it('Initial rendering critical path ', () => {
-            expect(ganttObj.flatData[5].isCritical).toBe(false);
-            expect(ganttObj.flatData[12].isCritical).toBe(false);
-            expect(ganttObj.flatData[16].isCritical).toBe(false);
-            expect(ganttObj.flatData[17].isCritical).toBe(false);
+            expect(ganttObj.flatData[5].isCritical).toBe(true);
+            expect(ganttObj.flatData[12].isCritical).toBe(true);
+            expect(ganttObj.flatData[16].isCritical).toBe(true);
+            expect(ganttObj.flatData[17].isCritical).toBe(true);
         });
         it('Drag and Drop', () => {
             ganttObj.actionComplete = (args) => {
@@ -111,7 +111,7 @@ describe('Gantt spec for critical path', () => {
         it('Progress Resizing', () => {
             ganttObj.actionComplete = (args) => {
                 if (args.requestType == 'save' && args.taskBarEditAction == 'ProgressResizing') {
-                    expect(args.data.isCritical).toBe(false);
+                    expect(args.data.isCritical).toBe(true);
                 }
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(12) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
@@ -223,7 +223,7 @@ describe('Gantt spec for critical path', () => {
             ganttObj.actionComplete = (args) => {
                 if (args.requestType == 'save' && args.taskBarEditAction == 'RightResizing') {
                     expect(args.data.isCritical).toBe(true);
-                    expect(ganttObj.flatData[4].isCritical).toBe(false);
+                    expect(ganttObj.flatData[4].isCritical).toBe(true);
                 }
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(6) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
@@ -1418,7 +1418,7 @@ describe('clone taskbar Right resizing taskbar', () => {
     it('Progress Resizing', () => {
         ganttObj.actionComplete = (args) => {
             if (args.requestType == 'save' && args.taskBarEditAction == 'ProgressResizing') {
-                expect(args.data.isCritical).toBe(false);
+                expect(args.data.isCritical).toBe(true);
             }
         }
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(12) > td > div.e-taskbar-main-container > div.e-child-progress-resizer') as HTMLElement;
@@ -1739,6 +1739,42 @@ describe('Index is not updated', () => {
     });
     afterAll(() => {
         if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR: 883874-Critical path of task connected dependent tasks have not changed to critical path', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: criticalData2,
+            allowSelection: true,
+            allowResizing: true,
+            enableCriticalPath: true,
+            taskFields: {
+                id: 'taskId',
+                name: 'taskName',
+                startDate: 'startDate',
+                duration: 'duration',
+                endDate: 'endDate',
+                dependency: 'dependencies',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+        }, done);
+    });
+    it('Verifying the critical path if offset is 1-Day', () => {
+        expect(ganttObj.currentViewData[0].isCritical).toBe(true);
+        expect(ganttObj.currentViewData[1].isCritical).toBe(true);
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor[0].offset).toBe(1);
+    });
+    afterAll(() => {
+        if(ganttObj){
             destroyGantt(ganttObj);
         }
     });

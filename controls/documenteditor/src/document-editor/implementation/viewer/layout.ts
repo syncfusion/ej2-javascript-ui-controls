@@ -7189,7 +7189,8 @@ export class Layout {
                 let tableWidget: TableWidget = tableWidgets[tableWidgets.length - 1] as TableWidget;
                 if (isMultiColumnSplit || rowHeight + tableRowWidget.y + this.footHeight > viewer.clientArea.bottom) {
                     if (!isAllowBreakAcrossPages || (isHeader && row.ownerTable.continueHeader) || (heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientArea.bottom)) {
-                        if ((heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientActiveArea.height && isAllowBreakAcrossPages) || (heightType !== 'Exactly' && tableRowWidget.y === viewer.clientArea.y) || (heightType === 'Auto' && isAllowBreakAcrossPages)) {
+                        const isSplitRow: boolean = !isAllowBreakAcrossPages && isNullOrUndefined(tableRowWidget.previousWidget) && tableWidgets.length > 1;
+                        if ((heightType === 'AtLeast' && HelperMethods.convertPointToPixel(row.rowFormat.height) < viewer.clientActiveArea.height && (isAllowBreakAcrossPages || isSplitRow)) || (heightType !== 'Exactly' && tableRowWidget.y === viewer.clientArea.y) || (heightType === 'Auto' && isAllowBreakAcrossPages)) {
                             splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow, footnoteElements, lineIndexInCell, cellIndex, isMultiColumnSplit);
                             if (isNullOrUndefined(splittedWidget) && tableRowWidget.y === viewer.clientArea.y) {
                                 this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements);
@@ -8047,6 +8048,7 @@ export class Layout {
         let lineBottom: number = paragraphWidget.y;
         let splittedWidget: ParagraphWidget = undefined;
         let moveEntireBlock: boolean = false;
+        let isSplitParagraph: boolean = false;
         for (let i: number = 0; i < paragraphWidget.childWidgets.length; i++) {
             let lineWidget: LineWidget = paragraphWidget.childWidgets[i] as LineWidget;
             let height: number =  this.getFootNoteHeightInLine(lineWidget);
@@ -8077,7 +8079,21 @@ export class Layout {
                     i = 0;
                     lineWidget = paragraphWidget.childWidgets[0] as LineWidget;
                 } else if (paragraphWidget.paragraphFormat.widowControl) {
-                    if (i === 1) {
+                    if (!isNullOrUndefined(paragraphWidget.associatedCell) && i === 1 && bottom < paragraphWidget.height && !isSplitParagraph) {
+                        const rowWidget: TableRowWidget = paragraphWidget.associatedCell.ownerRow;
+                        const table: TableWidget = rowWidget.containerWidget as TableWidget;
+                        const isFirstitemInPage: boolean = isNullOrUndefined(table.previousWidget) ? true : false;
+                        const isSplittedTable: boolean = table.getSplitWidgets().length > 1 ? true : false;
+                        if (!isFirstitemInPage && !isSplittedTable) {
+                            return paragraphWidget;
+                        } else {
+                            if (lineWidget.isLastLine() && isNullOrUndefined(splittedWidget)) {
+                                return undefined;
+                            }
+                            isSplitParagraph = true;
+                        }
+                    }
+                    if (i === 1 && !isSplitParagraph) {
                         moveEntireBlock = true;
                         i = 0;
                         lineWidget = paragraphWidget.childWidgets[0] as LineWidget;

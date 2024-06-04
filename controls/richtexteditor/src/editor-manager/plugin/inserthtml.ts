@@ -79,6 +79,9 @@ export class InsertHtml {
             this.insertTableInList(range, node as HTMLTableElement, closestParentNode, nodes[0], nodeCutter);
             return;
         }
+        if (isCursor && range.startContainer.textContent === '' && range.startContainer.nodeName !== 'BR' && enterAction !== 'BR' && node.nodeName !== '#text' && !isNOU((node as HTMLElement).children[0]) && !isNOU((node as HTMLElement).children[0].tagName) && (node as HTMLElement).children[0].tagName === 'IMG' && (node as HTMLElement).children.length === 1) {
+            (range.startContainer as HTMLElement).innerHTML = '';
+        }
         if (isExternal || (!isNOU(node) && !isNOU((node as HTMLElement).classList) &&
         (node as HTMLElement).classList.contains('pasteContent'))) {
             this.pasteInsertHTML(

@@ -622,7 +622,7 @@ export class DialogEdit {
                 const controlObj: any = <any>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
                 if (!isNullOrUndefined(controlObj)) {
                     const column: GanttColumnModel = ganttObj.columnByField[fieldName as string];
-                    if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+                    if (!isNullOrUndefined(column) && !isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
                         let destroy: Function = column.edit.destroy as Function;
                         if (typeof destroy === 'string') {
                             destroy = getObject(destroy, window);
@@ -1730,7 +1730,7 @@ export class DialogEdit {
             let column: GridColumnModel = {};
             if (fields[i as number].toLowerCase() === 'id') {
                 column = {
-                    field: 'id', headerText: this.localeObj.getConstant('id'), allowEditing: false, width: '70px', isPrimaryKey:true
+                    field: 'id', headerText: this.localeObj.getConstant('id'), allowEditing: false, width: '70px'
                 };
                 columns.push(column);
             } else if (fields[i as number].toLowerCase() === 'name') {
@@ -3048,7 +3048,7 @@ export class DialogEdit {
                     this.rowData[fieldName as string] !== controlObj.value) {
                     this.disableUndo = true;
                 }
-                if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+                if (!isNullOrUndefined(column) && !isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
                     let read: Function = column.edit.read as Function;
                     if (typeof read === 'string') {
                         read = getObject(read, window);
@@ -3056,7 +3056,7 @@ export class DialogEdit {
                     } else {
                         tasksData[fieldName as string] = (column.edit.read as Function)(inputElement, controlObj.value);
                     }
-                } else if (column.editType === 'booleanedit') {
+                } else if (!isNullOrUndefined(column) && column.editType === 'booleanedit') {
                     if (inputElement instanceof HTMLInputElement && inputElement.checked === true) {
                         tasksData[fieldName as string] = true;
                     } else {
@@ -3091,6 +3091,7 @@ export class DialogEdit {
         this.parent.setRecordValue('durationUnit', fromRecord.ganttProperties.durationUnit, toRecord.ganttProperties, true);
         this.parent.setRecordValue('work', fromRecord.ganttProperties.work, toRecord.ganttProperties, true);
         this.parent.setRecordValue('type', fromRecord.ganttProperties.taskType, toRecord.ganttProperties, true);
+        this.parent.setRecordValue('taskType', fromRecord.ganttProperties.taskType, toRecord.ganttProperties, true);
         this.parent.setRecordValue('resourceNames',fromRecord.ganttProperties.resourceNames,toRecord.ganttProperties,true);
         this.parent.setRecordValue('resourceInfo',fromRecord.ganttProperties.resourceInfo,toRecord.ganttProperties,true);
        if (!isNullOrUndefined(this.parent.taskFields.startDate)) {

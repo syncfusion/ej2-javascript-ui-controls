@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.2.7 (2024-06-04)
+
+### Speed Dial
+
+#### Bug Fixes
+
+- `#I591414` - Now the issue with unable to click the Speed Dial items when `opensOnHover` property is enabled has been resolved.
+
 ## 25.2.6 (2024-05-28)
 
 ### Switch

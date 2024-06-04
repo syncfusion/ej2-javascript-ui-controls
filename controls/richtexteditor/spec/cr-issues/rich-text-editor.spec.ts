@@ -4364,4 +4364,51 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
+
+    describe('887277 - Br tag added along with the image tag while pasting images into the RichTextEditor', () => {
+        let rteObject : RichTextEditor ;
+        let innerHTML: string =`<img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" style=" border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto 5px; max-width: 100%; position: relative; padding: 1px; color: rgb(28, 27, 31); font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); width: 300px;">`; 
+        beforeEach( () => {
+            rteObject = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: true
+                }, value: ''
+        });
+        });
+        afterEach( (done: DoneFn) => {
+            destroy(rteObject);
+            done();
+        });
+        it('test for pasting image in pasteCleanup in empty RTE ', (done : Function) => {
+            let keyBoardEvent: any = {
+                preventDefault: () => { },
+                type: 'keydown',
+                stopPropagation: () => { },
+                ctrlKey: false,
+                shiftKey: false,
+                action: null,
+                which: 64,
+                key: ''
+              };
+            rteObject.dataBind();
+            keyBoardEvent.clipboardData = {
+            getData: () => {
+                return innerHTML;
+            },
+            items: []
+            };
+            setCursorPoint((rteObject as any).inputElement.firstElementChild, 0);
+            rteObject.onPaste(keyBoardEvent);
+            setTimeout(() => {
+                if (rteObject.pasteCleanupSettings.prompt) {
+                    let keepFormat: any = document.getElementById(rteObject.getID() + '_pasteCleanupDialog').getElementsByClassName('e-rte-keepformat');
+                    keepFormat[0].click();
+                    let pasteOK: any = document.getElementById(rteObject.getID() + '_pasteCleanupDialog').getElementsByClassName('e-rte-pasteok');
+                    pasteOK[0].click();
+                }
+                expect(rteObject.inputElement.innerHTML === `<p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" style=" border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto 5px; max-width: 100%; position: relative; padding: 1px; color: rgb(28, 27, 31); font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); width: 300px;"> </p>`).toEqual(true);
+                done();
+            }, 400);
+        });
+    });
 });

@@ -1343,7 +1343,7 @@ export class GanttChart {
                             if (columnName === this.parent.taskFields.endDate || columnName ===
                                      this.parent.taskFields.duration || columnName === this.parent.taskFields.dependency ||
                                      columnName === this.parent.taskFields.progress || columnName === this.parent.taskFields.work ||
-                                     columnName === 'taskType') {
+                                     columnName === this.parent.taskFields.type) {
                                 this.parent.treeGrid.grid.endEdit();
                                 this.parent.treeGrid.grid.notify('key-pressed', e);
                             } else if (columnName === this.parent.taskFields.name || columnName === this.parent.taskFields.startDate) {

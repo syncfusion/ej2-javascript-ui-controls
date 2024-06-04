@@ -2892,7 +2892,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public open(sfdtText: string): void {
         // sfdtText = HelperMethods.sanitizeString(sfdtText);
-        if (!isNullOrUndefined(this.viewer)) {
+        if (!isNullOrUndefined(this.viewer) && !isNullOrUndefined(sfdtText) && sfdtText.length > 0) {
             this.clearPreservedCollectionsInViewer();
             this.documentHelper.userCollection.push('Everyone');
             this.documentHelper.lists = [];

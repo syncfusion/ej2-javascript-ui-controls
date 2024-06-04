@@ -1090,7 +1090,6 @@ export class PageOrganizer {
         this.organizeDialog.hide();
         if(JSON.stringify(this.tempOrganizePagesCollection) !== JSON.stringify(this.organizePagesCollection)){
             this.updateOrganizePageCollection();
-            this.pdfViewerBase.updateDocumentEditedProperty(true);
             let pdfBlob: Blob;
             this.pdfViewer.saveAsBlob().then((blob: Blob) => {
                 pdfBlob = blob;
@@ -1100,6 +1099,7 @@ export class PageOrganizer {
                         let downloadFileName = this.pdfViewer.downloadFileName;
                         let jsonDocumentId = this.pdfViewerBase.jsonDocumentId;
                         this.pdfViewer.load(base64, null);
+                        this.pdfViewerBase.updateDocumentEditedProperty(true);
                         this.pdfViewer.fileName = fileName;
                         if(!isNullOrUndefined(downloadFileName)){
                             this.pdfViewer.downloadFileName = downloadFileName;

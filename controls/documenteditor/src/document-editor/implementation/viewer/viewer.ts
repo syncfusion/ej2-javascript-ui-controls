@@ -6292,7 +6292,7 @@ export class WebLayoutViewer extends LayoutViewer {
     public updateScrollBars(): void {
         let updatePositionObj: PageInfo;
         updatePositionObj = this.getPageHeightAndWidth(0, 0, 0, 0);
-        let containerWidth: number = this.getContentWidth() * this.documentHelper.zoomFactor + this.padding.left + this.padding.right;
+        let containerWidth: number = this.getContentWidth() * this.documentHelper.zoomFactor;
         let containerHeight: number = this.getContentHeight() * this.documentHelper.zoomFactor + this.padding.top + this.padding.bottom;
         let updateObj: CanvasInfo;
         updateObj = this.updateCanvasWidthAndHeight(updatePositionObj.viewerWidth, updatePositionObj.viewerHeight, containerHeight, containerWidth, updatePositionObj.width, updatePositionObj.height);

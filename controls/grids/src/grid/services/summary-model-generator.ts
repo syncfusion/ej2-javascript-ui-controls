@@ -69,7 +69,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
     public generateRows(input: Object[] | Group, args?: Object, start?: number, end?: number,
                         columns?: Column[]): Row<AggregateColumnModel>[] {
         if ((input as Object[]).length === 0) {
-            if (args === undefined || !(args as ReturnType).count) {
+            if (args === undefined || !((args as ReturnType).count || (args as { loadSummaryOnEmpty: boolean }).loadSummaryOnEmpty)) {
                 return [];
             }
         }

@@ -239,7 +239,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private excelSetFocus(elem?: Element, className?: string): void {
-        const prevElem: Element = document.querySelector('.' + className);
+        const prevElem: Element = this.cmenu.querySelector('.' + className);
         if (prevElem) {
             prevElem.classList.remove(className);
         }

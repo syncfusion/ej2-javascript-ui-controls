@@ -406,9 +406,11 @@ export class TextSelection {
     }
 
     private scrollForwardOnSelection(): void {
-        this.isMouseLeaveSelection = true;
-        this.pdfViewerBase.viewerContainer.scrollTop = this.pdfViewerBase.viewerContainer.scrollTop + 200;
-        this.stichSelectionOnScroll(this.pdfViewerBase.currentPageNumber - 1);
+        if (!this.pdfViewerBase.isSignInitialClick) {
+            this.isMouseLeaveSelection = true;
+            this.pdfViewerBase.viewerContainer.scrollTop = this.pdfViewerBase.viewerContainer.scrollTop + 200;
+            this.stichSelectionOnScroll(this.pdfViewerBase.currentPageNumber - 1);
+        }
     }
 
     private scrollBackwardOnSelection(): void {

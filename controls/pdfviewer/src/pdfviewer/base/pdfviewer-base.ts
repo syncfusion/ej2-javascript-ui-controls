@@ -184,6 +184,10 @@ export class PdfViewerBase {
     /**
      * @private
      */
+    public isSignInitialClick: boolean = false;
+    /**
+     * @private
+     */
     public loadedData: string;
     /**
      * @private
@@ -6709,7 +6713,13 @@ export class PdfViewerBase {
             (anchorElement as HTMLAnchorElement).href = blobUrl;
             (anchorElement as HTMLAnchorElement).target = '_parent';
             if ('download' in anchorElement) {
-                (anchorElement as HTMLAnchorElement).download = this.downloadFileName;
+                if(this.downloadFileName.endsWith(".pdf")) {
+                    (anchorElement as HTMLAnchorElement).download = this.downloadFileName;
+                }
+                else {
+                let splitPdf: string = this.downloadFileName.split(".pdf")[0] + ".pdf";
+                (anchorElement as HTMLAnchorElement).download = splitPdf;  
+                }               
             }
             (document.body || document.documentElement).appendChild(anchorElement);
             anchorElement.click();
@@ -9694,6 +9704,12 @@ export class PdfViewerBase {
                 let id: string = eventTarget.id.split('_')[0];
                 obj = (this.pdfViewer.nameTable as any)[id];
             }
+        }
+        if ((!isNullOrUndefined(obj)) && ((obj as any).formFieldAnnotationType === "SignatureField" || (obj as any).formFieldAnnotationType === "InitialField")) {
+            this.isSignInitialClick = true;
+        }
+        else {
+            this.isSignInitialClick = false;
         }
         //(Bug-884739): We have commented out this line. The signature window is not open for mobile view.
         // if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && (obj && !(obj instanceof PdfFormFieldBase))) {

@@ -475,7 +475,7 @@ export class ContextMenu {
                 case 'DeleteDependency':
                     {
                         const items: ContextMenuItemModel[] = this.getPredecessorsItems();
-                        if (!isNullOrUndefined(this.rowData) && this.rowData.hasChildRecords) {
+                        if (!isNullOrUndefined(this.rowData) && this.rowData.hasChildRecords && !this.parent.allowParentDependency) {
                             this.hideItems.push(item.text);
                         } else if (!this.parent.editSettings.allowDeleting || items.length === 0 || !this.parent.editModule) {
                             this.updateItemVisibility(item.text);

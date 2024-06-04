@@ -1397,6 +1397,10 @@ export class Editor {
             }
             this.selection.showHidePasteOptions(undefined, undefined);
         }
+        if (!isNullOrUndefined(this.owner.optionsPaneModule) && this.owner.optionsPaneModule.isOptionsPaneShow
+            && !this.owner.optionsPaneModule.isUpdateHeading && this.selection.paragraphFormat.outlineLevel !== 'BodyText') {
+            this.owner.optionsPaneModule.updateHeadingTab();
+        }
         if (this.documentHelper.owner.isLayoutEnabled && !this.documentHelper.owner.editorModule.isUserInsert && !this.documentHelper.owner.isShiftingEnabled && !this.isSkipOperationsBuild && !this.isRemoteAction) {
             this.documentHelper.owner.fireContentChange();
         }
@@ -9860,7 +9864,7 @@ export class Editor {
         if (this.selection.isEmpty || ((this.owner.isReadOnlyMode || this.restrictFormatting) && !this.selection.isInlineFormFillMode())) {
             return;
         }
-        this.selection.characterFormat.allCaps = (property === "Uppercase") ? true : false;
+        // this.selection.characterFormat.allCaps = (property === "Uppercase") ? true : false;
         this.initHistory(property as Action);
         this.documentHelper.owner.isShiftingEnabled = true;
         let selection: Selection = this.selection;
@@ -10054,6 +10058,7 @@ export class Editor {
                 let firstLetter: string = (inlineObj as TextElementBox).text.substr(startIndex - 2, 2);
                 makeFirstLetterCapital = firstLetter === '. ';
             }
+            textElement.characterFormat.allCaps = (property === "Uppercase") ? isRevert ? false : true : false;
             textElement.text = this.getChangeCaseText(textToChange, property, isRevert, makeFirstLetterCapital);
             textElement.isRightToLeft = inlineObj.isRightToLeft;
             index++;
@@ -10100,6 +10105,7 @@ export class Editor {
                     }
                 this.checkLastLetterSpace = textElementBox.text.charAt(textElementBox.length - 1);
             }
+            textElementBox.characterFormat.allCaps = (property === "Uppercase") ? isRevert ? false : true : false;
             textElementBox.text = this.getChangeCaseText(newText, property, isRevert, makeFirstLetterCapital);
         } else {
             let preText: string = textElementBox.text.substr(0, startIndex);
@@ -10241,6 +10247,7 @@ export class Editor {
             let firstLetter: string = '';
             for (let j: number = 0; j < line.children.length; j++) {
                 let element: TextElementBox = line.children[j] as TextElementBox;
+                element.characterFormat.allCaps = (property === "Uppercase") ? isRevert ? false : true : false;
                 let makeFirstLetterCapital: boolean = false;
                 if (!isNullOrUndefined(element) && element instanceof TextElementBox) {
                     this.addRemovedTextNodes(element, element.text);
@@ -18708,6 +18715,7 @@ export class Editor {
             // History for inserting bookmark with existing bookmark name was changed as a complex history as per MS word behavior and added the below lines for getting existing bookmarks offset in history  
             let start: TextPosition = this.selection.start.clone();
             let end: TextPosition = this.selection.end.clone();
+            let endElementInfo : ElementInfo = this.selection.getElementInfo(end.currentWidget, end.offset);
             this.selection.start.setPositionParagraph(bookmark.line, bookmark.line.getOffset(bookmark, bookmark.length));
             this.selection.end.setPositionParagraph(bookmarkEnd.line, bookmarkEnd.line.getOffset(bookmarkEnd, bookmarkEnd.length) -1);
             this.initHistory('DeleteBookmark');
@@ -18716,9 +18724,14 @@ export class Editor {
                 this.editorHistory.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Marker_Start;
                 this.editorHistory.currentBaseHistoryInfo.markerData.push({bookmarkName: bookmarkName});
                 this.editorHistory.currentBaseHistoryInfo.setBookmarkInfo(bookmark);
-                this.editorHistory.updateHistory();
             }
             this.deleteBookmarkInternal(bookmark);
+            if (this.editorHistory) {
+                this.editorHistory.updateHistory();
+            }
+            if (endElementInfo.element !== bookmark && endElementInfo.element !== bookmarkEnd) {
+                this.selection.end.setPositionParagraph(endElementInfo.element.line, endElementInfo.element.line.getOffset(endElementInfo.element, endElementInfo.index));
+            }
         }
         this.fireContentChange();
         if (this.owner.documentEditorSettings.showBookmarks == true) {

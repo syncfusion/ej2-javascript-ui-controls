@@ -960,7 +960,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
     private beforeSuccessCallBack(args: ChangeEventArgs, target: Element): void {
-        if (!args.cancel) {
+        if (args && !args.cancel) {
             const element: Element = closest(target, '.e-group-container');
             const groupID: string =  element.id.replace(this.element.id + '_', '');
             const beforeRules: RuleModel = this.getValidRules(this.rule);

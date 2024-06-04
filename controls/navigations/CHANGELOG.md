@@ -4,6 +4,14 @@
 
 ## 25.2.6 (2024-05-28)
 
+### TreeView
+
+#### Bug Fixes
+
+- `#I586334` - The issue where the TreeView checkbox state is read twice in the NVDA tool when using the Edge browser has been resolved.
+
+## 25.2.4 (2024-05-14)
+
 ### ContextMenu
 
 #### Bug Fixes

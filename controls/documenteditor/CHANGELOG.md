@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 25.2.7 (2024-06-04)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I586051` - Resolved the script error when passing null value to open API.
+- `#F188215` - Resolved the Horizontal scrollbar in Continuous layout type.
+- `#I576525` - Resolved the script error issue when inserting bookmarks with the same name.
+- `#I578500` - Resolved the hanging and layout issue when split the widow control paragraph inside table.
+- `#I588495` - Resolved the hanging issue when opening a document with big image inside table.
+- `#I592601` - Resolved a script error when undoing style changes.
+- `#I592608` - Resolved a content syncing issue when switching paste options.
+
 ## 25.2.6 (2024-05-28)
 
 ### DocumentEditor

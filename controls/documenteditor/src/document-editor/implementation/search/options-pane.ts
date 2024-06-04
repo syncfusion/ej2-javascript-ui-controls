@@ -80,6 +80,10 @@ export class OptionsPane {
      * @private
      */
     public isReplace: boolean = false;
+    /**
+     * @private
+     */
+    public isUpdateHeading: boolean = false;
     private localeValue: L10n;
 
     public constructor(documentHelper: DocumentHelper) {
@@ -213,6 +217,19 @@ export class OptionsPane {
         }
     }
     /**
+     * @private
+     * @returns {void}
+     */
+    public updateHeadingTab(): void {
+        if (!isNullOrUndefined(this.treeviewDiv)) {
+            this.isUpdateHeading = true;
+            this.treeviewDiv.innerHTML = '';
+            this.data = this.dataForTreeview();
+            this.initHeadingTab();
+            this.isUpdateHeading = false;
+        }
+    }
+    /**
      * Initialize the heading tab with the values.
      *
      * @private
@@ -333,7 +350,8 @@ export class OptionsPane {
         let widgets: ParagraphWidget[] = this.documentHelper.owner.editorModule.buildToc(this.validateHeadingSettings(headingPaneSettings), code, false, true, true);
         if (this.documentHelper.owner.editorHistory) {
             this.documentHelper.owner.editorHistory.updateComplexHistory();
-            if (isNullOrUndefined((this.documentHelper.owner.editorHistory.undoStack[this.documentHelper.owner.editorHistory.undoStack.length - 1] as HistoryInfo).modifiedActions)) {
+            if (this.documentHelper.owner.editorHistory.undoStack.length > 1 
+                && !isNullOrUndefined((this.documentHelper.owner.editorHistory.undoStack[this.documentHelper.owner.editorHistory.undoStack.length - 1] as HistoryInfo).modifiedActions)) {
                 this.documentHelper.owner.editorHistory.undoStack.pop();
             }
         }

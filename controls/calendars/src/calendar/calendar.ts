@@ -808,6 +808,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
          this.nextIcon = this.previousIcon = this.table = null;
     }
     protected keyActionHandle(e: KeyboardEventArgs, value?: Date, multiSelection?: boolean): void {
+        if (this.calendarElement === null && e.action === 'escape') {
+            return;
+        }
         const focusedDate: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
         let selectedDate: Element;
         if (multiSelection) {
@@ -952,7 +955,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         case 'tab':
             if ((this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') && e.target === this.todayElement) {
                 e.preventDefault();
-                (this as any).element.focus();
+                if (this.isAngular) {
+                    (this as any).inputElement.focus();
+                } else {
+                    (this as any).element.focus();
+                }
                 (this as any).hide();
             }
             break;
@@ -963,6 +970,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 (this as any).hide();
             }
             break;
+        case 'escape':
+                if ((this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') && (e.target === this.headerTitleElement || e.target === this.previousIcon || e.target === this.nextIcon || e.target === this.todayElement)) {
+                    (this as any).hide();
+                }
+                break;
         }
     }
 

@@ -9,7 +9,8 @@ import {
     IWidget, BlockWidget,
     ParagraphWidget, LineWidget, BodyWidget, TableCellWidget,
     FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget,
-    EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame, TextFormField, TextElementBox, HeaderFooters, CommentEditInfo, FormField, FootnoteElementBox, ImageElementBox, Widget
+    EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame, TextFormField, TextElementBox, HeaderFooters, CommentEditInfo, FormField, FootnoteElementBox, ImageElementBox, Widget,
+    ListTextElementBox
 } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
@@ -502,25 +503,26 @@ export class BaseHistoryInfo {
         let end: string = this.selectionEnd;
         this.collabStart = this.selectionStart;
         this.collabEnd = this.selectionEnd;
-        if (this.owner.enableCollaborativeEditing) {
-            if (!isNullOrUndefined(this.insertPosition)) {
-                this.insertIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(this.insertPosition);
-            }
-            this.startIndex = this.insertIndex;
-            if (!isNullOrUndefined(this.endPosition)) {
-                let startPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.insertPosition);
-                let endPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.endPosition);
-                this.updateCollaborativeSelection(startPosition, endPosition);
-            }
-            this.startIndex = this.insertIndex;
-        }
         let isForwardSelection: boolean = TextPosition.isForwardSelection(start, end);
         if (this.modifiedProperties.length > 0 || this.action === 'Selection'
             || this.action === 'ClearCharacterFormat' || this.action === 'ClearParagraphFormat') {
-                selectionStartTextPosition = !isNullOrUndefined(start) ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(start): undefined;
-                selectionEndTextPosition = !isNullOrUndefined(end)? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(end): undefined;
+            selectionStartTextPosition = !isNullOrUndefined(start) ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(start) : undefined;
+            selectionEndTextPosition = !isNullOrUndefined(end) ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(end) : undefined;
+            if (this.owner.enableCollaborativeEditing) {
+                this.updateCollaborativeSelection(selectionStartTextPosition, selectionEndTextPosition);
+            }
             this.revertModifiedProperties(selectionStartTextPosition, selectionEndTextPosition);
         } else {
+            if (this.owner.enableCollaborativeEditing) {
+                if (!isNullOrUndefined(this.insertPosition)) {
+                    this.insertIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(this.insertPosition);
+                }
+                if (!isNullOrUndefined(this.endPosition)) {
+                    let startPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.insertPosition);
+                    let endPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.endPosition);
+                    this.updateCollaborativeSelection(startPosition, endPosition);
+                }
+            }
             let sel: Selection = this.owner.selectionModule;
             let deletedNodes: IWidget[] = this.removedNodes;
             if (this.removedNodes.length > 0) {
@@ -2415,20 +2417,8 @@ export class BaseHistoryInfo {
             case 'PasteOverwrite':
             case 'PasteRow':
                 if (this.editorHistory.isUndoing || this.editorHistory.isRedoing) {
-                    let isTextRemoved: boolean = false;
                     if (this.removedNodes.length > 0) {
-                        for (let i: number = this.removedNodes.length - 1; i >= 0; i--) {
-                            if (this.removedNodes[i] instanceof ParagraphWidget) {
-                                isTextRemoved = true;
-                            } else {
-                                isTextRemoved = false;
-                            }
-                        }
-                        operations.push(this.getDeleteOperation(action));
-                        if (isTextRemoved) {
-                            this.endIndex = this.startIndex;
-                            operations.push(this.getDeleteOperation('Delete'));
-                        }
+                        operations.push(this.getDeleteOperation('Delete'));
                     }
                     if (this.isRemovedNodes) {
                         if (this.action === 'Paste') {
@@ -3628,7 +3618,9 @@ export class BaseHistoryInfo {
                 if (node instanceof TextElementBox) {
                     text += node.text;
                 } else {
-                    text += ElementBox.objectCharacter;
+                    if(!(node instanceof ListTextElementBox)) {
+                        text += ElementBox.objectCharacter;
+                    }
                 }
             } else if (node instanceof TableWidget) {
                 text += this.getTableText(node as TableWidget);
@@ -3644,7 +3636,9 @@ export class BaseHistoryInfo {
                     if (node instanceof TextElementBox) {
                         text += node.text;
                     } else {
-                        text += ElementBox.objectCharacter;
+                        if(!(node instanceof ListTextElementBox)) {
+                            text += ElementBox.objectCharacter;
+                        }
                     }
                 } else if (node instanceof TableWidget) {
                     text += this.getTableText(node as TableWidget);
@@ -3719,6 +3713,9 @@ export class BaseHistoryInfo {
             for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
                 let line: LineWidget = paragraph.childWidgets[i] as LineWidget;
                 for (let j: number = 0; j < line.children.length; j++) {
+                    if(line.children[j] instanceof ListTextElementBox) {
+                        continue;
+                    }
                     if (line.children[j] instanceof TextElementBox) {
                         text += (line.children[j] as TextElementBox).text;
                     } else {
@@ -3733,7 +3730,7 @@ export class BaseHistoryInfo {
 
     //  Add for loop to iterate table child elements and get text
     private getTableText(table: TableWidget): string {
-        let text: string = '';
+        let text: string = CONTROL_CHARACTERS.Table;
         for (let i: number = 0; i < table.childWidgets.length; i++) {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             text += this.getRowText(row);
@@ -3743,10 +3740,11 @@ export class BaseHistoryInfo {
 
     // Add for loop to iterate table row child elements and get text
     private getRowText(row: TableRowWidget): string {
-        let text: string = '';
+        let text: string = CONTROL_CHARACTERS.Row;
         for (let j: number = 0; j < row.childWidgets.length; j++) {
             let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
             for (let k: number = 0; k < cell.childWidgets.length; k++) {
+                text += CONTROL_CHARACTERS.Cell;
                 let block: BlockWidget = cell.childWidgets[k] as BlockWidget;
                 if (block instanceof ParagraphWidget) {
                     text += this.getParagraphText(block as ParagraphWidget);
@@ -3863,7 +3861,11 @@ export class BaseHistoryInfo {
             this.createParagraphFormat(action);
         } else {
             if (action === 'ApplyStyle' || action === 'StyleName') {
-                this.insertedFormat = (this.insertedFormat as WCharacterStyle).name;
+                if (this.insertedFormat instanceof WCharacterFormat && this.insertedFormat.baseCharStyle) {
+                    this.insertedFormat = this.insertedFormat.baseCharStyle.name;
+                } else {
+                    this.insertedFormat = (this.insertedFormat as WCharacterStyle).name;
+                }
             }
             if (ischarFormat) {
                 this.type = 'CharacterFormat';
@@ -3899,7 +3901,7 @@ export class BaseHistoryInfo {
                 if (length === 0 && ischarFormat) {
                     continue;
                 }
-                if(this.editorHistory.isUndoing || this.editorHistory.isRedoing) {
+                if((this.editorHistory.isUndoing || this.editorHistory.isRedoing) && !ischarFormat) {
                     if (!isNullOrUndefined(this.owner.sfdtExportModule)) {
                         let cellFormat: any = this.owner.sfdtExportModule.writeCellFormat(cell.cellFormat, 0);
                         this.format = JSON.stringify(cellFormat);
@@ -3931,11 +3933,90 @@ export class BaseHistoryInfo {
                     this.endIndex = this.startIndex + length;
                     this.writeBorderFormat(isBorder, isShading, start.paragraph.associatedCell);
                 }
-                operation = this.getFormatOperation(undefined, undefined, true);
+                if (action === 'ClearFormat' && this.editorHistory.isUndoing) {
+                    this.buildclearFormatOperations(operations);
+                    return operations;
+                } else {
+                    operation = this.getFormatOperation(undefined, undefined, true);
+                }
             }
             operations.push(operation);
         }
         return operations;
+    }
+
+    private buildclearFormatOperations(operations: Operation[]): void {
+        let start: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.collabStart);
+        let end: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.collabEnd);
+        let block: BlockWidget = start.paragraph;
+        let isBreak: boolean = false;
+        do {
+            isBreak = block.equals(end.paragraph);
+            if (block instanceof ParagraphWidget) {
+                this.buildclearFormatOperation(block, operations);
+            } else {
+                let positionInfo: AbsolutePositionInfo = { done: false };
+                this.tableClearFormatOperation(block as TableWidget, end.paragraph, operations, positionInfo);
+                if (positionInfo.done) {
+                    isBreak = true;
+                }
+            }
+            block = block.nextRenderedWidget as BlockWidget;
+        } while (!isBreak)
+    }
+
+    private tableClearFormatOperation(table: TableWidget, endParagraph: ParagraphWidget, operations: Operation[], positionInfo: AbsolutePositionInfo): void {
+        let row: TableRowWidget = table.firstChild as TableRowWidget;
+        while (row) {
+            let cell: TableCellWidget = row.firstChild as TableCellWidget;
+            while (cell) {
+                let childBlock: BlockWidget = cell.firstChild as BlockWidget;
+                if (childBlock instanceof ParagraphWidget) {
+                    this.buildclearFormatOperation(childBlock, operations);
+                } else {
+                    this.tableClearFormatOperation(childBlock as TableWidget, endParagraph, operations, positionInfo);
+                    if (positionInfo.done) {
+                        return;
+                    }
+                }
+                if (endParagraph.equals(childBlock)) {
+                    positionInfo.done = true;
+                    return;
+                }
+                cell = cell.nextWidget as TableCellWidget;
+            }
+            row = row.getSplitWidgets().pop().nextRenderedWidget as TableRowWidget;
+        }
+
+    }
+
+    private buildclearFormatOperation(paragraph: ParagraphWidget, operations: Operation[]): void {
+        let isParagraphFormat: boolean = true;
+        for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
+            let inlines: LineWidget = paragraph.childWidgets[i] as LineWidget;
+            for (let j: number = 0; j < inlines.children.length; j++) {
+                if (inlines.children[j] instanceof TextElementBox) {
+                    const currentStart = this.owner.selectionModule.getElementPosition(inlines.children[j], true).startPosition;
+                    this.startIndex = this.owner.selectionModule.getAbsolutePositionFromRelativePosition(currentStart);
+                    let operation: Operation = this.getFormatOperation(inlines.children[j]);
+                    operation.length += 1;
+                    if (isParagraphFormat) {
+                        let paraFormatOperation: Operation = {
+                            action: 'Format',
+                            offset: operation.offset,
+                            length: operation.length,
+                            type: 'ParagraphFormat',
+                            format: JSON.stringify(this.owner.sfdtExportModule.writeParagraphFormat(paragraph.paragraphFormat, 0, true))
+                        }
+                        operations.push(paraFormatOperation);
+                        isParagraphFormat = false;
+                    }
+                    operation.type = 'CharacterFormat';
+                    operation.format = JSON.stringify(this.owner.sfdtExportModule.writeCharacterFormat(inlines.children[j].characterFormat, 0, true));
+                    operations.push(operation);
+                }
+            }
+        }
     }
 
     private writeBorderFormat(isBorder: boolean, isShading: boolean, cell: TableCellWidget): void {
@@ -3994,7 +4075,11 @@ export class BaseHistoryInfo {
         }else if (action === 'CapitalizeEachWord') {
             characterFormat.CapitalizeEachWord = true;
         } else if (action === 'ApplyStyle' || action === 'StyleName') {
-            characterFormat.styleName = this.insertedFormat;
+            if (isNullOrUndefined(this.insertedFormat)) {
+                characterFormat.styleName = null;
+            } else {
+                characterFormat.styleName = this.insertedFormat;
+            }
         } else if (action === 'CharacterFormat') {
             let charFormat: WCharacterFormat = this.insertedFormat as WCharacterFormat;
             characterFormat.bold = charFormat.hasValue('bold') ? charFormat.bold : characterFormat.bold;

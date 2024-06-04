@@ -265,6 +265,9 @@ export class ChartScroll {
                    this.parent.element.getElementsByClassName('e-holiday-container')[0]['style'].height = '100%';
                 }
             }
+            else if (this.parent.enableTimelineVirtualization && this.parent.timelineModule.wholeTimelineWidth < this.parent.element.offsetWidth * 3){
+                this.parent.connectorLineModule.svgObject.setAttribute('width', '100%');
+            }
         }
         this.parent.timelineModule['performedTimeSpanAction'] = false;
         if ((!isNullOrUndefined(scrollArgs.scrollDirection)) && (this.parent.enableVirtualization === true || this.parent.enableTimelineVirtualization === true) && (this.parent.isToolBarClick
